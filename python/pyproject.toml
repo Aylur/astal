@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "astal.py"
+name = "astal"
 version = "0.1.0"
 description = ""
 authors = []
