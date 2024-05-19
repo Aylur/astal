@@ -12,7 +12,8 @@ add_project_arguments(
     ['-Wno-pedantic'],
     language : 'c')
 
-lib_so_version = 0
+version_split = meson.project_version().split('.')
+lib_so_version = version_split[0] + '.' + version_split[1]
 
 pkg_config = import('pkgconfig')
 gnome = import('gnome')

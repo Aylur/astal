@@ -1,4 +1,4 @@
 astal_auth_inc = include_directories('.')
-astal_auth_headers = files('pam.h')
+astal_auth_headers = files('auth.h')
 
-install_headers('pam.h', subdir : 'astal')
+install_headers('auth.h', subdir : 'astal')

@@ -1,5 +1,5 @@
 #include <bsd/readpassphrase.h>
-#include "pam.h"
+#include "auth.h"
 
 GMainLoop *loop;
 

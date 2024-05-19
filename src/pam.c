@@ -1,4 +1,4 @@
-#include "pam.h"
+#include "auth.h"
 #include <pwd.h>
 #include <security/_pam_types.h>
 #include <security/pam_appl.h>

@@ -18,7 +18,7 @@ astal_auth_lib = library(
     install : true
 )
 
-pkg_config_name = 'astal-auth-' + lib_so_version.to_string()
+pkg_config_name = 'astal-auth-' + lib_so_version
 
 if get_option('introspection')
     gir = gnome.generate_gir(
@@ -29,7 +29,7 @@ if get_option('introspection')
         symbol_prefix : 'astal_auth',
         identifier_prefix : 'AstalAuth',
         includes : ['GObject-2.0', 'Gio-2.0'],
-        header : 'astal/astal-auth.h',
+        header : 'astal/auth.h',
         export_packages : pkg_config_name,
         install : true
     )
