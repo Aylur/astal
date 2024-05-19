@@ -20,7 +20,11 @@ gnome = import('gnome')
 
 subdir('include')
 subdir('src')
-subdir('examples')
+
+
+if get_option('examples')
+    subdir('examples')
+endif
 
 
 install_data(

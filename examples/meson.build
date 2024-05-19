@@ -12,13 +12,11 @@ deps_example = [
 astal_auth_full_exmple = executable(
     'astal_auth_full_example',
     files('full_example.c'),
-    build_by_default : get_option('examples'),
     dependencies : deps_example,
     install : false)
 
 astal_auth_simple_example = executable(
     'astal_auth_simple_example',
     files('simple_example.c'),
-    build_by_default : get_option('examples'),
     dependencies : deps_example,
     install : false)
