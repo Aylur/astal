@@ -14,7 +14,6 @@ astal_auth_lib = library(
     include_directories : astal_auth_inc,
     dependencies : deps,
     version : meson.project_version(),
-    soversion : lib_so_version,
     install : true
 )
 
