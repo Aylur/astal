@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ES2022",
+        "lib": [
+            "ES2022"
+        ],
+        "outDir": "dist",
+        "strict": true,
+        "moduleResolution": "node",
+        "baseUrl": ".",
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "declaration": true,
+        "allowSyntheticDefaultImports": true
+    },
+    "include": [
+        "./@girs",
+        "./src",
+        "./gjs",
+        "./node"
+    ]
+}
