@@ -24,7 +24,7 @@ if get_option('introspection')
     gir = gnome.generate_gir(
         astal_auth_lib,
         sources : srcs + astal_auth_headers,
-        nsversion : '1.0',
+        nsversion : '0.1',
         namespace : 'AstalAuth',
         symbol_prefix : 'astal_auth',
         identifier_prefix : 'AstalAuth',
