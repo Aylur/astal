@@ -74,7 +74,7 @@ gboolean astal_auth_pam_start_authenticate(AstalAuthPam *self);
 /**
  * astal_auth_pam_supply_secret
  * @self: a AstalAuthPam Object
- * @secret: (nullable) the secret to be provided to pam. Can be NULL.
+ * @secret: (nullable): the secret to be provided to pam. Can be NULL.
  *
  * provides pam with a secret. This method must be called exactly once after a
  * auth-* signal is emitted.

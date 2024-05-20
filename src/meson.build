@@ -17,6 +17,19 @@ astal_auth_lib = library(
     install : true
 )
 
+libastal_auth = declare_dependency(
+    link_with : astal_auth_lib,
+    include_directories : astal_auth_inc)
+
+astal_auth_executable = executable(
+    'astal-auth',
+    files('astal-auth.c'),
+    dependencies : [
+        dependency('gobject-2.0'),
+        libastal_auth
+    ],
+    install : true)
+
 pkg_config_name = 'astal-auth-' + lib_so_version
 
 if get_option('introspection')
@@ -49,4 +62,4 @@ pkg_config.generate(
     filebase : pkg_config_name,
     subdirs : 'astal',
     description : 'astal authentication module',
-    url : 'https://github.com/kotontrion/astal-auth')
+    url : 'https://github.com/astal-sh/libastal-auth')
