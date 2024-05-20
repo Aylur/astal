@@ -62,4 +62,4 @@ pkg_config.generate(
     filebase : pkg_config_name,
     subdirs : 'astal',
     description : 'astal authentication module',
-    url : 'https://github.com/astal-sh/libastal-auth')
+    url : 'https://github.com/astal-sh/auth')
