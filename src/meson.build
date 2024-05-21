@@ -1,8 +1,19 @@
 version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
-astal_gir = 'Astal-' + api_version + '.gir'
-astal_typelib = 'Astal-' + api_version + '.typelib'
-astal_so = 'libastal.so.' + meson.project_version()
+gir = 'Astal-' + api_version + '.gir'
+typelib = 'Astal-' + api_version + '.typelib'
+so = 'libastal.so.' + meson.project_version()
+
+config = configure_file(
+  input: 'config.vala.in',
+  output: 'config.vala',
+  configuration: {
+    'VERSION': meson.project_version(),
+    'MAJOR_VERSION': version_split[0],
+    'MINOR_VERSION': version_split[1],
+    'MICRO_VERSION': version_split[2],
+  },
+)
 
 deps = [
   dependency('glib-2.0'),
@@ -14,7 +25,8 @@ deps = [
   dependency('gtk-layer-shell-0'),
 ]
 
-sources = files(
+sources = [
+  config,
   'widget/box.vala',
   'widget/button.vala',
   'widget/centerbox.vala',
@@ -27,58 +39,52 @@ sources = files(
   'process.vala',
   'time.vala',
   'variable.vala',
-)
+]
 
-libastal = library(
-  meson.project_name(),
-  sources,
-  dependencies: deps,
-  vala_header: meson.project_name() + '.h',
-  vala_vapi: meson.project_name() + '.vapi',
-  vala_gir: astal_gir,
-  version: meson.project_version(),
-  install: true,
-  install_dir: [true, true, true, true],
-)
+if get_option('lib')
+  lib = library(
+    meson.project_name(),
+    sources,
+    dependencies: deps,
+    vala_header: meson.project_name() + '.h',
+    vala_vapi: meson.project_name() + '.vapi',
+    vala_gir: gir,
+    version: meson.project_version(),
+    install: true,
+    install_dir: [true, true, true, true],
+  )
 
-import('pkgconfig').generate(
-  description: 'libastal',
-  libraries: libastal,
-  name: meson.project_name(),
-  filebase: meson.project_name() + '-' + api_version,
-  version: meson.project_version(),
-  subdirs: meson.project_name(),
-  requires: 'gio-2.0',
-  install_dir: get_option('libdir') / 'pkgconfig',
-)
+  import('pkgconfig').generate(
+    description: 'libastal-notifd',
+    libraries: lib,
+    name: meson.project_name(),
+    filebase: meson.project_name() + '-' + api_version,
+    version: meson.project_version(),
+    subdirs: meson.project_name(),
+    requires: deps,
+    install_dir: get_option('libdir') / 'pkgconfig',
+  )
 
-if get_option('typelib')
   custom_target(
-    astal_typelib,
+    typelib,
     command: [
       find_program('g-ir-compiler'),
       '--output', '@OUTPUT@',
       '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
-      meson.current_build_dir() / astal_gir,
+      meson.current_build_dir() / gir,
     ],
-    input: libastal,
-    output: astal_typelib,
-    depends: libastal,
+    input: lib,
+    output: typelib,
+    depends: lib,
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
   )
 endif
 
-if get_option('cli_client')
+if get_option('cli')
   executable(
     meson.project_name(),
-    configure_file(
-      input: 'client.vala.in',
-      output: 'client.vala',
-      configuration: {
-        'VERSION': meson.project_version(),
-      },
-    ),
+    ['cli.vala', sources],
     dependencies: deps,
     install: true,
   )

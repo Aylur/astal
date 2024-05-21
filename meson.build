@@ -14,4 +14,9 @@ project(
 # math
 add_project_arguments(['-X', '-lm'], language: 'vala')
 
+assert(
+  get_option('lib') or get_option('cli'),
+  'Either lib or cli option must be set to true.',
+)
+
 subdir('src')

@@ -97,14 +97,13 @@ public class Application : Gtk.Application {
         }
 
         try {
-            SocketAddress _;
             service = new SocketService();
             service.add_address(
                 new UnixSocketAddress(socket),
                 SocketType.STREAM,
                 SocketProtocol.DEFAULT,
                 null,
-                out _);
+                null);
 
             service.incoming.connect((conn) => {
                 _socket_request.begin(conn);
@@ -151,8 +150,7 @@ public errordomain WindowError {
 public async string read_sock(SocketConnection conn) {
     try {
         var stream = new DataInputStream(conn.input_stream);
-        size_t size;
-        return yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, out size);
+        return yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, null);
     } catch (Error err) {
         critical(err.message);
         return err.message;
