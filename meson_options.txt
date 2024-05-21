@@ -1,0 +1,2 @@
+option('typelib', type: 'boolean', value: true, description: 'Needed files for runtime bindings')
+option('cli_client', type: 'boolean', value: true, description: 'cli client for notifd')
