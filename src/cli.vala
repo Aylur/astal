@@ -69,6 +69,7 @@ int main(string[] argv) {
     if (daemonize) {
         notifd.notified.connect((id) => {
             stdout.printf("%s\n", notifd.get_notification_json(id));
+            stdout.flush();
         });
     }
 
