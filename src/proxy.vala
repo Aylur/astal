@@ -9,7 +9,6 @@ internal interface IDaemon : Object {
 
     public signal void notified(uint id);
     public signal void resolved(uint id, ClosedReason reason);
-    public signal void action_invoked(uint id, string action);
 
     public abstract void emit_notified(uint id);
     public abstract void emit_resolved(uint id, ClosedReason reason);

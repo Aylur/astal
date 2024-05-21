@@ -6,7 +6,7 @@ static string invoke;
 static int close_n;
 static int get_n;
 
-private const OptionEntry[] options = {
+const OptionEntry[] options = {
     { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref version, null, null },
     { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref help, null, null },
     { "daemon", 'd', OptionFlags.NONE, OptionArg.NONE, ref daemonize, null, null },
@@ -48,7 +48,7 @@ int main(string[] argv) {
     var notifd = new AstalNotifd.Notifd();
 
     if (version) {
-        print("@VERSION@");
+        print(AstalNotifd.VERSION);
         return 0;
     }
 
