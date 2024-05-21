@@ -1,6 +1,6 @@
 # notifd
 
-a notification daemon
+A notification daemon library and cli tool
 
 ## TODO
 

@@ -1,8 +1,8 @@
 version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
-notifd_gir = 'astal_notifd-' + api_version + '.gir'
-notifd_typelib = 'astal_notifd-' + api_version + '.typelib'
-notifd_so = 'libastalnotifd.so.' + meson.project_version()
+notifd_gir = 'AstalNotifd-' + api_version + '.gir'
+notifd_typelib = 'AstalNotifd-' + api_version + '.typelib'
+notifd_so = 'libastal-notifd.so.' + meson.project_version()
 
 deps = [
   dependency('glib-2.0'),
@@ -32,7 +32,7 @@ libnotifd = library(
 )
 
 import('pkgconfig').generate(
-  description: 'libastalnotifd',
+  description: 'libastal-notifd',
   libraries: libnotifd,
   name: meson.project_name(),
   filebase: meson.project_name() + '-' + api_version,

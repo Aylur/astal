@@ -1,4 +1,6 @@
 {
+  description = "Notification daemon library and cli tool";
+
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
   outputs = { self, nixpkgs }:
@@ -28,7 +30,7 @@
         pname = "notifd";
         version = version;
         src = ./.;
-        # outputs = ["out" "dev"];
+        outputs = ["out" "dev"];
       };
     };
 
