@@ -29,6 +29,9 @@ meson compile -C build
 meson install -C build
 ```
 
+> [!NOTE]
+> on NixOS you will have to add `security.pam.services.astal-auth = {}` in `configuration.nix`
+
 ## Usage
 This library can be used from any language supporting GObject Introspection.
 Have a look at the [examples](examples) for how it can be used in C and gjs.
