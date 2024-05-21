@@ -90,7 +90,7 @@ public class Notification : Object {
     public void dismiss() { dismissed(); }
     public void invoke(string action) { invoked(action); }
 
-    public Notification.from_json(Json.Object root) throws GLib.Error {
+    internal Notification.from_json(Json.Object root) throws GLib.Error {
         foreach (var key in root.get_members()) {
             var node = root.get_member(key);
             switch (key) {
@@ -123,7 +123,7 @@ public class Notification : Object {
         }
     }
 
-    public static Notification from_json_string(string json) throws GLib.Error {
+    internal static Notification from_json_string(string json) throws GLib.Error {
         var parser = new Json.Parser();
         parser.load_from_data(json);
         return new Notification.from_json(parser.get_root().get_object());
@@ -135,7 +135,7 @@ public class Notification : Object {
         return generator.to_data(null);
     }
 
-    public Json.Node to_json() {
+    internal Json.Node to_json() {
         var acts = new Json.Builder().begin_array();
         foreach (var action in actions) {
             acts.begin_object()

@@ -1,7 +1,6 @@
 namespace AstalNotifd {
 [DBus (name = "org.freedesktop.Notifications")]
 internal interface IDaemon : Object {
-    public abstract string cache_directory { owned get; set; }
     public abstract bool ignore_timeout { get; set; }
     public abstract bool dont_disturb { get; set; }
 
@@ -10,12 +9,19 @@ internal interface IDaemon : Object {
 
     public signal void notified(uint id);
     public signal void resolved(uint id, ClosedReason reason);
+    public signal void action_invoked(uint id, string action);
+
+    public abstract void emit_notified(uint id);
+    public abstract void emit_resolved(uint id, ClosedReason reason);
+    public abstract void emit_action_invoked(uint id, string action);
 }
 
 internal class DaemonProxy : Object {
-    public string cache_directory {
-        owned get { return proxy.cache_directory; }
-        set { proxy.cache_directory = value; }
+    private HashTable<uint, Notification> notifs =
+        new HashTable<uint, Notification>((i) => i, (a, b) => a == b);
+
+    public List<weak Notification> notifications {
+        owned get { return notifs.get_values(); }
     }
 
     public bool ignore_timeout {
@@ -32,8 +38,8 @@ internal class DaemonProxy : Object {
         return proxy.notification_ids();
     }
 
-    public string get_notification_json(uint id) throws DBusError, IOError {
-        return proxy.get_notification_json(id);
+    public Notification get_notification(uint id) {
+        return notifs.get(id);
     }
 
     public signal void notified(uint id);
@@ -72,18 +78,7 @@ internal class DaemonProxy : Object {
               && version == Daemon.version;
 
             if (running) {
-                proxy = Bus.get_proxy_sync(
-                    BusType.SESSION,
-                    "org.freedesktop.Notifications",
-                    "/org/freedesktop/Notifications"
-                );
-
-                ids.append(proxy.notified.connect((id) => notified(id)));
-                ids.append(proxy.resolved.connect((id, reason) => resolved(id, reason)));
-                ids.append(proxy.notify.connect((pspec) => {
-                    if (get_class().find_property(pspec.name) != null)
-                        notify_property(pspec.name);
-                }));
+                setup_proxy();
                 return true;
             } else {
                 critical("cannot get proxy: %s is already running", name);
@@ -92,6 +87,44 @@ internal class DaemonProxy : Object {
             critical("cannot get proxy: %s", err.message);
         }
         return false;
+    }
+
+    private void setup_proxy() throws Error {
+        proxy = Bus.get_proxy_sync(
+            BusType.SESSION,
+            "org.freedesktop.Notifications",
+            "/org/freedesktop/Notifications"
+        );
+
+        foreach (var id in proxy.notification_ids())
+            add_notification(id);
+
+        ids.append(proxy.notify.connect((pspec) => {
+            if (get_class().find_property(pspec.name) != null)
+                notify_property(pspec.name);
+        }));
+
+        ids.append(proxy.notified.connect((id) => {
+            add_notification(id);
+            notified(id);
+        }));
+
+        ids.append(proxy.resolved.connect((id, reason) => {
+            notifs.remove(id);
+            resolved(id, reason);
+        }));
+    }
+
+    private void add_notification(uint id) {
+        try {
+            var n = Notification.from_json_string(proxy.get_notification_json(id));
+            proxy.resolved.connect((id, reason) => n.resolved(reason));
+            n.dismissed.connect(() => proxy.emit_resolved(id, ClosedReason.DISMISSED_BY_USER));
+            n.invoked.connect((action) => proxy.emit_action_invoked(id, action));
+            notifs.set(id, n);
+        } catch (Error err) {
+            critical(err.message);
+        }
     }
 }
 }

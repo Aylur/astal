@@ -13,21 +13,26 @@ internal class Daemon : Object {
     public static string version = "0.1";
 
     private string cache_file;
+    private string cache_directory;
+
     private uint n_id = 1;
     private HashTable<uint, Notification> notifs =
         new HashTable<uint, Notification>((i) => i, (a, b) => a == b);
 
-    public string cache_directory { set; owned get; }
     public bool ignore_timeout { get; set; }
     public bool dont_disturb { get; set; }
 
     public signal void notified(uint id);
     public signal void resolved(uint id, ClosedReason reason);
+    public signal void action_invoked(uint id, string action);
+
+    // emitting an event from proxy doesn't seem to work
+    public void emit_notified(uint id) { notified(id); }
+    public void emit_resolved(uint id, ClosedReason reason) { resolved(id, reason); }
+    public void emit_action_invoked(uint id, string action) { action_invoked(id, action); }
 
     construct {
-        if (cache_directory == null)
-            cache_directory = Environment.get_user_cache_dir() + "/astal/notifd";
-
+        cache_directory = Environment.get_user_cache_dir() + "/astal/notifd";
         cache_file = cache_directory + "/notifications.json";
 
         if (FileUtils.test(cache_file, FileTest.EXISTS)) {
@@ -38,8 +43,7 @@ internal class Daemon : Object {
                 parser.load_from_data((string)json);
                 var list = parser.get_root().get_array();
                 for (var i = 0; i < list.get_length(); ++i) {
-                    var n = new Notification.from_json(list.get_object_element(i));
-                    notifs.set(n.id, n);
+                    add_notification(new Notification.from_json(list.get_object_element(i)));
                 }
             } catch (Error err) {
                 warning("failed to load cache: %s", err.message);
@@ -73,7 +77,7 @@ internal class Daemon : Object {
     }
 
     [DBus (visible = false)]
-    public Notification get_notification(uint id) throws DBusError, IOError {
+    public Notification get_notification(uint id) {
         return notifs.get(id);
     }
 
@@ -105,12 +109,10 @@ internal class Daemon : Object {
         hints.remove("icon_data");
 
         var id = replaces_id > 0 ? replaces_id : n_id++;
-        var n = new Notification(
-            app_name, id, app_icon, summary, body, actions, hints, expire_timeout
-        );
 
-        n.dismissed.connect(() => resolved(id, ClosedReason.DISMISSED_BY_USER));
-        n.invoked.connect((action) => action_invoked(id, action));
+        add_notification(new Notification(
+            app_name, id, app_icon, summary, body, actions, hints, expire_timeout
+        ));
 
         if (!ignore_timeout && expire_timeout > 0) {
             Timeout.add(expire_timeout, () => {
@@ -119,12 +121,17 @@ internal class Daemon : Object {
             }, Priority.DEFAULT);
         }
 
-        notifs.set(id, n);
         if (!dont_disturb)
             notified(id);
 
         cache();
         return id;
+    }
+
+    private void add_notification(Notification n) {
+        n.dismissed.connect(() => resolved(n.id, ClosedReason.DISMISSED_BY_USER));
+        n.invoked.connect((action) => action_invoked(n.id, action));
+        notifs.set(n.id, n);
     }
 
     private void cache() {
@@ -148,7 +155,6 @@ internal class Daemon : Object {
     }
 
     public signal void notification_closed(uint id, uint reason);
-    public signal void action_invoked(uint id, string action);
     public signal void activation_token(uint id, string token);
 
     public void close_notification(uint id) throws DBusError, IOError {

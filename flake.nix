@@ -27,7 +27,7 @@
       default = notifd;
       notifd = pkgs.stdenv.mkDerivation {
         inherit nativeBuildInputs buildInputs;
-        pname = "notifd";
+        pname = "astal-notifd";
         version = version;
         src = ./.;
         outputs = ["out" "dev"];
