@@ -102,48 +102,32 @@ public class Window : Gtk.Window {
         get { return get_monitor(this); }
     }
 
-    public new int[] margin {
-        owned get {
-            return {
-                GtkLayerShell.get_margin(this, Edge.TOP),
-                GtkLayerShell.get_margin(this, Edge.RIGHT),
-                GtkLayerShell.get_margin(this, Edge.BOTTOM),
-                GtkLayerShell.get_margin(this, Edge.LEFT),
-            };
-        }
+    public new int margin_top {
+        get { return GtkLayerShell.get_margin(this, Edge.TOP); }
+        set { GtkLayerShell.set_margin(this, Edge.TOP, value); }
+    }
+
+    public new int margin_bottom {
+        get { return GtkLayerShell.get_margin(this, Edge.BOTTOM); }
+        set { GtkLayerShell.set_margin(this, Edge.BOTTOM, value); }
+    }
+
+    public new int margin_left {
+        get { return GtkLayerShell.get_margin(this, Edge.LEFT); }
+        set { GtkLayerShell.set_margin(this, Edge.LEFT, value); }
+    }
+
+    public new int margin_right {
+        get { return GtkLayerShell.get_margin(this, Edge.RIGHT); }
+        set { GtkLayerShell.set_margin(this, Edge.RIGHT, value); }
+    }
+
+    public new int margin {
         set {
-            int top = 0, right = 0, bottom = 0, left = 0;
-            switch (value.length) {
-                case 1:
-                    top = value[0];
-                    right = value[0];
-                    bottom = value[0];
-                    left = value[0];
-                    break;
-                case 2:
-                    top = value[0];
-                    right = value[1];
-                    bottom = value[0];
-                    left = value[1];
-                    break;
-                case 3:
-                    top = value[0];
-                    right = value[1];
-                    bottom = value[2];
-                    left = value[1];
-                    break;
-                case 4:
-                    top = value[0];
-                    right = value[1];
-                    bottom = value[2];
-                    left = value[3];
-                    break;
-                default: break;
-            }
-            GtkLayerShell.set_margin(this, Edge.TOP, top);
-            GtkLayerShell.set_margin(this, Edge.LEFT, left);
-            GtkLayerShell.set_margin(this, Edge.BOTTOM, bottom);
-            GtkLayerShell.set_margin(this, Edge.RIGHT, right);
+            margin_top = value;
+            margin_right = value;
+            margin_bottom = value;
+            margin_left = value;
         }
     }
 
