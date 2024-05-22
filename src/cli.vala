@@ -26,7 +26,6 @@ int main(string[] argv) {
     }
 
     if (help) {
-        print("Cli client for astal-notifd\n\n");
         print("Usage:\n");
         print("    %s [flags]\n\n", argv[0]);
         print("Flags:\n");
