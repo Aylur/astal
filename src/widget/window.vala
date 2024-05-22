@@ -102,6 +102,51 @@ public class Window : Gtk.Window {
         get { return get_monitor(this); }
     }
 
+    public new int[] margin {
+        owned get {
+            return {
+                GtkLayerShell.get_margin(this, Edge.TOP),
+                GtkLayerShell.get_margin(this, Edge.RIGHT),
+                GtkLayerShell.get_margin(this, Edge.BOTTOM),
+                GtkLayerShell.get_margin(this, Edge.LEFT),
+            };
+        }
+        set {
+            int top = 0, right = 0, bottom = 0, left = 0;
+            switch (value.length) {
+                case 1:
+                    top = value[0];
+                    right = value[0];
+                    bottom = value[0];
+                    left = value[0];
+                    break;
+                case 2:
+                    top = value[0];
+                    right = value[1];
+                    bottom = value[0];
+                    left = value[1];
+                    break;
+                case 3:
+                    top = value[0];
+                    right = value[1];
+                    bottom = value[2];
+                    left = value[1];
+                    break;
+                case 4:
+                    top = value[0];
+                    right = value[1];
+                    bottom = value[2];
+                    left = value[3];
+                    break;
+                default: break;
+            }
+            GtkLayerShell.set_margin(this, Edge.TOP, top);
+            GtkLayerShell.set_margin(this, Edge.LEFT, left);
+            GtkLayerShell.set_margin(this, Edge.BOTTOM, bottom);
+            GtkLayerShell.set_margin(this, Edge.RIGHT, right);
+        }
+    }
+
     /**
      * CAUTION: the id might not be the same mapped by the compositor
      * to reset and let the compositor map it pass a negative number
