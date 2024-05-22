@@ -59,7 +59,7 @@ int main(string[] argv) {
         stdout.printf(generator.to_data(null));
     } else {
         foreach (var app in apps.query(search))
-            stdout.printf("%s %f\n", app.entry, app.match(search));
+            stdout.printf("%s\n", app.entry);
     }
 
     return 0;
