@@ -72,6 +72,27 @@ public class Tray : Object {
       proxy.StatusNotifierItemRegistered.connect(on_item_register);
       proxy.StatusNotifierItemUnregistered.connect(on_item_unregister);
 
+      proxy.notify["g-name-owner"].connect(
+        () => {
+          _items.foreach((service, _) => {
+            print("%s\n", service);
+            item_removed(service);
+          });
+          _items.remove_all();
+          
+          if(proxy != null) {
+            foreach (string item in proxy.RegisteredStatusNotifierItems) {
+              on_item_register(item);
+            }
+          } else {
+            foreach (string item in watcher.RegisteredStatusNotifierItems) {
+              on_item_register(item);
+            }
+          }
+        }
+      );
+
+
       foreach (string item in proxy.RegisteredStatusNotifierItems) {
         on_item_register(item);
       }
