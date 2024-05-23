@@ -22,7 +22,7 @@ public class Tray : Object {
     private IWatcher proxy;
 
     private HashTable<string, TrayItem> _items;
-    public TrayItem[] items { get { return _items.get_values_as_ptr_array().data; }}
+    public List<weak TrayItem> items { owned get { return _items.get_values(); }}
     
     public signal void item_added(string service);
     public signal void item_removed(string service);
@@ -38,6 +38,9 @@ public class Tray : Object {
             start_watcher,
             () => {
               if (proxy != null) {
+                //foreach (string item in proxy.RegisteredStatusNotifierItems) {
+                //  on_item_unregister(item);
+                //}
                 proxy = null;
               }
             },
@@ -68,18 +71,23 @@ public class Tray : Object {
       
       proxy.StatusNotifierItemRegistered.connect(on_item_register);
       proxy.StatusNotifierItemUnregistered.connect(on_item_unregister);
+
+      foreach (string item in proxy.RegisteredStatusNotifierItems) {
+        on_item_register(item);
+      }
     }
 
     private void on_item_register(string service) {
       if(_items.contains(service)) return;
       string[] parts = service.split("/", 2);
       TrayItem item = new TrayItem(parts[0], "/" + parts[1]);
-      _items.set(service, item);
-      item_added(service);
+      item.ready.connect(() => {
+        _items.set(service, item);
+        item_added(service);
+      });
     }
 
     private void on_item_unregister(string service) {
-      string[] parts = service.split("/", 2);
       _items.remove(service);
       item_removed(service);
     }

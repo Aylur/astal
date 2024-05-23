@@ -10,7 +10,28 @@ deps = [
   dependency('gio-2.0'),
   dependency('json-glib-1.0'),
   dependency('gdk-pixbuf-2.0'),
+  dependency('gtk+-3.0'),
 ]
+
+dbusmenu_cflags = run_command(
+  find_program('pkg-config', required: true),
+  '--cflags',
+  'dbusmenu-gtk3-0.4',
+  'gobject-introspection-1.0',
+  'gobject-2.0', 'glib-2.0',
+  capture: true,
+  check: true,
+).stdout().strip()
+
+dbusmenu_libs = run_command(
+  find_program('pkg-config', required: true),
+  '--libs',
+  'dbusmenu-gtk3-0.4',
+  'gobject-introspection-1.0',
+  'gobject-2.0', 'glib-2.0',
+  capture: true,
+  check: true,
+).stdout().strip()
 
 sources = files(
   'tray.vala',
@@ -21,11 +42,14 @@ sources = files(
 libtray = library(
   meson.project_name(),
   sources,
-  dependencies: deps,
+  dependencies: deps + meson.get_compiler('vala').find_library('posix'),
   vala_header: meson.project_name() + '.h',
   vala_vapi: meson.project_name() + '.vapi',
   vala_gir: tray_gir,
+  vala_args: ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4'],
   version: meson.project_version(),
+  c_args: dbusmenu_cflags.split(' '),
+  link_args: dbusmenu_libs.split(' '),
   install: true,
   install_dir: [true, true, true, true],
 )
@@ -37,7 +61,7 @@ import('pkgconfig').generate(
   filebase: meson.project_name() + '-' + api_version,
   version: meson.project_version(),
   subdirs: meson.project_name(),
-  requires: 'gio-2.0',
+  requires: deps + [dependency('dbusmenu-gtk3-0.4')],
   install_dir: get_option('libdir') / 'pkgconfig',
 )
 
