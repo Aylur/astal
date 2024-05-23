@@ -42,7 +42,7 @@ sources = files(
 libtray = library(
   meson.project_name(),
   sources,
-  dependencies: deps
+  dependencies: deps,
   vala_header: meson.project_name() + '.h',
   vala_vapi: meson.project_name() + '.vapi',
   vala_gir: tray_gir,
