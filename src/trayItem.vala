@@ -93,7 +93,6 @@ namespace AstalTray {
     public string icon_theme_path { owned get { return proxy.IconThemePath ;} }
     public bool is_menu { get { return proxy.ItemIsMenu ;} }
 
-    public DbusmenuGtk.Menu? menu { get; private set;}
     public string icon_name {
       owned get {
         if(proxy.Status == Status.NEEDS_ATTENTION)
@@ -103,6 +102,8 @@ namespace AstalTray {
     }
 
     public Gdk.Pixbuf icon_pixbuf { owned get { return _get_icon_pixbuf(); } }
+    
+    public string item_id { get; private set; }
 
     public signal void changed();
     public signal void ready();
@@ -110,6 +111,7 @@ namespace AstalTray {
     public TrayItem(string service, string path) {
 
       connection_ids = new List<ulong>();
+      item_id = service + path;
       setup_proxy(service, path);
 
     }
@@ -120,13 +122,7 @@ namespace AstalTray {
         proxy = yield Bus.get_proxy(
           BusType.SESSION,
           service,
-          path);
-
-        if(proxy.Menu != null) {
-          menu = new DbusmenuGtk.Menu(
-            proxy.get_name_owner(),
-            proxy.Menu);
-        }
+          path); 
 
         connection_ids.append(proxy.NewStatus.connect(() => refresh_all_properties()));
         connection_ids.append(proxy.NewToolTip.connect(() => refresh_all_properties()));
@@ -190,6 +186,12 @@ namespace AstalTray {
         });
     }
 
+    public DbusmenuGtk.Menu create_menu() {
+      if(proxy.Menu == null)  return null;
+      return new DbusmenuGtk.Menu(
+        proxy.get_name_owner(),
+        proxy.Menu);
+    }
 
     public Gdk.Pixbuf? _get_icon_pixbuf() {
       Pixmap[] pixmaps = proxy.Status == Status.NEEDS_ATTENTION
@@ -251,6 +253,31 @@ namespace AstalTray {
         (int)pixmap.height,
         (int)(pixmap.width * 4)
       );
+    }
+
+     public string to_json_string() {
+    	var generator = new Json.Generator();
+      generator.set_root(to_json());
+      return generator.to_data(null);
+    }
+
+    internal Json.Node to_json() {
+        return new Json.Builder()
+            .begin_object()
+            .set_member_name("item_id").add_string_value(item_id)
+            .set_member_name("id").add_string_value(id)
+            .set_member_name("bus_name").add_string_value(proxy.g_name)
+            .set_member_name("object_path").add_string_value(proxy.g_object_path)
+            .set_member_name("title").add_string_value(title)
+            .set_member_name("status").add_string_value(status.to_string())
+            .set_member_name("category").add_string_value(category.to_string())
+            .set_member_name("tooltip").add_string_value(tooltip_markup)
+            .set_member_name("icon_theme_path").add_string_value(proxy.IconThemePath)
+            .set_member_name("icon_name").add_string_value(icon_name)
+            .set_member_name("menu_path").add_string_value(proxy.Menu)
+            .set_member_name("is_menu").add_boolean_value(is_menu)
+            .end_object()
+            .get_root();
     }
   }
 }

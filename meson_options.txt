@@ -1,1 +1,2 @@
-option('typelib', type: 'boolean', value: true, description: 'Needed files for runtime bindings')
+option('typelib', type: 'boolean', value: true, description: 'Needed files for runtime bindings.')
+option('cli', type: 'boolean', value: true, description: 'a simple cli tool for interacting with the tray.')

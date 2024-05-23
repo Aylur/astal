@@ -4,6 +4,17 @@ tray_gir = 'AstalTray-' + api_version + '.gir'
 tray_typelib = 'AstalTray-' + api_version + '.typelib'
 tray_so = 'libastal-tray.so.' + meson.project_version()
 
+config = configure_file(
+  input: 'config.vala.in',
+  output: 'config.vala',
+  configuration: {
+    'VERSION': meson.project_version(),
+    'MAJOR_VERSION': version_split[0],
+    'MINOR_VERSION': version_split[1],
+    'MICRO_VERSION': version_split[2],
+  },
+)
+
 deps = [
   dependency('glib-2.0'),
   dependency('gobject-2.0'),
@@ -33,11 +44,12 @@ dbusmenu_libs = run_command(
   check: true,
 ).stdout().strip()
 
-sources = files(
+sources = [
+  config,
   'tray.vala',
   'watcher.vala',
   'trayItem.vala'
-)
+]
 
 libtray = library(
   meson.project_name(),
@@ -82,3 +94,14 @@ if get_option('typelib')
   )
 endif
 
+if get_option('cli')
+  executable(
+    meson.project_name(),
+    ['cli.vala', sources],
+    dependencies: deps,
+    vala_args: ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4'],
+    c_args: dbusmenu_cflags.split(' '),
+    link_args: dbusmenu_libs.split(' '),
+    install: true,
+  )
+endif
