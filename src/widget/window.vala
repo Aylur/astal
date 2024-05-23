@@ -16,16 +16,16 @@ public enum Exclusivity {
 }
 
 public enum Layer {
-    TOP = GtkLayerShell.Layer.TOP,
-    OVERLAY = GtkLayerShell.Layer.OVERLAY,
-    BOTTOM = GtkLayerShell.Layer.BOTTOM,
-    BACKGROUND = GtkLayerShell.Layer.BACKGROUND,
+    BACKGROUND = 0, // GtkLayerShell.Layer.BACKGROUND
+    BOTTOM = 1, // GtkLayerShell.Layer.BOTTOM
+    TOP = 2, // GtkLayerShell.Layer.TOP
+    OVERLAY = 3, // GtkLayerShell.Layer.OVERLAY
 }
 
 public enum Keymode {
-    NONE = GtkLayerShell.KeyboardMode.NONE,
-    ON_DEMAND = GtkLayerShell.KeyboardMode.ON_DEMAND,
-    EXCLUSIVE = GtkLayerShell.KeyboardMode.EXCLUSIVE,
+    NONE = 0, // GtkLayerShell.KeyboardMode.NONE
+    ON_DEMAND = 1, // GtkLayerShell.KeyboardMode.ON_DEMAND
+    EXCLUSIVE = 2, // GtkLayerShell.KeyboardMode.EXCLUSIVE
 }
 
 public class Window : Gtk.Window {
