@@ -1,5 +1,4 @@
 using DbusmenuGtk;
-using Posix;
 
 namespace AstalTray {
 

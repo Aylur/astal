@@ -75,7 +75,6 @@ public class Tray : Object {
       proxy.notify["g-name-owner"].connect(
         () => {
           _items.foreach((service, _) => {
-            print("%s\n", service);
             item_removed(service);
           });
           _items.remove_all();
