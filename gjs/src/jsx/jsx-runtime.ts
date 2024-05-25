@@ -1,41 +1,44 @@
-import { Gtk, Astal } from "../imports.js"
+import { Gtk } from "../imports.js"
 import * as Widget from "../widgets.js"
 
 export function jsx(
     ctor: keyof typeof ctors | typeof Gtk.Widget,
     { children, ...props }: any,
 ) {
-    let ch: any[] = []
-    if (Array.isArray(children)) {
-        ch = children.map(v => {
-            if (v instanceof Gtk.Widget)
-                return v
+    children ??= []
 
-            return Widget.Label({ label: String(v) })
-        })
-    }
-    else if (children instanceof Gtk.Widget) {
-        ch = [children]
+    if (!Array.isArray(children))
+        children = [children]
+
+    if (children.length === 1) {
+        props.child = children[0]
+        delete props.children
     }
 
-    const widget = typeof ctor === "string"
+    children = children.map((v: any) => {
+        if (v instanceof Gtk.Widget)
+            return v
+
+        return Widget.Label({ label: String(v) })
+    })
+
+    if (ctor === Widget.CenterBox) {
+        if (children[0])
+            props.startWidget = children[0]
+        if (children[1])
+            props.centerWidget = children[1]
+        if (children[2])
+            props.endWidget = children[2]
+    }
+
+    if (ctor === Widget.Label) {
+        if (children[0])
+            props.label = children[0]
+    }
+
+    return typeof ctor === "string"
         ? (ctors as any)[ctor](props)
         : new ctor(props)
-
-    if (widget instanceof Astal.CenterBox) {
-        if (ch[0])
-            widget.startWidget = ch[0]
-        if (ch[1])
-            widget.centerWidget = ch[1]
-        if (ch[2])
-            widget.endWidget = ch[2]
-    } else {
-        for (const w of ch) {
-            if (widget instanceof Gtk.Container)
-                widget.add(w)
-        }
-    }
-    return widget
 }
 
 const ctors = {
