@@ -1,4 +1,4 @@
-import Astal from "gi://Astal"
+import { Astal } from "./imports.js"
 
 export function interval(interval: number, callback: () => void) {
     return Astal.Time.interval(interval, callback)

@@ -1,5 +1,5 @@
 import Binding, { type Connectable } from "./binding.js"
-import Astal from "gi://Astal"
+import { Astal } from "./imports.js"
 import { interval } from "./time.js"
 import { execAsync, subprocess } from "./process.js"
 

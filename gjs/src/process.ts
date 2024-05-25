@@ -1,4 +1,4 @@
-import Astal from "gi://Astal"
+import { Astal } from "./imports.js"
 
 type Args<Out = void, Err = void> = {
     cmd: string | string[],

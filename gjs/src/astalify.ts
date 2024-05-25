@@ -1,6 +1,5 @@
 import Binding, { kebabify, type Connectable, type Subscribable } from "./binding.js"
-import Astal from "gi://Astal"
-import Gtk from "gi://Gtk"
+import { Astal, Gtk } from "./imports.js"
 
 export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C> & {
     className: string

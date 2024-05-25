@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
-import Gtk from "gi://Gtk"
-import Astal from "gi://Astal"
+import { Astal, Gtk } from "./imports.js"
 import astalify, { type ConstructProps, type Widget } from "./astalify.js"
 
 export { astalify }

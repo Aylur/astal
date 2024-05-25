@@ -1,6 +1,4 @@
-import Astal from "gi://Astal"
-import GObject from "gi://GObject"
-import Gio from "gi://Gio"
+import { Astal, GObject, Gio } from "./imports.js"
 
 type RequestHandler = {
     (request: string, res: (response: string) => void): void
