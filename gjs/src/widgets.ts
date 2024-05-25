@@ -1,33 +1,9 @@
 /* eslint-disable max-len */
 import Gtk from "gi://Gtk"
 import Astal from "gi://Astal"
-import { kebabify } from "../src/binding.js"
-import proxy, { type ConstructProps, type Widget } from "../src/astalify.js"
+import astalify, { type ConstructProps, type Widget } from "./astalify.js"
 
-const proxify = proxy(Gtk,
-    prop => `set_${kebabify(prop).replaceAll("-", "_")}`,
-    {
-        cssGetter: Astal.widget_get_css,
-        cssSetter: Astal.widget_set_css,
-        classGetter: Astal.widget_get_class_names,
-        classSetter: Astal.widget_set_class_names,
-        cursorGetter: Astal.widget_get_cursor,
-        cursorSetter: Astal.widget_set_cursor,
-    })
-
-export function astalify<
-    C extends typeof Gtk.Widget,
-    P extends Record<string, any>,
-    N extends string = "Widget",
->(klass: C) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    type Astal<N> = Omit<C, "new"> & {
-        new(props?: P, ...children: Gtk.Widget[]): Widget<C>
-        (props?: P, ...children: Gtk.Widget[]): Widget<C>
-    }
-
-    return proxify(klass) as unknown as Astal<N>
-}
+export { astalify }
 
 // Label
 export const Label = astalify<typeof Gtk.Label, LabelProps, "Label">(Gtk.Label)

@@ -1,11 +1,13 @@
 {
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs }:
-  let
+  outputs = {
+    self,
+    nixpkgs,
+  }: let
     version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./version);
     system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
+    pkgs = import nixpkgs {inherit system;};
 
     nativeBuildInputs = with pkgs; [
       wrapGAppsHook
@@ -34,13 +36,15 @@
     };
 
     devShells.${system} = let
-      inputs = with pkgs; buildInputs ++ [
-        (lua.withPackages(ps: [ps.lgi]))
-        (python3.withPackages(ps: [ps.pygobject3]))
-        gjs
-        deno
-        nodejs
-      ];
+      inputs = with pkgs;
+        buildInputs
+        ++ [
+          (lua.withPackages (ps: [ps.lgi]))
+          (python3.withPackages (ps: [ps.pygobject3]))
+          gjs
+          deno
+          nodejs
+        ];
     in {
       default = pkgs.mkShell {
         inherit nativeBuildInputs;
@@ -48,10 +52,12 @@
       };
       astal = pkgs.mkShell {
         inherit nativeBuildInputs;
-        buildInputs = inputs ++ [
-          self.packages.${system}.astal
-          pkgs.playerctl # FIXME: just for demo
-        ];
+        buildInputs =
+          inputs
+          ++ [
+            self.packages.${system}.astal
+            pkgs.playerctl # FIXME: just for demo
+          ];
       };
     };
   };

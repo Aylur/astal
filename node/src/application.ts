@@ -1,12 +1,39 @@
 import gi from "node-gtk"
-import { RequestHandler, Config, runJS } from "../src/application.js"
 const Astal = gi.require("Astal", "0.1")
+
+type RequestHandler = {
+    (request: string, res: (response: string) => void): void
+}
+
+type Config = Partial<{
+    instanceName: string
+    gtkTheme: string
+    iconTheme: string
+    cursorTheme: string
+    css: string
+    requestHandler: RequestHandler
+    hold: boolean
+}>
 
 class AstalJS extends Astal.Application {
     static GTypeName = "AstalJS"
     static { gi.registerClass(this) }
 
-    eval = runJS
+    eval(body: string): Promise<any> {
+        return new Promise((res, rej) => {
+            try {
+                const fn = Function(`return (async function() {
+                    ${body.includes(";") ? body : `return ${body};`}
+                })`)
+                fn()()
+                    .then(res)
+                    .catch(rej)
+            } catch (error) {
+                rej(error)
+            }
+        })
+    }
+
     requestHandler?: RequestHandler
 
     vfunc_response(msg: string, conn: any): void {

@@ -1,17 +1,11 @@
-#!/usr/bin/env node
-import { Variable, App, Widget, Astal, bind, gi } from "../js/dist/node/astal.js"
-const Playerctl = gi.require("Playerctl", "2.0")
+#!/usr/bin/env -S gjs -m
+import { Variable, App, Widget, Astal, bind } from "./dist/index.js"
+import Playerctl from "gi://Playerctl"
 
 // state
 const player = Playerctl.Player.new("spotify")
-const title = Variable(player.getTitle()).observe(player, "metadata", () => player.getTitle())
-const date = Variable("")
-    // FIXME: doesn't work because promises don't resolve
-    // .poll(1000, "date")
-    // FIXME: don't know why but this doesn't work either
-    // .watch("bash -c 'while true; do date; sleep 1; done'")
-    // this does
-    .poll(1000, Date)
+const date = Variable("").poll(1000, "date")
+const title = Variable(player.get_title()).observe(player, "metadata", () => player.get_title())
 
 // ui
 function Bar(monitor) {
@@ -22,16 +16,16 @@ function Bar(monitor) {
             exclusivity: Astal.Exclusivity.EXCLUSIVE,
             anchor: Astal.WindowAnchor.BOTTOM |
                 Astal.WindowAnchor.LEFT |
-                Astal.WindowAnchor.RIGHT
+                Astal.WindowAnchor.RIGHT,
         },
         Widget.CenterBox({
             startWidget: Widget.Label({
                 label: date(l => `Current date: ${l}`),
             }),
             endWidget: Widget.Label({
-                label: bind(title).as(t => `Title: ${t}`)
+                label: bind(title).as(t => `Title: ${t}`),
             }),
-        })
+        }),
     )
 }
 
@@ -43,7 +37,7 @@ App.start({
             case "quit": return res(App.quit())
             default: return App.eval(msg).then(res).catch(console.error)
         }
-    }
+    },
 }, () => {
     Bar(0)
 })

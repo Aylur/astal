@@ -1,7 +1,7 @@
 export default {
     "verbose": true,
-    "environments": ["gjs", "node"],
-    "outdir": "@girs",
+    "environments": ["gjs"],
+    "outdir": "node_modules/@girs",
     "package": true,
     "generateAlias": true,
 }

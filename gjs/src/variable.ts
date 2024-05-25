@@ -1,42 +1,15 @@
 import Binding, { type Connectable } from "./binding.js"
-
-type VariableBase = {
-    emit(sig: "error" | "changed" | "dropped", ...args: any[]): void
-    connect(sig: "error" | "changed" | "dropped", fn: (...args: any[]) => void): number
-    disconnect(id: number): void
-    runDispose?(): void // node, deno
-    run_dispose?(): void // gjs
-}
-
-type VariableBaseCtor = {
-    new(): VariableBase
-}
-
-type Time = any
-type Process = any
-
-type Config = {
-    defaultErrHandler(err: any): void
-    VariableBase: VariableBaseCtor
-    interval(n: number, fn: () => void): Time
-    execAsync(cmd: string | string[]): Promise<string>
-    subprocess(args: {
-        cmd: string | string[],
-        out: (s: string) => void,
-        err: (s: string) => void
-    }): Process
-}
-
-// @ts-expect-error missing values
-export const config: Config = {}
+import Astal from "gi://Astal"
+import { interval } from "./time.js"
+import { execAsync, subprocess } from "./process.js"
 
 class VariableWrapper<T> extends Function {
-    private variable!: VariableBase
-    private errHandler? = config.defaultErrHandler
+    private variable!: Astal.VariableBase
+    private errHandler? = console.error
 
     private _value: T
-    private _poll?: Time
-    private _watch?: Process
+    private _poll?: Astal.Time
+    private _watch?: Astal.Process
 
     private pollInterval = 1000
     private pollExec?: string[] | string
@@ -49,7 +22,7 @@ class VariableWrapper<T> extends Function {
     constructor(init: T) {
         super()
         this._value = init
-        this.variable = new config.VariableBase
+        this.variable = new Astal.VariableBase
         this.variable.connect("dropped", () => {
             this.stopWatch()
             this.stopPoll()
@@ -82,7 +55,7 @@ class VariableWrapper<T> extends Function {
             return
 
         if (this.pollFn) {
-            this._poll = config.interval(this.pollInterval, () => {
+            this._poll = interval(this.pollInterval, () => {
                 const v = this.pollFn!(this.get())
                 if (v instanceof Promise) {
                     v.then(v => this.set(v))
@@ -92,8 +65,8 @@ class VariableWrapper<T> extends Function {
                 }
             })
         } else if (this.pollExec) {
-            this._poll = config.interval(this.pollInterval, () => {
-                config.execAsync(this.pollExec!)
+            this._poll = interval(this.pollInterval, () => {
+                execAsync(this.pollExec!)
                     .then(v => this.set(this.pollTransform!(v, this.get())))
                     .catch(err => this.variable.emit("error", err))
             })
@@ -104,7 +77,7 @@ class VariableWrapper<T> extends Function {
         if (this._watch)
             return
 
-        this._watch = config.subprocess({
+        this._watch = subprocess({
             cmd: this.watchExec!,
             out: out => this.set(this.watchTransform!(out, this.get())),
             err: err => this.variable.emit("error", err),
@@ -126,8 +99,7 @@ class VariableWrapper<T> extends Function {
 
     drop() {
         this.variable.emit("dropped")
-        this.variable.runDispose?.()
-        this.variable.run_dispose?.()
+        this.variable.run_dispose()
     }
 
     onDropped(callback: () => void) {

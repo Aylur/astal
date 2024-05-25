@@ -15,9 +15,8 @@
         "allowSyntheticDefaultImports": true
     },
     "include": [
-        "./@girs",
+        "./node_modules/@girs",
         "./src",
-        "./gjs",
-        "./node"
+        "./sample.js"
     ]
 }

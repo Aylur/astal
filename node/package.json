@@ -1,20 +1,23 @@
 {
+    "name": "astal",
+    "version": "0.1.0",
+    "description": "Building blocks for buildin linux desktop shell",
     "type": "module",
     "dependencies": {
-        "node-gtk": "^0.14.0",
-        "typescript": "^5.1.0"
+        "node-gtk": "^0.14.0"
     },
     "devDependencies": {
         "@ts-for-gir/cli": "^3.3.0",
         "@types/node": "^20.12.12",
         "@typescript-eslint/eslint-plugin": "^5.33.0",
         "@typescript-eslint/parser": "^5.33.0",
-        "esbuild": "^0.20.2",
-        "eslint": "^8.42.0"
+        "eslint": "^8.42.0",
+        "typescript": "^5.1.0"
     },
     "scripts": {
-        "lint": "eslint .",
         "build": "tsc",
+        "dev": "tsc --watch",
+        "lint": "eslint .",
         "types": "ts-for-gir generate"
     }
 }
