@@ -1,5 +1,13 @@
 import { Gtk } from "../imports.js"
 import * as Widget from "../widgets.js"
+import Binding from "../binding.js"
+
+function w(e: any) {
+    if (e instanceof Gtk.Widget || e instanceof Binding)
+        return e
+
+    return Widget.Label({ label: String(e) })
+}
 
 export function jsx(
     ctor: keyof typeof ctors | typeof Gtk.Widget,
@@ -10,30 +18,27 @@ export function jsx(
     if (!Array.isArray(children))
         children = [children]
 
-    if (children.length === 1) {
-        props.child = children[0]
+    if (ctor === "centerbox") {
+        if (children[0])
+            props.startWidget = w(children[0])
+        if (children[1])
+            props.centerWidget = w(children[1])
+        if (children[2])
+            props.endWidget = w(children[2])
+    }
+
+    else if (ctor === "label" && children[0]) {
+        props.label = children[0]
         delete props.children
     }
 
-    children = children.map((v: any) => {
-        if (v instanceof Gtk.Widget)
-            return v
-
-        return Widget.Label({ label: String(v) })
-    })
-
-    if (ctor === Widget.CenterBox) {
-        if (children[0])
-            props.startWidget = children[0]
-        if (children[1])
-            props.centerWidget = children[1]
-        if (children[2])
-            props.endWidget = children[2]
+    else if (children.length === 1) {
+        props.child = w(children[0])
+        delete props.children
     }
 
-    if (ctor === Widget.Label) {
-        if (children[0])
-            props.label = children[0]
+    else {
+        props.children = children.map(w)
     }
 
     return typeof ctor === "string"

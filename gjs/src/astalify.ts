@@ -55,6 +55,9 @@ function ctor(self: any, config: any, ...children: Gtk.Widget[]) {
     const { setup, child, ...props } = config
     props.visible ??= true
 
+    const pchildren = props.children
+    delete props.children
+
     const bindings = Object.keys(props).reduce((acc: any, prop) => {
         if (props[prop] instanceof Binding) {
             const bind = [prop, props[prop]]
@@ -97,9 +100,15 @@ function ctor(self: any, config: any, ...children: Gtk.Widget[]) {
     for (const [signal, callback] of onHandlers)
         self.connect(signal, callback)
 
-    if (self instanceof Gtk.Container && children) {
-        for (const child of children)
-            self.add(child)
+    if (self instanceof Gtk.Container) {
+        if (pchildren) {
+            for (const child of pchildren)
+                self.add(child)
+        }
+        if (children) {
+            for (const child of children)
+                self.add(child)
+        }
     }
 
     for (const [prop, bind] of bindings) {
