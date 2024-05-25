@@ -22,7 +22,7 @@ import { exit, programArgs } from "system"
 class AstalJS extends Astal.Application {
     static { GObject.registerClass(this) }
 
-    runJS(body: string): Promise<any> {
+    eval(body: string): Promise<any> {
         return new Promise((res, rej) => {
             try {
                 const fn = Function(`return (async function() {
