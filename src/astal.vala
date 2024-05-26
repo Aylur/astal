@@ -4,7 +4,19 @@ public class Application : Gtk.Application {
     private SocketService service;
     private string socket;
 
-    public string instance_name { get; construct set; }
+    public new string application_id {
+        get { return base.application_id; }
+        set { base.application_id = value; }
+    }
+
+    private string _instance_name;
+    public string instance_name {
+        get { return _instance_name; }
+        set {
+            application_id = "io.Astal." + value;
+            _instance_name = value;
+        }
+    }
 
     public List<Gtk.Window> windows {
         get { return get_windows(); }
@@ -120,9 +132,6 @@ public class Application : Gtk.Application {
     construct {
         if (instance_name == null)
             instance_name = "astal";
-
-        if (application_id == null)
-            application_id = "io.Astal.".concat(instance_name);
 
         shutdown.connect(() => {
             if (FileUtils.test(socket, GLib.FileTest.EXISTS)){
