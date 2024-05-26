@@ -9,13 +9,13 @@ class _Application(Astal.Application):
         super().__init__()
         self.request_handler: RequestHandler | None = None
 
-    def do_response(self, msg: str, conn: Gio.SocketConnection) -> None:
+    def do_request(self, msg: str, conn: Gio.SocketConnection) -> None:
         if self.request_handler:
             self.request_handler(
                 msg,
                 lambda response: Astal.write_sock(
                     conn,
-                    response,
+                    str(response),
                     lambda _, res: Astal.write_sock_finish(res),
                 ),
             )

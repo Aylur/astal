@@ -39,10 +39,10 @@ class AstalJS extends Astal.Application {
 
     requestHandler?: RequestHandler
 
-    vfunc_response(msg: string, conn: Gio.SocketConnection): void {
+    vfunc_request(msg: string, conn: Gio.SocketConnection): void {
         if (typeof this.requestHandler === "function") {
             this.requestHandler(msg, response => {
-                Astal.write_sock(conn, response, (_, res) =>
+                Astal.write_sock(conn, String(response), (_, res) =>
                     Astal.write_sock_finish(res),
                 )
             })

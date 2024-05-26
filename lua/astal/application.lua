@@ -6,8 +6,8 @@ local request_handler
 
 function AstalLua:do_request(msg, conn)
     if type(request_handler) == "function" then
-        request_handler(msg, function(request)
-            Astal.write_sock(conn, request, function(_, res)
+        request_handler(msg, function(response)
+            Astal.write_sock(conn, tostring(response), function(_, res)
                 Astal.write_sock_finish(res)
             end)
         end)

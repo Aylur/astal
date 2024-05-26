@@ -36,10 +36,10 @@ class AstalJS extends Astal.Application {
 
     requestHandler?: RequestHandler
 
-    vfunc_response(msg: string, conn: any): void {
+    vfunc_request(msg: string, conn: any): void {
         if (typeof this.requestHandler === "function") {
             this.requestHandler(msg, response => {
-                Astal.writeSock(conn, response, (_, res) =>
+                Astal.writeSock(conn, String(response), (_, res) =>
                     Astal.writeSockFinish(res),
                 )
             })

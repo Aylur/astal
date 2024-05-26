@@ -1,6 +1,5 @@
 namespace Astal {
 public class Application : Gtk.Application {
-    public signal void request (string request);
     private List<Gtk.CssProvider> css_providers;
     private SocketService service;
     private string socket;
@@ -73,11 +72,10 @@ public class Application : Gtk.Application {
 
     private async void _socket_request(SocketConnection conn) {
         string message = yield read_sock(conn);
-        request(message.strip());
-        response(message.strip(), conn);
+        request(message.strip(), conn);
     }
 
-    public virtual void response(string msg, SocketConnection conn) {
+    public virtual void request(string msg, SocketConnection conn) {
         write_sock.begin(conn, "missing response implementation on ".concat(application_id));
     }
 
