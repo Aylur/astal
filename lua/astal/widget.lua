@@ -14,6 +14,18 @@ local function filter(tbl, fn)
     return copy
 end
 
+local function set_child(parent, child)
+    if parent.get_child ~= nil then
+        local rm = parent:get_child()
+        if rm ~= nil then
+            parent:remove(rm)
+        end
+    end
+    if parent.add ~= nil then
+        parent:add(child)
+    end
+end
+
 Gtk.Widget._attribute.css = {
     get = Astal.widget_get_css,
     set = Astal.widget_set_css,
@@ -92,9 +104,15 @@ local function astalify(ctor)
         local widget = ctor(props)
 
         for prop, binding in pairs(bindings) do
-            widget.on_destroy = binding:subscribe(function(v)
-                widget[prop] = v
-            end)
+            if prop == "child" then
+                widget.on_destroy = binding:subscribe(function(v)
+                    set_child(widget, v)
+                end)
+            else
+                widget.on_destroy = binding:subscribe(function(v)
+                    widget[prop] = v
+                end)
+            end
         end
 
         widget.visible = visible
