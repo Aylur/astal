@@ -47,7 +47,7 @@ class AstalJS extends Astal.Application {
                 )
             })
         } else {
-            super.vfunc_response(msg, conn)
+            super.vfunc_request(msg, conn)
         }
     }
 

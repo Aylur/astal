@@ -45,7 +45,7 @@ class AstalJS extends Astal.Application {
             })
         } else {
             // @ts-expect-error missing type
-            super.vfunc_response(msg, conn)
+            super.vfunc_request(msg, conn)
         }
     }
 

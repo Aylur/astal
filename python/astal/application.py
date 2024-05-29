@@ -20,7 +20,7 @@ class _Application(Astal.Application):
                 ),
             )
         else:
-            super().do_response(msg, conn)
+            super().do_request(msg, conn)
 
     def start(
         self,
