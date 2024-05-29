@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import { Astal, Gtk } from "./imports.js"
-import astalify, { type ConstructProps, type Widget } from "./astalify.js"
+import astalify, { type ConstructProps } from "./astalify.js"
 
-export { astalify }
+export { astalify, ConstructProps }
 
 // Label
 export const Label = astalify<typeof Gtk.Label, LabelProps, "Label">(Gtk.Label)
@@ -15,7 +15,7 @@ export type IconProps = ConstructProps<typeof Astal.Icon, Astal.Icon.Constructor
 // Button
 export const Button = astalify<typeof Astal.Button, ButtonProps, "Button">(Astal.Button)
 export type ButtonProps = ConstructProps<typeof Astal.Button, Astal.Button.ConstructorProperties, {
-    onClicked: (self: Widget<typeof Astal.Button>) => void
+    onClicked: []
 }>
 
 // Window

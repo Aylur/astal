@@ -175,10 +175,12 @@ type BindableProps<T> = {
 export type ConstructProps<
     Self extends { new(...args: any[]): any },
     Props = unknown,
-    Signals = unknown
+    Signals extends Record<string, Array<unknown>> = Record<string, []>
 > = {
     [Key in `on${string}`]: (self: Widget<Self>) => unknown
-} & Partial<Signals> & BindableProps<Props & {
+} & Partial<{
+    [sig in keyof Signals]: (self: Widget<Self>, ...args: Signals[sig]) => unknown
+}> & BindableProps<Props & {
     className?: string
     css?: string
     cursor?: string
