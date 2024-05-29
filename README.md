@@ -4,13 +4,14 @@
 > WIP: everything is subject to change
 
 The main goal of this project is to further abstract gtk bindings in higher level
-languages with custom state management mechanisms namely in javascript (gjs, node),
-lua (lua-lgi) and python (pygobject)
+languages with custom state management mechanisms, namely in javascript (gjs, node),
+lua (lua-lgi) and python (pygobject).
 
-libastal, which is the library written in Vala, comes with
-a few widgets built on top of gtk3 and
-tools to execute external binaries and store their output
-it also comes with a builtin cli client
+`libastal`, which is the library written in Vala,
+comes with a few widgets built on top of gtk3 and
+tools to execute external binaries and store their output.
+It also comes with a builtin cli client to send messages to the running
+processes through a socket.
 
 ## Developing
 
@@ -21,7 +22,7 @@ bash meson-install.sh # non nix
 nix develop .#astal # nix
 ```
 
-python and lua should be stright forward, have a look at sample.py and sample.lua
+python and lua should be stright forward, just run the interpreter
 
 for javascript do
 
@@ -35,10 +36,10 @@ npm run build -- --watch
 ## Gtk abstractions
 
 `Variable` and `Binding` objects and a function that turns widget constructors
-into ones that can take `Binding` objects as parameters are added ontop of gtk bindings
-this mechanism takes care of all state management one would need
+into ones that can take `Binding` objects as parameters are added on top
+of gtk bindings. This mechanism takes care of all state management one would need.
 
-This works the same in js/lua/python, its just demonstrated in js
+This works the same in js/lua/python, but demonstrated in js
 
 ```javascript
 // this example will work with Variable<string>
@@ -121,7 +122,7 @@ astal --instance-name my-instance "message was sent from cli"
 
 ## Lower level languages
 
-As said before, the main goal is to make js/lua/python dx better, but libastal
+As said before, the main goal is to make js/lua/python DX better, but libastal
 can be used in **any** language that has bindings for glib/gtk.
 `Binding` is not implemented in Vala, but in each language, because
 they are language specific, and it doesn't make much sense for lower
@@ -146,7 +147,7 @@ templates and examples instead to get started with development.
     - [x] pollfn (interval, closure)
     - [x] watch (string)
     - [x] watchv (string[])
-    - [ ] ?observe (object, signal, closure)
+    - ~~[ ] observe (object, signal, closure)~~
   - Time
     - [x] interval
     - [x] timeout
@@ -163,12 +164,12 @@ templates and examples instead to get started with development.
   - few additional widgets
     - [x] window widget with gtk-layer-shell
     - [x] box with children prop
-    - [ ] button with abstract signals for button-event
+    - [x] button with abstract signals for button-event
     - [ ] ?custom calendar like gtk4
     - [x] centerbox
     - [ ] circularprogress
-    - [ ] eventbox
-    - [ ] icon
+    - [x] eventbox
+    - [x] icon
     - [ ] overlay
     - [ ] scrollable/viewport
     - [ ] slider
@@ -209,11 +210,18 @@ templates and examples instead to get started with development.
 ## TODO
 
 - docs
-- consider moving each language into separate repo
-  - I want to keep these at one place until I'm sure all of them works as expected
+- ~~consider moving each language into separate repo~~
 - support jsx
-- make sure conventions like the casing of names are followed for each language
-  - I constantly switched between 4 languages they might be off
-
+  - [x] gjs
 - port services from ags into Vala
-  - and add more
+  - [x] [applications](https://github.com/astal-sh/apps)
+  - [ ] audio
+  - [ ] bluetooth
+  - [ ] greetd
+  - [ ] hyprland ipc client
+  - [ ] mpris
+  - [ ] network
+  - [ ] sway ipc client
+  - [x] [notifications](https://github.com/astal-sh/notifd)
+  - [ ] upower (battery, powerprofiles)
+  - [x] [systemtray](https://github.com/astal-sh/tray)
