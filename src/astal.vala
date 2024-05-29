@@ -56,25 +56,30 @@ public class Application : Gtk.Application {
         Gtk.Window.set_interactive_debugging(true);
     }
 
-    public Gtk.Window get_window(string name) throws WindowError {
+    public Gtk.Window? get_window(string name) {
         foreach(var win in windows) {
             if (win.name == name)
                 return win;
         }
 
-        throw new WindowError.NO_WINDOW_WITH_NAME(name);
+        critical("no window with name \"%s\"".printf(name));
+        return null;
     }
 
-    public void apply_css(string style, bool reset = false) throws Error {
+    public void apply_css(string style, bool reset = false) {
         var provider = new Gtk.CssProvider();
 
         if (reset)
             reset_css();
 
-        if (FileUtils.test(style, FileTest.EXISTS))
-            provider.load_from_path(style);
-        else
-            provider.load_from_data(style);
+        try {
+            if (FileUtils.test(style, FileTest.EXISTS))
+                provider.load_from_path(style);
+            else
+                provider.load_from_data(style);
+        } catch (Error err) {
+            critical(err.message);
+        }
 
         Gtk.StyleContext.add_provider_for_screen(
             screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
@@ -148,10 +153,6 @@ public class Application : Gtk.Application {
         Unix.signal_add(2, close, Priority.HIGH);
         Unix.signal_add(15, close, Priority.HIGH);
     }
-}
-
-public errordomain WindowError {
-    NO_WINDOW_WITH_NAME
 }
 
 public async string read_sock(SocketConnection conn) {
