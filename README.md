@@ -201,11 +201,8 @@ templates and examples instead to get started with development.
 
 ## Help needed
 
-- packaging
-  - I am not familiar with python or lua ecosystem at all how should they be distributed?
 - node-gtk promise issue
 - python types
-  - I don't know much python, and quite honestly I hate python
 
 ## TODO
 

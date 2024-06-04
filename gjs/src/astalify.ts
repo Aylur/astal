@@ -1,5 +1,6 @@
 import Binding, { kebabify, type Connectable, type Subscribable } from "./binding.js"
 import { Astal, Gtk } from "./imports.js"
+import { execAsync } from "./process.js"
 
 export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C> & {
     className: string
@@ -97,8 +98,15 @@ function ctor(self: any, config: any, ...children: Gtk.Widget[]) {
         self.add(child)
     }
 
-    for (const [signal, callback] of onHandlers)
-        self.connect(signal, callback)
+    for (const [signal, callback] of onHandlers) {
+        if (typeof callback === "function") {
+            self.connect(signal, callback)
+        }
+        else {
+            self.connect(signal, () => execAsync(callback)
+                .then(print).catch(console.error))
+        }
+    }
 
     if (self instanceof Gtk.Container) {
         if (pchildren) {
@@ -172,14 +180,19 @@ type BindableProps<T> = {
     [K in keyof T]: Binding<NonNullable<T[K]>> | T[K];
 }
 
+type SigHandler<
+    W extends { new(...args: any): Gtk.Widget },
+    Args extends Array<unknown>,
+> = ((self: Widget<W>, ...args: Args) => unknown) | string | string[]
+
 export type ConstructProps<
     Self extends { new(...args: any[]): any },
     Props = unknown,
-    Signals extends Record<string, Array<unknown>> = Record<string, []>
-> = {
-    [Key in `on${string}`]: (self: Widget<Self>) => unknown
-} & Partial<{
-    [sig in keyof Signals]: (self: Widget<Self>, ...args: Signals[sig]) => unknown
+    Signals extends Record<`on${string}`, Array<unknown>> = Record<`on${string}`, any[]>
+> = Partial<{
+    [S in keyof Signals]: SigHandler<Self, Signals[S]>
+}> & Partial<{
+    [Key in `on${string}`]: SigHandler<Self, any[]>
 }> & BindableProps<Props & {
     className?: string
     css?: string

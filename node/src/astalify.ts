@@ -167,14 +167,19 @@ type BindableProps<T> = {
     [K in keyof T]: Binding<NonNullable<T[K]>> | T[K];
 }
 
+type SigHandler<
+    W extends { new(...args: any): Gtk.Widget },
+    Args extends Array<unknown>,
+> = ((self: Widget<W>, ...args: Args) => unknown) | string | string[]
+
 export type ConstructProps<
     Self extends { new(...args: any[]): any },
     Props = unknown,
-    Signals extends Record<string, Array<unknown>> = Record<string, []>
-> = {
-    [Key in `on${string}`]: (self: Widget<Self>) => unknown
-} & Partial<{
-    [sig in keyof Signals]: (self: Widget<Self>, ...args: Signals[sig]) => unknown
+    Signals extends Record<`on${string}`, Array<unknown>> = Record<`on${string}`, any[]>
+> = Partial<{
+    [S in keyof Signals]: SigHandler<Self, Signals[S]>
+}> & Partial<{
+    [Key in `on${string}`]: SigHandler<Self, any[]>
 }> & BindableProps<Props & {
     className?: string
     css?: string

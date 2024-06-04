@@ -17,6 +17,8 @@ export function jsx(
 
     if (!Array.isArray(children))
         children = [children]
+    else
+        children = children.flat()
 
     if (ctor === "centerbox") {
         if (children[0])
@@ -25,11 +27,6 @@ export function jsx(
             props.centerWidget = w(children[1])
         if (children[2])
             props.endWidget = w(children[2])
-    }
-
-    else if (ctor === "label" && children[0]) {
-        props.label = children[0]
-        delete props.children
     }
 
     else if (children.length === 1) {

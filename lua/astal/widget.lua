@@ -3,6 +3,7 @@ local Astal = lgi.require("Astal", "0.1")
 local Gtk = lgi.require("Gtk", "3.0")
 local GObject = lgi.require("GObject", "2.0")
 local Binding = require("astal.binding")
+local exec_async = require("astal.process").exec_async
 
 local function filter(tbl, fn)
     local copy = {}
@@ -98,6 +99,14 @@ local function astalify(ctor)
             if getmetatable(value) == Binding then
                 bindings[prop] = value
                 props[prop] = value:get()
+            end
+        end
+
+        for prop, value in pairs(props) do
+            if string.sub(prop, 0, 2) == "on" and type(value) ~= "function" then
+                props[prop] = function()
+                    exec_async(value, print, print)
+                end
             end
         end
 

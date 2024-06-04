@@ -6,4 +6,4 @@ export * as Widget from "./widgets.js"
 export { App } from "./application.js"
 
 // for convinience
-export { Astal, Gtk, GLib, GObject, Gio, gi } from "./imports.js"
+export { Astal, Gtk, Gdk, GLib, GObject, Gio, gi } from "./imports.js"

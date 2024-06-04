@@ -1,7 +1,7 @@
 import { Astal, GObject, Gio } from "./imports.js"
 
 type RequestHandler = {
-    (request: string, res: (response: string) => void): void
+    (request: string, res: (response: any) => void): void
 }
 
 type Config = Partial<{

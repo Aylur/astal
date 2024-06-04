@@ -1,5 +1,5 @@
 from gi.repository import Astal, Gtk
-from .binding import Binding
+from .binding import Binding, kebabify
 
 
 def set_child(self, child):
@@ -46,7 +46,7 @@ def astalify(ctor):
             self.connect("destroy", lambda _: unsub())
 
         for key, value in handlers.items():
-            self.connect(key.replace("on_", ""), value)
+            self.connect(kebabify(key.replace("on_", "")), value)
 
         if setup:
             setup(self)

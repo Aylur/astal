@@ -25,7 +25,7 @@ local app = AstalLua()
 ---@field cursor_theme? string
 ---@field css? string
 ---@field hold? boolean
----@field request_handler? fun(msg: string, response: fun(res: string))
+---@field request_handler? fun(msg: string, response: fun(res: any))
 
 ---@param config StartConfig | nil
 ---@param callback function | nil

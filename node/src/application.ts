@@ -2,7 +2,7 @@ import gi from "node-gtk"
 const Astal = gi.require("Astal", "0.1")
 
 type RequestHandler = {
-    (request: string, res: (response: string) => void): void
+    (request: string, res: (response: any) => void): void
 }
 
 type Config = Partial<{
