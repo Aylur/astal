@@ -56,10 +56,23 @@ def astalify(ctor):
     return widget
 
 
-Window = astalify(Astal.Window)
-Box = astalify(Astal.Box)
-Button = astalify(Astal.Button)
-CenterBox = astalify(Astal.CenterBox)
-Label = astalify(Gtk.Label)
-Icon = astalify(Astal.Icon)
-EventBox = astalify(Astal.EventBox)
+Box = astalify(Astal.Box),
+Button = astalify(Astal.Button),
+CenterBox = astalify(Astal.CenterBox),
+# TODO: CircularProgress
+DrawingArea = astalify(Gtk.DrawingArea),
+Entry = astalify(Gtk.Entry),
+EventBox = astalify(Astal.EventBox),
+# TODO: Fixed
+# TODO: FlowBox
+Icon = astalify(Astal.Icon),
+Label = astalify(Gtk.Label),
+LevelBar = astalify(Astal.LevelBar),
+# TODO: ListBox
+Overlay = astalify(Astal.Overlay),
+Revealer = astalify(Gtk.Revealer),
+Scrollable = astalify(Astal.Scrollable),
+Slider = astalify(Astal.Slider),
+# TODO: Stack
+Switch = astalify(Gtk.Switch),
+Window = astalify(Astal.Window),

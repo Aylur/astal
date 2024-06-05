@@ -20,7 +20,6 @@ public class CircularProgress : Gtk.Bin {
         set_css_name("circular-progress");
     }
 
-
     public new void get_preferred_height(out int minh, out int nath) {
         var val = get_style_context().get_property("min-height", Gtk.StateFlags.NORMAL);
         if (val.get_int() <= 0) {

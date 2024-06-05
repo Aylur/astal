@@ -1,5 +1,6 @@
 namespace Astal {
 public class Box : Gtk.Box {
+    [CCode (notify = false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }

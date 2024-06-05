@@ -44,6 +44,10 @@ public class Icon : Gtk.Image {
         }
     }
 
+    static construct {
+        set_css_name("icon");
+    }
+
     construct {
         notify["icon"].connect(() => {
             if(FileUtils.test(icon, GLib.FileTest.EXISTS))

@@ -1,8 +1,19 @@
 namespace Astal {
 public class CenterBox : Gtk.Box {
+    [CCode (notify = false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
+    }
+
+    construct {
+        notify["orientation"].connect(() => {
+            notify_property("vertical");
+        });
+    }
+
+    static construct {
+        set_css_name("centerbox");
     }
 
     private Gtk.Widget _start_widget;
