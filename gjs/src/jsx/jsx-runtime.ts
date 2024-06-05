@@ -29,6 +29,14 @@ export function jsx(
             props.endWidget = w(children[2])
     }
 
+    else if (ctor == "overlay") {
+        const [child, ...overlays] = children
+        if (child)
+            props.child = child
+
+        props.overlays = overlays
+    }
+
     else if (children.length === 1) {
         props.child = w(children[0])
         delete props.children
@@ -47,9 +55,22 @@ const ctors = {
     "box": Widget.Box,
     "button": Widget.Button,
     "centerbox": Widget.CenterBox,
+    // TODO: circularprogress
+    "drawingarea": Widget.DrawingArea,
+    "entry": Widget.Entry,
     "eventbox": Widget.EventBox,
+    // TODO: fixed
+    // TODO: flowbox
     "icon": Widget.Icon,
     "label": Widget.Label,
+    "levelbar": Widget.LevelBar,
+    // TODO: listbox
+    "overlay": Widget.Overlay,
+    "revealer": Widget.Revealer,
+    "scrollable": Widget.Scrollable,
+    "slider": Widget.Slider,
+    // TODO: stack
+    "switch": Widget.Switch,
     "window": Widget.Window,
 }
 
@@ -57,13 +78,26 @@ const ctors = {
 export namespace JSX {
     export type Element = Gtk.Widget
     export interface IntrinsicElements {
-        "box": Widget.BoxProps
-        "button": Widget.ButtonProps
-        "centerbox": Widget.CenterBoxProps
-        "eventbox": Widget.EventBoxProps
-        "icon": Widget.IconProps
-        "label": Widget.LabelProps
-        "window": Widget.WindowProps
+        "box": Widget.BoxProps,
+        "button": Widget.ButtonProps,
+        "centerbox": Widget.CenterBoxProps,
+        // TODO: circularprogress
+        "drawingarea": Widget.DrawingAreaProps,
+        "entry": Widget.EntryProps,
+        "eventbox": Widget.EventBoxProps,
+        // TODO: fixed
+        // TODO: flowbox
+        "icon": Widget.IconProps,
+        "label": Widget.LabelProps,
+        "levelbar": Widget.LevelBarProps,
+        // TODO: listbox
+        "overlay": Widget.OverlayProps,
+        "revealer": Widget.RevealerProps,
+        "scrollable": Widget.ScrollableProps,
+        "slider": Widget.SliderProps,
+        // TODO: stack
+        "switch": Widget.SwitchProps,
+        "window": Widget.WindowProps,
     }
 }
 
