@@ -43,6 +43,7 @@ int main(string[] argv) {
     }
 
     var apps = new AstalApps.Apps();
+
     if (launch != null) {
         apps.query(launch).first().data.launch();
         return 0;

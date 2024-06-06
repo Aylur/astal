@@ -24,7 +24,6 @@ deps = [
 
 sources = [
   config,
-  'match.vala',
   'apps.vala',
   'application.vala',
   'cli.vala',
