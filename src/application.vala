@@ -18,12 +18,14 @@ public class Application : Object {
         return app.get_string(key);
     }
 
-    public void launch() {
+    public bool launch() {
         try {
-            app.launch(null, null);
+            var s = app.launch(null, null);
             ++frequency;
+            return s;
         } catch (Error err) {
             critical(err.message);
+            return false;
         }
     }
 
