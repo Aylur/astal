@@ -147,6 +147,12 @@ function proxify<
         set(v) { Astal.widget_set_cursor(this, v) },
     })
 
+    // gjs deprecated the child setter
+    Object.defineProperty(klass.prototype, "child", {
+        get() { return this.get_child?.() },
+        set(v) { setChild(this, v) },
+    })
+
     const proxy = new Proxy(klass, {
         construct(_, [conf, ...children]) {
             const self = new klass
