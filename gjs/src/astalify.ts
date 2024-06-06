@@ -1,6 +1,7 @@
 import Binding, { kebabify, type Connectable, type Subscribable } from "./binding.js"
 import { Astal, Gtk } from "./imports.js"
 import { execAsync } from "./process.js"
+import { setChild } from "./overrides.js"
 
 export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C> & {
     className: string
@@ -40,16 +41,6 @@ function hook(
     }
 
     return self
-}
-
-function setChild(parent: Gtk.Widget, child: Gtk.Widget) {
-    if (parent instanceof Gtk.Bin) {
-        const rm = parent.get_child()
-        if (rm)
-            parent.remove(rm)
-    }
-    if (parent instanceof Gtk.Container)
-        parent.add(child)
 }
 
 function ctor(self: any, config: any, ...children: Gtk.Widget[]) {
@@ -145,12 +136,6 @@ function proxify<
     Object.defineProperty(klass.prototype, "cursor", {
         get() { return Astal.widget_get_cursor(this) },
         set(v) { Astal.widget_set_cursor(this, v) },
-    })
-
-    // gjs deprecated the child setter
-    Object.defineProperty(klass.prototype, "child", {
-        get() { return this.get_child?.() },
-        set(v) { setChild(this, v) },
     })
 
     const proxy = new Proxy(klass, {
