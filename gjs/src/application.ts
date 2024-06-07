@@ -11,6 +11,8 @@ type Config = Partial<{
     cursorTheme: string
     css: string
     requestHandler: RequestHandler
+    main(...args: string[]): void
+    client(message: (msg: string) => string, ...args: string[]): void
     hold: boolean
 }>
 
@@ -51,16 +53,19 @@ class AstalJS extends Astal.Application {
         }
     }
 
-    start({ requestHandler, css, hold, ...cfg }: Config = {}, callback?: (args: string[]) => void) {
+    start({ requestHandler, css, hold, main, client, ...cfg }: Config = {}) {
+        client ??= () => {
+            print(`Astal instance "${this.instanceName}" already running`)
+            exit(1)
+        }
+
         Object.assign(this, cfg)
         setConsoleLogDomain(this.instanceName)
 
         this.requestHandler = requestHandler
-        this.connect("activate", () => callback?.(programArgs))
-        if (!this.acquire_socket()) {
-            print(`Astal instance "${this.instanceName}" already running`)
-            exit(1)
-        }
+        this.connect("activate", () => main?.(...programArgs))
+        if (!this.acquire_socket())
+            client(msg => this.message(msg)!, ...programArgs)
 
         if (css)
             this.apply_css(css, false)

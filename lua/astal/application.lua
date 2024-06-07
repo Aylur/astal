@@ -26,12 +26,20 @@ local app = AstalLua()
 ---@field css? string
 ---@field hold? boolean
 ---@field request_handler? fun(msg: string, response: fun(res: any))
+---@field main? fun(...): unknown
+---@field client? fun(message: fun(msg: string): string, ...): unknown
 
 ---@param config StartConfig | nil
----@param callback function | nil
-function Astal.Application:start(config, callback)
+function Astal.Application:start(config)
     if config == nil then
         config = {}
+    end
+
+    if config.client == nil then
+        config.client = function()
+            print('Astal instance "' .. app.instance_name .. '" is already running')
+            os.exit(1)
+        end
     end
 
     if config.hold == nil then
@@ -57,17 +65,18 @@ function Astal.Application:start(config, callback)
     end
 
     app.on_activate = function()
+        if type(config.main) == "function" then
+            config.main(table.unpack(arg))
+        end
         if config.hold then
             self:hold()
-        end
-        if type(callback) == "function" then
-            callback()
         end
     end
 
     if not app:acquire_socket() then
-        print('Astal instance "' .. app.instance_name .. '" is already running')
-        os.exit(1)
+        config.client(function(msg)
+            return app:message(msg)
+        end, table.unpack(arg))
     end
 
     self:run(nil)

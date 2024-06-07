@@ -2,7 +2,8 @@ namespace Astal {
 public class Application : Gtk.Application {
     private List<Gtk.CssProvider> css_providers;
     private SocketService service;
-    private string socket;
+
+    public string socket_path { get; private set; }
 
     public new string application_id {
         get { return base.application_id; }
@@ -101,20 +102,20 @@ public class Application : Gtk.Application {
      * the return value indicates if instance is already running
      */
     public bool acquire_socket() {
-        socket = GLib.Environment.get_user_runtime_dir().concat(
+        socket_path = GLib.Environment.get_user_runtime_dir().concat(
             "/",
             instance_name,
             ".sock");
 
-        if (FileUtils.test(socket, GLib.FileTest.EXISTS)) {
-            info("socket %s exists", socket);
+        if (FileUtils.test(socket_path, GLib.FileTest.EXISTS)) {
+            info("socket %s exists", socket_path);
             return false;
         }
 
         try {
             service = new SocketService();
             service.add_address(
-                new UnixSocketAddress(socket),
+                new UnixSocketAddress(socket_path),
                 SocketType.STREAM,
                 SocketProtocol.DEFAULT,
                 null,
@@ -125,7 +126,7 @@ public class Application : Gtk.Application {
                 return false;
             });
 
-            info("socket acquired: %s\n", socket);
+            info("socket acquired: %s\n", socket_path);
             return true;
         } catch (Error err) {
             critical("could not acquire socket %s\n", application_id);
@@ -134,14 +135,29 @@ public class Application : Gtk.Application {
         }
     }
 
+    public string? message(string msg) {
+        var client = new SocketClient();
+
+        try {
+            var conn = client.connect(new UnixSocketAddress(socket_path), null);
+            conn.output_stream.write(msg.concat("\x04").data);
+
+            var stream = new DataInputStream(conn.input_stream);
+            return stream.read_upto("\x04", -1, null, null);
+        } catch (Error err) {
+            printerr(err.message);
+            return null;
+        }
+    }
+
     construct {
         if (instance_name == null)
             instance_name = "astal";
 
         shutdown.connect(() => {
-            if (FileUtils.test(socket, GLib.FileTest.EXISTS)){
+            if (FileUtils.test(socket_path, GLib.FileTest.EXISTS)){
                 try {
-                    File.new_for_path(socket).delete(null);
+                    File.new_for_path(socket_path).delete(null);
                 } catch (Error err) {
                     warning(err.message);
                 }
