@@ -65,7 +65,7 @@ class AstalJS extends Astal.Application {
         this.requestHandler = requestHandler
         this.connect("activate", () => main?.(...programArgs))
         if (!this.acquire_socket())
-            client(msg => this.message(msg)!, ...programArgs)
+            return client(msg => this.message(msg)!, ...programArgs)
 
         if (css)
             this.apply_css(css, false)

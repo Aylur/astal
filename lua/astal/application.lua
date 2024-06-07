@@ -74,7 +74,7 @@ function Astal.Application:start(config)
     end
 
     if not app:acquire_socket() then
-        config.client(function(msg)
+        return config.client(function(msg)
             return app:message(msg)
         end, table.unpack(arg))
     end
