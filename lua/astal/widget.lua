@@ -81,6 +81,10 @@ local function astalify(ctor)
     end
 
     return function(tbl)
+        if tbl == nil then
+            tbl = {}
+        end
+
         local bindings = {}
         local setup = tbl.setup
 

@@ -43,7 +43,7 @@ function hook(
     return self
 }
 
-function ctor(self: any, config: any, ...children: Gtk.Widget[]) {
+function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
     const { setup, child, ...props } = config
     props.visible ??= true
 
@@ -181,6 +181,7 @@ export type ConstructProps<
     Props = unknown,
     Signals extends Record<`on${string}`, Array<unknown>> = Record<`on${string}`, any[]>
 > = Partial<{
+    // @ts-expect-error can't assign to unknown, but it works as expected though
     [S in keyof Signals]: SigHandler<Self, Signals[S]>
 }> & Partial<{
     [Key in `on${string}`]: SigHandler<Self, any[]>
