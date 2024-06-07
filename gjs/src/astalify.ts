@@ -1,7 +1,11 @@
-import Binding, { kebabify, type Connectable, type Subscribable } from "./binding.js"
+import Binding, { kebabify, snakeify, type Connectable, type Subscribable } from "./binding.js"
 import { Astal, Gtk } from "./imports.js"
 import { execAsync } from "./process.js"
-import { setChild } from "./overrides.js"
+
+Object.defineProperty(Astal.Box.prototype, "children", {
+    get() { return this.get_children() },
+    set(v) { this.set_children(v) },
+})
 
 export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C> & {
     className: string
@@ -44,21 +48,15 @@ function hook(
 }
 
 function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
-    const { setup, child, ...props } = config
+    const { setup, ...props } = config
     props.visible ??= true
-
-    const pchildren = props.children
-    delete props.children
 
     const bindings = Object.keys(props).reduce((acc: any, prop) => {
         if (props[prop] instanceof Binding) {
-            const bind = [prop, props[prop]]
-            prop === "child"
-                ? setChild(self, props[prop].get())
-                : self[`set_${kebabify(prop)}`](props[prop].get())
-
+            const binding = props[prop]
+            self[`set_${snakeify(prop)}`](binding.get())
             delete props[prop]
-            return [...acc, bind]
+            return [...acc, [prop, binding]]
         }
         return acc
     }, [])
@@ -66,12 +64,15 @@ function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
     const onHandlers = Object.keys(props).reduce((acc: any, key) => {
         if (key.startsWith("on")) {
             const sig = kebabify(key).split("-").slice(1).join("-")
-            const handler = [sig, props[key]]
+            const handler = props[key]
             delete props[key]
-            return [...acc, handler]
+            return [...acc, [sig, handler]]
         }
         return acc
     }, [])
+
+    const pchildren = props.children
+    delete props.children
 
     Object.assign(self, props)
     Object.assign(self, {
@@ -79,15 +80,6 @@ function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
             return hook(self, obj, sig, callback)
         },
     })
-
-    if (child instanceof Binding) {
-        setChild(self, child.get())
-        self.connect("destroy", child.subscribe(v => {
-            setChild(self, v)
-        }))
-    } else if (self instanceof Gtk.Container && child instanceof Gtk.Widget) {
-        self.add(child)
-    }
 
     for (const [signal, callback] of onHandlers) {
         if (typeof callback === "function") {
@@ -100,19 +92,19 @@ function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
     }
 
     if (self instanceof Gtk.Container) {
-        if (pchildren) {
-            for (const child of pchildren)
-                self.add(child)
-        }
         if (children) {
             for (const child of children)
+                self.add(child)
+        }
+        if (pchildren && Array.isArray(pchildren)) {
+            for (const child of pchildren)
                 self.add(child)
         }
     }
 
     for (const [prop, bind] of bindings) {
         self.connect("destroy", bind.subscribe((v: any) => {
-            self[`set_${kebabify(prop)}`](v)
+            self[`set_${snakeify(prop)}`](v)
         }))
     }
 
@@ -136,6 +128,21 @@ function proxify<
     Object.defineProperty(klass.prototype, "cursor", {
         get() { return Astal.widget_get_cursor(this) },
         set(v) { Astal.widget_set_cursor(this, v) },
+    })
+
+    klass.prototype.set_child = function(widget: Gtk.Widget) {
+        if (this instanceof Gtk.Bin) {
+            const rm = this.get_child()
+            if (rm)
+                this.remove(rm)
+        }
+        if (this instanceof Gtk.Container)
+            this.add(widget)
+    }
+
+    Object.defineProperty(klass.prototype, "child", {
+        get() { return this.get_child?.() },
+        set(v) { this.set_child(v) },
     })
 
     const proxy = new Proxy(klass, {

@@ -3,10 +3,9 @@ import * as Widget from "../widgets.js"
 import Binding from "../binding.js"
 
 function w(e: any) {
-    if (e instanceof Gtk.Widget || e instanceof Binding)
-        return e
-
-    return Widget.Label({ label: String(e) })
+    return e instanceof Gtk.Widget || e instanceof Binding
+        ? e
+        : Widget.Label({ label: String(e) })
 }
 
 export function jsx(
@@ -20,7 +19,15 @@ export function jsx(
     else
         children = children.flat()
 
-    if (ctor === "centerbox") {
+    // <box children={Binding} /> and <box>{Binding}</box>
+    if (ctor === "box" && children.length === 1 && children[0] instanceof Binding) {
+        props.children = children[0]
+    }
+
+    // TODO: handle array of Binding
+    // is there a usecase?
+
+    else if (ctor === "centerbox") {
         if (children[0])
             props.startWidget = w(children[0])
         if (children[1])
@@ -29,7 +36,7 @@ export function jsx(
             props.endWidget = w(children[2])
     }
 
-    else if (ctor == "overlay") {
+    else if (ctor === "overlay") {
         const [child, ...overlays] = children
         if (child)
             props.child = child
