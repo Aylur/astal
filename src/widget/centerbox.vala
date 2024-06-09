@@ -23,7 +23,8 @@ public class CenterBox : Gtk.Box {
             if (_start_widget != null)
                 remove(_start_widget);
 
-            pack_start(value, true, true, 0);
+            if (value != null)
+                pack_start(value, true, true, 0);
         }
     }
 
@@ -34,13 +35,20 @@ public class CenterBox : Gtk.Box {
             if (_end_widget != null)
                 remove(_end_widget);
 
-            pack_end(value, true, true, 0);
+            if (value != null)
+                pack_end(value, true, true, 0);
         }
     }
 
     public Gtk.Widget center_widget {
         get { return get_center_widget(); }
-        set { set_center_widget(value); }
+        set {
+            if (center_widget != null)
+                remove(center_widget);
+
+            if (value != null)
+                set_center_widget(value);
+        }
     }
 }
 }

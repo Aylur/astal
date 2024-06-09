@@ -166,7 +166,11 @@ local function astalify(ctor)
         end
 
         -- construct, attach bindings, add children
-        local widget = ctor(props)
+        local widget = ctor()
+
+        for prop, value in pairs(props) do
+            widget[prop] = value
+        end
 
         for prop, binding in pairs(bindings) do
             widget.on_destroy = binding:subscribe(function(v)
@@ -180,7 +184,9 @@ local function astalify(ctor)
                 set_children(widget, v)
             end)
         else
-            set_children(widget, children)
+            if #children > 0 then
+                set_children(widget, children)
+            end
         end
 
         if type(setup) == "function" then

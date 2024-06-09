@@ -156,7 +156,8 @@ function ctor(self: any, config: any = {}, children: any[] = []) {
         }))
     }
     else {
-        setChildren(self, children)
+        if (children.length > 0)
+            setChildren(self, children)
     }
 
     setup?.(self)
