@@ -6,11 +6,11 @@ local Time = require("astal.time")
 local Process = require("astal.process")
 
 ---@class Variable
----@field private variable object
+---@field private variable table
 ---@field private err_handler? function
 ---@field private _value any
----@field private _poll? object
----@field private _watch? object
+---@field private _poll? table
+---@field private _watch? table
 ---@field private poll_interval number
 ---@field private poll_exec? string[] | string
 ---@field private poll_transform? fun(next: any, prev: any): any
@@ -193,7 +193,7 @@ function Variable:watch(exec, transform)
     return self
 end
 
----@param object object | table[]
+---@param object table | table[]
 ---@param sigOrFn string | fun(...): any
 ---@param callback fun(...): any
 ---@return Variable

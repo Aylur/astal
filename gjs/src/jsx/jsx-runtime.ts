@@ -1,12 +1,5 @@
 import { Gtk } from "../imports.js"
 import * as Widget from "../widgets.js"
-import Binding from "../binding.js"
-
-function w(e: any) {
-    return e instanceof Gtk.Widget || e instanceof Binding
-        ? e
-        : Widget.Label({ label: String(e) })
-}
 
 export function jsx(
     ctor: keyof typeof ctors | typeof Gtk.Widget,
@@ -16,46 +9,16 @@ export function jsx(
 
     if (!Array.isArray(children))
         children = [children]
-    else
-        children = children.flat()
 
-    // <box children={Binding} /> and <box>{Binding}</box>
-    if (ctor === "box" && children.length === 1 && children[0] instanceof Binding) {
-        props.children = children[0]
-    }
+    if (typeof ctor === "string")
+        return (ctors as any)[ctor](props, children)
 
-    // TODO: handle array of Binding
-    // is there a usecase?
+    if (children.length === 1)
+        props.child = children[0]
+    else if (children.length > 1)
+        props.children = children
 
-    else if (ctor === "centerbox") {
-        if (children[0])
-            props.startWidget = w(children[0])
-        if (children[1])
-            props.centerWidget = w(children[1])
-        if (children[2])
-            props.endWidget = w(children[2])
-    }
-
-    else if (ctor === "overlay") {
-        const [child, ...overlays] = children
-        if (child)
-            props.child = child
-
-        props.overlays = overlays
-    }
-
-    else if (children.length === 1) {
-        props.child = w(children[0])
-        delete props.children
-    }
-
-    else {
-        props.children = children.map(w)
-    }
-
-    return typeof ctor === "string"
-        ? (ctors as any)[ctor](props)
-        : new ctor(props)
+    return new ctor(props)
 }
 
 const ctors = {

@@ -1,11 +1,60 @@
 import Binding, { kebabify, snakeify, type Connectable, type Subscribable } from "./binding.js"
 import { Astal, Gtk } from "./imports.js"
 import { execAsync } from "./process.js"
+import Variable from "./variable.js"
 
 Object.defineProperty(Astal.Box.prototype, "children", {
     get() { return this.get_children() },
     set(v) { this.set_children(v) },
 })
+
+function setChildren(parent: Gtk.Widget, children: Gtk.Widget[]) {
+    children = children.flat(Infinity).map(ch => ch instanceof Gtk.Widget
+        ? ch
+        : new Gtk.Label({ visible: true, label: String(ch) }))
+
+    // remove
+    if (parent instanceof Gtk.Bin) {
+        const ch = parent.get_child()
+        if (ch)
+            parent.remove(ch)
+    }
+
+    // FIXME: add rest of the edge cases like Stack
+    if (parent instanceof Astal.Box) {
+        parent.set_children(children)
+    }
+
+    else if (parent instanceof Astal.CenterBox) {
+        parent.startWidget = children[0]
+        parent.centerWidget = children[1]
+        parent.endWidget = children[2]
+    }
+
+    else if (parent instanceof Astal.Overlay) {
+        const [child, ...overlays] = children
+        parent.set_child(child)
+        parent.set_overlays(overlays)
+    }
+
+    else if (parent instanceof Gtk.Container) {
+        for (const ch of children)
+            parent.add(ch)
+    }
+}
+
+function mergeBindings(array: any[]) {
+    const getValues = () => array.map(i => i instanceof Binding ? i.get() : i)
+    const bindings = array.filter(i => i instanceof Binding)
+
+    if (bindings.length === 0)
+        return array
+
+    if (bindings.length === 1)
+        return bindings[0].as(getValues)
+
+    return Variable.derive(bindings, getValues)()
+}
 
 export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C> & {
     className: string
@@ -47,7 +96,7 @@ function hook(
     return self
 }
 
-function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
+function ctor(self: any, config: any = {}, children: any[] = []) {
     const { setup, ...props } = config
     props.visible ??= true
 
@@ -71,9 +120,6 @@ function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
         return acc
     }, [])
 
-    const pchildren = props.children
-    delete props.children
-
     Object.assign(self, props)
     Object.assign(self, {
         hook(obj: any, sig: any, callback: any) {
@@ -91,21 +137,26 @@ function ctor(self: any, config: any = {}, ...children: Gtk.Widget[]) {
         }
     }
 
-    if (self instanceof Gtk.Container) {
-        if (children) {
-            for (const child of children)
-                self.add(child)
-        }
-        if (pchildren && Array.isArray(pchildren)) {
-            for (const child of pchildren)
-                self.add(child)
-        }
-    }
-
     for (const [prop, bind] of bindings) {
+        if (prop === "child" || prop === "children") {
+            self.connect("destroy", bind.subscribe((v: any) => {
+                setChildren(self, v)
+            }))
+        }
         self.connect("destroy", bind.subscribe((v: any) => {
             self[`set_${snakeify(prop)}`](v)
         }))
+    }
+
+    children = mergeBindings(children.flat(Infinity))
+    if (children instanceof Binding) {
+        setChildren(self, children.get())
+        self.connect("destroy", children.subscribe(v => {
+            setChildren(self, v)
+        }))
+    }
+    else {
+        setChildren(self, children)
     }
 
     setup?.(self)
@@ -130,29 +181,14 @@ function proxify<
         set(v) { Astal.widget_set_cursor(this, v) },
     })
 
-    klass.prototype.set_child = function(widget: Gtk.Widget) {
-        if (this instanceof Gtk.Bin) {
-            const rm = this.get_child()
-            if (rm)
-                this.remove(rm)
-        }
-        if (this instanceof Gtk.Container)
-            this.add(widget)
-    }
-
-    Object.defineProperty(klass.prototype, "child", {
-        get() { return this.get_child?.() },
-        set(v) { this.set_child(v) },
-    })
-
     const proxy = new Proxy(klass, {
         construct(_, [conf, ...children]) {
             const self = new klass
-            return ctor(self, conf, ...children)
+            return ctor(self, conf, children)
         },
         apply(_t, _a, [conf, ...children]) {
             const self = new klass
-            return ctor(self, conf, ...children)
+            return ctor(self, conf, children)
         },
     })
 

@@ -2,12 +2,12 @@ local lgi = require("lgi")
 local GObject = lgi.require("GObject", "2.0")
 
 ---@class Binding
----@field emitter object
+---@field emitter table|Variable
 ---@field property? string
 ---@field transformFn function
 local Binding = {}
 
----@param emitter object
+---@param emitter table
 ---@param property? string
 ---@return Binding
 function Binding.new(emitter, property)
