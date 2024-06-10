@@ -2,33 +2,42 @@ namespace Astal {
 public class Overlay : Gtk.Overlay {
     public bool pass_through { get; set; }
 
-    public Gtk.Widget overlay {
+    public Gtk.Widget? overlay {
         get { return overlays.nth_data(0); }
         set {
-            foreach (var ch in get_children())
-                remove(ch);
+            foreach (var ch in get_children()) {
+                if (ch != child)
+                    remove(ch);
+            }
 
-            add_overlay(value);
+            if (value != null)
+                add_overlay(value);
         }
     }
 
     public List<weak Gtk.Widget> overlays {
         owned get { return get_children(); }
         set {
-            foreach (var ch in get_children())
-                remove(ch);
+            foreach (var ch in get_children()) {
+                if (ch != child)
+                    remove(ch);
+            }
 
             foreach (var ch in value)
                 add_overlay(ch);
         }
     }
 
-    public void set_child(Gtk.Widget widget) {
-        var ch = get_child();
-        if (ch != null) {
-            remove(ch);
+    public new Gtk.Widget? child {
+        get { return get_child(); }
+        set {
+            var ch = get_child();
+            if (ch != null)
+                remove(ch);
+
+            if (value != null)
+                add(value);
         }
-        add(widget);
     }
 
     construct {
