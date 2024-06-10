@@ -21,7 +21,7 @@ function Binding.new(emitter, property)
 end
 
 function Binding:__tostring()
-    local str = "Binding<" .. tostring(self:get())
+    local str = "Binding<" .. tostring(self.emitter)
     if self.property ~= nil then
         str = str .. ", " .. self.property
     end

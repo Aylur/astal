@@ -44,7 +44,14 @@ function setChildren(parent: Gtk.Widget, children: Gtk.Widget[]) {
 }
 
 function mergeBindings(array: any[]) {
-    const getValues = () => array.map(i => i instanceof Binding ? i.get() : i)
+    function getValues(...args: any[]) {
+        let i = 0
+        return array.map(value => value instanceof Binding
+            ? args[i++]
+            : value,
+        )
+    }
+
     const bindings = array.filter(i => i instanceof Binding)
 
     if (bindings.length === 0)

@@ -83,12 +83,15 @@ local function set_children(parent, children)
 end
 
 local function merge_bindings(array)
-    local function get_values()
-        return map(array, function(v)
-            if getmetatable(v) == Binding then
-                return v:get()
+    local function get_values(...)
+        local args = { ... }
+        local i = 0
+        return map(array, function(value)
+            if getmetatable(value) == Binding then
+                i = i + 1
+                return args[i]
             else
-                return v
+                return value
             end
         end)
     end
