@@ -112,7 +112,7 @@ namespace AstalTray {
 
       connection_ids = new List<ulong>();
       item_id = service + path;
-      setup_proxy(service, path);
+      setup_proxy.begin(service, path, (_, res) => setup_proxy.end(res));
 
     }
 
@@ -186,7 +186,7 @@ namespace AstalTray {
         });
     }
 
-    public DbusmenuGtk.Menu create_menu() {
+    public DbusmenuGtk.Menu? create_menu() {
       if(proxy.Menu == null)  return null;
       return new DbusmenuGtk.Menu(
         proxy.get_name_owner(),

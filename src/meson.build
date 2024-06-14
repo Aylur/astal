@@ -56,7 +56,7 @@ libtray = library(
   sources,
   dependencies: deps,
   vala_header: meson.project_name() + '.h',
-  vala_vapi: meson.project_name() + '.vapi',
+  vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
   vala_gir: tray_gir,
   vala_args: ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4'],
   version: meson.project_version(),
