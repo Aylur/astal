@@ -1,5 +1,6 @@
 
 
+#include "river.h"
 #include "river-private.h"
 #include <gio/gio.h>
 #include <wayland-client-protocol.h>
@@ -295,7 +296,7 @@ static gboolean astal_river_river_initable_init (GInitable *initable, GCancellab
 }
 
 static void astal_river_river_initable_iface_init (GInitableIface *iface) {
-  iface->init = astal_river_river_initable_init;
+    iface->init = astal_river_river_initable_init;
 }
 
 static void astal_river_river_init(AstalRiverRiver *self) {
@@ -303,7 +304,7 @@ static void astal_river_river_init(AstalRiverRiver *self) {
 }
 
 AstalRiverRiver *astal_river_river_new() {
-  return g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, NULL, NULL);
+    return g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, NULL, NULL);
 }
 
 static void disconnect_signal (gpointer key, gpointer value, gpointer user_data) {
@@ -312,6 +313,15 @@ static void disconnect_signal (gpointer key, gpointer value, gpointer user_data)
 
     AstalRiverOutput *output = find_output_by_id (self, GPOINTER_TO_UINT(key));
     g_signal_handler_disconnect (output, GPOINTER_TO_UINT(value));
+}
+
+AstalRiverRiver* astal_river_river_get_default() {
+  static AstalRiverRiver *self = NULL;
+
+  if (self == NULL)
+    self = astal_river_river_new();
+
+  return self;
 }
 
 static void astal_river_river_finalize(GObject *object) {

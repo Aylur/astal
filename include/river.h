@@ -79,9 +79,14 @@ G_DECLARE_FINAL_TYPE (AstalRiverRiver, astal_river_river, ASTAL_RIVER, RIVER, GO
  *
  * Returns: (nullable): a newly created connection to river
  */
-
 AstalRiverRiver *astal_river_river_new();
 
+/**
+ * astal_river_river_get_default
+ *
+ * Returns: (nullable) (transfer none): gets the default River object.
+ */
+AstalRiverRiver* astal_river_river_get_default();
 /**
  * astal_river_river_get_outputs
  * @self: the AstalRiverRiver object
