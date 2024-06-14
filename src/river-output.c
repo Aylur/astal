@@ -178,6 +178,7 @@ static void astal_river_handle_layout_name_clear(void *data,
                                                  struct zriver_output_status_v1 *status) {
     AstalRiverOutput *self = ASTAL_RIVER_OUTPUT (data);
     g_free(self->layout_name);
+    self->layout_name = NULL; 
     g_object_notify (G_OBJECT(self), "layout-name");
     g_signal_emit (self, astal_river_output_signals[ASTAL_RIVER_OUTPUT_SIGNAL_CHANGED], 0);
 }
