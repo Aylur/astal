@@ -3,6 +3,7 @@ wayland_scanner = find_program('wayland-scanner')
 
 protocols = [
     'river-status-unstable-v1.xml',
+    'river-control-unstable-v1.xml'
 ]
 
 gen_client_header = generator(wayland_scanner,

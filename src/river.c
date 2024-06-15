@@ -6,6 +6,7 @@
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
 #include "river-status-unstable-v1-client.h"
+#include "river-control-unstable-v1-client.h"
 #include "wayland-source.h"
 #include <json-glib/json-glib.h>
 
@@ -26,6 +27,7 @@ typedef struct {
     struct wl_display *display;
     WLSource *wl_source;
     struct zriver_status_manager_v1 *river_status_manager;
+    struct zriver_control_v1 *river_control;;
     struct zriver_seat_status_v1 *river_seat_status;
 } AstalRiverRiverPrivate;
 
@@ -224,14 +226,48 @@ static void global_registry_handler(void* data,
     } else if (strcmp(interface, zriver_status_manager_v1_interface.name) == 0) {
         priv->river_status_manager = wl_registry_bind(
           registry, id, &zriver_status_manager_v1_interface, 4);
+    } else if (strcmp(interface, zriver_control_v1_interface.name) == 0) {
+        priv->river_control = wl_registry_bind(
+          registry, id, &zriver_control_v1_interface, 1);
     }
+}
+
+static void astal_river_river_callback_success(void *data,
+                                               struct zriver_command_callback_v1 *cb,
+                                               const char *msg) {
+    AstalRiverCommandCallback callback = (AstalRiverCommandCallback)(data);
+    callback(TRUE, msg);
+}
+
+static void astal_river_river_callback_failure(void *data,
+                                               struct zriver_command_callback_v1 *cb,
+                                               const char *msg) {
+    AstalRiverCommandCallback callback = (AstalRiverCommandCallback)(data);
+    callback(FALSE, msg);
+}
+
+const struct zriver_command_callback_v1_listener cb_listener = {
+    .success = astal_river_river_callback_success,
+    .failure = astal_river_river_callback_failure
+};
+
+void astal_river_river_run_command_async(AstalRiverRiver *self, gint length, const gchar **cmd, AstalRiverCommandCallback callback) {
+    AstalRiverRiverPrivate *priv = astal_river_river_get_instance_private(self);
+   
+    for(gint i = 0; i < length; ++i) {
+        zriver_control_v1_add_argument(priv->river_control, cmd[i]);
+    }
+    
+    struct zriver_command_callback_v1 *cb = zriver_control_v1_run_command(priv->river_control, priv->seat);
+    if(callback != NULL)
+        zriver_command_callback_v1_add_listener(cb, &cb_listener, callback);
 }
 
 static void global_registry_remover(void* data, struct wl_registry* registry, uint32_t id) {
     AstalRiverRiver *self = ASTAL_RIVER_RIVER (data);
     AstalRiverRiverPrivate *priv = astal_river_river_get_instance_private (self);
     AstalRiverOutput *output = find_output_by_id(self, id);
-	if ( output != NULL ) {
+  	if ( output != NULL ) {
         guint signal_id = GPOINTER_TO_UINT (g_hash_table_lookup (priv->signal_ids, GUINT_TO_POINTER (id)));
         g_hash_table_remove (priv->signal_ids, GUINT_TO_POINTER(id));
         g_signal_handler_disconnect (output, signal_id);

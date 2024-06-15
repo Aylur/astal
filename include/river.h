@@ -132,6 +132,25 @@ gchar* astal_river_river_get_focused_output(AstalRiverRiver *self);
 gchar* astal_river_river_get_mode(AstalRiverRiver *self);
 
 
+/**
+ * AstalRiverCommandCallback:
+ * @success: a #gboolean.
+ * @msg: a string.
+ *
+ * A callback function that gets a #GObject, a #gboolean, and a string.
+ */
+typedef void (*AstalRiverCommandCallback)(gboolean success, const gchar *msg);
+
+/**
+ * astal_river_river_run_command_async:
+ * @self: the AstalRiverRiver object
+ * @length: the length of the cmd array
+ * @cmd: (array length=length): the command to execute
+ * @callback: (scope async) (nullable): the callback to invoke.
+ *
+ * Calls the given callback with the provided parameters.
+ */
+void astal_river_river_run_command_async(AstalRiverRiver *self, gint length, const gchar **cmd, AstalRiverCommandCallback callback);
 
 
 
