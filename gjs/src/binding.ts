@@ -52,8 +52,13 @@ export default class Binding<Value> {
         if (typeof this.emitter.get === "function")
             return this.transformFn(this.emitter.get())
 
-        if (typeof this.prop === "string")
+        if (typeof this.prop === "string") {
+            const getter = `get_${snakeify(this.prop)}`
+            if (typeof this.emitter[getter] === "function")
+                return this.transformFn(this.emitter[getter]())
+
             return this.transformFn(this.emitter[this.prop])
+        }
 
         throw Error("can not get value of binding")
     }
