@@ -1,8 +1,8 @@
-#include "auth.h"
 #include <pwd.h>
 #include <security/_pam_types.h>
 #include <security/pam_appl.h>
 
+#include "auth.h"
 
 struct _AstalAuthPam {
     GObject parent_instance;
@@ -48,14 +48,16 @@ typedef enum {
     ASTAL_AUTH_PAM_N_PROPERTIES
 } AstalAuthPamProperties;
 
-
-static guint astal_auth_pam_signals[ASTAL_AUTH_PAM_N_SIGNALS] = {0,};
-static GParamSpec *astal_auth_pam_properties[ASTAL_AUTH_PAM_N_PROPERTIES] = {NULL,};
+static guint astal_auth_pam_signals[ASTAL_AUTH_PAM_N_SIGNALS] = {
+    0,
+};
+static GParamSpec *astal_auth_pam_properties[ASTAL_AUTH_PAM_N_PROPERTIES] = {
+    NULL,
+};
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalAuthPam, astal_auth_pam, G_TYPE_OBJECT);
 
 void astal_auth_pam_set_username(AstalAuthPam *self, const gchar *username) {
-
     g_return_if_fail(ASTAL_AUTH_IS_PAM(self));
     g_return_if_fail(username != NULL);
 
@@ -65,7 +67,6 @@ void astal_auth_pam_set_username(AstalAuthPam *self, const gchar *username) {
 }
 
 void astal_auth_pam_supply_secret(AstalAuthPam *self, const gchar *secret) {
-
     g_return_if_fail(ASTAL_AUTH_IS_PAM(self));
     AstalAuthPamPrivate *priv = astal_auth_pam_get_instance_private(self);
 
@@ -78,7 +79,6 @@ void astal_auth_pam_supply_secret(AstalAuthPam *self, const gchar *secret) {
 }
 
 void astal_auth_pam_set_service(AstalAuthPam *self, const gchar *service) {
-
     g_return_if_fail(ASTAL_AUTH_IS_PAM(self));
     g_return_if_fail(service != NULL);
 
@@ -88,18 +88,17 @@ void astal_auth_pam_set_service(AstalAuthPam *self, const gchar *service) {
 }
 
 const gchar *astal_auth_pam_get_username(AstalAuthPam *self) {
-
-    g_return_val_if_fail (ASTAL_AUTH_IS_PAM(self), NULL);
+    g_return_val_if_fail(ASTAL_AUTH_IS_PAM(self), NULL);
     return self->username;
 }
 
 const gchar *astal_auth_pam_get_service(AstalAuthPam *self) {
-
     g_return_val_if_fail(ASTAL_AUTH_IS_PAM(self), NULL);
     return self->service;
 }
 
-static void astal_auth_pam_set_property(GObject *object, guint property_id, const GValue *value, GParamSpec *pspec) {
+static void astal_auth_pam_set_property(GObject *object, guint property_id, const GValue *value,
+                                        GParamSpec *pspec) {
     AstalAuthPam *self = ASTAL_AUTH_PAM(object);
 
     switch (property_id) {
@@ -110,12 +109,13 @@ static void astal_auth_pam_set_property(GObject *object, guint property_id, cons
             astal_auth_pam_set_service(self, g_value_get_string(value));
             break;
         default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
     }
 }
 
-static void astal_auth_pam_get_property(GObject *object, guint property_id, GValue *value, GParamSpec *pspec) {
+static void astal_auth_pam_get_property(GObject *object, guint property_id, GValue *value,
+                                        GParamSpec *pspec) {
     AstalAuthPam *self = ASTAL_AUTH_PAM(object);
 
     switch (property_id) {
@@ -126,13 +126,12 @@ static void astal_auth_pam_get_property(GObject *object, guint property_id, GVal
             g_value_set_string(value, self->service);
             break;
         default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
     }
 }
 
 static void astal_auth_pam_callback(GObject *object, GAsyncResult *res, gpointer user_data) {
-
     AstalAuthPam *self = ASTAL_AUTH_PAM(object);
     AstalAuthPamPrivate *priv = astal_auth_pam_get_instance_private(self);
 
@@ -160,25 +159,22 @@ static void astal_auth_pam_emit_signal(AstalAuthPam *pam, guint signal, const gc
     GSource *emit_source;
     AstalAuthPamSignalEmitData *data;
 
-    data = g_new0 (AstalAuthPamSignalEmitData, 1);
+    data = g_new0(AstalAuthPamSignalEmitData, 1);
     data->pam = pam;
     data->signal_id = astal_auth_pam_signals[signal];
     data->msg = g_strdup(msg);
 
     emit_source = g_idle_source_new();
     g_source_set_callback(emit_source, astal_auth_pam_emit_signal_in_context, data,
-                          (GDestroyNotify) astal_auth_pam_signal_emit_data_free);
+                          (GDestroyNotify)astal_auth_pam_signal_emit_data_free);
     g_source_set_priority(emit_source, G_PRIORITY_DEFAULT);
-    g_source_attach(emit_source, ((AstalAuthPamPrivate *) astal_auth_pam_get_instance_private(pam))->context);
+    g_source_attach(emit_source,
+                    ((AstalAuthPamPrivate *)astal_auth_pam_get_instance_private(pam))->context);
     g_source_unref(emit_source);
-
 }
 
-
-int astal_auth_pam_handle_conversation(int num_msg,
-                                       const struct pam_message **msg,
-                                       struct pam_response **resp,
-                                       void *appdata_ptr) {
+int astal_auth_pam_handle_conversation(int num_msg, const struct pam_message **msg,
+                                       struct pam_response **resp, void *appdata_ptr) {
     AstalAuthPam *self = appdata_ptr;
     AstalAuthPamPrivate *priv = astal_auth_pam_get_instance_private(self);
 
@@ -186,7 +182,7 @@ int astal_auth_pam_handle_conversation(int num_msg,
     if (num_msg <= 0 || num_msg > PAM_MAX_NUM_MSG) {
         return PAM_CONV_ERR;
     }
-    replies = (struct pam_response *) calloc(num_msg, sizeof(struct pam_response));
+    replies = (struct pam_response *)calloc(num_msg, sizeof(struct pam_response));
     if (replies == NULL) {
         return PAM_BUF_ERR;
     }
@@ -200,23 +196,19 @@ int astal_auth_pam_handle_conversation(int num_msg,
                 signal = ASTAL_AUTH_PAM_SIGNAL_PROMPT_VISIBLE;
                 break;
             case PAM_ERROR_MSG:
-                signal = ASTAL_AUTH_PAM_SIGNAL_ERROR;;
+                signal = ASTAL_AUTH_PAM_SIGNAL_ERROR;
+                ;
                 break;
             case PAM_TEXT_INFO:
                 signal = ASTAL_AUTH_PAM_SIGNAL_INFO;
                 break;
             default:
-              g_free(replies);
-              return PAM_CONV_ERR;
-              break;
+                g_free(replies);
+                return PAM_CONV_ERR;
+                break;
         }
         guint signal_id = astal_auth_pam_signals[signal];
-        if (g_signal_has_handler_pending(
-                self,
-                signal_id,
-                0,
-                FALSE)
-                ) {
+        if (g_signal_has_handler_pending(self, signal_id, 0, FALSE)) {
             astal_auth_pam_emit_signal(self, signal, msg[i]->msg);
             g_mutex_lock(&priv->data_mutex);
             while (!priv->secret_set) {
@@ -234,17 +226,14 @@ int astal_auth_pam_handle_conversation(int num_msg,
     return PAM_SUCCESS;
 }
 
-static void astal_auth_pam_thread(GTask *task,
-                                  gpointer object,
-                                  gpointer task_data,
+static void astal_auth_pam_thread(GTask *task, gpointer object, gpointer task_data,
                                   GCancellable *cancellable) {
-
     AstalAuthPam *self = g_task_get_source_object(task);
 
     pam_handle_t *pamh = NULL;
     const struct pam_conv conv = {
-            .conv = astal_auth_pam_handle_conversation,
-            .appdata_ptr = self,
+        .conv = astal_auth_pam_handle_conversation,
+        .appdata_ptr = self,
     };
 
     int retval;
@@ -254,7 +243,8 @@ static void astal_auth_pam_thread(GTask *task,
         pam_end(pamh, retval);
     }
     if (retval != PAM_SUCCESS) {
-        g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_FAILED, "%s", pam_strerror(pamh, retval));
+        g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_FAILED, "%s",
+                                pam_strerror(pamh, retval));
     } else {
         g_task_return_int(task, retval);
     }
@@ -263,7 +253,6 @@ static void astal_auth_pam_thread(GTask *task,
 gboolean astal_auth_pam_start_authenticate_with_callback(AstalAuthPam *self,
                                                          GAsyncReadyCallback result_callback,
                                                          gpointer user_data) {
-
     g_return_val_if_fail(ASTAL_AUTH_IS_PAM(self), FALSE);
     AstalAuthPamPrivate *priv = astal_auth_pam_get_instance_private(self);
     g_return_val_if_fail(priv->task == NULL, FALSE);
@@ -277,7 +266,8 @@ gboolean astal_auth_pam_start_authenticate_with_callback(AstalAuthPam *self,
 }
 
 gboolean astal_auth_pam_start_authenticate(AstalAuthPam *self) {
-    return astal_auth_pam_start_authenticate_with_callback(self, (GAsyncReadyCallback) astal_auth_pam_callback, NULL);
+    return astal_auth_pam_start_authenticate_with_callback(
+        self, (GAsyncReadyCallback)astal_auth_pam_callback, NULL);
 }
 
 static void astal_auth_pam_on_hidden(AstalAuthPam *pam, const gchar *msg, gchar *password) {
@@ -285,20 +275,19 @@ static void astal_auth_pam_on_hidden(AstalAuthPam *pam, const gchar *msg, gchar 
     g_free(password);
 }
 
-gboolean astal_auth_pam_authenticate(const gchar *password,
-                                     GAsyncReadyCallback result_callback,
+gboolean astal_auth_pam_authenticate(const gchar *password, GAsyncReadyCallback result_callback,
                                      gpointer user_data) {
-
     AstalAuthPam *pam = g_object_new(ASTAL_AUTH_TYPE_PAM, NULL);
-    g_signal_connect(pam, "auth-prompt-hidden", G_CALLBACK(astal_auth_pam_on_hidden), (void *) g_strdup(password));
+    g_signal_connect(pam, "auth-prompt-hidden", G_CALLBACK(astal_auth_pam_on_hidden),
+                     (void *)g_strdup(password));
 
-    gboolean started = astal_auth_pam_start_authenticate_with_callback(pam, result_callback, user_data);
+    gboolean started =
+        astal_auth_pam_start_authenticate_with_callback(pam, result_callback, user_data);
     g_object_unref(pam);
     return started;
 }
 
-gssize astal_auth_pam_authenticate_finish(GAsyncResult *res,
-                                          GError **error) {
+gssize astal_auth_pam_authenticate_finish(GAsyncResult *res, GError **error) {
     return g_task_propagate_int(G_TASK(res), error);
 }
 
@@ -311,11 +300,9 @@ static void astal_auth_pam_init(AstalAuthPam *self) {
     g_mutex_init(&priv->data_mutex);
 
     priv->context = g_main_context_get_thread_default();
-
 }
 
 static void astal_auth_pam_finalize(GObject *gobject) {
-
     AstalAuthPam *self = ASTAL_AUTH_PAM(gobject);
     AstalAuthPamPrivate *priv = astal_auth_pam_get_instance_private(self);
 
@@ -327,12 +314,11 @@ static void astal_auth_pam_finalize(GObject *gobject) {
     g_cond_clear(&priv->data_cond);
     g_mutex_clear(&priv->data_mutex);
 
-    G_OBJECT_CLASS (astal_auth_pam_parent_class)->finalize(gobject);
+    G_OBJECT_CLASS(astal_auth_pam_parent_class)->finalize(gobject);
 }
 
 static void astal_auth_pam_class_init(AstalAuthPamClass *class) {
-
-    GObjectClass *object_class = G_OBJECT_CLASS (class);
+    GObjectClass *object_class = G_OBJECT_CLASS(class);
 
     object_class->get_property = astal_auth_pam_get_property;
     object_class->set_property = astal_auth_pam_set_property;
@@ -342,97 +328,35 @@ static void astal_auth_pam_class_init(AstalAuthPamClass *class) {
     struct passwd *passwd = getpwuid(getuid());
 
     astal_auth_pam_properties[ASTAL_AUTH_PAM_PROP_USERNAME] =
-            g_param_spec_string("username",
-                                "username",
-                                "username used for authentication",
-                                passwd->pw_name,
-                                G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+        g_param_spec_string("username", "username", "username used for authentication",
+                            passwd->pw_name, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
     astal_auth_pam_properties[ASTAL_AUTH_PAM_PROP_SERVICE] =
-            g_param_spec_string("service",
-                                "service",
-                                "the pam service to use",
-                                "astal-auth",
-                                G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+        g_param_spec_string("service", "service", "the pam service to use", "astal-auth",
+                            G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
-    g_object_class_install_properties(object_class,
-                                      ASTAL_AUTH_PAM_N_PROPERTIES, astal_auth_pam_properties);
+    g_object_class_install_properties(object_class, ASTAL_AUTH_PAM_N_PROPERTIES,
+                                      astal_auth_pam_properties);
 
-    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_PROMPT_VISIBLE] = g_signal_new(
-            "auth-prompt-visible",
-            G_TYPE_FROM_CLASS (class),
-            G_SIGNAL_RUN_FIRST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            1,
-            G_TYPE_STRING
-    );
+    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_PROMPT_VISIBLE] =
+        g_signal_new("auth-prompt-visible", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
+                     NULL, NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
 
-    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_PROMPT_HIDDEN] = g_signal_new(
-            "auth-prompt-hidden",
-            G_TYPE_FROM_CLASS (class),
-            G_SIGNAL_RUN_FIRST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            1,
-            G_TYPE_STRING
-    );
+    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_PROMPT_HIDDEN] =
+        g_signal_new("auth-prompt-hidden", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
+                     NULL, NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
 
-    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_INFO] = g_signal_new(
-            "auth-info",
-            G_TYPE_FROM_CLASS (class),
-            G_SIGNAL_RUN_FIRST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            1,
-            G_TYPE_STRING
-    );
+    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_INFO] =
+        g_signal_new("auth-info", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
+                     G_TYPE_NONE, 1, G_TYPE_STRING);
 
-    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_ERROR] = g_signal_new(
-            "auth-error",
-            G_TYPE_FROM_CLASS (class),
-            G_SIGNAL_RUN_FIRST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            1,
-            G_TYPE_STRING
-    );
-    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_SUCCESS] = g_signal_new(
-            "success",
-            G_TYPE_FROM_CLASS (class),
-            G_SIGNAL_RUN_FIRST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            0
-    );
-    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_FAIL] = g_signal_new(
-            "fail",
-            G_TYPE_FROM_CLASS (class),
-            G_SIGNAL_RUN_FIRST,
-            0,
-            NULL,
-            NULL,
-            NULL,
-            G_TYPE_NONE,
-            1,
-            G_TYPE_STRING
-    );
+    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_ERROR] =
+        g_signal_new("auth-error", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
+    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_SUCCESS] =
+        g_signal_new("success", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
+                     G_TYPE_NONE, 0);
+    astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_FAIL] =
+        g_signal_new("fail", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
+                     G_TYPE_NONE, 1, G_TYPE_STRING);
 }
-
-
-

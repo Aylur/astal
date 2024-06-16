@@ -1,14 +1,14 @@
 #ifndef ASTAL_AUTH_PAM_H
 #define ASTAL_AUTH_PAM_H
 
-#include <glib-object.h>
 #include <gio/gio.h>
+#include <glib-object.h>
 
 G_BEGIN_DECLS
 
 #define ASTAL_AUTH_TYPE_PAM (astal_auth_pam_get_type())
 
-G_DECLARE_FINAL_TYPE (AstalAuthPam, astal_auth_pam, ASTAL_AUTH, PAM, GObject)
+G_DECLARE_FINAL_TYPE(AstalAuthPam, astal_auth_pam, ASTAL_AUTH, PAM, GObject)
 
 /**
  * astal_auth_pam_set_username
@@ -60,7 +60,6 @@ void astal_auth_pam_set_service(AstalAuthPam *self, const gchar *service);
  */
 const gchar *astal_auth_pam_get_service(AstalAuthPam *self);
 
-
 /**
  * astal_auth_pam_start_authentication:
  * @self: a AstalAuthPam Object
@@ -88,15 +87,14 @@ void astal_auth_pam_supply_secret(AstalAuthPam *self, const gchar *secret);
  *   to call when the request is satisfied
  * @user_data: the data to pass to callback function
  *
- * Requests authentication of the provided password using the PAM (Pluggable Authentication Modules) system.
+ * Requests authentication of the provided password using the PAM (Pluggable Authentication Modules)
+ * system.
  */
-gboolean astal_auth_pam_authenticate(const gchar *password,
-                                     GAsyncReadyCallback result_callback,
+gboolean astal_auth_pam_authenticate(const gchar *password, GAsyncReadyCallback result_callback,
                                      gpointer user_data);
 
-gssize astal_auth_pam_authenticate_finish(GAsyncResult *res,
-                                          GError **error);
+gssize astal_auth_pam_authenticate_finish(GAsyncResult *res, GError **error);
 
 G_END_DECLS
 
-#endif // !ASTAL_AUTH_PAM_H
+#endif  // !ASTAL_AUTH_PAM_H

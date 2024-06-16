@@ -1,10 +1,11 @@
-#include "auth.h"
 #include <bsd/readpassphrase.h>
+
+#include "auth.h"
 
 GMainLoop *loop;
 
 static void authenticate(AstalAuthPam *pam) {
-    if(!astal_auth_pam_start_authenticate(pam)) {
+    if (!astal_auth_pam_start_authenticate(pam)) {
         g_print("could not start authentication process\n");
         g_object_unref(pam);
         g_main_loop_quit(loop);
@@ -44,9 +45,7 @@ static void on_fail(AstalAuthPam *pam, const gchar *data) {
     authenticate(pam);
 }
 
-
 int main(void) {
-
     GMainContext *loopctx = NULL;
 
     loop = g_main_loop_new(loopctx, FALSE);

@@ -1,7 +1,8 @@
-#include "auth.h"
-#include <termios.h>
-#include <stdio.h>
 #include <getopt.h>
+#include <stdio.h>
+#include <termios.h>
+
+#include "auth.h"
 
 GMainLoop *loop;
 
@@ -21,10 +22,9 @@ static char *read_secret(const char *msg, gboolean echo) {
         return NULL;
     }
     newt = oldt;
-    if(echo) {
+    if (echo) {
         newt.c_lflag |= ECHO;
-    }
-    else {
+    } else {
         newt.c_lflag &= ~(ECHO);
     }
     if (tcsetattr(STDIN_FILENO, TCSANOW, &newt) != 0) {
@@ -63,7 +63,7 @@ static void authenticate(AstalAuthPam *pam) {
 }
 
 static void on_visible(AstalAuthPam *pam, const gchar *data) {
-    char* secret = read_secret(data, TRUE);
+    char *secret = read_secret(data, TRUE);
     if (secret == NULL) cleanup_and_quit(pam, EXIT_FAILURE);
     astal_auth_pam_supply_secret(pam, secret);
     g_free(secret);
@@ -93,26 +93,24 @@ static void on_success(AstalAuthPam *pam) {
 
 static void on_fail(AstalAuthPam *pam, const gchar *data, gboolean retry) {
     g_print("%s\n", data);
-    if (retry) authenticate(pam);
-    else cleanup_and_quit(pam, EXIT_FAILURE);
+    if (retry)
+        authenticate(pam);
+    else
+        cleanup_and_quit(pam, EXIT_FAILURE);
 }
 
-
 int main(int argc, char **argv) {
-
-    char* password = NULL;
-    char* username = NULL;
-    char* service = NULL;
+    char *password = NULL;
+    char *username = NULL;
+    char *service = NULL;
 
     int opt;
     const char *optstring = "p:u:s:";
 
-    static struct option long_options[] = {
-            {"password", required_argument, NULL, 'p'},
-            {"username", required_argument, NULL, 'u'},
-            {"service",  required_argument, NULL, 's'},
-            {NULL, 0, NULL, 0}
-    };
+    static struct option long_options[] = {{"password", required_argument, NULL, 'p'},
+                                           {"username", required_argument, NULL, 'u'},
+                                           {"service", required_argument, NULL, 's'},
+                                           {NULL, 0, NULL, 0}};
 
     while ((opt = getopt_long(argc, argv, optstring, long_options, NULL)) != -1) {
         switch (opt) {
@@ -138,13 +136,12 @@ int main(int argc, char **argv) {
     if (username) astal_auth_pam_set_username(pam, username);
     if (service) astal_auth_pam_set_service(pam, service);
     if (password) {
-        g_signal_connect(pam, "fail", G_CALLBACK(on_fail), (void*)FALSE);
-    }
-    else {
+        g_signal_connect(pam, "fail", G_CALLBACK(on_fail), (void *)FALSE);
+    } else {
         g_signal_connect(pam, "auth-prompt-visible", G_CALLBACK(on_visible), NULL);
         g_signal_connect(pam, "auth-info", G_CALLBACK(on_info), NULL);
         g_signal_connect(pam, "auth-error", G_CALLBACK(on_error), NULL);
-        g_signal_connect(pam, "fail", G_CALLBACK(on_fail), (void*)TRUE);
+        g_signal_connect(pam, "fail", G_CALLBACK(on_fail), (void *)TRUE);
     }
 
     g_signal_connect(pam, "auth-prompt-hidden", G_CALLBACK(on_hidden), g_strdup(password));
