@@ -1,29 +1,26 @@
-#include "river.h"
-#include "gio/gio.h"
 #include <getopt.h>
 #include <json-glib/json-glib.h>
 
-GMainLoop *loop;
+#include "gio/gio.h"
+#include "river.h"
 
-void print_json(AstalRiverRiver *river) {
-    JsonNode *json = json_gobject_serialize (G_OBJECT(river));
+GMainLoop* loop;
 
-    gchar* json_str = json_to_string (json, FALSE);
+void print_json(AstalRiverRiver* river) {
+    JsonNode* json = json_gobject_serialize(G_OBJECT(river));
+
+    gchar* json_str = json_to_string(json, FALSE);
     g_print("%s\n", json_str);
     g_free(json);
 }
 
-int main(int argc, char **argv) {
-
+int main(int argc, char** argv) {
     gboolean daemon = FALSE;
 
     int opt;
-    const char *optstring = "d";
+    const char* optstring = "d";
 
-    static struct option long_options[] = {
-            {"daemon",  no_argument, NULL, 'd'},
-            {NULL, 0, NULL, 0}
-    };
+    static struct option long_options[] = {{"daemon", no_argument, NULL, 'd'}, {NULL, 0, NULL, 0}};
 
     while ((opt = getopt_long(argc, argv, optstring, long_options, NULL)) != -1) {
         switch (opt) {
@@ -36,15 +33,13 @@ int main(int argc, char **argv) {
         }
     }
 
-    AstalRiverRiver *river = astal_river_river_new ();
-    if(daemon) {
-        loop = g_main_loop_new (NULL, FALSE);
+    AstalRiverRiver* river = astal_river_river_new();
+    if (daemon) {
+        loop = g_main_loop_new(NULL, FALSE);
         g_signal_connect(river, "changed", G_CALLBACK(print_json), NULL);
-        g_main_loop_run (loop);
-    }
-    else {
-        print_json (river);
+        g_main_loop_run(loop);
+    } else {
+        print_json(river);
         g_object_unref(river);
     }
-
 }

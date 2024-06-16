@@ -9,7 +9,7 @@ project('astal_river',
 )
 
 add_project_arguments(
-    ['-Wno-pedantic'],
+    ['-Wno-pedantic', '-Wno-unused-parameter'],
     language : 'c')
 
 version_split = meson.project_version().split('.')
