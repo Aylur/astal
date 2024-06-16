@@ -1,5 +1,5 @@
 import Binding, { kebabify, snakeify, type Connectable, type Subscribable } from "./binding.js"
-import { Astal, Gtk } from "./imports.js"
+import { Astal, Gtk, Gdk } from "./imports.js"
 import { execAsync } from "./process.js"
 import Variable from "./variable.js"
 
@@ -128,11 +128,6 @@ function ctor(self: any, config: any = {}, children: any[] = []) {
     }, [])
 
     Object.assign(self, props)
-    Object.assign(self, {
-        hook(obj: any, sig: any, callback: any) {
-            return hook(self, obj, sig, callback)
-        },
-    })
 
     for (const [signal, callback] of onHandlers) {
         if (typeof callback === "function") {
@@ -174,20 +169,36 @@ function ctor(self: any, config: any = {}, children: any[] = []) {
 function proxify<
     C extends { new(...args: any[]): any },
 >(klass: C) {
+    klass.prototype.hook = function (obj: any, sig: any, callback: any) {
+        return hook(this, obj, sig, callback)
+    }
+
     Object.defineProperty(klass.prototype, "className", {
         get() { return Astal.widget_get_class_names(this).join(" ") },
         set(v) { Astal.widget_set_class_names(this, v.split(/\s+/)) },
     })
+
+    klass.prototype.set_class_name = function (name: string) {
+        this.className = name
+    }
 
     Object.defineProperty(klass.prototype, "css", {
         get() { return Astal.widget_get_css(this) },
         set(v) { Astal.widget_set_css(this, v) },
     })
 
+    klass.prototype.set_css = function (css: string) {
+        this.css = css
+    }
+
     Object.defineProperty(klass.prototype, "cursor", {
         get() { return Astal.widget_get_cursor(this) },
         set(v) { Astal.widget_set_cursor(this, v) },
     })
+
+    klass.prototype.set_cursor = function (cursor: string) {
+        this.cursor = cursor
+    }
 
     const proxy = new Proxy(klass, {
         construct(_, [conf, ...children]) {
@@ -243,6 +254,11 @@ export type ConstructProps<
 }> & {
     onDestroy?: (self: Widget<Self>) => unknown
     onDraw?: (self: Widget<Self>) => unknown
+    onKeyPressEvent?: (self: Widget<Self>, event: Gdk.Event) => unknown
+    onKeyReleaseEvent?: (self: Widget<Self>, event: Gdk.Event) => unknown
+    onButtonPressEvent?: (self: Widget<Self>, event: Gdk.Event) => unknown
+    onButtonReleaseEvent?: (self: Widget<Self>, event: Gdk.Event) => unknown
+    onRealize?: (self: Widget<Self>) => unknown
     setup?: (self: Widget<Self>) => void
 }
 

@@ -12,11 +12,11 @@ export type BoxProps = ConstructProps<typeof Astal.Box, Astal.Box.ConstructorPro
 export const Button = astalify<typeof Astal.Button, ButtonProps, "Button">(Astal.Button)
 export type ButtonProps = ConstructProps<typeof Astal.Button, Astal.Button.ConstructorProperties, {
     onClicked: []
-    onClick: [event: Astal.ClickEvent],
-    onClickRelease: [event: Astal.ClickEvent],
-    onHover: [event: Astal.HoverEvent],
-    onHoverLost: [event: Astal.HoverEvent],
-    onScroll: [event: Astal.ScrollEvent],
+    onClick: [event: Astal.ClickEvent]
+    onClickRelease: [event: Astal.ClickEvent]
+    onHover: [event: Astal.HoverEvent]
+    onHoverLost: [event: Astal.HoverEvent]
+    onScroll: [event: Astal.ScrollEvent]
 }>
 
 // CenterBox
@@ -41,11 +41,11 @@ export type EntryProps = ConstructProps<typeof Gtk.Entry, Gtk.Entry.ConstructorP
 // EventBox
 export const EventBox = astalify<typeof Astal.EventBox, EventBoxProps, "EventBox">(Astal.EventBox)
 export type EventBoxProps = ConstructProps<typeof Astal.EventBox, Astal.EventBox.ConstructorProperties, {
-    onClick: [event: Astal.ClickEvent],
-    onClickRelease: [event: Astal.ClickEvent],
-    onHover: [event: Astal.HoverEvent],
-    onHoverLost: [event: Astal.HoverEvent],
-    onScroll: [event: Astal.ScrollEvent],
+    onClick: [event: Astal.ClickEvent]
+    onClickRelease: [event: Astal.ClickEvent]
+    onHover: [event: Astal.HoverEvent]
+    onHoverLost: [event: Astal.HoverEvent]
+    onScroll: [event: Astal.ScrollEvent]
 }>
 
 // TODO: Fixed
