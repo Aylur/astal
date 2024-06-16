@@ -78,7 +78,7 @@ class Variable:
         else:
             f = lambda *_: self.get()
 
-        def setter(_, *args):
+        def setter(*args):
             self.set(f(*args))
 
         if isinstance(objs, list):

@@ -208,7 +208,7 @@ function Variable:observe(object, sigOrFn, callback)
             return self:get()
         end
     end
-    local set = function(_, ...)
+    local set = function(...)
         self:set(f(...))
     end
 

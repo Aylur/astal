@@ -172,11 +172,11 @@ class VariableWrapper<T> extends Function {
 
     observe(
         objs: Connectable | Array<[obj: Connectable, signal: string]>,
-        sigOrFn: string | ((...args: any[]) => T),
-        callback?: (...args: any[]) => T,
+        sigOrFn: string | ((obj: Connectable, ...args: any[]) => T),
+        callback?: (obj: Connectable, ...args: any[]) => T,
     ) {
         const f = typeof sigOrFn === "function" ? sigOrFn : callback ?? (() => this.get())
-        const set = (_: Connectable, ...args: any[]) => this.set(f(...args))
+        const set = (obj: Connectable, ...args: any[]) => this.set(f(obj, ...args))
 
         if (Array.isArray(objs)) {
             for (const obj of objs) {
