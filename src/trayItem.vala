@@ -17,24 +17,39 @@ namespace AstalTray {
 
   [DBus (use_string_marshalling = true)]
     public enum Category {
-      [DBus (value = "ApplicationStatus")]
+      [DBus (value = "ApplicationStatus"), Description (nick = "ApplicationStatus")]
         APPLICATION,
-      [DBus (value = "Communications")]
+      [DBus (value = "Communications"), Description (nick = "Communications")]
         COMMUNICATIONS,
-      [DBus (value = "SystemServices")]
+      [DBus (value = "SystemServices"), Description (nick = "SystemServices")]
         SYSTEM,
-      [DBus (value = "Hardware")]
-        HARDWARE
+      [DBus (value = "Hardware"), Description (nick = "Hardware")]
+        HARDWARE;
+
+      public string to_nick () {
+        EnumClass enumc = (EnumClass) typeof (Category).class_ref ();
+        unowned EnumValue eval = enumc.get_value (this);
+        return eval.value_nick;
+      }
     }
+
 
   [DBus (use_string_marshalling = true)]
     public enum Status {
-      [DBus (value = "Passive")]
+      [DBus (value = "Passive"), Description (nick = "Passive")]
         PASSIVE,
-      [DBus (value = "Active")]
+      [DBus (value = "Active"), Description (nick = "Active")]
         ACTIVE,
-      [DBus (value = "NeedsAttention")]
-        NEEDS_ATTENTION
+      [DBus (value = "NeedsAttention"), Description (nick = "NeedsAttention")]
+        NEEDS_ATTENTION;
+
+      
+      public string to_nick () {
+        EnumClass enumc = (EnumClass) typeof (Status).class_ref ();
+        unowned EnumValue eval = enumc.get_value (this);
+        return eval.value_nick;
+  	  }
+
     }
 
   [DBus (name="org.kde.StatusNotifierItem")]
@@ -269,8 +284,8 @@ namespace AstalTray {
             .set_member_name("bus_name").add_string_value(proxy.g_name)
             .set_member_name("object_path").add_string_value(proxy.g_object_path)
             .set_member_name("title").add_string_value(title)
-            .set_member_name("status").add_string_value(status.to_string())
-            .set_member_name("category").add_string_value(category.to_string())
+            .set_member_name("status").add_string_value(status.to_nick())
+            .set_member_name("category").add_string_value(category.to_nick())
             .set_member_name("tooltip").add_string_value(tooltip_markup)
             .set_member_name("icon_theme_path").add_string_value(proxy.IconThemePath)
             .set_member_name("icon_name").add_string_value(icon_name)
