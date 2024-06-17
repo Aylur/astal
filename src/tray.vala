@@ -115,6 +115,16 @@ namespace AstalTray {
       return _items.get(service);
     }
 
+    private static Tray? instance;
+
+    public static unowned Tray get_default() {
+
+      if (instance == null) instance = new Tray();
+
+      return instance;
+    }
+
+
   }
 }
 
