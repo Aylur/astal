@@ -200,6 +200,34 @@ namespace AstalTray {
           }
         });
     }
+    
+    public void activate(int x, int y) {
+      try {
+        proxy.Activate(x, y);
+      } catch (Error e) {
+        if(e.domain != DBusError.quark() || e.code != DBusError.UNKNOWN_METHOD) 
+          warning("%s\n", e.message);
+      }
+    }
+    
+    public void secondary_activate(int x, int y) {
+      try {
+        proxy.SecondaryActivate(x, y);
+      } catch (Error e) {
+        if(e.domain != DBusError.quark() || e.code != DBusError.UNKNOWN_METHOD) 
+          warning("%s\n", e.message);
+      }
+    }
+    
+    public void scroll(int delta, string orientation) {
+      try {
+        proxy.Scroll(delta, orientation);
+      } catch (Error e) {
+        if(e.domain != DBusError.quark() || e.code != DBusError.UNKNOWN_METHOD) 
+          warning("%s\n", e.message);
+      }
+    }     
+
 
     public DbusmenuGtk.Menu? create_menu() {
       if(proxy.Menu == null)  return null;
