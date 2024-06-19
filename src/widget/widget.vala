@@ -72,14 +72,16 @@ public List<weak string> widget_get_class_names(Gtk.Widget widget) {
     return widget.get_style_context().list_classes();
 }
 
-public void widget_toggle_class_name(Gtk.Widget widget,
-                                     string class_name,
-                                     bool condition) {
-        var c = widget.get_style_context();
-        if (condition)
-            c.add_class(class_name);
-        else
-            c.remove_class(class_name);
+public void widget_toggle_class_name(
+    Gtk.Widget widget,
+    string class_name,
+    bool condition = true
+) {
+    var c = widget.get_style_context();
+    if (condition)
+        c.add_class(class_name);
+    else
+        c.remove_class(class_name);
 }
 
 private class Cursor {

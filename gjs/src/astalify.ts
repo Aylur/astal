@@ -67,6 +67,7 @@ export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C
     className: string
     css: string
     cursor: Cursor
+    toggleClassName(name: string, on: boolean): void
     hook(
         object: Connectable,
         signal: string,
@@ -171,6 +172,10 @@ function proxify<
 >(klass: C) {
     klass.prototype.hook = function (obj: any, sig: any, callback: any) {
         return hook(this, obj, sig, callback)
+    }
+
+    klass.prototype.toggleClassName = function (name: string, on = true) {
+        Astal.widget_toggle_class_name(this, name, on)
     }
 
     Object.defineProperty(klass.prototype, "className", {

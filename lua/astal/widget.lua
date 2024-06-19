@@ -128,6 +128,10 @@ local function astalify(ctor)
         end
     end
 
+    function ctor:toggle_class_name(name, on)
+        Astal.toggle_class_name(self, name, on)
+    end
+
     return function(tbl)
         if tbl == nil then
             tbl = {}
