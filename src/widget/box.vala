@@ -6,6 +6,11 @@ public class Box : Gtk.Box {
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
     }
 
+    /**
+     * wether to implicity destroy previous children when setting them
+     */
+    public bool implicit_destroy { get; set; default = false; }
+
     public List<weak Gtk.Widget> children {
         set { _set_children(value); }
         owned get { return get_children(); }
@@ -36,8 +41,12 @@ public class Box : Gtk.Box {
     }
 
     private void _set_children(List<weak Gtk.Widget> arr) {
-        foreach(var child in get_children())
-            remove(child);
+        foreach(var child in get_children()) {
+            if (implicit_destroy)
+                child.destroy();
+            else
+                remove(child);
+        }
 
         foreach(var child in arr)
             add(child);
