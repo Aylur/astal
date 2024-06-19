@@ -7,6 +7,10 @@ public class EventBox : Gtk.EventBox {
     public signal void scroll (ScrollEvent event);
     public signal void motion (MotionEvent event);
 
+    static construct {
+        set_css_name("eventbox");
+    }
+
     construct {
         add_events(Gdk.EventMask.SCROLL_MASK);
         add_events(Gdk.EventMask.SMOOTH_SCROLL_MASK);
