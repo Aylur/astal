@@ -3,11 +3,13 @@
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs }:
-  let
+  outputs = {
+    self,
+    nixpkgs,
+  }: let
     version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./version);
     system = "x86_64-linux";
-    pkgs = import nixpkgs { inherit system; };
+    pkgs = import nixpkgs {inherit system;};
 
     nativeBuildInputs = with pkgs; [
       gobject-introspection
@@ -37,6 +39,15 @@
     devShells.${system} = {
       default = pkgs.mkShell {
         inherit nativeBuildInputs buildInputs;
+      };
+      notifd = pkgs.mkShell {
+        inherit nativeBuildInputs;
+        buildInputs =
+          buildInputs
+          ++ [
+            self.packages.${system}.default
+            pkgs.gjs
+          ];
       };
     };
   };

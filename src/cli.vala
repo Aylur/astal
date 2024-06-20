@@ -103,6 +103,9 @@ int main(string[] argv) {
         });
     }
 
+    if (!daemonize && invoke == null && close_n == 0 && get_n == 0)
+        return 1;
+
     loop.run();
     return 0;
 }
