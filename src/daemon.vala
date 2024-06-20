@@ -44,6 +44,7 @@ internal class Daemon : Object {
                 for (var i = 0; i < list.get_length(); ++i) {
                     add_notification(new Notification.from_json(list.get_object_element(i)));
                 }
+                n_id = list.get_length() + 1;
             } catch (Error err) {
                 warning("failed to load cache: %s", err.message);
             }
