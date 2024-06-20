@@ -50,7 +50,7 @@ public class Notifd : Object {
         return get_notification(id).to_json_string();
     }
 
-    public signal void notified(uint id);
+    public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
 
     construct {
@@ -72,7 +72,7 @@ public class Notifd : Object {
 
     private void try_daemon(DBusConnection conn) {
         daemon = new Daemon().register(conn);
-        daemon.notified.connect((id) => notified(id));
+        daemon.notified.connect((id, replaced) => notified(id, replaced));
         daemon.resolved.connect((id, reason) => resolved(id, reason));
         daemon.notify.connect((prop) => {
             if (get_class().find_property(prop.name) != null) {
@@ -89,7 +89,7 @@ public class Notifd : Object {
             return;
         }
 
-        proxy.notified.connect((id) => notified(id));
+        proxy.notified.connect((id, replaced) => notified(id, replaced));
         proxy.resolved.connect((id, reason) => resolved(id, reason));
         proxy.notify.connect((prop) => {
             if (get_class().find_property(prop.name) != null) {

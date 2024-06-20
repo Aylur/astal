@@ -7,10 +7,9 @@ internal interface IDaemon : Object {
     public abstract uint[] notification_ids() throws DBusError, IOError;
     public abstract string get_notification_json(uint id) throws DBusError, IOError;
 
-    public signal void notified(uint id);
+    public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
 
-    public abstract void emit_notified(uint id);
     public abstract void emit_resolved(uint id, ClosedReason reason);
     public abstract void emit_action_invoked(uint id, string action);
 }
@@ -41,7 +40,7 @@ internal class DaemonProxy : Object {
         return notifs.get(id);
     }
 
-    public signal void notified(uint id);
+    public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
 
     IDaemon proxy;
@@ -103,9 +102,9 @@ internal class DaemonProxy : Object {
                 notify_property(pspec.name);
         }));
 
-        ids.append(proxy.notified.connect((id) => {
+        ids.append(proxy.notified.connect((id, replaced) => {
             add_notification(id);
-            notified(id);
+            notified(id, replaced);
         }));
 
         ids.append(proxy.resolved.connect((id, reason) => {

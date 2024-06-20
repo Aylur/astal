@@ -22,12 +22,11 @@ internal class Daemon : Object {
     public bool ignore_timeout { get; set; }
     public bool dont_disturb { get; set; }
 
-    public signal void notified(uint id);
+    public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
     public signal void action_invoked(uint id, string action);
 
     // emitting an event from proxy doesn't seem to work
-    public void emit_notified(uint id) { notified(id); }
     public void emit_resolved(uint id, ClosedReason reason) { resolved(id, reason); }
     public void emit_action_invoked(uint id, string action) { action_invoked(id, action); }
 
@@ -110,7 +109,7 @@ internal class Daemon : Object {
 
         var id = replaces_id > 0 ? replaces_id : n_id++;
 
-        add_notification(new Notification(
+        var replaced = add_notification(new Notification(
             app_name, id, app_icon, summary, body, actions, hints, expire_timeout
         ));
 
@@ -121,17 +120,18 @@ internal class Daemon : Object {
             }, Priority.DEFAULT);
         }
 
-        if (!dont_disturb)
-            notified(id);
+        notified(id, replaced);
 
         cache();
         return id;
     }
 
-    private void add_notification(Notification n) {
+    private bool add_notification(Notification n) {
         n.dismissed.connect(() => resolved(n.id, ClosedReason.DISMISSED_BY_USER));
         n.invoked.connect((action) => action_invoked(n.id, action));
+        var replaced = notifs.contains(n.id);
         notifs.set(n.id, n);
+        return replaced;
     }
 
     private void cache() {

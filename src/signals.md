@@ -11,17 +11,20 @@ ignore this, I'm just dumb and can't follow where signals go or get emitted from
 ## Deamon
 
 non-spec, used by user
-* notified(id) - by outside through dbus with `.Notify()`
+
+* notified(id, replaced) - by outside through dbus with `.Notify()`
 * resolved(id, reason) - by `Notification.dismiss()` or outside with `.CloseNotification`
 
 spec, not used by user
+
 * notification_closed(id, reason) - sideeffect of `resolved`
 * action_invoked(id, action) - by `Notification.invoke()`
 
 ## Proxy
 
 mirrors Daemon
-* notified(id)
+
+* notified(id, replaced)
 * resolved(id, reason)
 
 creates `Notification` objects through daemon's json strings
