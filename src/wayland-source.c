@@ -96,6 +96,7 @@ WLSource *wl_source_new() {
 
 void wl_source_free(WLSource *self) {
     GSource *source = (GSource *)self;
+    g_return_if_fail(source != NULL);
     g_source_destroy(source);
     g_source_unref(source);
 }

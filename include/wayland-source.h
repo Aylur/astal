@@ -1,6 +1,8 @@
 #ifndef __WAYLAND_SOURCE_H__
 #define __WAYLAND_SOURCE_H__
 
+#include <glib-object.h>
+
 G_BEGIN_DECLS
 
 typedef struct _WLSource WLSource;

@@ -18,7 +18,7 @@ struct _AstalRiverRiver {
 
 typedef struct {
     GHashTable* signal_ids;
-
+    gboolean init;
     struct wl_registry* wl_registry;
     struct wl_seat* seat;
     struct wl_display* display;
@@ -196,6 +196,7 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
     AstalRiverRiver* self = ASTAL_RIVER_RIVER(data);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
     if (strcmp(interface, wl_output_interface.name) == 0) {
+        if(priv->river_status_manager == NULL) return;
         struct wl_output* wl_out = wl_registry_bind(registry, id, &wl_output_interface, 4);
         AstalRiverOutput* output =
             astal_river_output_new(id, wl_out, priv->river_status_manager, priv->display);
@@ -279,11 +280,8 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
                                                 GError** error) {
     AstalRiverRiver* self = ASTAL_RIVER_RIVER(initable);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
-
-    priv->seat = NULL;
-    priv->display = NULL;
-    priv->river_status_manager = NULL;
-    priv->signal_ids = g_hash_table_new(g_direct_hash, g_direct_equal);
+  
+    if(priv->init) return TRUE;
 
     priv->wl_source = wl_source_new(NULL, NULL);
 
@@ -312,14 +310,32 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
 
     wl_display_roundtrip(priv->display);
 
+    priv->init = TRUE;
     return TRUE;
+}
+
+static void astal_river_river_constructed(GObject* object) {
+    astal_river_river_initable_init(G_INITABLE(object), NULL, NULL);
 }
 
 static void astal_river_river_initable_iface_init(GInitableIface* iface) {
     iface->init = astal_river_river_initable_init;
 }
 
-static void astal_river_river_init(AstalRiverRiver* self) { self->outputs = NULL; }
+static void astal_river_river_init(AstalRiverRiver* self) { 
+    
+    AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
+    
+    self->outputs = NULL; 
+    
+    priv->init = FALSE;
+    priv->seat = NULL;
+    priv->display = NULL;
+    priv->river_status_manager = NULL;
+    priv->signal_ids = g_hash_table_new(g_direct_hash, g_direct_equal);
+
+
+}
 
 AstalRiverRiver* astal_river_river_new() {
     return g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, NULL, NULL);
@@ -347,18 +363,18 @@ static void astal_river_river_finalize(GObject* object) {
     g_hash_table_foreach(priv->signal_ids, disconnect_signal, self);
     g_hash_table_destroy(priv->signal_ids);
 
-    wl_display_roundtrip(priv->display);
+    if (priv->display != NULL) wl_display_roundtrip(priv->display);
 
     g_clear_list(&self->outputs, g_object_unref);
     self->outputs = NULL;
 
-    wl_registry_destroy(priv->wl_registry);
-    zriver_status_manager_v1_destroy(priv->river_status_manager);
-    zriver_seat_status_v1_destroy(priv->river_seat_status);
-    wl_seat_destroy(priv->seat);
-    wl_display_flush(priv->display);
+    if (priv->wl_registry != NULL)  wl_registry_destroy(priv->wl_registry);
+    if (priv->river_status_manager != NULL) zriver_status_manager_v1_destroy(priv->river_status_manager);
+    if (priv->river_seat_status != NULL) zriver_seat_status_v1_destroy(priv->river_seat_status);
+    if (priv->seat != NULL) wl_seat_destroy(priv->seat);
+    if (priv->display != NULL) wl_display_flush(priv->display);
 
-    wl_source_free(priv->wl_source);
+    if (priv->wl_source != NULL) wl_source_free(priv->wl_source);
 
     g_free(self->focused_view);
     g_free(self->focused_output);
@@ -371,6 +387,7 @@ static void astal_river_river_class_init(AstalRiverRiverClass* class) {
     GObjectClass* object_class = G_OBJECT_CLASS(class);
     object_class->get_property = astal_river_river_get_property;
     object_class->finalize = astal_river_river_finalize;
+    object_class->constructed = astal_river_river_constructed;
 
     astal_river_river_properties[ASTAL_RIVER_RIVER_PROP_MODE] =
         g_param_spec_string("mode", "mode", "currently active mode", NULL, G_PARAM_READABLE);

@@ -1,5 +1,6 @@
 #include <getopt.h>
 #include <json-glib/json-glib.h>
+#include <stdlib.h>
 
 #include "gio/gio.h"
 #include "river.h"
@@ -33,7 +34,12 @@ int main(int argc, char** argv) {
         }
     }
 
-    AstalRiverRiver* river = astal_river_river_new();
+    GError *error = NULL;
+    AstalRiverRiver* river = g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, &error, NULL);
+    if(error) {
+      g_critical("%s\n", error->message);
+      exit(EXIT_FAILURE);
+    }
     if (daemon) {
         loop = g_main_loop_new(NULL, FALSE);
         g_signal_connect(river, "changed", G_CALLBACK(print_json), NULL);
