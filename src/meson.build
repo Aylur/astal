@@ -40,6 +40,7 @@ sources = [
   'widget/widget.vala',
   'widget/window.vala',
   'astal.vala',
+  'file.vala',
   'process.vala',
   'time.vala',
   'variable.vala',
