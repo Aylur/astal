@@ -1,6 +1,6 @@
 # astal-battery
 
-DBus proxy library for upower daemeon
+DBus proxy library for upower daemon devices
 
 ## TODO
 

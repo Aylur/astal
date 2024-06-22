@@ -26,9 +26,6 @@ sources = [
   'ifaces.vala',
   'device.vala',
   'upower.vala',
-  'kbd.vala',
-  'profiles.vala',
-  'utils.vala',
 ]
 
 if get_option('lib')
