@@ -8,9 +8,8 @@ public class Box : Gtk.Box {
 
     /**
      * wether to implicity destroy previous children when setting them
-     * TODO: should it be opt out?
      */
-    public bool implicit_destroy { get; set; default = false; }
+    public bool implicit_destroy { get; set; default = true; }
 
     public List<weak Gtk.Widget> children {
         set { _set_children(value); }
