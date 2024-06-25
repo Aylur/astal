@@ -1,4 +1,8 @@
 namespace AstalHyprland {
+public Hyprland get_default() {
+    return Hyprland.get_default();
+}
+
 public class Hyprland : Object {
     private static string HIS = GLib.Environment.get_variable("HYPRLAND_INSTANCE_SIGNATURE");
     private static string RUN_DIR = GLib.Environment.get_user_runtime_dir();
