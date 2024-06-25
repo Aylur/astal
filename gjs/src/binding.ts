@@ -6,7 +6,7 @@ export const kebabify = (str: string) => snakeify(str)
     .replaceAll("_", "-")
 
 export interface Subscribable<T = unknown> {
-    subscribe(callback: () => void): () => void
+    subscribe(callback: (value: T) => void): () => void
     get(): T
     [key: string]: any
 }

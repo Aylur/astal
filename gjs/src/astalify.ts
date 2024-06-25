@@ -67,7 +67,7 @@ export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C
     className: string
     css: string
     cursor: Cursor
-    toggleClassName(name: string, on: boolean): void
+    toggleClassName(name: string, on?: boolean): void
     hook(
         object: Connectable,
         signal: string,
@@ -170,11 +170,11 @@ function ctor(self: any, config: any = {}, children: any[] = []) {
 function proxify<
     C extends { new(...args: any[]): any },
 >(klass: C) {
-    klass.prototype.hook = function (obj: any, sig: any, callback: any) {
+    klass.prototype.hook = function(obj: any, sig: any, callback: any) {
         return hook(this, obj, sig, callback)
     }
 
-    klass.prototype.toggleClassName = function (name: string, on = true) {
+    klass.prototype.toggleClassName = function(name: string, on = true) {
         Astal.widget_toggle_class_name(this, name, on)
     }
 
@@ -183,7 +183,7 @@ function proxify<
         set(v) { Astal.widget_set_class_names(this, v.split(/\s+/)) },
     })
 
-    klass.prototype.set_class_name = function (name: string) {
+    klass.prototype.set_class_name = function(name: string) {
         this.className = name
     }
 
@@ -192,7 +192,7 @@ function proxify<
         set(v) { Astal.widget_set_css(this, v) },
     })
 
-    klass.prototype.set_css = function (css: string) {
+    klass.prototype.set_css = function(css: string) {
         this.css = css
     }
 
@@ -201,7 +201,7 @@ function proxify<
         set(v) { Astal.widget_set_cursor(this, v) },
     })
 
-    klass.prototype.set_cursor = function (cursor: string) {
+    klass.prototype.set_cursor = function(cursor: string) {
         this.cursor = cursor
     }
 
