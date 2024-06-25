@@ -47,8 +47,7 @@ if get_option('lib')
   )
 
   import('pkgconfig').generate(
-    description: 'libastal-notifd',
-    libraries: lib,
+    lib,
     name: meson.project_name(),
     filebase: meson.project_name() + '-' + api_version,
     version: meson.project_version(),
