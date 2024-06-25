@@ -1,10 +1,17 @@
 namespace AstalNotifd {
-public enum ActiveType {
-    DAEMON,
-    PROXY,
+public Notifd get_default() {
+    return Notifd.get_default();
 }
 
 public class Notifd : Object {
+    private static Notifd _instance;
+    public static Notifd get_default() {
+        if (_instance == null)
+            _instance = new Notifd();
+
+        return _instance;
+    }
+
     private Daemon daemon;
     private DaemonProxy proxy;
 
@@ -97,5 +104,10 @@ public class Notifd : Object {
             }
         });
     }
+}
+
+public enum ActiveType {
+    DAEMON,
+    PROXY,
 }
 }
