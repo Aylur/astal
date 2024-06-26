@@ -42,8 +42,6 @@
           (lua.withPackages (ps: [ps.lgi]))
           (python3.withPackages (ps: [ps.pygobject3]))
           gjs
-          deno
-          nodejs
         ];
     in {
       default = pkgs.mkShell {
@@ -56,7 +54,6 @@
           inputs
           ++ [
             self.packages.${system}.astal
-            pkgs.playerctl # FIXME: just for demo
           ];
       };
     };
