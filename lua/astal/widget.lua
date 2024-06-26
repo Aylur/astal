@@ -259,6 +259,11 @@ Gtk.Widget._attribute.cursor = {
     set = Astal.widget_set_cursor,
 }
 
+Gtk.Widget._attribute.click_through = {
+    get = Astal.widget_get_click_through,
+    set = Astal.widget_set_click_through,
+}
+
 Astal.Box._attribute.children = {
     get = Astal.Box.get_children,
     set = Astal.Box.set_children,

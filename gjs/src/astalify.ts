@@ -67,6 +67,7 @@ export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C
     className: string
     css: string
     cursor: Cursor
+    clickThrough: boolean
     toggleClassName(name: string, on?: boolean): void
     hook(
         object: Connectable,
@@ -205,6 +206,15 @@ function proxify<
         this.cursor = cursor
     }
 
+    Object.defineProperty(klass.prototype, "clickThrough", {
+        get() { return Astal.widget_get_click_through(this) },
+        set(v) { Astal.widget_set_click_through(this, v) },
+    })
+
+    klass.prototype.set_click_through = function(clickThrough: boolean) {
+        this.clickThrough = clickThrough
+    }
+
     const proxy = new Proxy(klass, {
         construct(_, [conf, ...children]) {
             const self = new klass
@@ -256,6 +266,7 @@ export type ConstructProps<
     className?: string
     css?: string
     cursor?: string
+    clickThrough?: boolean
 }> & {
     onDestroy?: (self: Widget<Self>) => unknown
     onDraw?: (self: Widget<Self>) => unknown

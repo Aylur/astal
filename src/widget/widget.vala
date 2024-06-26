@@ -131,4 +131,27 @@ public void widget_set_cursor(Gtk.Widget widget, string cursor) {
 public string widget_get_cursor(Gtk.Widget widget) {
     return Cursor.cursors.get(widget);
 }
+
+private class ClickThrough {
+    private static HashTable<Gtk.Widget, bool> _click_through;
+    public static HashTable<Gtk.Widget, bool> click_through {
+        get {
+            if (_click_through == null) {
+                _click_through = new HashTable<Gtk.Widget, bool>(
+                    (w) => (uint)w,
+                    (a, b) => a == b);
+            }
+            return _click_through;
+        }
+    }
+}
+
+public void widget_set_click_through(Gtk.Widget widget, bool click_through) {
+    ClickThrough.click_through.set(widget, click_through);
+    widget.input_shape_combine_region(click_through ? new Cairo.Region() : null);
+}
+
+public bool widget_get_click_through(Gtk.Widget widget) {
+    return ClickThrough.click_through.get(widget);
+}
 }
