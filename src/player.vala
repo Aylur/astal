@@ -111,7 +111,7 @@ public class Player : Object {
 
     private void _set_position(double pos) {
         try {
-            proxy.set_position(new ObjectPath(trackid), (int64)(pos * 1000000));
+            proxy.set_position(new ObjectPath(get_str("mpris:trackid")), (int64)(pos * 1000000));
         } catch (Error error) {
             critical(error.message);
             print("hello\n");
@@ -160,6 +160,7 @@ public class Player : Object {
     public bool can_control { get; private set; }
 
     // metadata
+    [CCode (notify = false)]
     public HashTable<string,Variant> metadata { owned get; private set; }
 
     public string trackid { owned get; private set; }
@@ -255,7 +256,12 @@ public class Player : Object {
             artist = join_strv("xesam:artist", ", ");
             comments = join_strv("xesam:comments", "\n");
             composer = join_strv("xesam:composer", ", ");
+            notify_property("metadata");
         }
+    }
+
+    public Variant? get_meta(string key) {
+        return metadata.lookup(key);
     }
 
     private string? get_str(string key) {
@@ -313,7 +319,6 @@ public class Player : Object {
         });
 
         proxy.g_properties_changed.connect(sync);
-        proxy.seeked.connect((pos) => position = (double)pos / 1000000);
 
         if (poll_position) {
             pollid = Timeout.add_seconds(1, () => {
@@ -333,10 +338,6 @@ public class Player : Object {
     ~Player() {
         if (poll_position)
             Source.remove(pollid);
-    }
-
-    public string to_json() {
-        return Json.gobject_to_data(this, null);
     }
 }
 
