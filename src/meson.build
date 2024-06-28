@@ -34,17 +34,16 @@ if get_option('lib')
     meson.project_name(),
     sources,
     dependencies: deps,
-    vala_header: meson.project_name() + '-' + api_version + '.h',
+    vala_header: meson.project_name().replace('astal-', '') + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
     vala_gir: gir,
     version: meson.project_version(),
     install: true,
-    install_dir: [true, true, true, true],
+    install_dir: [true, get_option('includedir') / 'astal', true, true],
   )
 
   import('pkgconfig').generate(
-    description: 'libastal-notifd',
-    libraries: lib,
+    lib,
     name: meson.project_name(),
     filebase: meson.project_name() + '-' + api_version,
     version: meson.project_version(),
