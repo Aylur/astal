@@ -53,6 +53,10 @@ class AstalJS extends Astal.Application {
         }
     }
 
+    apply_css(style: string, reset = false) {
+        super.apply_css(style, reset)
+    }
+
     start({ requestHandler, css, hold, main, client, ...cfg }: Config = {}) {
         client ??= () => {
             print(`Astal instance "${this.instanceName}" already running`)
