@@ -1,8 +1,8 @@
 version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
-tray_gir = 'AstalTray-' + api_version + '.gir'
-tray_typelib = 'AstalTray-' + api_version + '.typelib'
-tray_so = 'libastal-tray.so.' + meson.project_version()
+gir = 'AstalTray-' + api_version + '.gir'
+typelib = 'AstalTray-' + api_version + '.typelib'
+so = 'lib' + meson.project_name() + '.so.' + meson.project_version()
 
 config = configure_file(
   input: 'config.vala.in',
@@ -26,69 +26,63 @@ deps = [
 
 dbusmenu_cflags = run_command(
   find_program('pkg-config', required: true),
-  '--cflags',
-  'dbusmenu-gtk3-0.4',
+  '--cflags', 'dbusmenu-gtk3-0.4',
   'gobject-introspection-1.0',
-  'gobject-2.0', 'glib-2.0',
+  'gobject-2.0',
+  'glib-2.0',
   capture: true,
   check: true,
 ).stdout().strip()
 
 dbusmenu_libs = run_command(
   find_program('pkg-config', required: true),
-  '--libs',
-  'dbusmenu-gtk3-0.4',
+  '--libs', 'dbusmenu-gtk3-0.4',
   'gobject-introspection-1.0',
-  'gobject-2.0', 'glib-2.0',
+  'gobject-2.0',
+  'glib-2.0',
   capture: true,
   check: true,
 ).stdout().strip()
 
-sources = [
-  config,
-  'tray.vala',
-  'watcher.vala',
-  'trayItem.vala'
-]
+sources = [config, 'tray.vala', 'watcher.vala', 'trayItem.vala']
 
-libtray = library(
-  meson.project_name(),
-  sources,
-  dependencies: deps,
-  vala_header: meson.project_name() + '.h',
-  vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-  vala_gir: tray_gir,
-  vala_args: ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4'],
-  version: meson.project_version(),
-  c_args: dbusmenu_cflags.split(' '),
-  link_args: dbusmenu_libs.split(' '),
-  install: true,
-  install_dir: [true, true, true, true],
-)
+if get_option('lib')
+  lib = library(
+    meson.project_name(),
+    sources,
+    dependencies: deps,
+    vala_header: meson.project_name().replace('astal-', '') + '.h',
+    vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
+    vala_gir: gir,
+    vala_args: ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4'],
+    version: meson.project_version(),
+    c_args: dbusmenu_cflags.split(' '),
+    link_args: dbusmenu_libs.split(' '),
+    install: true,
+    install_dir: [true, get_option('includedir') / 'astal', true, true],
+  )
 
-import('pkgconfig').generate(
-  description: 'libastal-tray',
-  libraries: libtray,
-  name: meson.project_name(),
-  filebase: meson.project_name() + '-' + api_version,
-  version: meson.project_version(),
-  subdirs: meson.project_name(),
-  requires: deps + [dependency('dbusmenu-gtk3-0.4')],
-  install_dir: get_option('libdir') / 'pkgconfig',
-)
+  import('pkgconfig').generate(
+    lib,
+    name: meson.project_name(),
+    filebase: meson.project_name() + '-' + api_version,
+    version: meson.project_version(),
+    subdirs: meson.project_name(),
+    requires: deps,
+    install_dir: get_option('libdir') / 'pkgconfig',
+  )
 
-if get_option('typelib')
   custom_target(
-    tray_typelib,
+    typelib,
     command: [
       find_program('g-ir-compiler'),
       '--output', '@OUTPUT@',
       '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
-      meson.current_build_dir() / tray_gir,
+      meson.current_build_dir() / gir,
     ],
-    input: libtray,
-    output: tray_typelib,
-    depends: libtray,
+    input: lib,
+    output: typelib,
+    depends: lib,
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
   )
