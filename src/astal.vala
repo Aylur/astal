@@ -88,6 +88,11 @@ public class Application : Gtk.Application {
         css_providers.append(provider);
     }
 
+    public void add_icons(string? path) {
+        if (path != null)
+            Gtk.IconTheme.get_default().prepend_search_path(path);
+    }
+
     private async void _socket_request(SocketConnection conn) {
         string message = yield read_sock(conn);
         request(message.strip(), conn);
