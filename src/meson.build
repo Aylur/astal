@@ -1,8 +1,7 @@
 version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
 gir = 'AstalHyprland-' + api_version + '.gir'
-typelib = 'AstalHyprland--' + api_version + '.typelib'
-so = 'libastal-hyprland.so.' + meson.project_version()
+typelib = 'AstalHyprland-' + api_version + '.typelib'
 
 config = configure_file(
   input: 'config.vala.in',
