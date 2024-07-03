@@ -43,6 +43,8 @@ public class PowerProfiles : Object {
                 var map = (HashTable<string, Variant>)props;
                 foreach (var key in map.get_keys()) {
                     notify_property(kebab_case(key));
+                    if (key == "ActiveProfile")
+                        notify_property("icon-name");
                 }
             });
         } catch (Error error){
@@ -53,6 +55,10 @@ public class PowerProfiles : Object {
     public string active_profile {
         owned get { return proxy.active_profile; }
         set { proxy.active_profile = value; }
+    }
+
+    public string icon_name {
+        owned get { return @"power-profile-$active_profile-symbolic"; }
     }
 
     public string[] actions {
@@ -153,6 +159,7 @@ public class PowerProfiles : Object {
         return Json.to_string(new Json.Builder()
             .begin_object()
             .set_member_name("active_profile").add_string_value(active_profile)
+            .set_member_name("icon_name").add_string_value(icon_name)
             .set_member_name("performance_degraded").add_string_value(performance_degraded)
             .set_member_name("performance_inhibited").add_string_value(performance_inhibited)
             .set_member_name("actions").add_value(acts.end_array().get_root())
