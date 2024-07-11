@@ -1,6 +1,6 @@
 namespace Astal {
 public class Application : Gtk.Application {
-    private List<Gtk.CssProvider> css_providers;
+    private List<Gtk.CssProvider> css_providers = new List<Gtk.CssProvider>();
     private SocketService service;
 
     public string socket_path { get; private set; }
@@ -49,8 +49,8 @@ public class Application : Gtk.Application {
     public void reset_css() {
         foreach(var provider in css_providers) {
             Gtk.StyleContext.remove_provider_for_screen(screen, provider);
-            css_providers.remove_all(provider);
         }
+        css_providers = new List<Gtk.CssProvider>();
     }
 
     public void inspector() {
