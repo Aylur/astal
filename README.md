@@ -27,7 +27,7 @@ python and lua should be stright forward, just run the interpreter
 for javascript do
 
 ```bash
-cd js
+cd gjs
 npm i
 npm run types
 npm run build -- --watch

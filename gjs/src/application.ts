@@ -82,4 +82,4 @@ class AstalJS extends Astal.Application {
     }
 }
 
-export const App = new AstalJS
+export default new AstalJS

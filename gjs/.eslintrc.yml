@@ -16,15 +16,6 @@ rules:
   "@typescript-eslint/ban-ts-comment": error
   "@typescript-eslint/no-explicit-any": off
   "@typescript-eslint/no-non-null-assertion": off
-  # "@typescript-eslint/no-unused-vars":
-  #   - error
-  #   - varsIgnorePattern: (^unused|_$)
-  #     argsIgnorePattern: ^(unused|_)
-  # "@typescript-eslint/no-empty-interface": off
-  # "@typescript-eslint/no-namespace": off
-  # "@typescript-eslint/prefer-namespace-keyword": off
-  # "@typescript-eslint/ban-types": off
-  #
   arrow-parens:
     - error
     - as-needed
@@ -81,7 +72,6 @@ rules:
   max-len:
     - error
     - code: 100
-
   func-call-spacing:
     - error
   array-bracket-spacing:
@@ -101,8 +91,6 @@ rules:
 globals:
   globalThis: readonly
   imports: readonly
-  log: readonly
-  logError: readonly
   print: readonly
   printerr: readonly
   console: readonly

@@ -1,23 +1,23 @@
 {
     "compilerOptions": {
-        "target": "ES2022",
-        "module": "ES2022",
+        "target": "ESNext",
+        "module": "ESNext",
         "lib": [
-            "ES2022"
+            "ESNext"
         ],
         "outDir": "dist",
-        "strict": true,
-        "moduleResolution": "node",
-        "baseUrl": ".",
-        "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true,
         "declaration": true,
-        "allowSyntheticDefaultImports": true
+        "strict": true,
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "checkJs": true,
+        "allowJs": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "./src/jsx"
     },
     "include": [
-        "./node_modules/@girs",
         "./src",
         "./index.ts",
-        "./sample.js"
+        "./node_modules/@girs"
     ]
 }

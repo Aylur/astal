@@ -105,7 +105,7 @@ function hook(
     return self
 }
 
-function ctor(self: any, config: any = {}, children: any[] = []) {
+function ctor(self: any, config: any = {}, children: any = []) {
     const { setup, ...props } = config
     props.visible ??= true
 

@@ -1,4 +1,3 @@
-node_modules
-result
-@girs/
+node_modules/
+result/
 dist/

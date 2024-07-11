@@ -3,6 +3,33 @@
     "version": "0.1.0",
     "description": "Building blocks for buildin linux desktop shell",
     "type": "module",
+    "author": "Aylur",
+    "license": "GPL",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/astal-sh/libastal.git",
+        "directory": "gjs"
+    },
+    "funding": {
+        "type": "kofi",
+        "url": "https://ko-fi.com/aylur"
+    },
+    "exports": {
+        ".": "./index.ts",
+        "./app": "./src/application.ts",
+        "./file": "./src/file.ts",
+        "./process": "./src/process.ts",
+        "./time": "./src/time.ts",
+        "./variable": "./src/variable.ts",
+        "./widgets": "./src/widgets.ts"
+    },
+    "engines": {
+        "gjs": ">=1.79.0"
+    },
+    "os": [
+        "linux"
+    ],
+    "publishConfig": {},
     "devDependencies": {
         "@ts-for-gir/cli": "^3.3.0",
         "@typescript-eslint/eslint-plugin": "^5.33.0",
@@ -11,8 +38,6 @@
         "typescript": "^5.1.0"
     },
     "scripts": {
-        "build": "tsc",
-        "dev": "tsc --watch",
         "lint": "eslint .",
         "types": "ts-for-gir generate"
     }
