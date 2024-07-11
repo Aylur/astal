@@ -4,13 +4,16 @@ public class Time : Object {
     public signal void cancelled ();
     private Cancellable cancellable;
     private uint timeout_id;
+    private bool fulfilled = false;
 
     construct {
         cancellable = new Cancellable();
         cancellable.cancelled.connect(() => {
-            Source.remove(timeout_id);
-            cancelled();
-            dispose();
+            if (!fulfilled) {
+                Source.remove(timeout_id);
+                cancelled();
+                dispose();
+            }
         });
     }
 
@@ -37,6 +40,7 @@ public class Time : Object {
         connect_closure(fn);
         timeout_id = Timeout.add(timeout, () => {
             now();
+            fulfilled = true;
             return Source.REMOVE;
         }, prio);
     }
@@ -45,6 +49,7 @@ public class Time : Object {
         connect_closure(fn);
         timeout_id = Idle.add(() => {
             now();
+            fulfilled = true;
             return Source.REMOVE;
         }, prio);
     }
