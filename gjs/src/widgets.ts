@@ -92,7 +92,9 @@ export type ScrollableProps = ConstructProps<typeof Astal.Scrollable, Astal.Scro
 // Slider
 export type Slider = Widget<typeof Astal.Slider>
 export const Slider = astalify<typeof Astal.Slider, SliderProps, "Slider">(Astal.Slider)
-export type SliderProps = ConstructProps<typeof Astal.Slider, Astal.Slider.ConstructorProperties>
+export type SliderProps = ConstructProps<typeof Astal.Slider, Astal.Slider.ConstructorProperties, {
+    onDragged: []
+}>
 
 // TODO: Stack
 

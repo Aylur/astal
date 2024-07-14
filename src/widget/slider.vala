@@ -6,6 +6,9 @@ public class Slider : Gtk.Scale {
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
     }
 
+    // emitted when the user drags the slider
+    public signal void dragged ();
+
     construct {
         if (adjustment == null)
             adjustment = new Gtk.Adjustment(0,0,0,0,0,0);
@@ -30,13 +33,18 @@ public class Slider : Gtk.Scale {
                 value += step;
             dragging = false;
         });
+
+        value_changed.connect(() => {
+            if (dragging)
+                dragged();
+        });
     }
 
     public bool dragging { get; private set; }
 
     public double value {
         get { return adjustment.value; }
-        set { adjustment.value = value; }
+        set { if (!dragging) adjustment.value = value; }
     }
 
     public double min {
