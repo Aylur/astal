@@ -10,6 +10,8 @@ export function jsx(
     if (!Array.isArray(children))
         children = [children]
 
+    children = children.filter(Boolean)
+
     if (typeof ctor === "string")
         return (ctors as any)[ctor](props, children)
 
@@ -44,30 +46,33 @@ const ctors = {
     "window": Widget.Window,
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace JSX {
-    export type Element = Gtk.Widget
-    export interface IntrinsicElements {
-        "box": Widget.BoxProps,
-        "button": Widget.ButtonProps,
-        "centerbox": Widget.CenterBoxProps,
-        // TODO: circularprogress
-        "drawingarea": Widget.DrawingAreaProps,
-        "entry": Widget.EntryProps,
-        "eventbox": Widget.EventBoxProps,
-        // TODO: fixed
-        // TODO: flowbox
-        "icon": Widget.IconProps,
-        "label": Widget.LabelProps,
-        "levelbar": Widget.LevelBarProps,
-        // TODO: listbox
-        "overlay": Widget.OverlayProps,
-        "revealer": Widget.RevealerProps,
-        "scrollable": Widget.ScrollableProps,
-        "slider": Widget.SliderProps,
-        // TODO: stack
-        "switch": Widget.SwitchProps,
-        "window": Widget.WindowProps,
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace JSX {
+        type Element = Gtk.Widget
+        type ElementClass = Gtk.Widget
+        interface IntrinsicElements {
+            "box": Widget.BoxProps,
+            "button": Widget.ButtonProps,
+            "centerbox": Widget.CenterBoxProps,
+            // TODO: circularprogress
+            "drawingarea": Widget.DrawingAreaProps,
+            "entry": Widget.EntryProps,
+            "eventbox": Widget.EventBoxProps,
+            // TODO: fixed
+            // TODO: flowbox
+            "icon": Widget.IconProps,
+            "label": Widget.LabelProps,
+            "levelbar": Widget.LevelBarProps,
+            // TODO: listbox
+            "overlay": Widget.OverlayProps,
+            "revealer": Widget.RevealerProps,
+            "scrollable": Widget.ScrollableProps,
+            "slider": Widget.SliderProps,
+            // TODO: stack
+            "switch": Widget.SwitchProps,
+            "window": Widget.WindowProps,
+        }
     }
 }
 
