@@ -38,7 +38,7 @@ if get_option('lib')
     vala_gir: gir,
     version: meson.project_version(),
     install: true,
-    install_dir: [true, get_option('includedir') / 'astal', true, true],
+    install_dir: [true, true, true, true],
   )
 
   import('pkgconfig').generate(
