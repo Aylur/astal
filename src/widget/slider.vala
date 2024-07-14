@@ -17,6 +17,10 @@ public class Slider : Gtk.Scale {
             max = 1;
         }
 
+        if (step == 0) {
+            step = 0.05;
+        }
+
         notify["orientation"].connect(() => {
             notify_property("vertical");
         });
