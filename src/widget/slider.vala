@@ -6,13 +6,13 @@ public class Slider : Gtk.Scale {
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
     }
 
-    static construct {
-        set_css_name("slider");
-    }
-
     construct {
         if (adjustment == null)
             adjustment = new Gtk.Adjustment(0,0,0,0,0,0);
+
+        if (max == 0 && min == 0) {
+            max = 1;
+        }
 
         notify["orientation"].connect(() => {
             notify_property("vertical");
