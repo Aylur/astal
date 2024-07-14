@@ -1,5 +1,7 @@
 namespace AstalMpris {
 public class Player : Object {
+    private static string COVER_CACHE = Environment.get_user_cache_dir() + "/astal/mpris";
+
     private IPlayer proxy;
 
     public signal void appeared () { available = true; }
@@ -175,8 +177,8 @@ public class Player : Object {
     public string composer { owned get; private set; }
     public string comments { owned get; private set; }
 
-    // cached art
-    public string cover { owned get; private set; }
+    // cached cover art
+    public string cover_art { owned get; private set; }
 
     public Player(string name) {
         Object(bus_name: name.has_prefix("org.mpris.MediaPlayer2.")
@@ -256,7 +258,48 @@ public class Player : Object {
             artist = join_strv("xesam:artist", ", ");
             comments = join_strv("xesam:comments", "\n");
             composer = join_strv("xesam:composer", ", ");
+            cache_cover.begin((_, res) => cache_cover.end(res));
             notify_property("metadata");
+        }
+    }
+
+    private async void cache_cover() {
+        if (art_url == null)
+            return;
+
+        var file = File.new_for_uri(art_url);
+        if (file.get_path() != null) {
+            cover_art = file.get_path();
+            return;
+        }
+
+        var path = COVER_CACHE + "/" + Checksum.compute_for_string(ChecksumType.SHA1, art_url, -1);
+        if (FileUtils.test(path, FileTest.EXISTS)) {
+            cover_art = path;
+            return;
+        }
+
+        try {
+            if (!FileUtils.test(COVER_CACHE, FileTest.IS_DIR))
+                File.new_for_path(COVER_CACHE).make_directory_with_parents(null);
+
+            file.copy_async.begin(
+                File.new_for_path(path),
+                FileCopyFlags.OVERWRITE,
+                Priority.DEFAULT,
+                null,
+                null,
+                (_, res) => {
+                    try {
+                        file.copy_async.end(res);
+                        cover_art = path;
+                    } catch (Error err) {
+                        critical("Failed to cache cover art %s", err.message);
+                    }
+                }
+            );
+        } catch (Error err) {
+            critical(err.message);
         }
     }
 

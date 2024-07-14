@@ -195,7 +195,7 @@ Json.Node to_json(Player p) {
         .set_member_name("rate").add_double_value(p.rate)
         .set_member_name("volume").add_double_value(p.volume)
         .set_member_name("position").add_double_value(p.position)
-        .set_member_name("cover").add_string_value(p.cover)
+        .set_member_name("cover_art").add_string_value(p.cover_art)
         .set_member_name("metadata").add_value(Json.gvariant_serialize(
             p.metadata != null ? p.metadata : new HashTable<string, Variant>(str_hash, str_equal)))
         .end_object()
