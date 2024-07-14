@@ -17,6 +17,7 @@
     ];
 
     buildInputs = with pkgs; [
+      gvfs
       glib
       json-glib
     ];

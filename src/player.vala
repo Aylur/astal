@@ -11,8 +11,7 @@ public class Player : Object {
     public string bus_name { owned get; construct set; }
     public bool available { get; private set; }
 
-    // settings
-    public bool poll_position { get; construct set; }
+    // periodically notify position
     private uint pollid;
 
     // mpris
@@ -94,19 +93,26 @@ public class Player : Object {
 
     public signal void seeked (int64 position);
 
-    // dbus does not refresh position value
-    // as a workaround we need to create a proxy each time
-    private double _get_position() {
+    public double _get_position() {
         try {
-            IPlayer p = Bus.get_proxy_sync(
-                BusType.SESSION,
-                bus_name,
-                "/org/mpris/MediaPlayer2"
+            var reply = proxy.call_sync(
+                "org.freedesktop.DBus.Properties.Get",
+                new Variant("(ss)",
+                    "org.mpris.MediaPlayer2.Player",
+                    "Position"
+                ),
+                DBusCallFlags.NONE,
+                -1,
+                null
             );
 
-            return (double)p.position / 1000000;
-        } catch (Error error) {
-            critical(error.message);
+            var body = reply.get_child_value(0);
+            if (body.classify() == Variant.Class.STRING) {
+                return -1; // Position not supported
+            }
+
+            return (double)body.get_variant().get_int64() / 1000000;
+        } catch (Error err) {
             return -1;
         }
     }
@@ -116,7 +122,6 @@ public class Player : Object {
             proxy.set_position(new ObjectPath(get_str("mpris:trackid")), (int64)(pos * 1000000));
         } catch (Error error) {
             critical(error.message);
-            print("hello\n");
         }
     }
 
@@ -124,7 +129,6 @@ public class Player : Object {
     private double _rate;
     private Shuffle _shuffle_status = Shuffle.UNSUPPORTED;
     private double _volume = -1;
-    private double _position = -1;
 
     public Loop loop_status {
         get { return _loop_status; }
@@ -147,7 +151,7 @@ public class Player : Object {
     }
 
     public double position {
-        get { return _position; }
+        get { return _get_position(); }
         set { _set_position(value); }
     }
 
@@ -197,6 +201,9 @@ public class Player : Object {
         supported_uri_schemas = proxy.supported_uri_schemas;
         supported_mime_types = proxy.supported_mime_types;
 
+        if (position >= 0)
+            notify_property("position");
+
         // LoopStatus and Shuffle are optional props
         var props = proxy.get_all("org.mpris.MediaPlayer2.Player");
 
@@ -223,12 +230,6 @@ public class Player : Object {
         if (volume != proxy.volume) {
             _volume = proxy.volume;
             notify_property("volume");
-        }
-
-        var pos = _get_position();
-        if (position != pos) {
-            _position = pos;
-            notify_property("position");
         }
 
         playback_status = PlaybackStatus.from_string(proxy.playback_status);
@@ -307,11 +308,12 @@ public class Player : Object {
         return metadata.lookup(key);
     }
 
-    private string? get_str(string key) {
+    private string get_str(string key) {
         if (metadata.get(key) == null)
-            return null;
+            return "";
 
-        return metadata.get(key).get_string(null);
+        var str = metadata.get(key).get_string(null);
+        return str == null ? "" : str;
     }
 
     private string? join_strv(string key, string sep) {
@@ -363,24 +365,19 @@ public class Player : Object {
 
         proxy.g_properties_changed.connect(sync);
 
-        if (poll_position) {
-            pollid = Timeout.add_seconds(1, () => {
-                if (!available)
-                    return Source.CONTINUE;
-
-                var pos = _get_position();
-                if (position != pos) {
-                    _position = pos;
-                    notify_property("position");
-                }
+        pollid = Timeout.add_seconds(1, () => {
+            if (!available)
                 return Source.CONTINUE;
-            }, Priority.DEFAULT);
-        }
+
+            if (position >= 0) {
+                notify_property("position");
+            }
+            return Source.CONTINUE;
+        }, Priority.DEFAULT);
     }
 
     ~Player() {
-        if (poll_position)
-            Source.remove(pollid);
+        Source.remove(pollid);
     }
 }
 

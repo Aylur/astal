@@ -20,7 +20,6 @@ public class Mpris : Object {
         new HashTable<string, Player> (str_hash, str_equal);
 
     public List<weak Player> players { owned get { return _players.get_values(); } }
-    public bool poll_position { get; set; }
 
     public signal void player_added (Player player);
     public signal void player_closed (Player player);
