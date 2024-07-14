@@ -95,7 +95,7 @@ public class Application : Gtk.Application {
 
     private async void _socket_request(SocketConnection conn) {
         string message = yield read_sock(conn);
-        request(message.strip(), conn);
+        request(message != null ? message.strip() : "", conn);
     }
 
     public virtual void request(string msg, SocketConnection conn) {
@@ -140,8 +140,11 @@ public class Application : Gtk.Application {
         }
     }
 
-    public string? message(string msg) {
+    public string? message(string? msg) {
         var client = new SocketClient();
+
+        if (msg == null)
+            msg = "";
 
         try {
             var conn = client.connect(new UnixSocketAddress(socket_path), null);
