@@ -9,7 +9,7 @@ static int get_n;
 const OptionEntry[] options = {
     { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref version, null, null },
     { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref help, null, null },
-    { "daemon", 'd', OptionFlags.NONE, OptionArg.NONE, ref daemonize, null, null },
+    { "daemonize", 'd', OptionFlags.NONE, OptionArg.NONE, ref daemonize, null, null },
     { "list", 'l', OptionFlags.NONE, OptionArg.NONE, ref list, null, null },
     { "invoke", 'i', OptionFlags.NONE, OptionArg.STRING, ref invoke, null, null },
     { "close", 'c', OptionFlags.NONE, OptionArg.INT, ref close_n, null, null },
