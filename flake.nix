@@ -40,7 +40,6 @@
         buildInputs
         ++ [
           (lua.withPackages (ps: [ps.lgi]))
-          (python3.withPackages (ps: [ps.pygobject3]))
           gjs
         ];
     in {

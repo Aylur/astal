@@ -11,6 +11,10 @@ project(
   ],
 )
 
+prefix = get_option('prefix')
+libdir = get_option('prefix') / get_option('libdir')
+pkgdatadir = prefix / get_option('datadir') / 'astal'
+
 # math
 add_project_arguments(['-X', '-lm'], language: 'vala')
 
@@ -18,5 +22,9 @@ assert(
   get_option('lib') or get_option('cli'),
   'Either lib or cli option must be set to true.',
 )
+
+if get_option('gjs')
+  install_subdir('gjs', install_dir: pkgdatadir)
+endif
 
 subdir('src')

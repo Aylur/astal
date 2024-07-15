@@ -9,3 +9,9 @@ option(
   type: 'boolean',
   value: true,
 )
+
+option(
+  'gjs',
+  type: 'boolean',
+  value: true,
+)

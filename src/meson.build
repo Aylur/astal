@@ -66,7 +66,10 @@ if get_option('lib')
     version: meson.project_version(),
     subdirs: meson.project_name(),
     requires: deps,
-    install_dir: get_option('libdir') / 'pkgconfig',
+    install_dir: libdir / 'pkgconfig',
+    variables: {
+      'gjs': pkgdatadir / 'gjs',
+    },
   )
 
   custom_target(
@@ -74,14 +77,14 @@ if get_option('lib')
     command: [
       find_program('g-ir-compiler'),
       '--output', '@OUTPUT@',
-      '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
+      '--shared-library', libdir / '@PLAINNAME@',
       meson.current_build_dir() / gir,
     ],
     input: lib,
     output: typelib,
     depends: lib,
     install: true,
-    install_dir: get_option('libdir') / 'girepository-1.0',
+    install_dir: libdir / 'girepository-1.0',
   )
 endif
 

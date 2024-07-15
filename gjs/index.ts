@@ -1,5 +1,12 @@
 import { Gtk } from "./src/imports.js"
 
+declare global {
+    const console: {
+        error(...args: any[]): void
+        log(...args: any[]): void
+    }
+}
+
 export * from "./src/imports.js"
 export * from "./src/process.js"
 export * from "./src/time.js"
