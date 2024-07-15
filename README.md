@@ -5,7 +5,7 @@
 
 The main goal of this project is to further abstract gtk bindings in higher level
 languages with custom state management mechanisms, namely in javascript (gjs, node),
-lua (lua-lgi) and python (pygobject).
+lua (lua-lgi).
 
 `libastal`, which is the library written in Vala,
 comes with a few widgets built on top of gtk3 and
@@ -28,7 +28,7 @@ meson insall -C build
 nix develop .#astal
 ```
 
-python and lua should be stright forward, just run the interpreter
+lua should be stright forward, just run the interpreter
 
 for javascript do
 
@@ -36,7 +36,7 @@ for javascript do
 cd gjs
 npm i
 npm run types
-npm run build -- --watch
+npm run build
 ```
 
 ## Gtk abstractions
@@ -45,7 +45,7 @@ npm run build -- --watch
 into ones that can take `Binding` objects as parameters are added on top
 of gtk bindings. This mechanism takes care of all state management one would need.
 
-This works the same in js/lua/python, but demonstrated in js
+This works the same in lua too, but demonstrated in js
 
 ```javascript
 // this example will work with Variable<string>
@@ -128,7 +128,7 @@ astal --instance-name my-instance "message was sent from cli"
 
 ## Lower level languages
 
-As said before, the main goal is to make js/lua/python DX better, but libastal
+As said before, the main goal is to make js/lua DX better, but libastal
 can be used in **any** language that has bindings for glib/gtk.
 `Binding` is not implemented in Vala, but in each language, because
 they are language specific, and it doesn't make much sense for lower
@@ -176,9 +176,9 @@ templates and examples instead to get started with development.
     - [ ] circularprogress
     - [x] eventbox
     - [x] icon
-    - [ ] overlay
+    - [x] overlay
     - [ ] scrollable/viewport
-    - [ ] slider
+    - [x] slider
     - [ ] stack, shown, children setter
   - widgets with no additional behaviour only for the sake of it
     - [ ] ?drawingarea
@@ -193,7 +193,7 @@ templates and examples instead to get started with development.
     - [x] css
     - [x] class-names
     - [x] cursor
-    - [ ] click-through
+    - [x] click-through
 
 - language bindings
   - Binding for Variable and any GObject `bind(gobject, property).as(transform)`
@@ -204,27 +204,3 @@ templates and examples instead to get started with development.
   - wrap Variable in native object to make sure no GValue crashes
   - Variable.observe for signals
   - Variable.derive that takes either Variables or Bindings
-
-## Help needed
-
-- node-gtk promise issue
-- python types
-
-## TODO
-
-- docs
-- ~~consider moving each language into separate repo~~
-- support jsx
-  - [x] gjs
-- port services from ags into Vala
-  - [x] [applications](https://github.com/astal-sh/apps)
-  - [ ] audio
-  - [ ] bluetooth
-  - [ ] greetd
-  - [ ] hyprland ipc client
-  - [ ] mpris
-  - [ ] network
-  - [ ] sway ipc client
-  - [x] [notifications](https://github.com/astal-sh/notifd)
-  - [ ] upower (battery, powerprofiles)
-  - [x] [systemtray](https://github.com/astal-sh/tray)
