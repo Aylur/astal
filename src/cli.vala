@@ -18,7 +18,7 @@ private const GLib.OptionEntry[] options = {
     { null },
 };
 
-async int main(string[] argv) {
+int main(string[] argv) {
     try {
         var opts = new OptionContext();
         opts.add_main_entries(options, null);
@@ -80,33 +80,11 @@ async int main(string[] argv) {
         request = request.concat(" ", argv[i]);
     }
 
-    var client = new SocketClient();
-    var rundir = GLib.Environment.get_user_runtime_dir();
-    var socket = rundir.concat("/", instance_name, ".sock");
-
     try {
-        var conn = client.connect(new UnixSocketAddress(socket), null);
-
-        try {
-            yield conn.output_stream.write_async(
-                request.concat("\x04").data,
-                Priority.DEFAULT);
-        } catch (Error err) {
-            printerr("could not write to app '%s'", instance_name);
-        }
-
-        var stream = new DataInputStream(conn.input_stream);
-        size_t size;
-
-        try {
-            var res = yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, out size);
-            if (res != null)
-                print("%s", res);
-        } catch (Error err) {
-            printerr(err.message);
-        }
-    } catch (Error err) {
-        printerr("could not connect to app '%s'", instance_name);
+        var reply = Astal.Application.send_message(instance_name, request);
+        print("%s\n", reply);
+    } catch (IOError err) {
+        printerr("%s\n", err.message);
         return 1;
     }
 

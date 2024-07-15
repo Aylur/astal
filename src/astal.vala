@@ -175,8 +175,7 @@ public class Application : Gtk.Application {
         }
     }
 
-    [DBus (visible=false)]
-    public string? message(string? msg) {
+    public string message(string? msg) throws DBusError, IOError {
         var client = new SocketClient();
 
         if (msg == null)
@@ -190,7 +189,7 @@ public class Application : Gtk.Application {
             return stream.read_upto("\x04", -1, null, null);
         } catch (Error err) {
             printerr(err.message);
-            return null;
+            return "";
         }
     }
 
@@ -280,6 +279,20 @@ public class Application : Gtk.Application {
             critical(err.message);
         }
     }
+
+    public static string send_message(string instance, string message) throws IOError {
+        try {
+            IApplication proxy = Bus.get_proxy_sync(
+                BusType.SESSION,
+                "io.Astal." + instance,
+                "/io/Astal/Application"
+            );
+
+            return proxy.message(message);
+        } catch (Error err) {
+            throw new IOError.FAILED(@"could not write to app '$instance'");
+        }
+    }
 }
 
 [DBus (name="org.freedesktop.DBus")]
@@ -292,6 +305,7 @@ private interface IApplication : DBusProxy {
     public abstract void quit() throws GLib.Error;
     public abstract void inspector() throws GLib.Error;
     public abstract void toggle_window(string window) throws GLib.Error;
+    public abstract string message(string window) throws GLib.Error;
 }
 
 public async string read_sock(SocketConnection conn) {
