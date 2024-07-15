@@ -18,8 +18,14 @@ processes through a socket.
 first install libastal or enter nix shell
 
 ```bash
-bash meson-install.sh # non nix
-nix develop .#astal # nix
+# non nix
+meson setup build
+meson insall -C build
+```
+
+```bash
+# nix
+nix develop .#astal
 ```
 
 python and lua should be stright forward, just run the interpreter

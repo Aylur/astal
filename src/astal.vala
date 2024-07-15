@@ -1,16 +1,14 @@
 namespace Astal {
+[DBus (name="io.Astal.Application")]
 public class Application : Gtk.Application {
     private List<Gtk.CssProvider> css_providers = new List<Gtk.CssProvider>();
     private SocketService service;
+    private DBusConnection conn;
+    private string _instance_name;
 
     public string socket_path { get; private set; }
 
-    public new string application_id {
-        get { return base.application_id; }
-        set { base.application_id = value; }
-    }
-
-    private string _instance_name;
+    [DBus (visible=false)]
     public string instance_name {
         get { return _instance_name; }
         set {
@@ -19,33 +17,40 @@ public class Application : Gtk.Application {
         }
     }
 
+    [DBus (visible=false)]
     public List<Gtk.Window> windows {
         get { return get_windows(); }
     }
 
+    [DBus (visible=false)]
     public Gtk.Settings settings {
         get { return Gtk.Settings.get_default(); }
     }
 
+    [DBus (visible=false)]
     public Gdk.Screen screen {
         get { return Gdk.Screen.get_default(); }
     }
 
+    [DBus (visible=false)]
     public string gtk_theme {
         owned get { return settings.gtk_theme_name; }
         set { settings.gtk_theme_name = value; }
     }
 
+    [DBus (visible=false)]
     public string icon_theme {
         owned get { return settings.gtk_icon_theme_name; }
         set { settings.gtk_icon_theme_name = value; }
     }
 
+    [DBus (visible=false)]
     public string cursor_theme {
         owned get { return settings.gtk_cursor_theme_name; }
         set { settings.gtk_cursor_theme_name = value; }
     }
 
+    [DBus (visible=false)]
     public void reset_css() {
         foreach(var provider in css_providers) {
             Gtk.StyleContext.remove_provider_for_screen(screen, provider);
@@ -53,10 +58,11 @@ public class Application : Gtk.Application {
         css_providers = new List<Gtk.CssProvider>();
     }
 
-    public void inspector() {
+    public void inspector() throws DBusError, IOError {
         Gtk.Window.set_interactive_debugging(true);
     }
 
+    [DBus (visible=false)]
     public Gtk.Window? get_window(string name) {
         foreach(var win in windows) {
             if (win.name == name)
@@ -67,6 +73,16 @@ public class Application : Gtk.Application {
         return null;
     }
 
+    public void toggle_window(string window) throws DBusError, IOError {
+        var win = get_window(window);
+        if (win != null) {
+            win.visible = !win.visible;
+        } else {
+            throw new IOError.FAILED("window not found");
+        }
+    }
+
+    [DBus (visible=false)]
     public void apply_css(string style, bool reset = false) {
         var provider = new Gtk.CssProvider();
 
@@ -88,6 +104,7 @@ public class Application : Gtk.Application {
         css_providers.append(provider);
     }
 
+    [DBus (visible=false)]
     public void add_icons(string? path) {
         if (path != null)
             Gtk.IconTheme.get_default().prepend_search_path(path);
@@ -98,6 +115,7 @@ public class Application : Gtk.Application {
         request(message != null ? message.strip() : "", conn);
     }
 
+    [DBus (visible=false)]
     public virtual void request(string msg, SocketConnection conn) {
         write_sock.begin(conn, "missing response implementation on ".concat(application_id));
     }
@@ -106,6 +124,7 @@ public class Application : Gtk.Application {
      * should be called before `run()`
      * the return value indicates if instance is already running
      */
+    [DBus (visible=false)]
     public bool acquire_socket() {
         socket_path = GLib.Environment.get_user_runtime_dir().concat(
             "/",
@@ -131,6 +150,22 @@ public class Application : Gtk.Application {
                 return false;
             });
 
+
+            Bus.own_name(
+                BusType.SESSION,
+                "io.Astal." + instance_name,
+                BusNameOwnerFlags.NONE,
+                (conn) => {
+                    try {
+                    this.conn = conn;
+                        conn.register_object("/io/Astal/Application", this);
+                    } catch (Error err) {
+                        critical(err.message);
+                    }
+                },
+                () => {},
+                () => {});
+
             info("socket acquired: %s\n", socket_path);
             return true;
         } catch (Error err) {
@@ -140,6 +175,7 @@ public class Application : Gtk.Application {
         }
     }
 
+    [DBus (visible=false)]
     public string? message(string? msg) {
         var client = new SocketClient();
 
@@ -172,11 +208,90 @@ public class Application : Gtk.Application {
             }
         });
 
-        SourceFunc close = () => { quit(); };
-        Unix.signal_add(1, close, Priority.HIGH);
-        Unix.signal_add(2, close, Priority.HIGH);
-        Unix.signal_add(15, close, Priority.HIGH);
+        Unix.signal_add(1, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
+        Unix.signal_add(2, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
+        Unix.signal_add(15, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
     }
+
+    public new void quit() throws DBusError, IOError {
+        base.quit();
+    }
+
+    public static List<string> get_instances() {
+        var list = new List<string>();
+        var prefix = "io.Astal.";
+
+        try {
+            DBusImpl dbus = Bus.get_proxy_sync(
+                BusType.SESSION,
+                "org.freedesktop.DBus",
+                "/org/freedesktop/DBus"
+            );
+
+            foreach (var busname in dbus.list_names()) {
+                if (busname.has_prefix(prefix))
+                    list.append(busname.replace(prefix, ""));
+            }
+        } catch (Error err) {
+            critical(err.message);
+        }
+
+        return list;
+    }
+
+    public static void quit_instance(string instance) {
+        try {
+            IApplication proxy = Bus.get_proxy_sync(
+                BusType.SESSION,
+                "io.Astal." + instance,
+                "/io/Astal/Application"
+            );
+
+            proxy.quit();
+        } catch (Error err) {
+            critical(err.message);
+        }
+    }
+
+    public static void open_inspector(string instance) {
+        try {
+            IApplication proxy = Bus.get_proxy_sync(
+                BusType.SESSION,
+                "io.Astal." + instance,
+                "/io/Astal/Application"
+            );
+
+            proxy.inspector();
+        } catch (Error err) {
+            critical(err.message);
+        }
+    }
+
+    public static void toggle_window_by_name(string instance, string window) {
+        try {
+            IApplication proxy = Bus.get_proxy_sync(
+                BusType.SESSION,
+                "io.Astal." + instance,
+                "/io/Astal/Application"
+            );
+
+            proxy.toggle_window(window);
+        } catch (Error err) {
+            critical(err.message);
+        }
+    }
+}
+
+[DBus (name="org.freedesktop.DBus")]
+private interface DBusImpl : DBusProxy {
+    public abstract string[] list_names() throws GLib.Error;
+}
+
+[DBus (name="io.Astal.Application")]
+private interface IApplication : DBusProxy {
+    public abstract void quit() throws GLib.Error;
+    public abstract void inspector() throws GLib.Error;
+    public abstract void toggle_window(string window) throws GLib.Error;
 }
 
 public async string read_sock(SocketConnection conn) {
