@@ -94,16 +94,48 @@ static AstalRiverOutput* find_output_by_name(AstalRiverRiver* self, gchar* name)
     return NULL;
 }
 
+/**
+ * astal_river_river_get_outputs
+ * @self: the AstalRiverRiver object
+ *
+ * Returns: (transfer none) (element-type AstalRiver.Output): a list of all outputs
+ *
+ */
 GList* astal_river_river_get_outputs(AstalRiverRiver* self) { return self->outputs; }
 
+/**
+ * astal_river_river_get_output
+ * @self: the AstalRiverRiver object
+ * @name: the name of the output
+ *
+ * Returns: (transfer none) (nullable): the output with the given name or null
+ */
 AstalRiverOutput* astal_river_river_get_output(AstalRiverRiver* self, gchar* name) {
     return find_output_by_name(self, name);
 }
 
+/**
+ * astal_river_river_get_focused_view
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: (transfer none) (nullable): the currently focused view
+ */
 gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) { return self->focused_view; }
 
+/**
+ * astal_river_river_get_focused_output
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: (transfer none) (nullable): the name of the currently focused output
+ */
 gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) { return self->focused_output; }
 
+/**
+ * astal_river_river_get_mode
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: (transfer none) (nullable): the currently active mode
+ */
 gchar* astal_river_river_get_mode(AstalRiverRiver* self) { return self->mode; }
 
 static void astal_river_river_get_property(GObject* object, guint property_id, GValue* value,
@@ -235,6 +267,15 @@ static void astal_river_river_callback_failure(void* data, struct zriver_command
 const struct zriver_command_callback_v1_listener cb_listener = {
     .success = astal_river_river_callback_success, .failure = astal_river_river_callback_failure};
 
+/**
+ * astal_river_river_run_command_async:
+ * @self: the AstalRiverRiver object
+ * @length: the length of the cmd array
+ * @cmd: (array length=length): the command to execute
+ * @callback: (scope async) (nullable): the callback to invoke.
+ *
+ * Calls the given callback with the provided parameters.
+ */
 void astal_river_river_run_command_async(AstalRiverRiver* self, gint length, const gchar** cmd,
                                          AstalRiverCommandCallback callback) {
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
@@ -332,6 +373,14 @@ static void astal_river_river_init(AstalRiverRiver* self) {
     priv->signal_ids = g_hash_table_new(g_direct_hash, g_direct_equal);
 }
 
+/**
+ * astal_river_river_new
+ *
+ * creates a new River object. It is recommended to use the get_default() method
+ * instead of this method.
+ *
+ * Returns: (nullable): a newly created connection to river
+ */
 AstalRiverRiver* astal_river_river_new() {
     return g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, NULL, NULL);
 }
@@ -343,6 +392,11 @@ static void disconnect_signal(gpointer key, gpointer value, gpointer user_data) 
     g_signal_handler_disconnect(output, GPOINTER_TO_UINT(value));
 }
 
+/**
+ * astal_river_river_get_default
+ *
+ * Returns: (nullable) (transfer none): gets the default River object.
+ */
 AstalRiverRiver* astal_river_river_get_default() {
     static AstalRiverRiver* self = NULL;
 
@@ -350,6 +404,13 @@ AstalRiverRiver* astal_river_river_get_default() {
 
     return self;
 }
+
+/**
+ * astal_river_get_default
+ *
+ * Returns: (nullable) (transfer none): gets the default River object.
+ */
+AstalRiverRiver* astal_river_get_default() { return astal_river_river_get_default(); }
 
 static void astal_river_river_finalize(GObject* object) {
     AstalRiverRiver* self = ASTAL_RIVER_RIVER(object);
@@ -385,25 +446,58 @@ static void astal_river_river_class_init(AstalRiverRiverClass* class) {
     object_class->finalize = astal_river_river_finalize;
     object_class->constructed = astal_river_river_constructed;
 
+    /**
+     * AstalRiverRiver:mode:
+     *
+     * The currently active mode
+     */
     astal_river_river_properties[ASTAL_RIVER_RIVER_PROP_MODE] =
         g_param_spec_string("mode", "mode", "currently active mode", NULL, G_PARAM_READABLE);
+    /**
+     * AstalRiverRiver:focused-view:
+     *
+     * The name of the currently focused view
+     */
     astal_river_river_properties[ASTAL_RIVER_RIVER_PROP_FOCUSED_VIEW] = g_param_spec_string(
         "focused-view", "focused-view", "currently focused view", NULL, G_PARAM_READABLE);
+    /**
+     * AstalRiverRiver:focused-output:
+     *
+     * The name of the currently focused output
+     */
     astal_river_river_properties[ASTAL_RIVER_RIVER_PROP_FOCUSED_OUTPUT] = g_param_spec_string(
         "focused-output", "focused-output", "currently focused-output", NULL, G_PARAM_READABLE);
+    /**
+     * AstalRiverRiver:outputs: (type GList(AstalRiverOutput))
+     *
+     * A list of AstalRiverOutput objects
+     */
     astal_river_river_properties[ASTAL_RIVER_RIVER_PROP_OUTPUTS] =
         g_param_spec_pointer("outputs", "outputs", "a list of all outputs", G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_RIVER_RIVER_N_PROPERTIES,
                                       astal_river_river_properties);
-
+    /**
+     * AstalRiverRiver::output-added:
+     * @river: the object which received the signal.
+     * @output: the name of the added output
+     *
+     * This signal is emitted when a new output was connected
+     */
     astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_OUTPUT_ADDED] =
         g_signal_new("output-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
-
+    /**
+     * AstalRiverRiver::output-removed:
+     * @river: the object which received the signal.
+     * @output: the name of the removed output
+     *
+     * This signal is emitted when a new output was disconnected
+     */
     astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_OUTPUT_REMOVED] =
         g_signal_new("output-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
+
     astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_CHANGED] =
         g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
                      G_TYPE_NONE, 0);

@@ -47,25 +47,67 @@ static GParamSpec* astal_river_output_properties[ASTAL_RIVER_OUTPUT_N_PROPERTIES
     NULL,
 };
 
+/**
+ * astal_river_output_get_nid
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: the id of the underlying wl_output object
+ */
 guint astal_river_output_get_id(AstalRiverOutput* self) { return self->id; }
 
+/**
+ * astal_river_output_get_name
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: (transfer none) (nullable): the name of the output
+ */
 gchar* astal_river_output_get_name(AstalRiverOutput* self) { return self->name; }
 
+/**
+ * astal_river_output_get_layout_name
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: (transfer none) (nullable): the currently used layout name of the output
+ */
 gchar* astal_river_output_get_layout_name(AstalRiverOutput* self) { return self->layout_name; }
 
+/**
+ * astal_river_output_get_focused_view
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: (transfer none) (nullable): the focused view on the output
+ */
 gchar* astal_river_output_get_focused_view(AstalRiverOutput* self) { return self->focused_view; }
 
-void astal_river_output_set_focused_view(AstalRiverOutput* self, gchar* focused_view) {
+void astal_river_output_set_focused_view(AstalRiverOutput* self, const gchar* focused_view) {
     g_free(self->focused_view);
     self->focused_view = g_strdup(focused_view);
     g_object_notify(G_OBJECT(self), "focused-view");
     g_signal_emit(self, astal_river_output_signals[ASTAL_RIVER_OUTPUT_SIGNAL_CHANGED], 0);
 }
 
+/**
+ * astal_river_output_get_focused_tags
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: the focused tags of the output
+ */
 guint astal_river_output_get_focused_tags(AstalRiverOutput* self) { return self->focused_tags; }
 
+/**
+ * astal_river_output_get_urgent_tags
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: the urgent tags of the output
+ */
 guint astal_river_output_get_urgent_tags(AstalRiverOutput* self) { return self->urgent_tags; }
 
+/**
+ * astal_river_output_get_occupied_tags
+ * @self: the AstalRiverOutput object
+ *
+ * Returns: the occupied tags of the output
+ */
 guint astal_river_output_get_occupied_tags(AstalRiverOutput* self) { return self->occupied_tags; }
 
 struct wl_output* astal_river_output_get_wl_output(AstalRiverOutput* self) {
@@ -240,26 +282,61 @@ static void astal_river_output_class_init(AstalRiverOutputClass* class) {
     object_class->get_property = astal_river_output_get_property;
     object_class->set_property = astal_river_output_set_property;
     object_class->finalize = astal_river_output_finalize;
-
+    /**
+     * AstalRiverOutput:focused-tags:
+     *
+     * The currently focused tags
+     */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_FOCUSED_TAGS] = g_param_spec_uint(
         "focused-tags", "focused-tags", "currently focused tags", 0, INT_MAX, 0, G_PARAM_READABLE);
+    /**
+     * AstalRiverOutput:occupied-tags:
+     *
+     * The currently occupied tags
+     */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_OCCUPIED_TAGS] =
         g_param_spec_uint("occupied-tags", "occupied-tags", "currently occupied tags", 0, INT_MAX,
                           0, G_PARAM_READABLE);
+    /**
+     * AstalRiverOutput:urgent-tags:
+     *
+     * The currently tags marked as urgent
+     */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_URGENT_TAGS] = g_param_spec_uint(
         "urgent-tags", "urgent-tags", "currently urgent tags", 0, INT_MAX, 0, G_PARAM_READABLE);
+    /**
+     * AstalRiverOutput:id:
+     *
+     * The id of the underlying wl_output object
+     */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_ID] =
         g_param_spec_uint("id", "id", "id of the output object", 0, INT_MAX, 0, G_PARAM_READABLE);
+    /**
+     * AstalRiverOutput:layout-name:
+     *
+     * The name of active layout
+     */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_LAYOUT_NAME] = g_param_spec_string(
         "layout-name", "layout-name", "name of the current layout", NULL, G_PARAM_READABLE);
+    /**
+     * AstalRiverOutput:name:
+     *
+     * The name of this output
+     */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_NAME] =
         g_param_spec_string("name", "name", "name of the output", NULL, G_PARAM_READABLE);
+    /**
+     * AstalRiverOutput:focused-view:
+     *
+     * The name of currently focused view
+     */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_FOCUSED_VIEW] =
         g_param_spec_string("focused-view", "focused-view",
                             "name of last focused view on this output", NULL, G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_RIVER_OUTPUT_N_PROPERTIES,
                                       astal_river_output_properties);
+
     astal_river_output_signals[ASTAL_RIVER_OUTPUT_SIGNAL_CHANGED] =
         g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
                      G_TYPE_NONE, 0);
