@@ -1,6 +1,10 @@
 import { Gtk } from "../imports.js"
 import * as Widget from "../widgets.js"
 
+function isArrowFunction(func: any): func is (args: any) => any {
+    return !Object.hasOwn(func, "prototype")
+}
+
 export function jsx(
     ctor: keyof typeof ctors | typeof Gtk.Widget,
     { children, ...props }: any,
@@ -19,6 +23,9 @@ export function jsx(
         props.child = children[0]
     else if (children.length > 1)
         props.children = children
+
+    if (isArrowFunction(ctor))
+        return ctor(props)
 
     return new ctor(props)
 }
