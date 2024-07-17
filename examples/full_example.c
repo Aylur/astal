@@ -1,6 +1,6 @@
 #include <bsd/readpassphrase.h>
 
-#include "auth.h"
+#include "astal-auth.h"
 
 GMainLoop *loop;
 

@@ -41,7 +41,7 @@ if get_option('introspection')
         symbol_prefix : 'astal_auth',
         identifier_prefix : 'AstalAuth',
         includes : ['GObject-2.0', 'Gio-2.0'],
-        header : 'astal/auth.h',
+        header : 'astal-auth.h',
         export_packages : pkg_config_name,
         install : true
     )

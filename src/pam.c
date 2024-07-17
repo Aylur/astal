@@ -2,7 +2,7 @@
 #include <security/_pam_types.h>
 #include <security/pam_appl.h>
 
-#include "auth.h"
+#include "astal-auth.h"
 
 struct _AstalAuthPam {
     GObject parent_instance;
