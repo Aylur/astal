@@ -1,6 +1,6 @@
 astal_river_inc = include_directories('.')
 astal_river_headers = files(
-    'river.h',
+    'astal-river.h',
 )
 
-install_headers('river.h', subdir : 'astal')
+install_headers('astal-river.h')

@@ -4,7 +4,7 @@
 #include <wayland-client.h>
 
 #include "river-status-unstable-v1-client.h"
-#include "river.h"
+#include "astal-river.h"
 
 G_BEGIN_DECLS
 

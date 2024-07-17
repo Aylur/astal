@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "gio/gio.h"
-#include "river.h"
+#include "astal-river.h"
 
 GMainLoop* loop;
 
@@ -34,11 +34,11 @@ int main(int argc, char** argv) {
         }
     }
 
-    GError *error = NULL;
+    GError* error = NULL;
     AstalRiverRiver* river = g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, &error, NULL);
-    if(error) {
-      g_critical("%s\n", error->message);
-      exit(EXIT_FAILURE);
+    if (error) {
+        g_critical("%s\n", error->message);
+        exit(EXIT_FAILURE);
     }
     if (daemon) {
         loop = g_main_loop_new(NULL, FALSE);

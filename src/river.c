@@ -44,14 +44,14 @@ typedef enum {
     ASTAL_RIVER_RIVER_PROP_MODE,
     ASTAL_RIVER_RIVER_PROP_OUTPUTS,
     ASTAL_RIVER_RIVER_N_PROPERTIES
-} AstalRiverOutputProperties;
+} AstalRiverRiverProperties;
 
 typedef enum {
     ASTAL_RIVER_RIVER_SIGNAL_CHANGED,
     ASTAL_RIVER_RIVER_SIGNAL_OUTPUT_ADDED,
     ASTAL_RIVER_RIVER_SIGNAL_OUTPUT_REMOVED,
     ASTAL_RIVER_RIVER_N_SIGNALS
-} AstalRiverOutputSignals;
+} AstalRiverRiverSignals;
 
 static guint astal_river_river_signals[ASTAL_RIVER_RIVER_N_SIGNALS] = {
     0,
@@ -196,7 +196,7 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
     AstalRiverRiver* self = ASTAL_RIVER_RIVER(data);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
     if (strcmp(interface, wl_output_interface.name) == 0) {
-        if(priv->river_status_manager == NULL) return;
+        if (priv->river_status_manager == NULL) return;
         struct wl_output* wl_out = wl_registry_bind(registry, id, &wl_output_interface, 4);
         AstalRiverOutput* output =
             astal_river_output_new(id, wl_out, priv->river_status_manager, priv->display);
@@ -280,8 +280,8 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
                                                 GError** error) {
     AstalRiverRiver* self = ASTAL_RIVER_RIVER(initable);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
-  
-    if(priv->init) return TRUE;
+
+    if (priv->init) return TRUE;
 
     priv->wl_source = wl_source_new(NULL, NULL);
 
@@ -322,19 +322,14 @@ static void astal_river_river_initable_iface_init(GInitableIface* iface) {
     iface->init = astal_river_river_initable_init;
 }
 
-static void astal_river_river_init(AstalRiverRiver* self) { 
-    
+static void astal_river_river_init(AstalRiverRiver* self) {
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
-    
-    self->outputs = NULL; 
-    
+    self->outputs = NULL;
     priv->init = FALSE;
     priv->seat = NULL;
     priv->display = NULL;
     priv->river_status_manager = NULL;
     priv->signal_ids = g_hash_table_new(g_direct_hash, g_direct_equal);
-
-
 }
 
 AstalRiverRiver* astal_river_river_new() {
@@ -368,8 +363,9 @@ static void astal_river_river_finalize(GObject* object) {
     g_clear_list(&self->outputs, g_object_unref);
     self->outputs = NULL;
 
-    if (priv->wl_registry != NULL)  wl_registry_destroy(priv->wl_registry);
-    if (priv->river_status_manager != NULL) zriver_status_manager_v1_destroy(priv->river_status_manager);
+    if (priv->wl_registry != NULL) wl_registry_destroy(priv->wl_registry);
+    if (priv->river_status_manager != NULL)
+        zriver_status_manager_v1_destroy(priv->river_status_manager);
     if (priv->river_seat_status != NULL) zriver_seat_status_v1_destroy(priv->river_seat_status);
     if (priv->seat != NULL) wl_seat_destroy(priv->seat);
     if (priv->display != NULL) wl_display_flush(priv->display);
