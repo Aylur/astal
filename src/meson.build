@@ -46,7 +46,7 @@ if get_option('introspection')
         symbol_prefix : 'astal_river',
         identifier_prefix : 'AstalRiver',
         includes : ['GObject-2.0', 'Gio-2.0'],
-        header : 'astal/river.h',
+        header : 'astal-river.h',
         export_packages : pkg_config_name,
         install : true
     )
