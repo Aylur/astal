@@ -1,4 +1,4 @@
-import { Astal, GObject, Gio } from "./imports.js"
+import { Astal, GObject, Gio, GLib } from "./imports.js"
 
 type RequestHandler = {
     (request: string, res: (response: any) => void): void
@@ -67,7 +67,18 @@ class AstalJS extends Astal.Application {
         setConsoleLogDomain(this.instanceName)
 
         this.requestHandler = requestHandler
-        this.connect("activate", () => main?.(...programArgs))
+        this.connect("activate", () => {
+            // @ts-expect-error missing url type
+            const path: string[] = import.meta.url.split("/").slice(3)
+            const file = path.at(-1)!.replace(".js", ".css")
+            const css = `/${path.slice(0, -1).join("/")}/${file}`
+            print(path, css)
+            if (GLib.file_test(css, GLib.FileTest.EXISTS))
+                this.apply_css(css, false)
+
+            main?.(...programArgs)
+        })
+
         if (!this.acquire_socket())
             return client(msg => this.message(msg)!, ...programArgs)
 
