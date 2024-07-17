@@ -57,6 +57,18 @@ static GParamSpec *astal_auth_pam_properties[ASTAL_AUTH_PAM_N_PROPERTIES] = {
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalAuthPam, astal_auth_pam, G_TYPE_OBJECT);
 
+/**
+ * astal_auth_pam_set_username
+ * @self: a AstalAuthPam object
+ * @username: the new username
+ *
+ * Sets the username to be used for authentication. This must be set to
+ * before calling start_authenticate.
+ * Changing it afterwards has no effect on the authentication process.
+ *
+ * Defaults to the owner of the process.
+ *
+ */
 void astal_auth_pam_set_username(AstalAuthPam *self, const gchar *username) {
     g_return_if_fail(ASTAL_AUTH_IS_PAM(self));
     g_return_if_fail(username != NULL);
@@ -66,6 +78,14 @@ void astal_auth_pam_set_username(AstalAuthPam *self, const gchar *username) {
     g_object_notify(G_OBJECT(self), "username");
 }
 
+/**
+ * astal_auth_pam_supply_secret
+ * @self: a AstalAuthPam Object
+ * @secret: (nullable): the secret to be provided to pam. Can be NULL.
+ *
+ * provides pam with a secret. This method must be called exactly once after a
+ * auth-* signal is emitted.
+ */
 void astal_auth_pam_supply_secret(AstalAuthPam *self, const gchar *secret) {
     g_return_if_fail(ASTAL_AUTH_IS_PAM(self));
     AstalAuthPamPrivate *priv = astal_auth_pam_get_instance_private(self);
@@ -78,6 +98,18 @@ void astal_auth_pam_supply_secret(AstalAuthPam *self, const gchar *secret) {
     g_mutex_unlock(&priv->data_mutex);
 }
 
+/**
+ * astal_auth_pam_set_service
+ * @self: a AstalAuthPam object
+ * @service: the pam service used for authentication
+ *
+ * Sets the service to be used for authentication. This must be set to
+ * before calling start_authenticate.
+ * Changing it afterwards has no effect on the authentication process.
+ *
+ * Defaults to `astal-auth`.
+ *
+ */
 void astal_auth_pam_set_service(AstalAuthPam *self, const gchar *service) {
     g_return_if_fail(ASTAL_AUTH_IS_PAM(self));
     g_return_if_fail(service != NULL);
@@ -87,11 +119,30 @@ void astal_auth_pam_set_service(AstalAuthPam *self, const gchar *service) {
     g_object_notify(G_OBJECT(self), "service");
 }
 
+/**
+ * astal_auth_pam_get_username
+ * @self: a AstalAuthPam object
+ *
+ * Fetches the username from AsalAuthPam object.
+ *
+ * Returns: the username of the AsalAuthPam object. This string is
+ * owned by the object and must not be modified or freed.
+ */
+
 const gchar *astal_auth_pam_get_username(AstalAuthPam *self) {
     g_return_val_if_fail(ASTAL_AUTH_IS_PAM(self), NULL);
     return self->username;
 }
 
+/**
+ * astal_auth_pam_get_service
+ * @self: a AstalAuthPam
+ *
+ * Fetches the service from AsalAuthPam object.
+ *
+ * Returns: the service of the AsalAuthPam object. This string is
+ * owned by the object and must not be modified or freed.
+ */
 const gchar *astal_auth_pam_get_service(AstalAuthPam *self) {
     g_return_val_if_fail(ASTAL_AUTH_IS_PAM(self), NULL);
     return self->service;
@@ -265,6 +316,14 @@ gboolean astal_auth_pam_start_authenticate_with_callback(AstalAuthPam *self,
     return TRUE;
 }
 
+/**
+ * astal_auth_pam_start_authentication:
+ * @self: a AstalAuthPam Object
+ *
+ * starts a new authentication process using the PAM (Pluggable Authentication Modules) system.
+ * Note that this will cancel an already running authentication process
+ * associated with this AstalAuthPam object.
+ */
 gboolean astal_auth_pam_start_authenticate(AstalAuthPam *self) {
     return astal_auth_pam_start_authenticate_with_callback(
         self, (GAsyncReadyCallback)astal_auth_pam_callback, NULL);
@@ -275,6 +334,16 @@ static void astal_auth_pam_on_hidden(AstalAuthPam *pam, const gchar *msg, gchar 
     g_free(password);
 }
 
+/**
+ * astal_auth_pam_authenticate:
+ * @password: the password to be authenticated
+ * @result_callback: (scope async) (closure user_data): a GAsyncReadyCallback
+ *   to call when the request is satisfied
+ * @user_data: the data to pass to callback function
+ *
+ * Requests authentication of the provided password using the PAM (Pluggable Authentication Modules)
+ * system.
+ */
 gboolean astal_auth_pam_authenticate(const gchar *password, GAsyncReadyCallback result_callback,
                                      gpointer user_data) {
     AstalAuthPam *pam = g_object_new(ASTAL_AUTH_TYPE_PAM, NULL);
@@ -327,35 +396,101 @@ static void astal_auth_pam_class_init(AstalAuthPamClass *class) {
 
     struct passwd *passwd = getpwuid(getuid());
 
+    /**
+     * AstalAuthPam:username:
+     *
+     * The username used for authentication.
+     * Changing the value of this property has no affect on an already started authentication
+     * process.
+     *
+     * Defaults to the user that owns this process.
+     */
     astal_auth_pam_properties[ASTAL_AUTH_PAM_PROP_USERNAME] =
         g_param_spec_string("username", "username", "username used for authentication",
                             passwd->pw_name, G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-
+    /**
+     * AstalAuthPam:service:
+     *
+     * The pam service used for authentication.
+     * Changing the value of this property has no affect on an already started authentication
+     * process.
+     *
+     * Defaults to the astal-auth pam service.
+     */
     astal_auth_pam_properties[ASTAL_AUTH_PAM_PROP_SERVICE] =
         g_param_spec_string("service", "service", "the pam service to use", "astal-auth",
                             G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
     g_object_class_install_properties(object_class, ASTAL_AUTH_PAM_N_PROPERTIES,
                                       astal_auth_pam_properties);
-
+    /**
+     * AstalAuthPam::auth-prompt-visible:
+     * @pam: the object which received the signal.
+     * @msg: the prompt to be shown to the user
+     *
+     * This signal is emitted when user input is required. The input should be visible
+     * when entered (e.g., for One-Time Passwords (OTP)).
+     *
+     * This signal has to be matched with exaclty one supply_secret call.
+     */
     astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_PROMPT_VISIBLE] =
         g_signal_new("auth-prompt-visible", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
                      NULL, NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
-
+    /**
+     * AstalAuthPam::auth-prompt-hidden:
+     * @pam: the object which received the signal.
+     * @msg: the prompt to be shown to the user
+     *
+     * This signal is emitted when user input is required. The input should be hidden
+     * when entered (e.g., for passwords).
+     *
+     * This signal has to be matched with exaclty one supply_secret call.
+     */
     astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_PROMPT_HIDDEN] =
         g_signal_new("auth-prompt-hidden", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
                      NULL, NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
-
+    /**
+     * AstalAuthPam::auth-info:
+     * @pam: the object which received the signal.
+     * @msg: the info mssage to be shown to the user
+     *
+     * This signal is emitted when the user should receive an information (e.g., tell the user to
+     * touch a security key, or the remaining time pam has been locked after multiple failed
+     * attempts)
+     *
+     * This signal has to be matched with exaclty one supply_secret call.
+     */
     astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_INFO] =
         g_signal_new("auth-info", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
                      G_TYPE_NONE, 1, G_TYPE_STRING);
-
+    /**
+     * AstalAuthPam::auth-error:
+     * @pam: the object which received the signal.
+     * @msg: the error message
+     *
+     * This signal is emitted when an authentication error has occured.
+     *
+     * This signal has to be matched with exaclty one supply_secret call.
+     */
     astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_ERROR] =
         g_signal_new("auth-error", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, G_TYPE_STRING);
+    /**
+     * AstalAuthPam::success:
+     * @pam: the object which received the signal.
+     *
+     * This signal is emitted after successful authentication
+     */
     astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_SUCCESS] =
         g_signal_new("success", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
                      G_TYPE_NONE, 0);
+    /**
+     * AstalAuthPam::fail:
+     * @pam: the object which received the signal.
+     * @msg: the authentication failure message
+     *
+     * This signal is emitted when authentication failed.
+     */
     astal_auth_pam_signals[ASTAL_AUTH_PAM_SIGNAL_FAIL] =
         g_signal_new("fail", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
                      G_TYPE_NONE, 1, G_TYPE_STRING);

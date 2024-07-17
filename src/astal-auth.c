@@ -1,8 +1,8 @@
+#include "astal-auth.h"
+
 #include <getopt.h>
 #include <stdio.h>
 #include <termios.h>
-
-#include "astal-auth.h"
 
 GMainLoop *loop;
 
