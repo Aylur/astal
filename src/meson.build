@@ -31,12 +31,12 @@ if get_option('lib')
     meson.project_name(),
     sources,
     dependencies: deps,
-    vala_header: meson.project_name().replace('astal-', '') + '.h',
+    vala_header: meson.project_name() + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
     vala_gir: gir,
     version: meson.project_version(),
     install: true,
-    install_dir: [true, get_option('includedir') / 'astal', true, true],
+    install_dir: [true, true, true, true],
   )
 
   import('pkgconfig').generate(

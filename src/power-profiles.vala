@@ -183,7 +183,7 @@ public struct Hold {
     public string reason;
 }
 
-string kebab_case(string pascal_case) {
+private string kebab_case(string pascal_case) {
     StringBuilder kebab_case = new StringBuilder();
 
     for (int i = 0; i < pascal_case.length; i++) {
