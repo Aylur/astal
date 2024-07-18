@@ -265,7 +265,7 @@ public class Player : Object {
     }
 
     private async void cache_cover() {
-        if (art_url == null)
+        if (art_url == null || art_url == "")
             return;
 
         var file = File.new_for_uri(art_url);
@@ -295,7 +295,7 @@ public class Player : Object {
                         file.copy_async.end(res);
                         cover_art = path;
                     } catch (Error err) {
-                        critical("Failed to cache cover art %s", err.message);
+                        critical("Failed to cache cover art with url \"%s\": %s", art_url, err.message);
                     }
                 }
             );
