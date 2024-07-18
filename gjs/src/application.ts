@@ -72,7 +72,6 @@ class AstalJS extends Astal.Application {
             const path: string[] = import.meta.url.split("/").slice(3)
             const file = path.at(-1)!.replace(".js", ".css")
             const css = `/${path.slice(0, -1).join("/")}/${file}`
-            print(path, css)
             if (GLib.file_test(css, GLib.FileTest.EXISTS))
                 this.apply_css(css, false)
 
