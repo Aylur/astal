@@ -1,9 +1,12 @@
+#include "endpoint.h"
+
 #include <limits.h>
 #include <wp/wp.h>
 
 #include "endpoint-private.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "glibconfig.h"
 
 struct _AstalWpEndpoint {
     GObject parent_instance;
@@ -11,22 +14,35 @@ struct _AstalWpEndpoint {
     guint id;
     gdouble volume;
     gboolean mute;
-    const gchar *description;
+    gchar *description;
+    AstalWpMediaClass type;
+    gboolean is_default;
 };
 
 typedef struct {
     WpNode *node;
     WpPlugin *mixer;
+    WpPlugin *defaults;
+
+    gulong signal_handler_id;
 
 } AstalWpEndpointPrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpEndpoint, astal_wp_endpoint, G_TYPE_OBJECT);
+
+G_DEFINE_ENUM_TYPE(AstalWpMediaClass, astal_wp_media_class,
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE, "Audio/Source"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER, "Audio/Sink"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER, "Stream/Input/Audio"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM, "Stream/Output/Audio"));
 
 typedef enum {
     ASTAL_WP_ENDPOINT_PROP_ID = 1,
     ASTAL_WP_ENDPOINT_PROP_VOLUME,
     ASTAL_WP_ENDPOINT_PROP_MUTE,
     ASTAL_WP_ENDPOINT_PROP_DESCRIPTION,
+    ASTAL_WP_ENDPOINT_PROP_MEDIA_CLASS,
+    ASTAL_WP_ENDPOINT_PROP_DEFAULT,
     ASTAL_WP_ENDPOINT_N_PROPERTIES,
 } AstalWpEndpointProperties;
 
@@ -72,26 +88,48 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
 void astal_wp_endpoint_set_volume(AstalWpEndpoint *self, gdouble volume) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
-    GVariant *variant = NULL;
-    GVariantBuilder b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
-    g_variant_builder_add(&b, "{sv}", "volume", g_variant_new_double(volume));
-    variant = g_variant_builder_end(&b);
-
-    g_signal_emit_by_name(priv->mixer, "set-volume", self->id, variant);
-    g_variant_unref(variant);
+    gboolean ret;
+    GVariant *variant = g_variant_new_double(volume);
+    g_signal_emit_by_name(priv->mixer, "set-volume", self->id, variant, &ret);
 }
 
 void astal_wp_endpoint_set_mute(AstalWpEndpoint *self, gboolean mute) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
+    gboolean ret;
     GVariant *variant = NULL;
     GVariantBuilder b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
     g_variant_builder_add(&b, "{sv}", "mute", g_variant_new_boolean(mute));
     variant = g_variant_builder_end(&b);
 
-    g_signal_emit_by_name(priv->mixer, "set-volume", self->id, variant);
+    g_signal_emit_by_name(priv->mixer, "set-volume", self->id, variant, &ret);
 
     g_variant_unref(variant);
+}
+
+AstalWpMediaClass astal_wp_endpoint_get_media_class(AstalWpEndpoint *self) { return self->type; }
+
+guint astal_wp_endpoint_get_id(AstalWpEndpoint *self) { return self->id; }
+
+gboolean astal_wp_endpoint_get_mute(AstalWpEndpoint *self) { return self->mute; }
+
+gdouble astal_wp_endpoint_get_volume(AstalWpEndpoint *self) { return self->volume; }
+
+const gchar *astal_wp_endpoint_get_description(AstalWpEndpoint *self) { return self->description; }
+
+gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint *self) { return self->is_default; }
+
+void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default) {
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+
+    if (!is_default) return;
+    gboolean ret;
+    const gchar *name =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "node.name");
+    const gchar *media_class =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "media.class");
+    g_signal_emit_by_name(priv->defaults, "set-default-configured-node-name", media_class, name,
+                          &ret);
 }
 
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
@@ -111,6 +149,12 @@ static void astal_wp_endpoint_get_property(GObject *object, guint property_id, G
         case ASTAL_WP_ENDPOINT_PROP_DESCRIPTION:
             g_value_set_string(value, self->description);
             break;
+        case ASTAL_WP_ENDPOINT_PROP_MEDIA_CLASS:
+            g_value_set_enum(value, self->type);
+            break;
+        case ASTAL_WP_ENDPOINT_PROP_DEFAULT:
+            g_value_set_boolean(value, self->is_default);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -128,17 +172,40 @@ static void astal_wp_endpoint_set_property(GObject *object, guint property_id, c
         case ASTAL_WP_ENDPOINT_PROP_VOLUME:
             astal_wp_endpoint_set_volume(self, g_value_get_double(value));
             break;
+        case ASTAL_WP_ENDPOINT_PROP_DEFAULT:
+            astal_wp_endpoint_set_is_default(self, g_value_get_boolean(value));
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
     }
 }
 
-AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer) {
+static void astal_wp_endpoint_default_changed(AstalWpEndpoint *self) {
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+
+    guint defaultId;
+    const gchar *media_class =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "media.class");
+    g_signal_emit_by_name(priv->defaults, "get-default-node", media_class, &defaultId);
+
+    if (self->is_default && defaultId != self->id) {
+        self->is_default = FALSE;
+        g_object_notify(G_OBJECT(self), "is-default");
+        g_signal_emit_by_name(self, "changed");
+    } else if (!self->is_default && defaultId == self->id) {
+        self->is_default = TRUE;
+        g_object_notify(G_OBJECT(self), "is-default");
+        g_signal_emit_by_name(self, "changed");
+    }
+}
+
+AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugin *defaults) {
     AstalWpEndpoint *self = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
     priv->mixer = g_object_ref(mixer);
+    priv->defaults = g_object_ref(defaults);
     priv->node = g_object_ref(node);
 
     self->id = wp_proxy_get_bound_id(WP_PROXY(node));
@@ -156,9 +223,15 @@ AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer) {
     if (description == NULL) {
         description = "unknown";
     }
-
     self->description = g_strdup(description);
 
+    const gchar *type = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
+    self->type = g_enum_get_value_by_nick(g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS), type)->value;
+
+    priv->signal_handler_id = g_signal_connect_swapped(
+        priv->defaults, "changed", G_CALLBACK(astal_wp_endpoint_default_changed), self);
+
+    astal_wp_endpoint_default_changed(self);
     return self;
 }
 
@@ -166,6 +239,7 @@ static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
     priv->node = NULL;
     priv->mixer = NULL;
+    priv->defaults = NULL;
 
     self->volume = 0;
     self->mute = TRUE;
@@ -175,11 +249,18 @@ static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
 static void astal_wp_endpoint_dispose(GObject *object) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+
+    g_signal_handler_disconnect(priv->defaults, priv->signal_handler_id);
+
     g_clear_object(&priv->node);
     g_clear_object(&priv->mixer);
+    g_clear_object(&priv->defaults);
 }
 
-static void astal_wp_endpoint_finalize(GObject *object) {}
+static void astal_wp_endpoint_finalize(GObject *object) {
+    AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
+    g_free(self->description);
+}
 
 static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
     GObjectClass *object_class = G_OBJECT_CLASS(class);
@@ -196,6 +277,16 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
         g_param_spec_boolean("mute", "mute", "mute", TRUE, G_PARAM_READWRITE);
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_DESCRIPTION] =
         g_param_spec_string("description", "description", "description", NULL, G_PARAM_READABLE);
+    /**
+     * AstalWpEndpoint:media-class: (type AstalWpMediaClass)
+     *
+     * The media class of this endpoint
+     */
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_MEDIA_CLASS] =
+        g_param_spec_enum("media-class", "media-class", "media-class", ASTAL_WP_TYPE_MEDIA_CLASS, 1,
+                          G_PARAM_READABLE);
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_DEFAULT] =
+        g_param_spec_boolean("is_default", "is_default", "is_default", FALSE, G_PARAM_READWRITE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);

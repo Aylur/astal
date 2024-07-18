@@ -1,0 +1,30 @@
+#ifndef ASTAL_WIREPLUMBER_AUDIO_H
+#define ASTAL_WIREPLUMBER_AUDIO_H
+
+#include <glib-object.h>
+
+#include "endpoint.h"
+
+G_BEGIN_DECLS
+
+#define ASTAL_WP_TYPE_AUDIO (astal_wp_audio_get_type())
+
+G_DECLARE_FINAL_TYPE(AstalWpAudio, astal_wp_audio, ASTAL_WP, AUDIO, GObject)
+
+AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id);
+AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id);
+AstalWpEndpoint *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id);
+AstalWpEndpoint *astal_wp_audio_get_stream(AstalWpAudio *self, guint id);
+AstalWpEndpoint *astal_wp_audio_get_endpoint(AstalWpAudio *self, guint id);
+
+GList *astal_wp_audio_get_microphones(AstalWpAudio *self);
+GList *astal_wp_audio_get_speakers(AstalWpAudio *self);
+GList *astal_wp_audio_get_recorders(AstalWpAudio *self);
+GList *astal_wp_audio_get_streams(AstalWpAudio *self);
+
+AstalWpAudio *astal_wp_audio_get_default();
+AstalWpAudio *astal_wp_get_default_audio();
+
+G_END_DECLS
+
+#endif  // !ASTAL_WIREPLUMBER_AUDIO_H

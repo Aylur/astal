@@ -1,9 +1,9 @@
-#include "wireplumber.h"
-
 #include <wp/wp.h>
 
+#include "audio.h"
 #include "endpoint-private.h"
 #include "glib-object.h"
+#include "glib.h"
 #include "wp.h"
 
 struct _AstalWpWp {
@@ -34,6 +34,16 @@ static guint astal_wp_wp_signals[ASTAL_WP_WP_N_SIGNALS] = {
     0,
 };
 
+typedef enum {
+    ASTAL_WP_WP_PROP_AUDIO = 1,
+    ASTAL_WP_WP_PROP_ENDPOINTS,
+    ASTAL_WP_WP_N_PROPERTIES,
+} AstalWpWpProperties;
+
+static GParamSpec *astal_wp_wp_properties[ASTAL_WP_WP_N_PROPERTIES] = {
+    NULL,
+};
+
 /**
  * astal_wp_wp_get_endpoint:
  * @self: the AstalWpWp object
@@ -48,18 +58,41 @@ AstalWpEndpoint *astal_wp_wp_get_endpoint(AstalWpWp *self, guint id) {
     return endpoint;
 }
 
-static void astal_wp_wp_default_changed(AstalWpWp *self) {
+/**
+ * astal_wp_wp_get_endpoints:
+ * @self: the AstalWpWp object
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
+ * endpoints
+ */
+GList *astal_wp_wp_get_endpoints(AstalWpWp *self) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    return g_hash_table_get_values(priv->endpoints);
+}
+
+/**
+ * astal_wp_wp_get_audio
+ *
+ * Returns: (nullable) (transfer none): gets the audio object
+ */
+AstalWpAudio *astal_wp_wp_get_audio() { return astal_wp_audio_get_default(); }
+
+static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue *value,
+                                     GParamSpec *pspec) {
+    AstalWpWp *self = ASTAL_WP_WP(object);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    guint defaultSinkId;
-    guint defaultSourceId;
-
-    g_signal_emit_by_name(priv->defaults, "get-default-node", "Audio/Sink", &defaultSinkId);
-    g_signal_emit_by_name(priv->defaults, "get-default-node", "Audio/Source", &defaultSourceId);
-
-    g_print("default nodes: sink: %d, source: %d\n", defaultSinkId, defaultSourceId);
-
-    g_signal_emit_by_name(self, "changed");
+    switch (property_id) {
+        case ASTAL_WP_WP_PROP_AUDIO:
+            g_value_set_object(value, astal_wp_wp_get_audio());
+            break;
+        case ASTAL_WP_WP_PROP_ENDPOINTS:
+            g_value_set_pointer(value, g_hash_table_get_values(priv->endpoints));
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
+            break;
+    }
 }
 
 static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
@@ -79,12 +112,13 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     WpNode *node = WP_NODE(object);
-    AstalWpEndpoint *endpoint = astal_wp_endpoint_create(node, priv->mixer);
+    AstalWpEndpoint *endpoint = astal_wp_endpoint_create(node, priv->mixer, priv->defaults);
 
     g_hash_table_insert(priv->endpoints, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
                         endpoint);
 
     g_signal_emit_by_name(self, "endpoint-added", endpoint);
+    g_object_notify(G_OBJECT(self), "endpoints");
     g_signal_emit_by_name(self, "changed");
 }
 
@@ -100,6 +134,7 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
     g_hash_table_remove(priv->endpoints, GUINT_TO_POINTER(id));
 
     g_signal_emit_by_name(self, "endpoint-removed", endpoint);
+    g_object_notify(G_OBJECT(self), "endpoints");
     g_signal_emit_by_name(self, "changed");
 }
 
@@ -135,8 +170,8 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
 
         g_signal_connect_swapped(priv->mixer, "changed", (GCallback)astal_wp_wp_mixer_changed,
                                  self);
-        g_signal_connect_swapped(priv->defaults, "changed", (GCallback)astal_wp_wp_default_changed,
-                                 self);
+        // g_signal_connect_swapped(priv->defaults, "changed",
+        // (GCallback)astal_wp_wp_default_changed, self);
 
         g_signal_connect_swapped(priv->obj_manager, "object-added",
                                  G_CALLBACK(astal_wp_wp_object_added), self);
@@ -214,13 +249,14 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     }
 
     priv->obj_manager = wp_object_manager_new();
+    wp_object_manager_request_object_features(priv->obj_manager, WP_TYPE_NODE,
+                                              WP_OBJECT_FEATURES_ALL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
                                    "media.class", "=s", "Audio/Sink", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
                                    "media.class", "=s", "Audio/Source", NULL);
-    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE,
-                                   WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "media.class", "=s",
-                                   "Stream/Output/Audio", NULL);
+    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
+                                   "media.class", "=s", "Stream/Output/Audio", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
                                    "media.class", "=s", "Stream/Input/Audio", NULL);
 
@@ -239,6 +275,21 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     GObjectClass *object_class = G_OBJECT_CLASS(class);
     object_class->finalize = astal_wp_wp_finalize;
     object_class->dispose = astal_wp_wp_dispose;
+    object_class->get_property = astal_wp_wp_get_property;
+
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_AUDIO] =
+        g_param_spec_object("audio", "audio", "audio", ASTAL_WP_TYPE_AUDIO, G_PARAM_READABLE);
+
+    /**
+     * AstalWpWp:endpoints: (type GList(AstalWpEndpoint)) (transfer container)
+     *
+     * A list of AstalWpEndpoint objects
+     */
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_ENDPOINTS] =
+        g_param_spec_pointer("endpoints", "endpoints", "endpoints", G_PARAM_READABLE);
+
+    g_object_class_install_properties(object_class, ASTAL_WP_WP_N_PROPERTIES,
+                                      astal_wp_wp_properties);
 
     astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_ENDPOINT_ADDED] =
         g_signal_new("endpoint-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,

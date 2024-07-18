@@ -8,7 +8,8 @@
 
 G_BEGIN_DECLS
 
-AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer);
+AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugin *defaults);
+void astal_wp_endpoint_update_default(AstalWpEndpoint *self, gboolean is_default);
 
 G_END_DECLS
 

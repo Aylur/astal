@@ -1,6 +1,7 @@
 srcs = files(
     'wireplumber.c',
     'endpoint.c',
+    'audio.c',
 )
 
 deps = [
