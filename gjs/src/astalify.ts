@@ -63,6 +63,21 @@ function mergeBindings(array: any[]) {
     return Variable.derive(bindings, getValues)()
 }
 
+function setProp(obj: any, prop: string, value: any) {
+    try {
+        const setter = `set_${snakeify(prop)}`
+        if (typeof obj[setter] === "function")
+            return obj[setter](value)
+
+        if (Object.hasOwn(obj, prop))
+            return (obj[prop] = value)
+    } catch (error) {
+        console.error(`could not set property "${prop}" on ${obj}:`, error)
+    }
+
+    console.error(`could not set property "${prop}" on ${obj}`)
+}
+
 export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C> & {
     className: string
     css: string
@@ -112,7 +127,7 @@ function ctor(self: any, config: any = {}, children: any = []) {
     const bindings = Object.keys(props).reduce((acc: any, prop) => {
         if (props[prop] instanceof Binding) {
             const binding = props[prop]
-            self[`set_${snakeify(prop)}`](binding.get())
+            setProp(self, prop, binding.get())
             delete props[prop]
             return [...acc, [prop, binding]]
         }
@@ -148,7 +163,7 @@ function ctor(self: any, config: any = {}, children: any = []) {
             }))
         }
         self.connect("destroy", bind.subscribe((v: any) => {
-            self[`set_${snakeify(prop)}`](v)
+            setProp(self, prop, v)
         }))
     }
 
