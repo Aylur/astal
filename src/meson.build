@@ -46,7 +46,7 @@ if get_option('introspection')
         symbol_prefix : 'astal_wp',
         identifier_prefix : 'AstalWp',
         includes : ['GObject-2.0', 'Gio-2.0'],
-        header : 'astal/wireplumber.h',
+        header : 'astal-wp.h',
         export_packages : pkg_config_name,
         install : true
     )

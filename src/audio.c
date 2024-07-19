@@ -3,7 +3,7 @@
 #include <wp/wp.h>
 
 #include "endpoint.h"
-#include "wireplumber.h"
+#include "wp.h"
 
 struct _AstalWpAudio {
     GObject parent_instance;

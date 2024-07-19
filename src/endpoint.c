@@ -1,12 +1,6 @@
-#include "endpoint.h"
-
-#include <limits.h>
 #include <wp/wp.h>
 
 #include "endpoint-private.h"
-#include "glib-object.h"
-#include "glib.h"
-#include "glibconfig.h"
 #include "wp.h"
 
 struct _AstalWpEndpoint {

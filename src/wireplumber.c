@@ -2,9 +2,6 @@
 
 #include "audio.h"
 #include "endpoint-private.h"
-#include "endpoint.h"
-#include "glib-object.h"
-#include "glib.h"
 #include "wp.h"
 
 struct _AstalWpWp {
@@ -315,7 +312,7 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_ENDPOINTS] =
         g_param_spec_pointer("endpoints", "endpoints", "endpoints", G_PARAM_READABLE);
     /**
-     * AstalWpAudio:default-speaker:
+     * AstalWpWp:default-speaker:
      *
      * The AstalWndpoint object representing the default speaker
      */
@@ -323,7 +320,7 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
         g_param_spec_object("default-speaker", "default-speaker", "default-speaker",
                             ASTAL_WP_TYPE_ENDPOINT, G_PARAM_READABLE);
     /**
-     * AstalWpAudio:default-microphone:
+     * AstalWpWp:default-microphone:
      *
      * The AstalWndpoint object representing the default speaker
      */
