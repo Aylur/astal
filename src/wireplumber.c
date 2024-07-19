@@ -166,23 +166,6 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
     g_signal_emit_by_name(self, "changed");
 }
 
-static void astal_wp_wp_mixer_changed(AstalWpWp *self, guint node_id) {
-    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
-
-    AstalWpEndpoint *endpoint = g_hash_table_lookup(priv->endpoints, GUINT_TO_POINTER(node_id));
-
-    if (endpoint == NULL) return;
-
-    astal_wp_endpoint_update_volume(endpoint);
-
-    if (astal_wp_endpoint_get_id(self->default_speaker) == node_id)
-        astal_wp_endpoint_update_volume(self->default_speaker);
-    if (astal_wp_endpoint_get_id(self->default_microphone) == node_id)
-        astal_wp_endpoint_update_volume(self->default_microphone);
-
-    g_signal_emit_by_name(self, "changed");
-}
-
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
@@ -206,8 +189,8 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
         priv->defaults = wp_plugin_find(priv->core, "default-nodes-api");
         priv->mixer = wp_plugin_find(priv->core, "mixer-api");
 
-        g_signal_connect_swapped(priv->mixer, "changed", (GCallback)astal_wp_wp_mixer_changed,
-                                 self);
+        // g_signal_connect_swapped(priv->mixer, "changed", (GCallback)astal_wp_wp_mixer_changed,
+        // self);
         // g_signal_connect_swapped(priv->defaults, "changed",
         // (GCallback)astal_wp_wp_default_changed, self);
 

@@ -28,7 +28,8 @@ typedef struct {
     gboolean is_default_node;
     AstalWpMediaClass media_class;
 
-    gulong signal_handler_id;
+    gulong default_signal_handler_id;
+    gulong mixer_signal_handler_id;
 
 } AstalWpEndpointPrivate;
 
@@ -260,6 +261,11 @@ static void astal_wp_endpoint_default_changed(AstalWpEndpoint *self) {
     }
 }
 
+static void astal_wp_endpoint_mixer_changed(AstalWpEndpoint *self, guint node_id) {
+    if (self->id != node_id) return;
+    astal_wp_endpoint_update_volume(self);
+}
+
 AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer,
                                                    WpPlugin *defaults, AstalWpMediaClass type) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
@@ -271,8 +277,10 @@ AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlug
     priv->is_default_node = TRUE;
     self->is_default = TRUE;
 
-    priv->signal_handler_id = g_signal_connect_swapped(
+    priv->default_signal_handler_id = g_signal_connect_swapped(
         priv->defaults, "changed", G_CALLBACK(astal_wp_endpoint_default_changed_as_default), self);
+    priv->mixer_signal_handler_id = g_signal_connect_swapped(
+        priv->mixer, "changed", G_CALLBACK(astal_wp_endpoint_mixer_changed), self);
 
     astal_wp_endpoint_default_changed_as_default(self);
     astal_wp_endpoint_update_properties(self);
@@ -288,8 +296,10 @@ AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugi
     priv->node = g_object_ref(node);
     priv->is_default_node = FALSE;
 
-    priv->signal_handler_id = g_signal_connect_swapped(
+    priv->default_signal_handler_id = g_signal_connect_swapped(
         priv->defaults, "changed", G_CALLBACK(astal_wp_endpoint_default_changed), self);
+    priv->mixer_signal_handler_id = g_signal_connect_swapped(
+        priv->mixer, "changed", G_CALLBACK(astal_wp_endpoint_mixer_changed), self);
 
     astal_wp_endpoint_update_properties(self);
     astal_wp_endpoint_default_changed(self);
@@ -311,7 +321,8 @@ static void astal_wp_endpoint_dispose(GObject *object) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
-    g_signal_handler_disconnect(priv->defaults, priv->signal_handler_id);
+    g_signal_handler_disconnect(priv->defaults, priv->default_signal_handler_id);
+    g_signal_handler_disconnect(priv->mixer, priv->mixer_signal_handler_id);
 
     g_print("dispose: id: %u, name: %s\n", self->id, self->description);
 
