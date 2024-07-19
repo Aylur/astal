@@ -3,9 +3,7 @@
 #include <wp/wp.h>
 
 #include "endpoint.h"
-#include "glib-object.h"
-#include "glib.h"
-#include "wp.h"
+#include "wireplumber.h"
 
 struct _AstalWpAudio {
     GObject parent_instance;
@@ -39,6 +37,8 @@ typedef enum {
     ASTAL_WP_AUDIO_PROP_SPEAKERS,
     ASTAL_WP_AUDIO_PROP_STREAMS,
     ASTAL_WP_AUDIO_PROP_RECORDERS,
+    ASTAL_WP_AUDIO_PROP_DEFAULT_SPEAKER,
+    ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE,
     ASTAL_WP_AUDIO_N_PROPERTIES,
 } AstalWpAudioProperties;
 
@@ -208,6 +208,26 @@ AstalWpEndpoint *astal_wp_audio_get_endpoint(AstalWpAudio *self, guint id) {
     return endpoint;
 }
 
+/**
+ * astal_wp_audio_get_default_speaker
+ *
+ * Returns: (nullable) (transfer none): gets the default speaker object
+ */
+AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self) {
+    AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
+    return astal_wp_wp_get_default_speaker(priv->wp);
+}
+
+/**
+ * astal_wp_audio_get_default_microphone
+ *
+ * Returns: (nullable) (transfer none): gets the default microphone object
+ */
+AstalWpEndpoint *astal_wp_audio_get_default_microphone(AstalWpAudio *self) {
+    AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
+    return astal_wp_wp_get_default_microphone(priv->wp);
+}
+
 static void astal_wp_audio_get_property(GObject *object, guint property_id, GValue *value,
                                         GParamSpec *pspec) {
     AstalWpAudio *self = ASTAL_WP_AUDIO(object);
@@ -224,6 +244,12 @@ static void astal_wp_audio_get_property(GObject *object, guint property_id, GVal
             break;
         case ASTAL_WP_AUDIO_PROP_RECORDERS:
             g_value_set_pointer(value, astal_wp_audio_get_recorders(self));
+            break;
+        case ASTAL_WP_AUDIO_PROP_DEFAULT_SPEAKER:
+            g_value_set_object(value, astal_wp_audio_get_default_speaker(self));
+            break;
+        case ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE:
+            g_value_set_object(value, astal_wp_audio_get_default_microphone(self));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -354,6 +380,22 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_STREAMS] =
         g_param_spec_pointer("streams", "streams", "streams", G_PARAM_READABLE);
+    /**
+     * AstalWpAudio:default-speaker:
+     *
+     * The AstalWndpoint object representing the default speaker
+     */
+    astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEFAULT_SPEAKER] =
+        g_param_spec_object("default-speaker", "default-speaker", "default-speaker",
+                            ASTAL_WP_TYPE_ENDPOINT, G_PARAM_READABLE);
+    /**
+     * AstalWpAudio:default-microphone:
+     *
+     * The AstalWndpoint object representing the default speaker
+     */
+    astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE] =
+        g_param_spec_object("default-microphone", "default-microphone", "default-microphone",
+                            ASTAL_WP_TYPE_ENDPOINT, G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_AUDIO_N_PROPERTIES,
                                       astal_wp_audio_properties);

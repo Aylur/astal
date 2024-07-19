@@ -7,6 +7,7 @@
 #include "glib-object.h"
 #include "glib.h"
 #include "glibconfig.h"
+#include "wp.h"
 
 struct _AstalWpEndpoint {
     GObject parent_instance;
@@ -23,6 +24,9 @@ typedef struct {
     WpNode *node;
     WpPlugin *mixer;
     WpPlugin *defaults;
+
+    gboolean is_default_node;
+    AstalWpMediaClass media_class;
 
     gulong signal_handler_id;
 
@@ -181,6 +185,62 @@ static void astal_wp_endpoint_set_property(GObject *object, guint property_id, c
     }
 }
 
+static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+    if (priv->node == NULL) return;
+    self->id = wp_proxy_get_bound_id(WP_PROXY(priv->node));
+
+    astal_wp_endpoint_update_volume(self);
+
+    const gchar *description =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "node.description");
+    if (description == NULL) {
+        description = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "node.nick");
+    }
+    if (description == NULL) {
+        description = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "node.name");
+    }
+    if (description == NULL) {
+        description = "unknown";
+    }
+    g_free(self->description);
+    self->description = g_strdup(description);
+
+    const gchar *type =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "media.class");
+    const GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
+    self->type = g_enum_get_value_by_nick(enum_class, type)->value;
+    g_type_class_unref(enum_class);
+
+    g_object_notify(G_OBJECT(self), "id");
+    g_object_notify(G_OBJECT(self), "description");
+    g_object_notify(G_OBJECT(self), "type");
+    g_signal_emit_by_name(self, "changed");
+}
+
+static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) {
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+
+    const GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
+    const gchar *media_class = g_enum_get_value(enum_class, priv->media_class)->value_nick;
+    guint defaultId;
+    g_signal_emit_by_name(priv->defaults, "get-default-node", media_class, &defaultId);
+    g_type_class_unref(enum_class);
+
+    if (defaultId != self->id) {
+        if (priv->node != NULL) g_object_unref(priv->node);
+        AstalWpEndpoint *default_endpoint =
+            astal_wp_wp_get_endpoint(astal_wp_wp_get_default(), defaultId);
+        if (default_endpoint != NULL &&
+            astal_wp_endpoint_get_media_class(default_endpoint) == priv->media_class) {
+            AstalWpEndpointPrivate *default_endpoint_priv =
+                astal_wp_endpoint_get_instance_private(default_endpoint);
+            priv->node = g_object_ref(default_endpoint_priv->node);
+            astal_wp_endpoint_update_properties(self);
+        }
+    }
+}
+
 static void astal_wp_endpoint_default_changed(AstalWpEndpoint *self) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
@@ -200,6 +260,25 @@ static void astal_wp_endpoint_default_changed(AstalWpEndpoint *self) {
     }
 }
 
+AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer,
+                                                   WpPlugin *defaults, AstalWpMediaClass type) {
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+
+    priv->mixer = g_object_ref(mixer);
+    priv->defaults = g_object_ref(defaults);
+
+    priv->media_class = type;
+    priv->is_default_node = TRUE;
+    self->is_default = TRUE;
+
+    priv->signal_handler_id = g_signal_connect_swapped(
+        priv->defaults, "changed", G_CALLBACK(astal_wp_endpoint_default_changed_as_default), self);
+
+    astal_wp_endpoint_default_changed_as_default(self);
+    astal_wp_endpoint_update_properties(self);
+    return self;
+}
+
 AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugin *defaults) {
     AstalWpEndpoint *self = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
@@ -207,30 +286,12 @@ AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugi
     priv->mixer = g_object_ref(mixer);
     priv->defaults = g_object_ref(defaults);
     priv->node = g_object_ref(node);
-
-    self->id = wp_proxy_get_bound_id(WP_PROXY(node));
-
-    astal_wp_endpoint_update_volume(self);
-
-    const gchar *description =
-        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "node.description");
-    if (description == NULL) {
-        description = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "node.nick");
-    }
-    if (description == NULL) {
-        description = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "node.name");
-    }
-    if (description == NULL) {
-        description = "unknown";
-    }
-    self->description = g_strdup(description);
-
-    const gchar *type = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
-    self->type = g_enum_get_value_by_nick(g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS), type)->value;
+    priv->is_default_node = FALSE;
 
     priv->signal_handler_id = g_signal_connect_swapped(
         priv->defaults, "changed", G_CALLBACK(astal_wp_endpoint_default_changed), self);
 
+    astal_wp_endpoint_update_properties(self);
     astal_wp_endpoint_default_changed(self);
     return self;
 }
@@ -251,6 +312,8 @@ static void astal_wp_endpoint_dispose(GObject *object) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
     g_signal_handler_disconnect(priv->defaults, priv->signal_handler_id);
+
+    g_print("dispose: id: %u, name: %s\n", self->id, self->description);
 
     g_clear_object(&priv->node);
     g_clear_object(&priv->mixer);

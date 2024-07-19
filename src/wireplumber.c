@@ -2,12 +2,16 @@
 
 #include "audio.h"
 #include "endpoint-private.h"
+#include "endpoint.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "wp.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
+
+    AstalWpEndpoint *default_speaker;
+    AstalWpEndpoint *default_microphone;
 };
 
 typedef struct {
@@ -37,6 +41,8 @@ static guint astal_wp_wp_signals[ASTAL_WP_WP_N_SIGNALS] = {
 typedef enum {
     ASTAL_WP_WP_PROP_AUDIO = 1,
     ASTAL_WP_WP_PROP_ENDPOINTS,
+    ASTAL_WP_WP_PROP_DEFAULT_SPEAKER,
+    ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE,
     ASTAL_WP_WP_N_PROPERTIES,
 } AstalWpWpProperties;
 
@@ -77,6 +83,22 @@ GList *astal_wp_wp_get_endpoints(AstalWpWp *self) {
  */
 AstalWpAudio *astal_wp_wp_get_audio() { return astal_wp_audio_get_default(); }
 
+/**
+ * astal_wp_wp_get_default_speaker
+ *
+ * Returns: (nullable) (transfer none): gets the default speaker object
+ */
+AstalWpEndpoint *astal_wp_wp_get_default_speaker(AstalWpWp *self) { return self->default_speaker; }
+
+/**
+ * astal_wp_wp_get_default_microphone
+ *
+ * Returns: (nullable) (transfer none): gets the default microphone object
+ */
+AstalWpEndpoint *astal_wp_wp_get_default_microphone(AstalWpWp *self) {
+    return self->default_microphone;
+}
+
 static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue *value,
                                      GParamSpec *pspec) {
     AstalWpWp *self = ASTAL_WP_WP(object);
@@ -88,6 +110,12 @@ static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue 
             break;
         case ASTAL_WP_WP_PROP_ENDPOINTS:
             g_value_set_pointer(value, g_hash_table_get_values(priv->endpoints));
+            break;
+        case ASTAL_WP_WP_PROP_DEFAULT_SPEAKER:
+            g_value_set_object(value, self->default_speaker);
+            break;
+        case ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE:
+            g_value_set_object(value, self->default_microphone);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -147,11 +175,21 @@ static void astal_wp_wp_mixer_changed(AstalWpWp *self, guint node_id) {
 
     astal_wp_endpoint_update_volume(endpoint);
 
+    if (astal_wp_endpoint_get_id(self->default_speaker) == node_id)
+        astal_wp_endpoint_update_volume(self->default_speaker);
+    if (astal_wp_endpoint_get_id(self->default_microphone) == node_id)
+        astal_wp_endpoint_update_volume(self->default_microphone);
+
     g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    astal_wp_endpoint_init_as_default(self->default_speaker, priv->mixer, priv->defaults,
+                                      ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
+    astal_wp_endpoint_init_as_default(self->default_microphone, priv->mixer, priv->defaults,
+                                      ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE);
 }
 
 static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
@@ -177,6 +215,7 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
                                  G_CALLBACK(astal_wp_wp_object_added), self);
         g_signal_connect_swapped(priv->obj_manager, "object-removed",
                                  G_CALLBACK(astal_wp_wp_object_removed), self);
+
         wp_core_install_object_manager(priv->core, priv->obj_manager);
     }
 }
@@ -220,6 +259,8 @@ static void astal_wp_wp_dispose(GObject *object) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     wp_core_disconnect(priv->core);
+    g_clear_object(&self->default_speaker);
+    g_clear_object(&self->default_microphone);
     g_clear_object(&priv->mixer);
     g_clear_object(&priv->defaults);
     g_clear_object(&priv->obj_manager);
@@ -263,6 +304,9 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     g_signal_connect_swapped(priv->obj_manager, "installed", (GCallback)astal_wp_wp_objm_installed,
                              self);
 
+    self->default_speaker = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
+    self->default_microphone = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
+
     priv->pending_plugins = 2;
     wp_core_load_component(priv->core, "libwireplumber-module-default-nodes-api", "module", NULL,
                            "default-nodes-api", NULL,
@@ -287,6 +331,22 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
      */
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_ENDPOINTS] =
         g_param_spec_pointer("endpoints", "endpoints", "endpoints", G_PARAM_READABLE);
+    /**
+     * AstalWpAudio:default-speaker:
+     *
+     * The AstalWndpoint object representing the default speaker
+     */
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_DEFAULT_SPEAKER] =
+        g_param_spec_object("default-speaker", "default-speaker", "default-speaker",
+                            ASTAL_WP_TYPE_ENDPOINT, G_PARAM_READABLE);
+    /**
+     * AstalWpAudio:default-microphone:
+     *
+     * The AstalWndpoint object representing the default speaker
+     */
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE] =
+        g_param_spec_object("default-microphone", "default-microphone", "default-microphone",
+                            ASTAL_WP_TYPE_ENDPOINT, G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_WP_N_PROPERTIES,
                                       astal_wp_wp_properties);

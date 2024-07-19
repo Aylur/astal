@@ -18,6 +18,8 @@ AstalWpWp* astal_wp_get_default_wp();
 AstalWpAudio* astal_wp_wp_get_audio();
 AstalWpEndpoint* astal_wp_wp_get_endpoint(AstalWpWp* self, guint id);
 GList* astal_wp_wp_get_endpoints(AstalWpWp* self);
+AstalWpEndpoint* astal_wp_wp_get_default_speaker(AstalWpWp* self);
+AstalWpEndpoint* astal_wp_wp_get_default_microphone(AstalWpWp* self);
 
 G_END_DECLS
 
