@@ -14,11 +14,9 @@
         "allowJs": true,
         "jsx": "react-jsx",
         "jsxImportSource": "./src/jsx",
-        "typeRoots": [
-            "./node_modules/@girs"
-        ]
     },
     "include": [
+        "./node_modules/@girs",
         "./src/**/*",
         "./index.ts",
     ]

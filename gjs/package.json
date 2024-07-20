@@ -31,14 +31,16 @@
     ],
     "publishConfig": {},
     "devDependencies": {
-        "@ts-for-gir/cli": "^3.3.0",
-        "@typescript-eslint/eslint-plugin": "^5.33.0",
-        "@typescript-eslint/parser": "^5.33.0",
-        "eslint": "^8.42.0",
-        "typescript": "^5.1.0"
+        "@eslint/js": "^9.7.0",
+        "@stylistic/eslint-plugin": "latest",
+        "@ts-for-gir/cli": "latest",
+        "@types/eslint__js": "^8.42.3",
+        "eslint": "^8.57.0",
+        "typescript": "^5.5.3",
+        "typescript-eslint": "^7.16.1"
     },
     "scripts": {
-        "lint": "eslint .",
-        "types": "ts-for-gir generate"
+        "lint": "eslint . --fix",
+        "types": "ts-for-gir generate -o node_modules/@girs --package"
     }
 }

@@ -33,7 +33,8 @@ class AstalJS extends Astal.Application {
                 fn()()
                     .then(res)
                     .catch(rej)
-            } catch (error) {
+            }
+            catch (error) {
                 rej(error)
             }
         })
@@ -43,12 +44,13 @@ class AstalJS extends Astal.Application {
 
     vfunc_request(msg: string, conn: Gio.SocketConnection): void {
         if (typeof this.requestHandler === "function") {
-            this.requestHandler(msg, response => {
+            this.requestHandler(msg, (response) => {
                 Astal.write_sock(conn, String(response), (_, res) =>
                     Astal.write_sock_finish(res),
                 )
             })
-        } else {
+        }
+        else {
             super.vfunc_request(msg, conn)
         }
     }
@@ -68,7 +70,6 @@ class AstalJS extends Astal.Application {
 
         this.requestHandler = requestHandler
         this.connect("activate", () => {
-            // @ts-expect-error missing url type
             const path: string[] = import.meta.url.split("/").slice(3)
             const file = path.at(-1)!.replace(".js", ".css")
             const css = `/${path.slice(0, -1).join("/")}/${file}`
@@ -92,4 +93,4 @@ class AstalJS extends Astal.Application {
     }
 }
 
-export default new AstalJS
+export default new AstalJS()

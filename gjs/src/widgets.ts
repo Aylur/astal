@@ -5,14 +5,14 @@ import astalify, { type ConstructProps, type Widget } from "./astalify.js"
 export { astalify, ConstructProps }
 
 // Box
-export type Box = Widget<typeof Astal.Box>
+export type Box = Widget<Astal.Box>
 export const Box = astalify<typeof Astal.Box, BoxProps, "Box">(Astal.Box)
-export type BoxProps = ConstructProps<typeof Astal.Box, Astal.Box.ConstructorProperties>
+export type BoxProps = ConstructProps<Astal.Box, Astal.Box.ConstructorProps>
 
 // Button
-export type Button = Widget<typeof Astal.Button>
+export type Button = Widget<Astal.Button>
 export const Button = astalify<typeof Astal.Button, ButtonProps, "Button">(Astal.Button)
-export type ButtonProps = ConstructProps<typeof Astal.Button, Astal.Button.ConstructorProperties, {
+export type ButtonProps = ConstructProps<Astal.Button, Astal.Button.ConstructorProps, {
     onClicked: []
     onClick: [event: Astal.ClickEvent]
     onClickRelease: [event: Astal.ClickEvent]
@@ -22,31 +22,31 @@ export type ButtonProps = ConstructProps<typeof Astal.Button, Astal.Button.Const
 }>
 
 // CenterBox
-export type CenterBox = Widget<typeof Astal.CenterBox>
+export type CenterBox = Widget<Astal.CenterBox>
 export const CenterBox = astalify<typeof Astal.CenterBox, CenterBoxProps, "CenterBox">(Astal.CenterBox)
-export type CenterBoxProps = ConstructProps<typeof Astal.CenterBox, Astal.CenterBox.ConstructorProperties>
+export type CenterBoxProps = ConstructProps<Astal.CenterBox, Astal.CenterBox.ConstructorProps>
 
 // TODO: CircularProgress
 
 // DrawingArea
-export type DrawingArea = Widget<typeof Gtk.DrawingArea>
+export type DrawingArea = Widget<Gtk.DrawingArea>
 export const DrawingArea = astalify<typeof Gtk.DrawingArea, DrawingAreaProps, "DrawingArea">(Gtk.DrawingArea)
-export type DrawingAreaProps = ConstructProps<typeof Gtk.DrawingArea, Gtk.DrawingArea.ConstructorProperties, {
+export type DrawingAreaProps = ConstructProps<Gtk.DrawingArea, Gtk.DrawingArea.ConstructorProps, {
     onDraw: [cr: any] // TODO: cairo types
 }>
 
 // Entry
-export type Entry = Widget<typeof Gtk.Entry>
+export type Entry = Widget<Gtk.Entry>
 export const Entry = astalify<typeof Gtk.Entry, EntryProps, "Entry">(Gtk.Entry)
-export type EntryProps = ConstructProps<typeof Gtk.Entry, Gtk.Entry.ConstructorProperties, {
+export type EntryProps = ConstructProps<Gtk.Entry, Gtk.Entry.ConstructorProps, {
     onChanged: []
     onActivate: []
 }>
 
 // EventBox
-export type EventBox = Widget<typeof Astal.EventBox>
+export type EventBox = Widget<Astal.EventBox>
 export const EventBox = astalify<typeof Astal.EventBox, EventBoxProps, "EventBox">(Astal.EventBox)
-export type EventBoxProps = ConstructProps<typeof Astal.EventBox, Astal.EventBox.ConstructorProperties, {
+export type EventBoxProps = ConstructProps<Astal.EventBox, Astal.EventBox.ConstructorProps, {
     onClick: [event: Astal.ClickEvent]
     onClickRelease: [event: Astal.ClickEvent]
     onHover: [event: Astal.HoverEvent]
@@ -58,52 +58,52 @@ export type EventBoxProps = ConstructProps<typeof Astal.EventBox, Astal.EventBox
 // TODO: FlowBox
 
 // Icon
-export type Icon = Widget<typeof Astal.Icon>
+export type Icon = Widget<Astal.Icon>
 export const Icon = astalify<typeof Astal.Icon, IconProps, "Icon">(Astal.Icon)
-export type IconProps = ConstructProps<typeof Astal.Icon, Astal.Icon.ConstructorProperties>
+export type IconProps = ConstructProps<Astal.Icon, Astal.Icon.ConstructorProps>
 
 // Label
-export type Label = Widget<typeof Gtk.Label>
+export type Label = Widget<Gtk.Label>
 export const Label = astalify<typeof Gtk.Label, LabelProps, "Label">(Gtk.Label)
-export type LabelProps = ConstructProps<typeof Gtk.Label, Gtk.Label.ConstructorProperties>
+export type LabelProps = ConstructProps<Gtk.Label, Gtk.Label.ConstructorProps>
 
 // LevelBar
-export type LevelBar = Widget<typeof Astal.LevelBar>
+export type LevelBar = Widget<Astal.LevelBar>
 export const LevelBar = astalify<typeof Astal.LevelBar, LevelBarProps, "LevelBar">(Astal.LevelBar)
-export type LevelBarProps = ConstructProps<typeof Astal.LevelBar, Astal.LevelBar.ConstructorProperties>
+export type LevelBarProps = ConstructProps<Astal.LevelBar, Astal.LevelBar.ConstructorProps>
 
 // TODO: ListBox
 
 // Overlay
-export type Overlay = Widget<typeof Astal.Overlay>
+export type Overlay = Widget<Astal.Overlay>
 export const Overlay = astalify<typeof Astal.Overlay, OverlayProps, "Overlay">(Astal.Overlay)
-export type OverlayProps = ConstructProps<typeof Astal.Overlay, Astal.Overlay.ConstructorProperties>
+export type OverlayProps = ConstructProps<Astal.Overlay, Astal.Overlay.ConstructorProps>
 
 // Revealer
-export type Revealer = Widget<typeof Gtk.Revealer>
+export type Revealer = Widget<Gtk.Revealer>
 export const Revealer = astalify<typeof Gtk.Revealer, RevealerProps, "Revealer">(Gtk.Revealer)
-export type RevealerProps = ConstructProps<typeof Gtk.Revealer, Gtk.Revealer.ConstructorProperties>
+export type RevealerProps = ConstructProps<Gtk.Revealer, Gtk.Revealer.ConstructorProps>
 
 // Scrollable
-export type Scrollable = Widget<typeof Astal.Scrollable>
+export type Scrollable = Widget<Astal.Scrollable>
 export const Scrollable = astalify<typeof Astal.Scrollable, ScrollableProps, "Scrollable">(Astal.Scrollable)
-export type ScrollableProps = ConstructProps<typeof Astal.Scrollable, Astal.Scrollable.ConstructorProperties>
+export type ScrollableProps = ConstructProps<Astal.Scrollable, Astal.Scrollable.ConstructorProps>
 
 // Slider
-export type Slider = Widget<typeof Astal.Slider>
+export type Slider = Widget<Astal.Slider>
 export const Slider = astalify<typeof Astal.Slider, SliderProps, "Slider">(Astal.Slider)
-export type SliderProps = ConstructProps<typeof Astal.Slider, Astal.Slider.ConstructorProperties, {
+export type SliderProps = ConstructProps<Astal.Slider, Astal.Slider.ConstructorProps, {
     onDragged: []
 }>
 
 // TODO: Stack
 
 // Switch
-export type Switch = Widget<typeof Gtk.Switch>
+export type Switch = Widget<Gtk.Switch>
 export const Switch = astalify<typeof Gtk.Switch, SwitchProps, "Switch">(Gtk.Switch)
-export type SwitchProps = ConstructProps<typeof Gtk.Switch, Gtk.Switch.ConstructorProperties>
+export type SwitchProps = ConstructProps<Gtk.Switch, Gtk.Switch.ConstructorProps>
 
 // Window
-export type Window = Widget<typeof Astal.Window>
+export type Window = Widget<Astal.Window>
 export const Window = astalify<typeof Astal.Window, WindowProps, "Window">(Astal.Window)
-export type WindowProps = ConstructProps<typeof Astal.Window, Astal.Window.ConstructorProperties>
+export type WindowProps = ConstructProps<Astal.Window, Astal.Window.ConstructorProps>

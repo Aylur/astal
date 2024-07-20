@@ -1,9 +1,9 @@
 import { Astal } from "./imports.js"
 
 type Args<Out = void, Err = void> = {
-    cmd: string | string[],
-    out?: (stdout: string) => Out,
-    err?: (stderr: string) => Err,
+    cmd: string | string[]
+    out?: (stdout: string) => Out
+    err?: (stderr: string) => Err
 }
 
 function args<O, E>(argsOrCmd: Args | string | string[], onOut: O, onErr: E) {

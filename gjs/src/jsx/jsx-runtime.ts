@@ -27,30 +27,31 @@ export function jsx(
     if (isArrowFunction(ctor))
         return ctor(props)
 
+    // @ts-expect-error can be class or function
     return new ctor(props)
 }
 
 const ctors = {
-    "box": Widget.Box,
-    "button": Widget.Button,
-    "centerbox": Widget.CenterBox,
+    box: Widget.Box,
+    button: Widget.Button,
+    centerbox: Widget.CenterBox,
     // TODO: circularprogress
-    "drawingarea": Widget.DrawingArea,
-    "entry": Widget.Entry,
-    "eventbox": Widget.EventBox,
+    drawingarea: Widget.DrawingArea,
+    entry: Widget.Entry,
+    eventbox: Widget.EventBox,
     // TODO: fixed
     // TODO: flowbox
-    "icon": Widget.Icon,
-    "label": Widget.Label,
-    "levelbar": Widget.LevelBar,
+    icon: Widget.Icon,
+    label: Widget.Label,
+    levelbar: Widget.LevelBar,
     // TODO: listbox
-    "overlay": Widget.Overlay,
-    "revealer": Widget.Revealer,
-    "scrollable": Widget.Scrollable,
-    "slider": Widget.Slider,
+    overlay: Widget.Overlay,
+    revealer: Widget.Revealer,
+    scrollable: Widget.Scrollable,
+    slider: Widget.Slider,
     // TODO: stack
-    "switch": Widget.Switch,
-    "window": Widget.Window,
+    switch: Widget.Switch,
+    window: Widget.Window,
 }
 
 declare global {
@@ -59,26 +60,26 @@ declare global {
         type Element = Gtk.Widget
         type ElementClass = Gtk.Widget
         interface IntrinsicElements {
-            "box": Widget.BoxProps,
-            "button": Widget.ButtonProps,
-            "centerbox": Widget.CenterBoxProps,
+            box: Widget.BoxProps
+            button: Widget.ButtonProps
+            centerbox: Widget.CenterBoxProps
             // TODO: circularprogress
-            "drawingarea": Widget.DrawingAreaProps,
-            "entry": Widget.EntryProps,
-            "eventbox": Widget.EventBoxProps,
+            drawingarea: Widget.DrawingAreaProps
+            entry: Widget.EntryProps
+            eventbox: Widget.EventBoxProps
             // TODO: fixed
             // TODO: flowbox
-            "icon": Widget.IconProps,
-            "label": Widget.LabelProps,
-            "levelbar": Widget.LevelBarProps,
+            icon: Widget.IconProps
+            label: Widget.LabelProps
+            levelbar: Widget.LevelBarProps
             // TODO: listbox
-            "overlay": Widget.OverlayProps,
-            "revealer": Widget.RevealerProps,
-            "scrollable": Widget.ScrollableProps,
-            "slider": Widget.SliderProps,
+            overlay: Widget.OverlayProps
+            revealer: Widget.RevealerProps
+            scrollable: Widget.ScrollableProps
+            slider: Widget.SliderProps
             // TODO: stack
-            "switch": Widget.SwitchProps,
-            "window": Widget.WindowProps,
+            switch: Widget.SwitchProps
+            window: Widget.WindowProps
         }
     }
 }

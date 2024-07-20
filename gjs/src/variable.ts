@@ -22,7 +22,7 @@ class VariableWrapper<T> extends Function {
     constructor(init: T) {
         super()
         this._value = init
-        this.variable = new Astal.VariableBase
+        this.variable = new Astal.VariableBase()
         this.variable.connect("dropped", () => {
             this.stopWatch()
             this.stopPoll()
@@ -60,11 +60,13 @@ class VariableWrapper<T> extends Function {
                 if (v instanceof Promise) {
                     v.then(v => this.set(v))
                         .catch(err => this.variable.emit("error", err))
-                } else {
+                }
+                else {
                     this.set(v)
                 }
             })
-        } else if (this.pollExec) {
+        }
+        else if (this.pollExec) {
             this._poll = interval(this.pollInterval, () => {
                 execAsync(this.pollExec!)
                     .then(v => this.set(this.pollTransform!(v, this.get())))
@@ -142,7 +144,8 @@ class VariableWrapper<T> extends Function {
         if (typeof exec === "function") {
             this.pollFn = exec
             delete this.pollExec
-        } else {
+        }
+        else {
             this.pollExec = exec
             delete this.pollFn
         }
@@ -183,7 +186,8 @@ class VariableWrapper<T> extends Function {
                 const [o, s] = obj
                 o.connect(s, set)
             }
-        } else {
+        }
+        else {
             if (typeof sigOrFn === "string")
                 objs.connect(sigOrFn, set)
         }
@@ -195,7 +199,7 @@ class VariableWrapper<T> extends Function {
         const Deps extends Array<Variable<any> | Binding<any>>,
         Args extends {
             [K in keyof Deps]: Deps[K] extends Variable<infer T>
-            ? T : Deps[K] extends Binding<infer T> ? T : never
+                ? T : Deps[K] extends Binding<infer T> ? T : never
         },
     >(deps: Deps, fn: (...args: Args) => V) {
         const update = () => fn(...deps.map(d => d.get()) as Args)
@@ -216,7 +220,7 @@ export const Variable = new Proxy(VariableWrapper as any, {
 }) as {
     derive: typeof VariableWrapper["derive"]
     <T>(init: T): Variable<T>
-    new <T>(init: T): Variable<T>
+    new<T>(init: T): Variable<T>
 }
 
 export default Variable

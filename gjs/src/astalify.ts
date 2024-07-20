@@ -71,14 +71,15 @@ function setProp(obj: any, prop: string, value: any) {
 
         if (Object.hasOwn(obj, prop))
             return (obj[prop] = value)
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`could not set property "${prop}" on ${obj}:`, error)
     }
 
     console.error(`could not set property "${prop}" on ${obj}`)
 }
 
-export type Widget<C extends { new(...args: any): Gtk.Widget }> = InstanceType<C> & {
+export type Widget<C extends InstanceType<typeof Gtk.Widget>> = C & {
     className: string
     css: string
     cursor: Cursor
@@ -170,7 +171,7 @@ function ctor(self: any, config: any = {}, children: any = []) {
     children = mergeBindings(children.flat(Infinity))
     if (children instanceof Binding) {
         setChildren(self, children.get())
-        self.connect("destroy", children.subscribe(v => {
+        self.connect("destroy", children.subscribe((v) => {
             setChildren(self, v)
         }))
     }
@@ -184,60 +185,58 @@ function ctor(self: any, config: any = {}, children: any = []) {
 }
 
 function proxify<
-    C extends { new(...args: any[]): any },
+    C extends typeof Gtk.Widget,
 >(klass: C) {
-    klass.prototype.hook = function (obj: any, sig: any, callback: any) {
-        return hook(this, obj, sig, callback)
-    }
-
-    klass.prototype.toggleClassName = function (name: string, on = true) {
-        Astal.widget_toggle_class_name(this, name, on)
-    }
-
     Object.defineProperty(klass.prototype, "className", {
         get() { return Astal.widget_get_class_names(this).join(" ") },
         set(v) { Astal.widget_set_class_names(this, v.split(/\s+/)) },
     })
-
-    klass.prototype.set_class_name = function (name: string) {
-        this.className = name
-    }
 
     Object.defineProperty(klass.prototype, "css", {
         get() { return Astal.widget_get_css(this) },
         set(v) { Astal.widget_set_css(this, v) },
     })
 
-    klass.prototype.set_css = function (css: string) {
-        this.css = css
-    }
-
     Object.defineProperty(klass.prototype, "cursor", {
         get() { return Astal.widget_get_cursor(this) },
         set(v) { Astal.widget_set_cursor(this, v) },
     })
-
-    klass.prototype.set_cursor = function (cursor: string) {
-        this.cursor = cursor
-    }
 
     Object.defineProperty(klass.prototype, "clickThrough", {
         get() { return Astal.widget_get_click_through(this) },
         set(v) { Astal.widget_set_click_through(this, v) },
     })
 
-    klass.prototype.set_click_through = function (clickThrough: boolean) {
-        this.clickThrough = clickThrough
-    }
+    Object.assign(klass.prototype, {
+        hook: function (obj: any, sig: any, callback: any) {
+            return hook(this as InstanceType<C>, obj, sig, callback)
+        },
+        set_class_name: function (name: string) {
+            // @ts-expect-error unknown key
+            this.className = name
+        },
+        set_css: function (css: string) {
+            // @ts-expect-error unknown key
+            this.css = css
+        },
+        set_cursor: function (cursor: string) {
+            // @ts-expect-error unknown key
+            this.cursor = cursor
+        },
+        set_click_through: function (clickThrough: boolean) {
+            // @ts-expect-error unknown key
+            this.clickThrough = clickThrough
+        },
+    })
 
     const proxy = new Proxy(klass, {
         construct(_, [conf, ...children]) {
-            const self = new klass
-            return ctor(self, conf, children)
+            // @ts-expect-error abstract class
+            return ctor(new klass(), conf, children)
         },
         apply(_t, _a, [conf, ...children]) {
-            const self = new klass
-            return ctor(self, conf, children)
+            // @ts-expect-error abstract class
+            return ctor(new klass(), conf, children)
         },
     })
 
@@ -251,33 +250,32 @@ export default function astalify<
 >(klass: C) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type Astal<N> = Omit<C, "new"> & {
-        new(props?: P, ...children: Gtk.Widget[]): Widget<C>
-        (props?: P, ...children: Gtk.Widget[]): Widget<C>
+        new(props?: P, ...children: Gtk.Widget[]): Widget<InstanceType<C>>
+        (props?: P, ...children: Gtk.Widget[]): Widget<InstanceType<C>>
     }
 
     return proxify(klass) as unknown as Astal<N>
 }
-
 
 type BindableProps<T> = {
     [K in keyof T]: Binding<T[K]> | T[K];
 }
 
 type SigHandler<
-    W extends { new(...args: any): Gtk.Widget },
+    W extends InstanceType<typeof Gtk.Widget>,
     Args extends Array<unknown>,
 > = ((self: Widget<W>, ...args: Args) => unknown) | string | string[]
 
 export type ConstructProps<
-    Self extends { new(...args: any[]): any },
-    Props = unknown,
-    Signals extends Record<`on${string}`, Array<unknown>> = Record<`on${string}`, any[]>
+    Self extends InstanceType<typeof Gtk.Widget>,
+    Props extends Gtk.Widget.ConstructorProps,
+    Signals extends Record<`on${string}`, Array<unknown>> = Record<`on${string}`, any[]>,
 > = Partial<{
     // @ts-expect-error can't assign to unknown, but it works as expected though
     [S in keyof Signals]: SigHandler<Self, Signals[S]>
 }> & Partial<{
     [Key in `on${string}`]: SigHandler<Self, any[]>
-}> & BindableProps<Props & {
+}> & BindableProps<Partial<Props> & {
     className?: string
     css?: string
     cursor?: string
