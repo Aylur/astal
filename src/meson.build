@@ -1,6 +1,8 @@
 srcs = files(
     'wireplumber.c',
     'endpoint.c',
+    'device.c',
+    'profile.c',
     'audio.c',
 )
 

@@ -3,6 +3,7 @@
 
 #include <glib-object.h>
 
+#include "device.h"
 #include "endpoint.h"
 
 G_BEGIN_DECLS
@@ -16,6 +17,7 @@ AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id);
 AstalWpEndpoint *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id);
 AstalWpEndpoint *astal_wp_audio_get_stream(AstalWpAudio *self, guint id);
 AstalWpEndpoint *astal_wp_audio_get_endpoint(AstalWpAudio *self, guint id);
+AstalWpDevice *astal_wp_audio_get_device(AstalWpAudio *self, guint id);
 
 AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self);
 AstalWpEndpoint *astal_wp_audio_get_default_microphone(AstalWpAudio *self);
@@ -24,6 +26,7 @@ GList *astal_wp_audio_get_microphones(AstalWpAudio *self);
 GList *astal_wp_audio_get_speakers(AstalWpAudio *self);
 GList *astal_wp_audio_get_recorders(AstalWpAudio *self);
 GList *astal_wp_audio_get_streams(AstalWpAudio *self);
+GList *astal_wp_audio_get_devices(AstalWpAudio *self);
 
 AstalWpAudio *astal_wp_audio_get_default();
 AstalWpAudio *astal_wp_get_default_audio();

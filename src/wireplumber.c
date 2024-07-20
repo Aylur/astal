@@ -1,6 +1,7 @@
 #include <wp/wp.h>
 
 #include "audio.h"
+#include "device-private.h"
 #include "endpoint-private.h"
 #include "wp.h"
 
@@ -20,6 +21,7 @@ typedef struct {
     gint pending_plugins;
 
     GHashTable *endpoints;
+    GHashTable *devices;
 } AstalWpWpPrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpWp, astal_wp_wp, G_TYPE_OBJECT);
@@ -28,6 +30,8 @@ typedef enum {
     ASTAL_WP_WP_SIGNAL_CHANGED,
     ASTAL_WP_WP_SIGNAL_ENDPOINT_ADDED,
     ASTAL_WP_WP_SIGNAL_ENDPOINT_REMOVED,
+    ASTAL_WP_WP_SIGNAL_DEVICE_ADDED,
+    ASTAL_WP_WP_SIGNAL_DEVICE_REMOVED,
     ASTAL_WP_WP_N_SIGNALS
 } AstalWpWpSignals;
 
@@ -38,6 +42,7 @@ static guint astal_wp_wp_signals[ASTAL_WP_WP_N_SIGNALS] = {
 typedef enum {
     ASTAL_WP_WP_PROP_AUDIO = 1,
     ASTAL_WP_WP_PROP_ENDPOINTS,
+    ASTAL_WP_WP_PROP_DEVICES,
     ASTAL_WP_WP_PROP_DEFAULT_SPEAKER,
     ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE,
     ASTAL_WP_WP_N_PROPERTIES,
@@ -71,6 +76,32 @@ AstalWpEndpoint *astal_wp_wp_get_endpoint(AstalWpWp *self, guint id) {
 GList *astal_wp_wp_get_endpoints(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     return g_hash_table_get_values(priv->endpoints);
+}
+
+/**
+ * astal_wp_wp_get_device:
+ * @self: the AstalWpWp object
+ * @id: the id of the device
+ *
+ * Returns: (transfer none) (nullable): the device with the given id
+ */
+AstalWpDevice *astal_wp_wp_get_device(AstalWpWp *self, guint id) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    AstalWpDevice *device = g_hash_table_lookup(priv->devices, GUINT_TO_POINTER(id));
+    return device;
+}
+
+/**
+ * astal_wp_wp_get_devices:
+ * @self: the AstalWpWp object
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpDevice)): a GList containing the
+ * devices
+ */
+GList *astal_wp_wp_get_devices(AstalWpWp *self) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    return g_hash_table_get_values(priv->devices);
 }
 
 /**
@@ -108,6 +139,9 @@ static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue 
         case ASTAL_WP_WP_PROP_ENDPOINTS:
             g_value_set_pointer(value, g_hash_table_get_values(priv->endpoints));
             break;
+        case ASTAL_WP_WP_PROP_DEVICES:
+            g_value_set_pointer(value, g_hash_table_get_values(priv->devices));
+            break;
         case ASTAL_WP_WP_PROP_DEFAULT_SPEAKER:
             g_value_set_object(value, self->default_speaker);
             break;
@@ -136,30 +170,49 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
 
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    WpNode *node = WP_NODE(object);
-    AstalWpEndpoint *endpoint = astal_wp_endpoint_create(node, priv->mixer, priv->defaults);
+    if (WP_IS_NODE(object)) {
+        WpNode *node = WP_NODE(object);
+        AstalWpEndpoint *endpoint = astal_wp_endpoint_create(node, priv->mixer, priv->defaults);
 
-    g_hash_table_insert(priv->endpoints, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
-                        endpoint);
+        g_hash_table_insert(priv->endpoints,
+                            GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))), endpoint);
 
-    g_signal_emit_by_name(self, "endpoint-added", endpoint);
-    g_object_notify(G_OBJECT(self), "endpoints");
+        g_signal_emit_by_name(self, "endpoint-added", endpoint);
+        g_object_notify(G_OBJECT(self), "endpoints");
+    } else if (WP_IS_DEVICE(object)) {
+        WpDevice *node = WP_DEVICE(object);
+        AstalWpDevice *device = astal_wp_device_create(node);
+        g_hash_table_insert(priv->devices,
+                            GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(device))), device);
+        g_signal_emit_by_name(self, "device-added", device);
+        g_object_notify(G_OBJECT(self), "devices");
+    }
     g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    WpNode *node = WP_NODE(object);
+    if (WP_IS_NODE(object)) {
+        guint id = wp_proxy_get_bound_id(WP_PROXY(object));
+        AstalWpEndpoint *endpoint =
+            g_object_ref(g_hash_table_lookup(priv->endpoints, GUINT_TO_POINTER(id)));
 
-    guint id = wp_proxy_get_bound_id(WP_PROXY(node));
+        g_hash_table_remove(priv->endpoints, GUINT_TO_POINTER(id));
 
-    AstalWpEndpoint *endpoint = g_hash_table_lookup(priv->endpoints, GUINT_TO_POINTER(id));
+        g_signal_emit_by_name(self, "endpoint-removed", endpoint);
+        g_object_notify(G_OBJECT(self), "endpoints");
+        g_object_unref(endpoint);
+    } else if (WP_IS_DEVICE(object)) {
+        guint id = wp_proxy_get_bound_id(WP_PROXY(object));
+        AstalWpDevice *device =
+            g_object_ref(g_hash_table_lookup(priv->devices, GUINT_TO_POINTER(id)));
+        g_hash_table_remove(priv->devices, GUINT_TO_POINTER(id));
 
-    g_hash_table_remove(priv->endpoints, GUINT_TO_POINTER(id));
-
-    g_signal_emit_by_name(self, "endpoint-removed", endpoint);
-    g_object_notify(G_OBJECT(self), "endpoints");
+        g_signal_emit_by_name(self, "device-removed", device);
+        g_object_notify(G_OBJECT(self), "devices");
+        g_object_unref(device);
+    }
     g_signal_emit_by_name(self, "changed");
 }
 
@@ -261,6 +314,7 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     priv->endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+    priv->devices = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 
     wp_init(WP_INIT_ALL);
     priv->core = wp_core_new(NULL, NULL, NULL);
@@ -272,6 +326,8 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     priv->obj_manager = wp_object_manager_new();
     wp_object_manager_request_object_features(priv->obj_manager, WP_TYPE_NODE,
                                               WP_OBJECT_FEATURES_ALL);
+    wp_object_manager_request_object_features(priv->obj_manager, WP_TYPE_GLOBAL_PROXY,
+                                              WP_OBJECT_FEATURES_ALL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
                                    "media.class", "=s", "Audio/Sink", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
@@ -280,6 +336,10 @@ static void astal_wp_wp_init(AstalWpWp *self) {
                                    "media.class", "=s", "Stream/Output/Audio", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
                                    "media.class", "=s", "Stream/Input/Audio", NULL);
+    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_DEVICE,
+                                   WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "media.class", "=s",
+                                   "Audio/Device", NULL);
+    // wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_CLIENT, NULL);
 
     g_signal_connect_swapped(priv->obj_manager, "installed", (GCallback)astal_wp_wp_objm_installed,
                              self);
@@ -312,6 +372,13 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_ENDPOINTS] =
         g_param_spec_pointer("endpoints", "endpoints", "endpoints", G_PARAM_READABLE);
     /**
+     * AstalWpWp:devices: (type GList(AstalWpDevice)) (transfer container)
+     *
+     * A list of AstalWpDevice objects
+     */
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_DEVICES] =
+        g_param_spec_pointer("devices", "devices", "devices", G_PARAM_READABLE);
+    /**
      * AstalWpWp:default-speaker:
      *
      * The AstalWndpoint object representing the default speaker
@@ -337,6 +404,12 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_ENDPOINT_REMOVED] =
         g_signal_new("endpoint-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
                      NULL, NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_DEVICE_ADDED] =
+        g_signal_new("device-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
+    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_DEVICE_REMOVED] =
+        g_signal_new("device-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
     astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_CHANGED] =
         g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
                      G_TYPE_NONE, 0);

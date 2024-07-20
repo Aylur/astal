@@ -1,4 +1,4 @@
-astal_wireplumber_inc = include_directories('.', 'astal/wireplumber')
+astal_wireplumber_inc = include_directories('.', 'astal/wireplumber', 'private')
 astal_wireplumber_headers = files(
     'astal-wp.h',
 )

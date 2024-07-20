@@ -203,8 +203,9 @@ static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
 
     const gchar *type =
         wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "media.class");
-    const GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
-    self->type = g_enum_get_value_by_nick(enum_class, type)->value;
+    GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
+    if (g_enum_get_value_by_nick(enum_class, type) != NULL)
+        self->type = g_enum_get_value_by_nick(enum_class, type)->value;
     g_type_class_unref(enum_class);
 
     g_object_notify(G_OBJECT(self), "id");
@@ -216,7 +217,7 @@ static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
 static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
-    const GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
+    GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
     const gchar *media_class = g_enum_get_value(enum_class, priv->media_class)->value_nick;
     guint defaultId;
     g_signal_emit_by_name(priv->defaults, "get-default-node", media_class, &defaultId);
@@ -317,8 +318,6 @@ static void astal_wp_endpoint_dispose(GObject *object) {
 
     g_signal_handler_disconnect(priv->defaults, priv->default_signal_handler_id);
     g_signal_handler_disconnect(priv->mixer, priv->mixer_signal_handler_id);
-
-    g_print("dispose: id: %u, name: %s\n", self->id, self->description);
 
     g_clear_object(&priv->node);
     g_clear_object(&priv->mixer);

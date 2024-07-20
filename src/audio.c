@@ -2,6 +2,7 @@
 
 #include <wp/wp.h>
 
+#include "device.h"
 #include "endpoint.h"
 #include "wp.h"
 
@@ -25,6 +26,8 @@ typedef enum {
     ASTAL_WP_AUDIO_SIGNAL_STREAM_REMOVED,
     ASTAL_WP_AUDIO_SIGNAL_RECORDER_ADDED,
     ASTAL_WP_AUDIO_SIGNAL_RECORDER_REMOVED,
+    ASTAL_WP_AUDIO_SIGNAL_DEVICE_ADDED,
+    ASTAL_WP_AUDIO_SIGNAL_DEVICE_REMOVED,
     ASTAL_WP_AUDIO_N_SIGNALS
 } AstalWpWpSignals;
 
@@ -37,6 +40,7 @@ typedef enum {
     ASTAL_WP_AUDIO_PROP_SPEAKERS,
     ASTAL_WP_AUDIO_PROP_STREAMS,
     ASTAL_WP_AUDIO_PROP_RECORDERS,
+    ASTAL_WP_AUDIO_PROP_DEVICES,
     ASTAL_WP_AUDIO_PROP_DEFAULT_SPEAKER,
     ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE,
     ASTAL_WP_AUDIO_N_PROPERTIES,
@@ -108,6 +112,19 @@ AstalWpEndpoint *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
     if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM)
         return endpoint;
     return NULL;
+}
+
+/**
+ * astal_wp_audio_get_device:
+ * @self: the AstalWpAudio object
+ * @id: the id of the device
+ *
+ * Returns: (transfer none) (nullable): the device with the given id
+ */
+AstalWpDevice *astal_wp_audio_get_device(AstalWpAudio *self, guint id) {
+    AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
+
+    return astal_wp_wp_get_device(priv->wp, id);
 }
 
 /**
@@ -195,6 +212,28 @@ GList *astal_wp_audio_get_streams(AstalWpAudio *self) {
 }
 
 /**
+ * astal_wp_audio_get_devices:
+ * @self: the AstalWpAudio object
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpDevice)): a GList containing the
+ * devices
+ */
+GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
+    AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
+    GList *eps = astal_wp_wp_get_devices(priv->wp);
+    // GList *mics = NULL;
+
+    // for (GList *l = eps; l != NULL; l = l->next) {
+    // if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
+    // mics = g_list_append(mics, l->data);
+    // }
+    // }
+    // g_list_free(eps);
+    // return mics;
+    return eps;
+}
+
+/**
  * astal_wp_audio_get_endpoint:
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
@@ -248,6 +287,9 @@ static void astal_wp_audio_get_property(GObject *object, guint property_id, GVal
         case ASTAL_WP_AUDIO_PROP_DEFAULT_SPEAKER:
             g_value_set_object(value, astal_wp_audio_get_default_speaker(self));
             break;
+        case ASTAL_WP_AUDIO_PROP_DEVICES:
+            g_value_set_pointer(value, astal_wp_audio_get_devices(self));
+            break;
         case ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE:
             g_value_set_object(value, astal_wp_audio_get_default_microphone(self));
             break;
@@ -255,6 +297,20 @@ static void astal_wp_audio_get_property(GObject *object, guint property_id, GVal
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
     }
+}
+
+static void astal_wp_audio_device_added(AstalWpAudio *self, gpointer object) {
+    AstalWpDevice *endpoint = ASTAL_WP_DEVICE(object);
+    g_signal_emit_by_name(self, "device-added", endpoint);
+    g_object_notify(G_OBJECT(self), "devices");
+    g_signal_emit_by_name(self, "changed");
+}
+
+static void astal_wp_audio_device_removed(AstalWpAudio *self, gpointer object) {
+    AstalWpDevice *endpoint = ASTAL_WP_DEVICE(object);
+    g_signal_emit_by_name(self, "device-removed", endpoint);
+    g_object_notify(G_OBJECT(self), "devices");
+    g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_audio_object_added(AstalWpAudio *self, gpointer object) {
@@ -325,16 +381,6 @@ AstalWpAudio *astal_wp_audio_get_default() {
  */
 AstalWpAudio *astal_wp_get_default_audio() { return astal_wp_audio_get_default(); }
 
-static void astal_wp_audio_dispose(GObject *object) {
-    AstalWpAudio *self = ASTAL_WP_AUDIO(object);
-    AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
-}
-
-static void astal_wp_audio_finalize(GObject *object) {
-    AstalWpAudio *self = ASTAL_WP_AUDIO(object);
-    AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
-}
-
 static void astal_wp_audio_init(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
@@ -344,12 +390,14 @@ static void astal_wp_audio_init(AstalWpAudio *self) {
                              self);
     g_signal_connect_swapped(priv->wp, "endpoint-removed",
                              G_CALLBACK(astal_wp_audio_object_removed), self);
+    g_signal_connect_swapped(priv->wp, "device-added", G_CALLBACK(astal_wp_audio_device_added),
+                             self);
+    g_signal_connect_swapped(priv->wp, "device-removed", G_CALLBACK(astal_wp_audio_device_removed),
+                             self);
 }
 
 static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     GObjectClass *object_class = G_OBJECT_CLASS(class);
-    object_class->finalize = astal_wp_audio_finalize;
-    object_class->dispose = astal_wp_audio_dispose;
     object_class->get_property = astal_wp_audio_get_property;
 
     /**
@@ -380,6 +428,13 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_STREAMS] =
         g_param_spec_pointer("streams", "streams", "streams", G_PARAM_READABLE);
+    /**
+     * AstalWpAudio:devices: (type GList(AstalWpDevice)) (transfer container)
+     *
+     * A list of AstalWpEndpoint objects
+     */
+    astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEVICES] =
+        g_param_spec_pointer("devices", "devices", "devices", G_PARAM_READABLE);
     /**
      * AstalWpAudio:default-speaker:
      *
@@ -424,6 +479,13 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_RECORDER_REMOVED] =
         g_signal_new("recorder-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
                      NULL, NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+    astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_DEVICE_ADDED] =
+        g_signal_new("device-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
+    astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_MICROPHONE_REMOVED] =
+        g_signal_new("device-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
+
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_CHANGED] =
         g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
                      G_TYPE_NONE, 0);
