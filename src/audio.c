@@ -332,6 +332,8 @@ static void astal_wp_audio_object_added(AstalWpAudio *self, gpointer object) {
             g_signal_emit_by_name(self, "recorder-added", endpoint);
             g_object_notify(G_OBJECT(self), "recorders");
             break;
+        default:
+            break;
     }
 
     g_signal_emit_by_name(self, "changed");
@@ -355,6 +357,8 @@ static void astal_wp_audio_object_removed(AstalWpAudio *self, gpointer object) {
         case ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER:
             g_signal_emit_by_name(self, "recorder-removed", endpoint);
             g_object_notify(G_OBJECT(self), "recorders");
+            break;
+        default:
             break;
     }
 

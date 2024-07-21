@@ -1,8 +1,7 @@
-#include "device-private.h"
-
 #include <wp/wp.h>
-#include "profile.h"
 
+#include "device-private.h"
+#include "profile.h"
 
 struct _AstalWpDevice {
     GObject parent_instance;
@@ -186,7 +185,6 @@ static void astal_wp_device_update_properties(AstalWpDevice *self) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
     if (priv->device == NULL) return;
     self->id = wp_proxy_get_bound_id(WP_PROXY(priv->device));
-
     const gchar *description =
         wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->device), "device.description");
     if (description == NULL) {

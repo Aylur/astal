@@ -182,8 +182,8 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
     } else if (WP_IS_DEVICE(object)) {
         WpDevice *node = WP_DEVICE(object);
         AstalWpDevice *device = astal_wp_device_create(node);
-        g_hash_table_insert(priv->devices,
-                            GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(device))), device);
+        g_hash_table_insert(priv->devices, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
+                            device);
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
     }

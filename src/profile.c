@@ -1,5 +1,6 @@
-#include <wp/wp.h>
 #include "profile.h"
+
+#include <wp/wp.h>
 
 struct _AstalWpProfile {
     GObject parent_instance;
