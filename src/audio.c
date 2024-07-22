@@ -221,16 +221,15 @@ GList *astal_wp_audio_get_streams(AstalWpAudio *self) {
 GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     GList *eps = astal_wp_wp_get_devices(priv->wp);
-    // GList *mics = NULL;
+    GList *list = NULL;
 
-    // for (GList *l = eps; l != NULL; l = l->next) {
-    // if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
-    // mics = g_list_append(mics, l->data);
-    // }
-    // }
-    // g_list_free(eps);
-    // return mics;
-    return eps;
+    for (GList *l = eps; l != NULL; l = l->next) {
+        if (astal_wp_device_get_device_type(l->data) == ASTAL_WP_DEVICE_TYPE_AUDIO) {
+            list = g_list_append(list, l->data);
+        }
+    }
+    g_list_free(eps);
+    return list;
 }
 
 /**
@@ -300,17 +299,21 @@ static void astal_wp_audio_get_property(GObject *object, guint property_id, GVal
 }
 
 static void astal_wp_audio_device_added(AstalWpAudio *self, gpointer object) {
-    AstalWpDevice *endpoint = ASTAL_WP_DEVICE(object);
-    g_signal_emit_by_name(self, "device-added", endpoint);
-    g_object_notify(G_OBJECT(self), "devices");
-    g_signal_emit_by_name(self, "changed");
+    AstalWpDevice *device = ASTAL_WP_DEVICE(object);
+    if (astal_wp_device_get_device_type(device) == ASTAL_WP_DEVICE_TYPE_AUDIO) {
+        g_signal_emit_by_name(self, "device-added", device);
+        g_object_notify(G_OBJECT(self), "devices");
+        g_signal_emit_by_name(self, "changed");
+    }
 }
 
 static void astal_wp_audio_device_removed(AstalWpAudio *self, gpointer object) {
-    AstalWpDevice *endpoint = ASTAL_WP_DEVICE(object);
-    g_signal_emit_by_name(self, "device-removed", endpoint);
-    g_object_notify(G_OBJECT(self), "devices");
-    g_signal_emit_by_name(self, "changed");
+    AstalWpDevice *device = ASTAL_WP_DEVICE(object);
+    if (astal_wp_device_get_device_type(device) == ASTAL_WP_DEVICE_TYPE_AUDIO) {
+        g_signal_emit_by_name(self, "device-removed", device);
+        g_object_notify(G_OBJECT(self), "devices");
+        g_signal_emit_by_name(self, "changed");
+    }
 }
 
 static void astal_wp_audio_object_added(AstalWpAudio *self, gpointer object) {

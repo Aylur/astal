@@ -10,6 +10,7 @@ struct _AstalWpDevice {
     gchar *description;
     gchar *icon;
     gint active_profile;
+    AstalWpDeviceType type;
 };
 
 typedef struct {
@@ -19,12 +20,17 @@ typedef struct {
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpDevice, astal_wp_device, G_TYPE_OBJECT);
 
+G_DEFINE_ENUM_TYPE(AstalWpDeviceType, astal_wp_device_type,
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_DEVICE_TYPE_AUDIO, "Audio/Device"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_DEVICE_TYPE_VIDEO, "Video/Device"));
+
 typedef enum {
     ASTAL_WP_DEVICE_PROP_ID = 1,
     ASTAL_WP_DEVICE_PROP_DESCRIPTION,
     ASTAL_WP_DEVICE_PROP_ICON,
     ASTAL_WP_DEVICE_PROP_PROFILES,
     ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE,
+    ASTAL_WP_DEVICE_PROP_DEVICE_TYPE,
     ASTAL_WP_DEVICE_N_PROPERTIES,
 } AstalWpDeviceProperties;
 
@@ -41,7 +47,12 @@ guint astal_wp_device_get_id(AstalWpDevice *self) { return self->id; }
 
 const gchar *astal_wp_device_get_description(AstalWpDevice *self) { return self->description; }
 
-const gchar *astal_wp_device_get_icon(AstalWpDevice *self) { return self->icon; }
+const gchar *astal_wp_device_get_icon(AstalWpDevice *self) {
+    g_return_val_if_fail(self != NULL, "audio-card-symbolic");
+    return self->icon;
+}
+
+AstalWpDeviceType astal_wp_device_get_device_type(AstalWpDevice *self) { return self->type; }
 
 gint astal_wp_device_get_active_profile(AstalWpDevice *self) { return self->active_profile; }
 
@@ -55,7 +66,6 @@ void astal_wp_device_set_active_profile(AstalWpDevice *self, int profile_id) {
     WpSpaPod *pod = wp_spa_pod_builder_end(builder);
     wp_pipewire_object_set_param(WP_PIPEWIRE_OBJECT(priv->device), "Profile", 0, pod);
 
-    wp_spa_pod_unref(pod);
     wp_spa_pod_builder_unref(builder);
 }
 
@@ -101,6 +111,9 @@ static void astal_wp_device_get_property(GObject *object, guint property_id, GVa
         case ASTAL_WP_DEVICE_PROP_PROFILES:
             g_value_set_pointer(value, astal_wp_device_get_profiles(self));
             break;
+        case ASTAL_WP_DEVICE_PROP_DEVICE_TYPE:
+            g_value_set_enum(value, astal_wp_device_get_device_type(self));
+            break;
         case ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE:
             g_value_set_int(value, self->active_profile);
             break;
@@ -130,6 +143,7 @@ static void astal_wp_device_update_profiles(AstalWpDevice *self) {
 
     WpIterator *iter =
         wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "EnumProfile", NULL);
+    if (iter == NULL) return;
     GValue profile = G_VALUE_INIT;
     while (wp_iterator_next(iter, &profile)) {
         WpSpaPod *pod = g_value_get_boxed(&profile);
@@ -142,6 +156,7 @@ static void astal_wp_device_update_profiles(AstalWpDevice *self) {
         g_hash_table_insert(
             priv->profiles, GINT_TO_POINTER(index),
             g_object_new(ASTAL_WP_TYPE_PROFILE, "index", index, "description", description, NULL));
+        g_value_unset(&profile);
     }
     wp_iterator_unref(iter);
 
@@ -153,6 +168,7 @@ static void astal_wp_device_update_active_profile(AstalWpDevice *self) {
 
     WpIterator *iter =
         wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "Profile", NULL);
+    if (iter == NULL) return;
     GValue profile = G_VALUE_INIT;
     while (wp_iterator_next(iter, &profile)) {
         WpSpaPod *pod = g_value_get_boxed(&profile);
@@ -167,6 +183,7 @@ static void astal_wp_device_update_active_profile(AstalWpDevice *self) {
             g_object_new(ASTAL_WP_TYPE_PROFILE, "index", index, "description", description, NULL));
 
         self->active_profile = index;
+        g_value_unset(&profile);
     }
     wp_iterator_unref(iter);
 
@@ -199,16 +216,24 @@ static void astal_wp_device_update_properties(AstalWpDevice *self) {
 
     const gchar *icon =
         wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->device), "device.icon-name");
-    if (description == NULL) {
-        icon = "soundcard-symbolic";
+    if (icon == NULL) {
+        icon = "audio-card-symbolic";
     }
     g_free(self->icon);
     self->icon = g_strdup(icon);
+
+    const gchar *type =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->device), "media.class");
+    GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_DEVICE_TYPE);
+    if (g_enum_get_value_by_nick(enum_class, type) != NULL)
+        self->type = g_enum_get_value_by_nick(enum_class, type)->value;
+    g_type_class_unref(enum_class);
 
     astal_wp_device_update_profiles(self);
     astal_wp_device_update_active_profile(self);
 
     g_object_notify(G_OBJECT(self), "id");
+    g_object_notify(G_OBJECT(self), "device-type");
     g_object_notify(G_OBJECT(self), "icon");
     g_object_notify(G_OBJECT(self), "description");
     g_signal_emit_by_name(self, "changed");
@@ -263,6 +288,14 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
         g_param_spec_string("description", "description", "description", NULL, G_PARAM_READABLE);
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ICON] =
         g_param_spec_string("icon", "icon", "icon", NULL, G_PARAM_READABLE);
+    /**
+     * AstalWpDevice:device-type: (type AstalWpDeviceType)
+     *
+     * The type of this device
+     */
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_DEVICE_TYPE] =
+        g_param_spec_enum("device-type", "device-type", "device-type", ASTAL_WP_TYPE_DEVICE_TYPE, 1,
+                          G_PARAM_READABLE);
     /**
      * AstalWpDevice:profiles: (type GList(AstalWpProfile)) (transfer container)
      *

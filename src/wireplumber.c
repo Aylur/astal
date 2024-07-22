@@ -3,6 +3,7 @@
 #include "audio.h"
 #include "device-private.h"
 #include "endpoint-private.h"
+#include "video.h"
 #include "wp.h"
 
 struct _AstalWpWp {
@@ -41,6 +42,7 @@ static guint astal_wp_wp_signals[ASTAL_WP_WP_N_SIGNALS] = {
 
 typedef enum {
     ASTAL_WP_WP_PROP_AUDIO = 1,
+    ASTAL_WP_WP_PROP_VIDEO,
     ASTAL_WP_WP_PROP_ENDPOINTS,
     ASTAL_WP_WP_PROP_DEVICES,
     ASTAL_WP_WP_PROP_DEFAULT_SPEAKER,
@@ -112,6 +114,13 @@ GList *astal_wp_wp_get_devices(AstalWpWp *self) {
 AstalWpAudio *astal_wp_wp_get_audio() { return astal_wp_audio_get_default(); }
 
 /**
+ * astal_wp_wp_get_video
+ *
+ * Returns: (nullable) (transfer none): gets the video object
+ */
+AstalWpVideo *astal_wp_wp_get_video() { return astal_wp_video_get_default(); }
+
+/**
  * astal_wp_wp_get_default_speaker
  *
  * Returns: (nullable) (transfer none): gets the default speaker object
@@ -135,6 +144,9 @@ static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue 
     switch (property_id) {
         case ASTAL_WP_WP_PROP_AUDIO:
             g_value_set_object(value, astal_wp_wp_get_audio());
+            break;
+        case ASTAL_WP_WP_PROP_VIDEO:
+            g_value_set_object(value, astal_wp_wp_get_video());
             break;
         case ASTAL_WP_WP_PROP_ENDPOINTS:
             g_value_set_pointer(value, g_hash_table_get_values(priv->endpoints));
@@ -166,6 +178,7 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
     //     key = wp_properties_item_get_key (pi);
     //     value = wp_properties_item_get_value (pi);
     //     g_print("%s: %s\n", key, value);
+    //     g_value_unset(&item);
     // }
 
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
@@ -316,7 +329,7 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     priv->endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
     priv->devices = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 
-    wp_init(WP_INIT_ALL);
+    wp_init(7);
     priv->core = wp_core_new(NULL, NULL, NULL);
 
     if (!wp_core_connect(priv->core)) {
@@ -328,6 +341,7 @@ static void astal_wp_wp_init(AstalWpWp *self) {
                                               WP_OBJECT_FEATURES_ALL);
     wp_object_manager_request_object_features(priv->obj_manager, WP_TYPE_GLOBAL_PROXY,
                                               WP_OBJECT_FEATURES_ALL);
+
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
                                    "media.class", "=s", "Audio/Sink", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
@@ -339,6 +353,18 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_DEVICE,
                                    WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "media.class", "=s",
                                    "Audio/Device", NULL);
+
+    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
+                                   "media.class", "=s", "Video/Sink", NULL);
+    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
+                                   "media.class", "=s", "Video/Source", NULL);
+    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
+                                   "media.class", "=s", "Stream/Output/Video", NULL);
+    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
+                                   "media.class", "=s", "Stream/Input/Video", NULL);
+    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_DEVICE,
+                                   WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "media.class", "=s",
+                                   "Video/Device", NULL);
     // wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_CLIENT, NULL);
 
     g_signal_connect_swapped(priv->obj_manager, "installed", (GCallback)astal_wp_wp_objm_installed,
@@ -363,6 +389,8 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
 
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_AUDIO] =
         g_param_spec_object("audio", "audio", "audio", ASTAL_WP_TYPE_AUDIO, G_PARAM_READABLE);
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_VIDEO] =
+        g_param_spec_object("video", "video", "video", ASTAL_WP_TYPE_VIDEO, G_PARAM_READABLE);
 
     /**
      * AstalWpWp:endpoints: (type GList(AstalWpEndpoint)) (transfer container)
