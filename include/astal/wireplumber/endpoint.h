@@ -34,7 +34,7 @@ gdouble astal_wp_endpoint_get_volume(AstalWpEndpoint *self);
 const gchar *astal_wp_endpoint_get_description(AstalWpEndpoint *self);
 void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default);
 const gchar *astal_wp_endpoint_get_name(AstalWpEndpoint *self);
-const gchar *astal_wp_endpoint_get_icon_name(AstalWpEndpoint *self);
+const gchar *astal_wp_endpoint_get_icon(AstalWpEndpoint *self);
 
 G_END_DECLS
 
