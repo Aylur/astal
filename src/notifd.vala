@@ -61,23 +61,27 @@ public class Notifd : Object {
     public signal void resolved(uint id, ClosedReason reason);
 
     construct {
+        // hack to make it synchronous
+        var loop = new MainLoop();
+
         Bus.own_name(
             BusType.SESSION,
             "org.freedesktop.Notifications",
             BusNameOwnerFlags.NONE,
-            try_daemon,
-            () => {
-                if (proxy != null) {
-                    proxy.stop();
-                    proxy = null;
-                }
-                active(ActiveType.DAEMON);
-            },
-            try_proxy
+            acquire_daemon,
+            on_daemon_acquired,
+            make_proxy
         );
+
+        active.connect(() => {
+            if (loop.is_running())
+                loop.quit();
+        });
+
+        loop.run();
     }
 
-    private void try_daemon(DBusConnection conn) {
+    private void acquire_daemon(DBusConnection conn) {
         daemon = new Daemon().register(conn);
         daemon.notified.connect((id, replaced) => notified(id, replaced));
         daemon.resolved.connect((id, reason) => resolved(id, reason));
@@ -88,8 +92,17 @@ public class Notifd : Object {
         });
     }
 
-    private void try_proxy() {
+    private void on_daemon_acquired() {
+        if (proxy != null) {
+            proxy.stop();
+            proxy = null;
+        }
+        active(ActiveType.DAEMON);
+    }
+
+    private void make_proxy() {
         proxy = new DaemonProxy();
+
         if (proxy.start()) {
             active(ActiveType.PROXY);
         } else {
