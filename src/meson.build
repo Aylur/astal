@@ -33,6 +33,7 @@ sources = [
   # 'widget/circularprogress.vala', # TODO: math lib -X -lm
   'widget/eventbox.vala',
   'widget/icon.vala',
+  'widget/label.vala',
   'widget/levelbar.vala',
   'widget/overlay.vala',
   'widget/scrollable.vala',

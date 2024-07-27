@@ -63,9 +63,9 @@ export const Icon = astalify<typeof Astal.Icon, IconProps, "Icon">(Astal.Icon)
 export type IconProps = ConstructProps<Astal.Icon, Astal.Icon.ConstructorProps>
 
 // Label
-export type Label = Widget<Gtk.Label>
-export const Label = astalify<typeof Gtk.Label, LabelProps, "Label">(Gtk.Label)
-export type LabelProps = ConstructProps<Gtk.Label, Gtk.Label.ConstructorProps>
+export type Label = Widget<Astal.Label>
+export const Label = astalify<typeof Astal.Label, LabelProps, "Label">(Astal.Label)
+export type LabelProps = ConstructProps<Astal.Label, Astal.Label.ConstructorProps>
 
 // LevelBar
 export type LevelBar = Widget<Astal.LevelBar>
