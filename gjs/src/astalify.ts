@@ -211,6 +211,9 @@ function proxify<
         hook: function (obj: any, sig: any, callback: any) {
             return hook(this as InstanceType<C>, obj, sig, callback)
         },
+        toggleClassName: function name(cn: string, cond = true) {
+            Astal.widget_toggle_class_name(this as InstanceType<C>, cn, cond)
+        },
         set_class_name: function (name: string) {
             // @ts-expect-error unknown key
             this.className = name
