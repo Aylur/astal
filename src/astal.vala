@@ -117,7 +117,7 @@ public class Application : Gtk.Application {
 
     [DBus (visible=false)]
     public virtual void request(string msg, SocketConnection conn) {
-        write_sock.begin(conn, "missing response implementation on ".concat(application_id));
+        write_sock.begin(conn, @"missing response implementation on $application_id");
     }
 
     /**
@@ -126,10 +126,8 @@ public class Application : Gtk.Application {
      */
     [DBus (visible=false)]
     public bool acquire_socket() {
-        socket_path = GLib.Environment.get_user_runtime_dir().concat(
-            "/",
-            instance_name,
-            ".sock");
+        var rundir = GLib.Environment.get_user_runtime_dir();
+        socket_path = @"$rundir/$instance_name.sock";
 
         if (FileUtils.test(socket_path, GLib.FileTest.EXISTS)) {
             info("socket %s exists", socket_path);
@@ -146,10 +144,9 @@ public class Application : Gtk.Application {
                 null);
 
             service.incoming.connect((conn) => {
-                _socket_request.begin(conn);
+                _socket_request.begin(conn, (_, res) => _socket_request.end(res));
                 return false;
             });
-
 
             Bus.own_name(
                 BusType.SESSION,
@@ -176,6 +173,8 @@ public class Application : Gtk.Application {
     }
 
     public string message(string? msg) throws DBusError, IOError {
+        var rundir = GLib.Environment.get_user_runtime_dir();
+        var socket_path = @"$rundir/$instance_name.sock";
         var client = new SocketClient();
 
         if (msg == null)
@@ -280,17 +279,20 @@ public class Application : Gtk.Application {
         }
     }
 
-    public static string send_message(string instance, string message) throws IOError {
-        try {
-            IApplication proxy = Bus.get_proxy_sync(
-                BusType.SESSION,
-                "io.Astal." + instance,
-                "/io/Astal/Application"
-            );
+    public static string send_message(string instance_name, string msg) {
+        var rundir = GLib.Environment.get_user_runtime_dir();
+        var socket_path = @"$rundir/$instance_name.sock";
+        var client = new SocketClient();
 
-            return proxy.message(message);
+        try {
+            var conn = client.connect(new UnixSocketAddress(socket_path), null);
+            conn.output_stream.write(msg.concat("\x04").data);
+
+            var stream = new DataInputStream(conn.input_stream);
+            return stream.read_upto("\x04", -1, null, null);
         } catch (Error err) {
-            throw new IOError.FAILED(@"could not write to app '$instance'");
+            printerr(err.message);
+            return "";
         }
     }
 }

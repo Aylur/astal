@@ -46,7 +46,7 @@ int main(string[] argv) {
     }
 
     if (version) {
-        print("@VERSION@");
+        print(Astal.VERSION);
         return 0;
     }
 
@@ -80,13 +80,8 @@ int main(string[] argv) {
         request = request.concat(" ", argv[i]);
     }
 
-    try {
-        var reply = Astal.Application.send_message(instance_name, request);
-        print("%s\n", reply);
-    } catch (IOError err) {
-        printerr("%s\n", err.message);
-        return 1;
-    }
+    var reply = Astal.Application.send_message(instance_name, request);
+    print("%s\n", reply);
 
     return 0;
 }
