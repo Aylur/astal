@@ -1,9 +1,10 @@
 namespace AstalNotifd {
-public Notifd get_default() {
-    return Notifd.get_default();
+    public Notifd get_default() {
+        return Notifd.get_default();
+    }
 }
 
-public class Notifd : Object {
+public class AstalNotifd.Notifd : Object {
     private static Notifd _instance;
     public static Notifd get_default() {
         if (_instance == null)
@@ -62,7 +63,13 @@ public class Notifd : Object {
 
     construct {
         // hack to make it synchronous
-        var loop = new MainLoop();
+        MainLoop? loop = null;
+
+        if (!MainContext.default().is_owner()) {
+            loop = new MainLoop();
+        }
+
+        bool done = false;
 
         Bus.own_name(
             BusType.SESSION,
@@ -74,22 +81,23 @@ public class Notifd : Object {
         );
 
         active.connect(() => {
-            if (loop.is_running())
+            done = true;
+            if (loop != null && loop.is_running()) {
                 loop.quit();
+            }
         });
 
-        loop.run();
+        if (loop != null) {
+            loop.run();
+        } else {
+            while (!done) {
+                MainContext.default().iteration(false);
+            }
+        }
     }
 
     private void acquire_daemon(DBusConnection conn) {
         daemon = new Daemon().register(conn);
-        daemon.notified.connect((id, replaced) => notified(id, replaced));
-        daemon.resolved.connect((id, reason) => resolved(id, reason));
-        daemon.notify.connect((prop) => {
-            if (get_class().find_property(prop.name) != null) {
-                notify_property(prop.name);
-            }
-        });
     }
 
     private void on_daemon_acquired() {
@@ -97,6 +105,13 @@ public class Notifd : Object {
             proxy.stop();
             proxy = null;
         }
+        daemon.notified.connect((id, replaced) => notified(id, replaced));
+        daemon.resolved.connect((id, reason) => resolved(id, reason));
+        daemon.notify.connect((prop) => {
+            if (get_class().find_property(prop.name) != null) {
+                notify_property(prop.name);
+            }
+        });
         active(ActiveType.DAEMON);
     }
 
@@ -119,8 +134,7 @@ public class Notifd : Object {
     }
 }
 
-public enum ActiveType {
+public enum AstalNotifd.ActiveType {
     DAEMON,
     PROXY,
-}
 }

@@ -1,30 +1,39 @@
-namespace AstalNotifd {
-public enum ClosedReason {
-    EXPIRED = 1,
-    DISMISSED_BY_USER = 2,
-    CLOSED = 3,
-    UNDEFINED = 4,
-}
-
 [DBus (name = "org.freedesktop.Notifications")]
-internal class Daemon : Object {
+internal class AstalNotifd.Daemon : Object {
     public static string name = "notifd";
     public static string vendor = "astal";
     public static string version = "0.1";
 
-    private string cache_file;
+    private string state_file;
+    private string state_directory;
     private string cache_directory;
 
     private uint n_id = 1;
     private HashTable<uint, Notification> notifs =
         new HashTable<uint, Notification>((i) => i, (a, b) => a == b);
 
-    public bool ignore_timeout { get; set; }
-    public bool dont_disturb { get; set; }
+    private bool _ignore_timeout;
+    public bool ignore_timeout {
+        get { return _ignore_timeout; }
+        set {
+            _ignore_timeout = value;
+            write_state();
+        }
+    }
+
+    private bool _dont_disturb;
+    public bool dont_disturb {
+        get { return _dont_disturb; }
+        set {
+            _dont_disturb = value;
+            write_state();
+        }
+    }
 
     public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
     public signal void action_invoked(uint id, string action);
+    public signal void prop_changed(string prop);
 
     // emitting an event from proxy doesn't seem to work
     public void emit_resolved(uint id, ClosedReason reason) { resolved(id, reason); }
@@ -32,23 +41,30 @@ internal class Daemon : Object {
 
     construct {
         cache_directory = Environment.get_user_cache_dir() + "/astal/notifd";
-        cache_file = cache_directory + "/notifications.json";
+        state_directory = Environment.get_user_state_dir() + "/astal/notifd";
+        state_file = state_directory + "/notifications.json";
 
-        if (FileUtils.test(cache_file, FileTest.EXISTS)) {
+        if (FileUtils.test(state_file, FileTest.EXISTS)) {
             try {
                 uint8[] json;
-                File.new_for_path(cache_file).load_contents(null, out json, null);
-                var parser = new Json.Parser();
-                parser.load_from_data((string)json);
-                var list = parser.get_root().get_array();
+                File.new_for_path(state_file).load_contents(null, out json, null);
+
+                var obj = Json.from_string((string)json);
+
+                var list = obj.get_object().get_array_member("notifications");
                 for (var i = 0; i < list.get_length(); ++i) {
                     add_notification(new Notification.from_json(list.get_object_element(i)));
                 }
                 n_id = list.get_length() + 1;
+
+                _dont_disturb = obj.get_object().get_boolean_member("dont_disturb");
+                _ignore_timeout = obj.get_object().get_boolean_member("ignore_timeout");
             } catch (Error err) {
                 warning("failed to load cache: %s", err.message);
             }
         }
+
+        notify.connect((prop) => prop_changed(prop.name));
 
         notified.connect(() => {
             notify_property("notifications");
@@ -57,7 +73,7 @@ internal class Daemon : Object {
         resolved.connect((id, reason) => {
             notifs.get(id).resolved(reason);
             notifs.remove(id);
-            cache();
+            write_state();
             notify_property("notifications");
             notification_closed(id, reason);
         });
@@ -123,7 +139,7 @@ internal class Daemon : Object {
 
         notified(id, replaced);
 
-        cache();
+        write_state();
         return id;
     }
 
@@ -135,21 +151,25 @@ internal class Daemon : Object {
         return replaced;
     }
 
-    private void cache() {
+    private void write_state() {
         var list = new Json.Builder().begin_array();
         foreach (var n in notifications) {
             list.add_value(n.to_json());
         }
         list.end_array();
-    	var generator = new Json.Generator();
-        generator.set_root(list.get_root());
-        var json = generator.to_data(null);
+
+        var obj = new Json.Builder()
+            .begin_object()
+            .set_member_name("notifications").add_value(list.get_root())
+            .set_member_name("ignore_timeout").add_boolean_value(ignore_timeout)
+            .set_member_name("dont_disturb").add_boolean_value(dont_disturb)
+            .end_object();
 
         try {
-            if (!FileUtils.test(cache_directory, FileTest.EXISTS))
-                File.new_for_path(cache_directory).make_directory_with_parents(null);
+            if (!FileUtils.test(state_directory, FileTest.EXISTS))
+                File.new_for_path(state_directory).make_directory_with_parents(null);
 
-            FileUtils.set_contents_full(cache_file, json);
+            FileUtils.set_contents_full(state_file, Json.to_string(obj.get_root(), false));
         } catch (Error err) {
             warning("failed to cache notifications: %s", err.message);
         }
@@ -201,6 +221,9 @@ internal class Daemon : Object {
         var file_name = cache_directory + "/" + data.hash().to_string("%u.png");
 
         try {
+            if (!FileUtils.test(cache_directory, FileTest.EXISTS))
+                File.new_for_path(cache_directory).make_directory_with_parents(null);
+
             var output_stream = File.new_for_path(file_name)
                 .replace(null, false, FileCreateFlags.NONE, null);
 
@@ -214,8 +237,7 @@ internal class Daemon : Object {
         return file_name;
     }
 
-    [DBus (visible = false)]
-    public Daemon register(DBusConnection conn) {
+    internal Daemon register(DBusConnection conn) {
         try {
             conn.register_object("/org/freedesktop/Notifications", this);
         } catch (Error err) {
@@ -224,4 +246,10 @@ internal class Daemon : Object {
         return this;
     }
 }
+
+public enum AstalNotifd.ClosedReason {
+    EXPIRED = 1,
+    DISMISSED_BY_USER = 2,
+    CLOSED = 3,
+    UNDEFINED = 4,
 }

@@ -1,21 +1,16 @@
-namespace AstalNotifd {
-public enum Urgency {
+public enum AstalNotifd.Urgency {
     LOW = 0,
     NORMAL = 1,
     CRITICAL = 2,
 }
 
-public class Action {
-    public Action(string id, string label) {
-        this.id = id;
-        this.label = label;
-    }
+public struct AstalNotifd.Action {
     public string id;
     public string label;
 }
 
-public class Notification : Object {
-    private List<Action> _actions;
+public class AstalNotifd.Notification : Object {
+    private List<Action?> _actions;
     private HashTable<string, Variant> hints;
 
     public int64 time { construct set; get; }
@@ -25,7 +20,7 @@ public class Notification : Object {
     public string body { construct set; get; }
     public uint id { construct set; get; }
     public int expire_timeout { construct set; get; }
-    public List<Action> actions { get { return _actions; } }
+    public List<Action?> actions { get { return _actions; } }
 
     public string image { get { return get_str_hint("image-path"); } }
     public bool action_icons { get { return get_bool_hint("action-icons"); } }
@@ -61,9 +56,12 @@ public class Notification : Object {
         );
 
         this.hints = hints;
-        _actions = new List<Action>();
+        _actions = new List<Action?>();
         for (var i = 0; i < actions.length; i += 2) {
-            _actions.append(new Action(actions[i], actions[i + 1]));
+            _actions.append(Action() {
+                id = actions[i],
+                label = actions[i + 1]
+            });
         }
     }
 
@@ -109,13 +107,13 @@ public class Notification : Object {
                     }
                     break;
                 case "actions":
-                    _actions = new List<Action>();
+                    _actions = new List<Action?>();
                     for (var i = 0; i < node.get_array().get_length(); ++i) {
                         var o = node.get_array().get_object_element(i);
-                        _actions.append(new Action(
-                            o.get_member("id").get_string(),
-                            o.get_member("label").get_string()
-                        ));
+                        _actions.append(Action() {
+                            id = o.get_member("id").get_string(),
+                            label = o.get_member("label").get_string()
+                        });
                     }
                     break;
                 default: break;
@@ -159,5 +157,4 @@ public class Notification : Object {
             .end_object()
             .get_root();
     }
-}
 }

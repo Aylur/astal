@@ -1,6 +1,5 @@
-namespace AstalNotifd {
 [DBus (name = "org.freedesktop.Notifications")]
-internal interface IDaemon : Object {
+internal interface AstalNotifd.IDaemon : DBusProxy {
     public abstract bool ignore_timeout { get; set; }
     public abstract bool dont_disturb { get; set; }
 
@@ -9,12 +8,13 @@ internal interface IDaemon : Object {
 
     public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
+    public signal void prop_changed(string prop);
 
     public abstract void emit_resolved(uint id, ClosedReason reason);
     public abstract void emit_action_invoked(uint id, string action);
 }
 
-internal class DaemonProxy : Object {
+internal class AstalNotifd.DaemonProxy : Object {
     private HashTable<uint, Notification> notifs =
         new HashTable<uint, Notification>((i) => i, (a, b) => a == b);
 
@@ -43,8 +43,8 @@ internal class DaemonProxy : Object {
     public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
 
-    IDaemon proxy;
-    List<ulong> ids = new List<ulong>();
+    private IDaemon proxy;
+    private List<ulong> ids = new List<ulong>();
 
     public void stop() {
         if (ids.length() > 0) {
@@ -72,8 +72,8 @@ internal class DaemonProxy : Object {
             var version = variant.get_child_value(2).get_string();
 
             var running = name == Daemon.name
-              && vendor == Daemon.vendor
-              && version == Daemon.version;
+                && vendor == Daemon.vendor
+                && version == Daemon.version;
 
             if (running) {
                 setup_proxy();
@@ -97,19 +97,21 @@ internal class DaemonProxy : Object {
         foreach (var id in proxy.notification_ids())
             add_notification(id);
 
-        ids.append(proxy.notify.connect((pspec) => {
-            if (get_class().find_property(pspec.name) != null)
-                notify_property(pspec.name);
+        ids.append(proxy.prop_changed.connect((prop) => {
+            if (prop == "ignore-timeout" || prop == "dont-disturb")
+                notify_property(prop);
         }));
 
         ids.append(proxy.notified.connect((id, replaced) => {
             add_notification(id);
             notified(id, replaced);
+            notify_property("notifications");
         }));
 
         ids.append(proxy.resolved.connect((id, reason) => {
             notifs.remove(id);
             resolved(id, reason);
+            notify_property("notifications");
         }));
     }
 
@@ -124,5 +126,4 @@ internal class DaemonProxy : Object {
             critical(err.message);
         }
     }
-}
 }
