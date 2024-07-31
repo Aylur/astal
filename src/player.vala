@@ -119,7 +119,7 @@ public class Player : Object {
 
     private void _set_position(double pos) {
         try {
-            proxy.set_position(new ObjectPath(get_str("mpris:trackid")), (int64)(pos * 1000000));
+            proxy.set_position((ObjectPath)trackid, (int64)(pos * 1000000));
         } catch (Error error) {
             critical(error.message);
         }
