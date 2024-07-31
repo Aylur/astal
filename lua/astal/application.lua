@@ -16,6 +16,11 @@ function AstalLua:do_request(msg, conn)
     end
 end
 
+function AstalLua:quit(code)
+    Astal.Application.quit(self)
+    os.exit(code)
+end
+
 local app = AstalLua()
 
 ---@class StartConfig

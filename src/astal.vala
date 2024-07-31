@@ -192,11 +192,11 @@ public class Application : Gtk.Application {
         }
     }
 
-    construct {
+    public new void quit() throws DBusError, IOError {
         if (instance_name == null)
             instance_name = "astal";
 
-        shutdown.connect(() => {
+        if (service != null) {
             if (FileUtils.test(socket_path, GLib.FileTest.EXISTS)){
                 try {
                     File.new_for_path(socket_path).delete(null);
@@ -204,15 +204,16 @@ public class Application : Gtk.Application {
                     warning(err.message);
                 }
             }
-        });
+        }
 
+        base.quit();
+    }
+
+    construct {
+        shutdown.connect(() => { try { quit(); } catch(Error err) {} });
         Unix.signal_add(1, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
         Unix.signal_add(2, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
         Unix.signal_add(15, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
-    }
-
-    public new void quit() throws DBusError, IOError {
-        base.quit();
     }
 
     public static List<string> get_instances() {
