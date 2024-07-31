@@ -1,5 +1,4 @@
-namespace Astal {
-public class Process : Object {
+public class Astal.Process : Object {
     private void read_stream(DataInputStream stream, bool err) {
         stream.read_line_utf8_async.begin(Priority.DEFAULT, null, (_, res) => {
             try {
@@ -82,7 +81,7 @@ public class Process : Object {
         if (success)
             return out_str.strip();
         else
-            throw new ProcessError.FAILED(err_str.strip());
+            throw new IOError.FAILED(err_str.strip());
     }
 
     public static string exec(string cmd) throws Error {
@@ -119,8 +118,4 @@ public class Process : Object {
         Shell.parse_argv(cmd, out argv);
         return new Process.exec_asyncv(argv);
     }
-}
-errordomain ProcessError {
-    FAILED
-}
 }

@@ -1,4 +1,4 @@
-import { Astal } from "./imports.js"
+import { Astal, GLib } from "./imports.js"
 
 type Args<Out = void, Err = void> = {
     cmd: string | string[]
@@ -36,23 +36,11 @@ export function subprocess(
     return proc
 }
 
-export function exec<Out = string, Err = string>(
-    args: Args<Out, Err>
-): Out | Err
-export function exec<Out = string, Err = string>(
-    cmd: string | string[],
-    onOut?: (stdout: string) => Out,
-    onErr?: (stderr: string) => Err,
-): Out | Err
-export function exec<Out = string, Err = string>(
-    argsOrCmd: Args<Out, Err> | string | string[],
-    onOut: (stdout: string) => Out = out => out as Out,
-    onErr: (stderr: string) => Err = out => out as Err,
-): Out | Err {
-    const { cmd, err, out } = args(argsOrCmd, onOut, onErr)
+/** @throws {GLib.Error} Throws stderr */
+export function exec(cmd: string | string[]) {
     return Array.isArray(cmd)
-        ? out(Astal.Process.execv(cmd)!) as Out
-        : err(Astal.Process.exec(cmd)!) as Err
+        ? Astal.Process.execv(cmd)
+        : Astal.Process.exec(cmd)
 }
 
 export function execAsync(cmd: string | string[]): Promise<string> {
