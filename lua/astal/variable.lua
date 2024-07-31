@@ -223,9 +223,15 @@ function Variable:observe(object, sigOrFn, callback)
 end
 
 ---@param deps Variable | (Binding | Variable)[]
----@param transform fun(...): any
+---@param transform? fun(...): any
 ---@return Variable
 function Variable.derive(deps, transform)
+    if type(transform) == "nil" then
+        transform = function(...)
+            return { ... }
+        end
+    end
+
     if getmetatable(deps) == Variable then
         local var = Variable.new(transform(deps:get()))
         deps:subscribe(function(v)

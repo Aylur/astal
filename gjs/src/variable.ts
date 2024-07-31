@@ -195,13 +195,14 @@ class VariableWrapper<T> extends Function {
         return this as unknown as Variable<T>
     }
 
-    static derive<V,
+    static derive<
         const Deps extends Array<Variable<any> | Binding<any>>,
         Args extends {
             [K in keyof Deps]: Deps[K] extends Variable<infer T>
                 ? T : Deps[K] extends Binding<infer T> ? T : never
         },
-    >(deps: Deps, fn: (...args: Args) => V) {
+        V = Args,
+    >(deps: Deps, fn: (...args: Args) => V = (...args) => args as unknown as V) {
         const update = () => fn(...deps.map(d => d.get()) as Args)
         const derived = new Variable(update())
         const unsubs = deps.map(dep => dep.subscribe(() => derived.set(update())))
