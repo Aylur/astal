@@ -85,7 +85,7 @@ class AstalJS extends Astal.Application {
         })
 
         if (!this.acquire_socket())
-            return client(msg => Astal.Application.send_message(this.instance_name, msg)!, ...programArgs)
+            return client(msg => Astal.Application.send_message(this.instanceName, msg)!, ...programArgs)
 
         if (css)
             this.apply_css(css, false)

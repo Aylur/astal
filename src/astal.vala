@@ -193,9 +193,6 @@ public class Application : Gtk.Application {
     }
 
     public new void quit() throws DBusError, IOError {
-        if (instance_name == null)
-            instance_name = "astal";
-
         if (service != null) {
             if (FileUtils.test(socket_path, GLib.FileTest.EXISTS)){
                 try {
@@ -210,6 +207,9 @@ public class Application : Gtk.Application {
     }
 
     construct {
+        if (instance_name == null)
+            instance_name = "astal";
+
         shutdown.connect(() => { try { quit(); } catch(Error err) {} });
         Unix.signal_add(1, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
         Unix.signal_add(2, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
