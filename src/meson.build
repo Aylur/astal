@@ -26,6 +26,7 @@ sources = [
   'wifi.vala',
   'wired.vala',
   'wired.vala',
+  'accesspoint.vala',
 ]
 
 lib = library(

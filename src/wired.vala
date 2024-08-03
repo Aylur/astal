@@ -4,15 +4,13 @@ public class AstalNetwork.Wired : Object {
     private const string ICON_ACQUIRING = "network-wired-acquiring-symbolic";
     private const string ICON_NO_ROUTE = "network-wired-no-route-symbolic";
 
-    private NM.Client client;
     public NM.DeviceEthernet device { get; construct set; }
 
     public NM.ActiveConnection connection;
     private ulong connection_handler = 0;
 
-    internal Wired(NM.DeviceEthernet device, NM.Client client) {
+    internal Wired(NM.DeviceEthernet device) {
         this.device = device;
-        this.client = client;
 
         speed = device.speed;
         state = (DeviceState)device.state;
@@ -31,7 +29,7 @@ public class AstalNetwork.Wired : Object {
             icon_name = _icon();
         });
 
-        client.notify.connect(() => { icon_name = _icon(); });
+        device.client.notify.connect(() => { icon_name = _icon(); });
 
         on_active_connection();
         icon_name = _icon();
@@ -58,7 +56,7 @@ public class AstalNetwork.Wired : Object {
     public string icon_name { get; private set; }
 
     private string _icon() {
-        var full = client.connectivity == NM.ConnectivityState.FULL;
+        var full = device.client.connectivity == NM.ConnectivityState.FULL;
 
         if (internet == Internet.CONNECTING) {
             return ICON_ACQUIRING;

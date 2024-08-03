@@ -15,8 +15,8 @@ public class AstalNetwork.Network : Object {
 
     public NM.Client client { get; private set; }
 
-    public Wifi wifi { get; private set; }
-    public Wired wired { get; private set; }
+    public Wifi? wifi { get; private set; }
+    public Wired? wired { get; private set; }
     public Primary primary { get; private set; }
 
     public Connectivity connectivity {
@@ -30,8 +30,13 @@ public class AstalNetwork.Network : Object {
     construct {
         try {
             client = new NM.Client();
-            wifi = new Wifi((NM.DeviceWifi)get_device(NM.DeviceType.WIFI), client);
-            wired = new Wired((NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET), client);
+            var wifi_device = (NM.DeviceWifi)get_device(NM.DeviceType.WIFI);
+            if (wifi_device != null)
+                wifi = new Wifi(wifi_device);
+
+            var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
+            if (ethernet != null)
+                wired = new Wired(ethernet);
 
             sync();
             client.notify["primary-connection"].connect(sync);
