@@ -1,9 +1,12 @@
 export const snakeify = (str: string) => str
     .replace(/([a-z])([A-Z])/g, "$1_$2")
+    .replaceAll("-", "_")
     .toLowerCase()
 
-export const kebabify = (str: string) => snakeify(str)
+export const kebabify = (str: string) => str
+    .replace(/([a-z])([A-Z])/g, "$1-$2")
     .replaceAll("_", "-")
+    .toLowerCase()
 
 export interface Subscribable<T = unknown> {
     subscribe(callback: (value: T) => void): () => void
