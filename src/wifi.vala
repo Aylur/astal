@@ -1,15 +1,15 @@
 public class AstalNetwork.Wifi : Object {
-    private const string ICON_EXCELLENT = "network-wireless-signal-excellent-symbolic";
-    private const string ICON_OK = "network-wireless-signal-ok-symbolic";
-    private const string ICON_GOOD = "network-wireless-signal-good-symbolic";
-    private const string ICON_WEAK = "network-wireless-signal-weak-symbolic";
-    private const string ICON_NONE = "network-wireless-signal-none-symbolic";
-    private const string ICON_ACQUIRING = "network-wireless-acquiring-symbolic";
-    private const string ICON_CONNECTED = "network-wireless-connected-symbolic";
-    private const string ICON_DISABLED = "network-wireless-disabled-symbolic";
-    private const string ICON_OFFLINE = "network-wireless-offline-symbolic";
-    private const string ICON_NO_ROUTE = "network-wireless-no-route-symbolic";
-    private const string ICON_HOTSPOT = "network-wireless-hotspot-symbolic";
+    internal const string ICON_EXCELLENT = "network-wireless-signal-excellent-symbolic";
+    internal const string ICON_OK = "network-wireless-signal-ok-symbolic";
+    internal const string ICON_GOOD = "network-wireless-signal-good-symbolic";
+    internal const string ICON_WEAK = "network-wireless-signal-weak-symbolic";
+    internal const string ICON_NONE = "network-wireless-signal-none-symbolic";
+    internal const string ICON_ACQUIRING = "network-wireless-acquiring-symbolic";
+    internal const string ICON_CONNECTED = "network-wireless-connected-symbolic";
+    internal const string ICON_DISABLED = "network-wireless-disabled-symbolic";
+    internal const string ICON_OFFLINE = "network-wireless-offline-symbolic";
+    internal const string ICON_NO_ROUTE = "network-wireless-no-route-symbolic";
+    internal const string ICON_HOTSPOT = "network-wireless-hotspot-symbolic";
 
     private HashTable<string, AccessPoint> _access_points =
         new HashTable<string, AccessPoint>(str_hash, str_equal);
