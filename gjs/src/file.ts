@@ -38,5 +38,7 @@ export function monitorFile(
     path: string,
     callback: (file: string, event: Gio.FileMonitorEvent) => void,
 ): Gio.FileMonitor {
-    return Astal.monitor_file(path, callback)!
+    return Astal.monitor_file(path, (file: string, event: Gio.FileMonitorEvent) => {
+        callback(file, event)
+    })!
 }
