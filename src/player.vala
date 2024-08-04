@@ -382,7 +382,7 @@ public class Player : Object {
 }
 
 public enum PlaybackStatus {
-    PLAYING = 0,
+    PLAYING,
     PAUSED,
     STOPPED;
 
@@ -412,7 +412,7 @@ public enum PlaybackStatus {
 }
 
 public enum Loop {
-    UNSUPPORTED = 0,
+    UNSUPPORTED,
     NONE,
     TRACK,
     PLAYLIST;
@@ -445,7 +445,7 @@ public enum Loop {
 }
 
 public enum Shuffle {
-    UNSUPPORTED = 0,
+    UNSUPPORTED,
     ON,
     OFF;
 
