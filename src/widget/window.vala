@@ -29,7 +29,19 @@ public enum Keymode {
 }
 
 public class Window : Gtk.Window {
+    private static bool check(string action) {
+        if (!is_supported()) {
+            critical(@"can not $action on window: layer shell not supported");
+            print("tip: running from an xwayland terminal can cause this, for example VsCode");
+            return true;
+        }
+        return false;
+    }
+
     construct {
+        if (check("initialize layer shell"))
+            return;
+
         height_request = 1;
         width_request = 1;
         init_for_window(this);
@@ -39,6 +51,9 @@ public class Window : Gtk.Window {
 
     public int anchor {
         set {
+            if (check("set anchor"))
+                return;
+
             set_anchor(this, Edge.TOP, WindowAnchor.TOP in value);
             set_anchor(this, Edge.BOTTOM, WindowAnchor.BOTTOM in value);
             set_anchor(this, Edge.LEFT, WindowAnchor.LEFT in value);
@@ -64,6 +79,9 @@ public class Window : Gtk.Window {
 
     public Exclusivity exclusivity {
         set {
+            if (check("set exclusivity"))
+                return;
+
             switch (value) {
                 case Exclusivity.NORMAL:
                     set_exclusive_zone(this, 0);
@@ -89,41 +107,79 @@ public class Window : Gtk.Window {
 
     public Layer layer {
         get { return (Layer)get_layer(this); }
-        set { set_layer(this, (GtkLayerShell.Layer)value); }
+        set {
+            if (check("set layer"))
+                return;
+
+            set_layer(this, (GtkLayerShell.Layer)value);
+        }
     }
 
     public Keymode keymode {
-        set { set_keyboard_mode(this, (GtkLayerShell.KeyboardMode)value); }
         get { return (Keymode)get_keyboard_mode(this); }
+        set {
+            if (check("set keymode"))
+                return;
+
+            set_keyboard_mode(this, (GtkLayerShell.KeyboardMode)value);
+        }
     }
 
     public Gdk.Monitor gdkmonitor {
-        set { set_monitor (this, value); }
         get { return get_monitor(this); }
+        set {
+            if (check("set gdkmonitor"))
+                return;
+
+            set_monitor (this, value);
+        }
     }
 
     public new int margin_top {
         get { return GtkLayerShell.get_margin(this, Edge.TOP); }
-        set { GtkLayerShell.set_margin(this, Edge.TOP, value); }
+        set {
+            if (check("set margin_top"))
+                return;
+
+            GtkLayerShell.set_margin(this, Edge.TOP, value);
+        }
     }
 
     public new int margin_bottom {
         get { return GtkLayerShell.get_margin(this, Edge.BOTTOM); }
-        set { GtkLayerShell.set_margin(this, Edge.BOTTOM, value); }
+        set {
+            if (check("set margin_bottom"))
+                return;
+
+            GtkLayerShell.set_margin(this, Edge.BOTTOM, value);
+        }
     }
 
     public new int margin_left {
         get { return GtkLayerShell.get_margin(this, Edge.LEFT); }
-        set { GtkLayerShell.set_margin(this, Edge.LEFT, value); }
+        set {
+            if (check("set margin_left"))
+                return;
+
+            GtkLayerShell.set_margin(this, Edge.LEFT, value);
+        }
     }
 
     public new int margin_right {
         get { return GtkLayerShell.get_margin(this, Edge.RIGHT); }
-        set { GtkLayerShell.set_margin(this, Edge.RIGHT, value); }
+        set {
+            if (check("set margin_right"))
+                return;
+
+            GtkLayerShell.set_margin(this, Edge.RIGHT, value);
+        }
     }
 
     public new int margin {
         set {
+            if (check("set margin"))
+                return;
+
             margin_top = value;
             margin_right = value;
             margin_bottom = value;
@@ -137,6 +193,9 @@ public class Window : Gtk.Window {
      */
     public int monitor {
         set {
+            if (check("set monitor"))
+                return;
+
             if (value < 0)
                 set_monitor(this, (Gdk.Monitor)null);
 
