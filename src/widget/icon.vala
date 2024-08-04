@@ -11,7 +11,7 @@ public class Icon : Gtk.Image {
     public new Gdk.Pixbuf pixbuf { get; set; }
     public string icon { get; set; default = ""; }
 
-    private void display_icon() {
+    private async void display_icon() {
         switch(type) {
         case IconType.NAMED:
             icon_name = icon;
@@ -19,10 +19,14 @@ public class Icon : Gtk.Image {
             break;
         case IconType.FILE:
             try {
-                var pb = new Gdk.Pixbuf.from_file_at_size(
-                    icon,
+                var file = File.new_for_path(icon);
+                var stream = yield file.read_async();
+                var pb = yield new Gdk.Pixbuf.from_stream_at_scale_async(
+                    stream,
                     (int)size * scale_factor,
-                    (int)size * scale_factor
+                    (int)size * scale_factor,
+                    true,
+                    null
                 );
                 var cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
                 set_from_surface(cs);
