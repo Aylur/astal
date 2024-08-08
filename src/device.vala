@@ -52,6 +52,7 @@ public class Device : Object {
     public string name { owned get { return proxy.name; } }
     public uint16 appearance { get { return proxy.appearance; } }
     public uint32 class { get { return proxy.class; } }
+    public bool connecting { get; private set; }
 
     public bool blocked {
         get { return proxy.blocked; }
@@ -73,7 +74,14 @@ public class Device : Object {
     }
 
     public async void connect_device() {
-        try { yield proxy.connect(); } catch (Error err) { critical(err.message); }
+        try {
+            connecting = true;
+            yield proxy.connect();
+        } catch (Error err) {
+            critical(err.message);
+        } finally {
+            connecting = false;
+        }
     }
 
     public async void disconnect_device() {
