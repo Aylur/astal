@@ -35,7 +35,10 @@ public class Device : Object {
         proxy.g_properties_changed.connect((props) => {
             var map = (HashTable<string, Variant>)props;
             foreach (var key in map.get_keys()) {
-                notify_property(kebab_case(key));
+                var prop = kebab_case(key);
+                if (get_class().find_property(prop) != null) {
+                    notify_property(prop);
+                }
             }
         });
     }
