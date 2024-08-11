@@ -30,6 +30,10 @@ public class Astal.Process : Object {
         process.force_exit();
     }
 
+    public void signal(int signal_num) {
+        process.send_signal(signal_num);
+    }
+
     public void write(string in) throws Error {
         in_stream.put_string(in);
     }
