@@ -45,8 +45,11 @@ public class Window : Gtk.Window {
         height_request = 1;
         width_request = 1;
         init_for_window(this);
-        set_namespace(this, name);
-        notify["name"].connect(() => set_namespace(this, name));
+    }
+
+    public string namespace {
+        get { return get_namespace(this); }
+        set { set_namespace(this, value); }
     }
 
     public int anchor {
@@ -87,7 +90,7 @@ public class Window : Gtk.Window {
                     set_exclusive_zone(this, 0);
                     break;
                 case Exclusivity.EXCLUSIVE:
-                    auto_exclusive_zone_enable (this);
+                    auto_exclusive_zone_enable(this);
                     break;
                 case Exclusivity.IGNORE:
                     set_exclusive_zone(this, -1);
@@ -95,7 +98,7 @@ public class Window : Gtk.Window {
             }
         }
         get {
-            if (auto_exclusive_zone_is_enabled (this))
+            if (auto_exclusive_zone_is_enabled(this))
                 return Exclusivity.EXCLUSIVE;
 
             if (get_exclusive_zone(this) == -1)
