@@ -126,12 +126,21 @@ public class Application : Gtk.Application {
      */
     [DBus (visible=false)]
     public bool acquire_socket() {
+        foreach (var instance in get_instances()) {
+            if (instance == instance_name) {
+                return false;
+            }
+        }
+
         var rundir = GLib.Environment.get_user_runtime_dir();
         socket_path = @"$rundir/$instance_name.sock";
 
         if (FileUtils.test(socket_path, GLib.FileTest.EXISTS)) {
-            info("socket %s exists", socket_path);
-            return false;
+            try {
+                File.new_for_path(socket_path).delete(null);
+            } catch (Error err) {
+                critical(err.message);
+            }
         }
 
         try {
