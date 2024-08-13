@@ -26,5 +26,6 @@ build = {
         ["astal.time"] = "astal/time.lua",
         ["astal.variable"] = "astal/variable.lua",
         ["astal.widget"] = "astal/widget.lua",
+        ["astal.file"] = "astal/file.lua",
     },
 }
