@@ -34,11 +34,6 @@ typedef enum {
     ASTAL_WP_DEVICE_N_PROPERTIES,
 } AstalWpDeviceProperties;
 
-typedef enum { ASTAL_WP_DEVICE_SIGNAL_CHANGED, ASTAL_WP_DEVICE_N_SIGNALS } AstalWpDeviceSignals;
-
-static guint astal_wp_device_signals[ASTAL_WP_DEVICE_N_SIGNALS] = {
-    0,
-};
 static GParamSpec *astal_wp_device_properties[ASTAL_WP_DEVICE_N_PROPERTIES] = {
     NULL,
 };
@@ -236,7 +231,6 @@ static void astal_wp_device_update_properties(AstalWpDevice *self) {
     g_object_notify(G_OBJECT(self), "device-type");
     g_object_notify(G_OBJECT(self), "icon");
     g_object_notify(G_OBJECT(self), "description");
-    g_signal_emit_by_name(self, "changed");
 }
 
 AstalWpDevice *astal_wp_device_create(WpDevice *device) {
@@ -309,8 +303,4 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
 
     g_object_class_install_properties(object_class, ASTAL_WP_DEVICE_N_PROPERTIES,
                                       astal_wp_device_properties);
-
-    astal_wp_device_signals[ASTAL_WP_DEVICE_SIGNAL_CHANGED] =
-        g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
-                     G_TYPE_NONE, 0);
 }

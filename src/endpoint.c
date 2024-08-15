@@ -58,14 +58,6 @@ typedef enum {
     ASTAL_WP_ENDPOINT_N_PROPERTIES,
 } AstalWpEndpointProperties;
 
-typedef enum {
-    ASTAL_WP_ENDPOINT_SIGNAL_CHANGED,
-    ASTAL_WP_ENDPOINT_N_SIGNALS
-} AstalWpEndpointSignals;
-
-static guint astal_wp_endpoint_signals[ASTAL_WP_ENDPOINT_N_SIGNALS] = {
-    0,
-};
 static GParamSpec *astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_N_PROPERTIES] = {
     NULL,
 };
@@ -95,7 +87,6 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
     }
 
     g_object_notify(G_OBJECT(self), "volume-icon");
-    g_signal_emit_by_name(self, "changed");
 }
 
 void astal_wp_endpoint_set_volume(AstalWpEndpoint *self, gdouble volume) {
@@ -283,7 +274,6 @@ static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
     g_object_notify(G_OBJECT(self), "name");
     g_object_notify(G_OBJECT(self), "icon");
     g_object_notify(G_OBJECT(self), "media-class");
-    g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) {
@@ -320,11 +310,9 @@ static void astal_wp_endpoint_default_changed(AstalWpEndpoint *self) {
     if (self->is_default && defaultId != self->id) {
         self->is_default = FALSE;
         g_object_notify(G_OBJECT(self), "is-default");
-        g_signal_emit_by_name(self, "changed");
     } else if (!self->is_default && defaultId == self->id) {
         self->is_default = TRUE;
         g_object_notify(G_OBJECT(self), "is-default");
-        g_signal_emit_by_name(self, "changed");
     }
 }
 
@@ -437,8 +425,4 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);
-
-    astal_wp_endpoint_signals[ASTAL_WP_ENDPOINT_SIGNAL_CHANGED] =
-        g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
-                     G_TYPE_NONE, 0);
 }

@@ -28,7 +28,6 @@ typedef struct {
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpWp, astal_wp_wp, G_TYPE_OBJECT);
 
 typedef enum {
-    ASTAL_WP_WP_SIGNAL_CHANGED,
     ASTAL_WP_WP_SIGNAL_ENDPOINT_ADDED,
     ASTAL_WP_WP_SIGNAL_ENDPOINT_REMOVED,
     ASTAL_WP_WP_SIGNAL_DEVICE_ADDED,
@@ -200,7 +199,6 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
     }
-    g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
@@ -226,7 +224,6 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
         g_object_notify(G_OBJECT(self), "devices");
         g_object_unref(device);
     }
-    g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
@@ -251,11 +248,6 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
     if (--priv->pending_plugins == 0) {
         priv->defaults = wp_plugin_find(priv->core, "default-nodes-api");
         priv->mixer = wp_plugin_find(priv->core, "mixer-api");
-
-        // g_signal_connect_swapped(priv->mixer, "changed", (GCallback)astal_wp_wp_mixer_changed,
-        // self);
-        // g_signal_connect_swapped(priv->defaults, "changed",
-        // (GCallback)astal_wp_wp_default_changed, self);
 
         g_signal_connect_swapped(priv->obj_manager, "object-added",
                                  G_CALLBACK(astal_wp_wp_object_added), self);
@@ -438,7 +430,4 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_DEVICE_REMOVED] =
         g_signal_new("device-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
-    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_CHANGED] =
-        g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
-                     G_TYPE_NONE, 0);
 }

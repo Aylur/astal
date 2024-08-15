@@ -17,7 +17,6 @@ typedef struct {
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpAudio, astal_wp_audio, G_TYPE_OBJECT);
 
 typedef enum {
-    ASTAL_WP_AUDIO_SIGNAL_CHANGED,
     ASTAL_WP_AUDIO_SIGNAL_MICROPHONE_ADDED,
     ASTAL_WP_AUDIO_SIGNAL_MICROPHONE_REMOVED,
     ASTAL_WP_AUDIO_SIGNAL_SPEAKER_ADDED,
@@ -303,7 +302,6 @@ static void astal_wp_audio_device_added(AstalWpAudio *self, gpointer object) {
     if (astal_wp_device_get_device_type(device) == ASTAL_WP_DEVICE_TYPE_AUDIO) {
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
-        g_signal_emit_by_name(self, "changed");
     }
 }
 
@@ -312,7 +310,6 @@ static void astal_wp_audio_device_removed(AstalWpAudio *self, gpointer object) {
     if (astal_wp_device_get_device_type(device) == ASTAL_WP_DEVICE_TYPE_AUDIO) {
         g_signal_emit_by_name(self, "device-removed", device);
         g_object_notify(G_OBJECT(self), "devices");
-        g_signal_emit_by_name(self, "changed");
     }
 }
 
@@ -338,8 +335,6 @@ static void astal_wp_audio_object_added(AstalWpAudio *self, gpointer object) {
         default:
             break;
     }
-
-    g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_audio_object_removed(AstalWpAudio *self, gpointer object) {
@@ -364,8 +359,6 @@ static void astal_wp_audio_object_removed(AstalWpAudio *self, gpointer object) {
         default:
             break;
     }
-
-    g_signal_emit_by_name(self, "changed");
 }
 
 /**
@@ -492,8 +485,4 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_MICROPHONE_REMOVED] =
         g_signal_new("device-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
-
-    astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_CHANGED] =
-        g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
-                     G_TYPE_NONE, 0);
 }

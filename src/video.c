@@ -17,7 +17,6 @@ typedef struct {
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpVideo, astal_wp_video, G_TYPE_OBJECT);
 
 typedef enum {
-    ASTAL_WP_VIDEO_SIGNAL_CHANGED,
     ASTAL_WP_VIDEO_SIGNAL_SOURCE_ADDED,
     ASTAL_WP_VIDEO_SIGNAL_SOURCE_REMOVED,
     ASTAL_WP_VIDEO_SIGNAL_SINK_ADDED,
@@ -263,7 +262,6 @@ void astal_wp_video_device_added(AstalWpVideo *self, gpointer object) {
     if (astal_wp_device_get_device_type(device) == ASTAL_WP_DEVICE_TYPE_VIDEO) {
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
-        g_signal_emit_by_name(self, "changed");
     }
 }
 
@@ -272,7 +270,6 @@ static void astal_wp_video_device_removed(AstalWpVideo *self, gpointer object) {
     if (astal_wp_device_get_device_type(device) == ASTAL_WP_DEVICE_TYPE_VIDEO) {
         g_signal_emit_by_name(self, "device-removed", device);
         g_object_notify(G_OBJECT(self), "devices");
-        g_signal_emit_by_name(self, "changed");
     }
 }
 
@@ -298,8 +295,6 @@ static void astal_wp_video_object_added(AstalWpVideo *self, gpointer object) {
         default:
             break;
     }
-
-    g_signal_emit_by_name(self, "changed");
 }
 
 static void astal_wp_video_object_removed(AstalWpAudio *self, gpointer object) {
@@ -324,8 +319,6 @@ static void astal_wp_video_object_removed(AstalWpAudio *self, gpointer object) {
         default:
             break;
     }
-
-    g_signal_emit_by_name(self, "changed");
 }
 
 /**
@@ -440,8 +433,4 @@ static void astal_wp_video_class_init(AstalWpVideoClass *class) {
     astal_wp_video_signals[ASTAL_WP_VIDEO_SIGNAL_DEVICE_REMOVED] =
         g_signal_new("device-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
-
-    astal_wp_video_signals[ASTAL_WP_VIDEO_SIGNAL_CHANGED] =
-        g_signal_new("changed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
-                     G_TYPE_NONE, 0);
 }
