@@ -93,6 +93,7 @@ void astal_wp_endpoint_set_volume(AstalWpEndpoint *self, gdouble volume) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
     gboolean ret;
+    if (volume >= 1.5) volume = 1.5;
     GVariant *variant = g_variant_new_double(volume);
     g_signal_emit_by_name(priv->mixer, "set-volume", self->id, variant, &ret);
 }
@@ -140,9 +141,10 @@ void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default
 
 const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self) {
     if (self->mute) return "audio-volume-muted-symbolic";
-    if (self->volume < 0.33) return "audio-volume-low-symbolic";
-    if (self->volume < 0.66) return "audio-volume-medium-symbolic";
-    return "audio-volume-high-symbolic";
+    if (self->volume <= 0.33) return "audio-volume-low-symbolic";
+    if (self->volume <= 0.66) return "audio-volume-medium-symbolic";
+    if (self->volume <= 1) return "audio-volume-high-symbolic";
+    return "audio-volume-overamplified-symbolic";
 }
 
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
