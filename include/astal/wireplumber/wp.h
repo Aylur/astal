@@ -6,6 +6,7 @@
 #include "audio.h"
 #include "device.h"
 #include "endpoint.h"
+#include "video.h"
 
 G_BEGIN_DECLS
 
@@ -17,12 +18,16 @@ AstalWpWp* astal_wp_wp_get_default();
 AstalWpWp* astal_wp_get_default_wp();
 
 AstalWpAudio* astal_wp_wp_get_audio();
+AstalWpVideo* astal_wp_wp_get_video();
+
 AstalWpEndpoint* astal_wp_wp_get_endpoint(AstalWpWp* self, guint id);
 GList* astal_wp_wp_get_endpoints(AstalWpWp* self);
-AstalWpEndpoint* astal_wp_wp_get_default_speaker(AstalWpWp* self);
-AstalWpEndpoint* astal_wp_wp_get_default_microphone(AstalWpWp* self);
+
 AstalWpDevice* astal_wp_wp_get_device(AstalWpWp* self, guint id);
 GList* astal_wp_wp_get_devices(AstalWpWp* self);
+
+AstalWpEndpoint* astal_wp_wp_get_default_speaker(AstalWpWp* self);
+AstalWpEndpoint* astal_wp_wp_get_default_microphone(AstalWpWp* self);
 
 G_END_DECLS
 

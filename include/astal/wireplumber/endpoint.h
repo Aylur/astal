@@ -22,19 +22,19 @@ typedef enum {
     ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM,
 } AstalWpMediaClass;
 
-void astal_wp_endpoint_update_volume(AstalWpEndpoint *self);
 void astal_wp_endpoint_set_volume(AstalWpEndpoint *self, gdouble volume);
 void astal_wp_endpoint_set_mute(AstalWpEndpoint *self, gboolean mute);
 gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint *self);
+void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default);
 
 AstalWpMediaClass astal_wp_endpoint_get_media_class(AstalWpEndpoint *self);
 guint astal_wp_endpoint_get_id(AstalWpEndpoint *self);
 gboolean astal_wp_endpoint_get_mute(AstalWpEndpoint *self);
 gdouble astal_wp_endpoint_get_volume(AstalWpEndpoint *self);
 const gchar *astal_wp_endpoint_get_description(AstalWpEndpoint *self);
-void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default);
 const gchar *astal_wp_endpoint_get_name(AstalWpEndpoint *self);
 const gchar *astal_wp_endpoint_get_icon(AstalWpEndpoint *self);
+const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self);
 
 G_END_DECLS
 

@@ -12,6 +12,7 @@ AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugi
 AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer,
                                                    WpPlugin *defaults, AstalWpMediaClass type);
 void astal_wp_endpoint_update_default(AstalWpEndpoint *self, gboolean is_default);
+void astal_wp_endpoint_update_volume(AstalWpEndpoint *self);
 
 G_END_DECLS
 

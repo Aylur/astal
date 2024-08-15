@@ -54,6 +54,7 @@ typedef enum {
     ASTAL_WP_ENDPOINT_PROP_MEDIA_CLASS,
     ASTAL_WP_ENDPOINT_PROP_DEFAULT,
     ASTAL_WP_ENDPOINT_PROP_ICON,
+    ASTAL_WP_ENDPOINT_PROP_VOLUME_ICON,
     ASTAL_WP_ENDPOINT_N_PROPERTIES,
 } AstalWpEndpointProperties;
 
@@ -93,6 +94,7 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
         g_object_notify(G_OBJECT(self), "volume");
     }
 
+    g_object_notify(G_OBJECT(self), "volume-icon");
     g_signal_emit_by_name(self, "changed");
 }
 
@@ -145,6 +147,13 @@ void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default
                           &ret);
 }
 
+const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self) {
+    if (self->mute) return "audio-volume-muted-symbolic";
+    if (self->volume < 0.33) return "audio-volume-low-symbolic";
+    if (self->volume < 0.66) return "audio-volume-medium-symbolic";
+    return "audio-volume-high-symbolic";
+}
+
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
                                            GParamSpec *pspec) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
@@ -167,6 +176,9 @@ static void astal_wp_endpoint_get_property(GObject *object, guint property_id, G
             break;
         case ASTAL_WP_ENDPOINT_PROP_ICON:
             g_value_set_string(value, self->icon);
+            break;
+        case ASTAL_WP_ENDPOINT_PROP_VOLUME_ICON:
+            g_value_set_string(value, astal_wp_endpoint_get_volume_icon(self));
             break;
         case ASTAL_WP_ENDPOINT_PROP_MEDIA_CLASS:
             g_value_set_enum(value, self->type);
@@ -401,7 +413,7 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_ID] =
         g_param_spec_uint("id", "id", "id", 0, UINT_MAX, 0, G_PARAM_READABLE);
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_VOLUME] =
-        g_param_spec_double("volume", "volume", "volume", 0, 1, 0, G_PARAM_READWRITE);
+        g_param_spec_double("volume", "volume", "volume", 0, G_MAXFLOAT, 0, G_PARAM_READWRITE);
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_MUTE] =
         g_param_spec_boolean("mute", "mute", "mute", TRUE, G_PARAM_READWRITE);
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_DESCRIPTION] =
@@ -410,6 +422,8 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
         g_param_spec_string("name", "name", "name", NULL, G_PARAM_READABLE);
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_ICON] = g_param_spec_string(
         "icon", "icon", "icon", "audio-card-symbolic", G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_VOLUME_ICON] = g_param_spec_string(
+        "volume-icon", "volume-icon", "volume-icon", "audio-volume-muted", G_PARAM_READABLE);
     /**
      * AstalWpEndpoint:media-class: (type AstalWpMediaClass)
      *
