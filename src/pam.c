@@ -58,6 +58,33 @@ static GParamSpec *astal_auth_pam_properties[ASTAL_AUTH_PAM_N_PROPERTIES] = {
 G_DEFINE_TYPE_WITH_PRIVATE(AstalAuthPam, astal_auth_pam, G_TYPE_OBJECT);
 
 /**
+ *
+ * AstalAuthPam
+ *
+ * For simple authentication using only a password, using the [func@AstalAuth.Pam.authenticate]
+ * method is recommended. Look at the simple examples for how to use it.
+ *
+ * There is also a way to get access to the pam conversation, to allow for a more complex
+ * authentication process, like using multiple factor authentication. Generally it can be used like
+ * this:
+ *
+ * 1. create the Pam object.
+ * 2. set username and service if so required. It has sane defaults, so in most cases you can skip
+ * this.
+ * 3. connect to the signals.
+ *    After an `auth-*` signal is emitted, it has to be responded with exactly one
+ * [method@AstalAuth.Pam.supply_secret] call. The secret is a string containing the user input. For
+ * [auth-info][signal@AstalAuth.Pam::auth-info:] and [auth-error][signal@AstalAuth.Pam::auth-error:]
+ * it should be `NULL`. Not connecting those signals, is equivalent to calling
+ * [method@AstalAuth.Pam.supply_secret] with `NULL` immediately after the signal is emitted.
+ * 4. start authentication process using [method@AstalAuth.Pam.start_authenticate].
+ * 5. it is possible to reuse the same Pam object for multiple sequential authentication attempts.
+ * Just call [method@AstalAuth.Pam.start_authenticate] again after the `success` or `fail` signal
+ * was emitted.
+ *
+ */
+
+/**
  * astal_auth_pam_set_username
  * @self: a AstalAuthPam object
  * @username: the new username
@@ -317,7 +344,7 @@ gboolean astal_auth_pam_start_authenticate_with_callback(AstalAuthPam *self,
 }
 
 /**
- * astal_auth_pam_start_authentication:
+ * astal_auth_pam_start_authenticate:
  * @self: a AstalAuthPam Object
  *
  * starts a new authentication process using the PAM (Pluggable Authentication Modules) system.
