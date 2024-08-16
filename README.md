@@ -63,8 +63,4 @@ Generally it can be used like this:
    Not connecting those signals, is equivalent to calling `pam.supply_secret(NULL)` immediately after the signal is emitted. 
 4. start authentication process using `Pam.start_authentication()`. This function will return whether the authentication was started or not.
 5. it is possible to reuse the same Pam object for multiple sequential authentication attempts. Just call `pam.start_authentication()` again after the `success` or `fail` signal was emitted.
- 
-## License
-
-This project is licensed under the GPL-3 License - see the LICENSE file for details.
 
