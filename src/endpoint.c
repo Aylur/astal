@@ -181,12 +181,36 @@ void astal_wp_endpoint_set_mute(AstalWpEndpoint *self, gboolean mute) {
     g_signal_emit_by_name(priv->mixer, "set-volume", self->id, variant, &ret);
 }
 
+/**
+ * astal_wp_endpoint_get_media_class:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the media class of the endpoint.
+ */
 AstalWpMediaClass astal_wp_endpoint_get_media_class(AstalWpEndpoint *self) { return self->type; }
 
+/**
+ * astal_wp_endpoint_get_id:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the id of the endpoint.
+ */
 guint astal_wp_endpoint_get_id(AstalWpEndpoint *self) { return self->id; }
 
+/**
+ * astal_wp_endpoint_get_mute:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the mute status of the endpoint.
+ */
 gboolean astal_wp_endpoint_get_mute(AstalWpEndpoint *self) { return self->mute; }
 
+/**
+ * astal_wp_endpoint_get_volume:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the volume
+ */
 gdouble astal_wp_endpoint_get_volume(AstalWpEndpoint *self) { return self->volume; }
 
 const gchar *astal_wp_endpoint_get_description(AstalWpEndpoint *self) { return self->description; }
@@ -218,11 +242,20 @@ void astal_wp_endpoint_set_lock_channels(AstalWpEndpoint *self, gboolean lock_ch
 }
 
 const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self) {
-    if (self->mute) return "audio-volume-muted-symbolic";
-    if (self->volume <= 0.33) return "audio-volume-low-symbolic";
-    if (self->volume <= 0.66) return "audio-volume-medium-symbolic";
-    if (self->volume <= 1) return "audio-volume-high-symbolic";
-    return "audio-volume-overamplified-symbolic";
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+    if (priv->media_class == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
+        if (self->mute) return "microphone-sensitivity-muted-symbolic";
+        if (self->volume <= 0.33) return "microphone-sensitivity-low-symbolic";
+        if (self->volume <= 0.66) return "microphone-sensitivity-medium-symbolic";
+        return "microphone-sensitivity-high-symbolic";
+
+    } else {
+        if (self->mute) return "audio-volume-muted-symbolic";
+        if (self->volume <= 0.33) return "audio-volume-low-symbolic";
+        if (self->volume <= 0.66) return "audio-volume-medium-symbolic";
+        if (self->volume <= 1) return "audio-volume-high-symbolic";
+        return "audio-volume-overamplified-symbolic";
+    }
 }
 
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
