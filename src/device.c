@@ -38,19 +38,62 @@ static GParamSpec *astal_wp_device_properties[ASTAL_WP_DEVICE_N_PROPERTIES] = {
     NULL,
 };
 
+/**
+ * astal_wp_device_get_id
+ * @self: the AstalWpDevice object
+ *
+ * gets the id of this device
+ *
+ */
 guint astal_wp_device_get_id(AstalWpDevice *self) { return self->id; }
 
+/**
+ * astal_wp_device_get_description
+ * @self: the AstalWpDevice object
+ *
+ * gets the description of this device
+ *
+ */
 const gchar *astal_wp_device_get_description(AstalWpDevice *self) { return self->description; }
 
+/**
+ * astal_wp_device_get_icon
+ * @self: the AstalWpDevice object
+ *
+ * gets the icon of this device
+ *
+ */
 const gchar *astal_wp_device_get_icon(AstalWpDevice *self) {
     g_return_val_if_fail(self != NULL, "audio-card-symbolic");
     return self->icon;
 }
 
+/**
+ * astal_wp_device_get_device_type
+ * @self: the AstalWpDevice object
+ *
+ * gets the type of this device
+ *
+ */
 AstalWpDeviceType astal_wp_device_get_device_type(AstalWpDevice *self) { return self->type; }
 
+/**
+ * astal_wp_device_get_active_profile
+ * @self: the AstalWpDevice object
+ *
+ * gets the currently active profile of this device
+ *
+ */
 gint astal_wp_device_get_active_profile(AstalWpDevice *self) { return self->active_profile; }
 
+/**
+ * astal_wp_device_set_active_profile
+ * @self: the AstalWpDevice object
+ * @profile_id: the id of the profile
+ *
+ * sets the profile for this device
+ *
+ */
 void astal_wp_device_set_active_profile(AstalWpDevice *self, int profile_id) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
@@ -69,7 +112,9 @@ void astal_wp_device_set_active_profile(AstalWpDevice *self, int profile_id) {
  * @self: the AstalWpDevice object
  * @id: the id of the profile
  *
- * Returns: (transfer none) (nullable): the profile with the given id
+ * gets the profile with the given id
+ *
+ * Returns: (transfer none) (nullable)
  */
 AstalWpProfile *astal_wp_device_get_profile(AstalWpDevice *self, gint id) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
@@ -81,8 +126,9 @@ AstalWpProfile *astal_wp_device_get_profile(AstalWpDevice *self, gint id) {
  * astal_wp_device_get_profiles:
  * @self: the AstalWpDevice object
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpProfile)): a GList containing the
- * profiles
+ * gets a GList containing the profiles
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpProfile))
  */
 GList *astal_wp_device_get_profiles(AstalWpDevice *self) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
@@ -275,11 +321,25 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
     object_class->finalize = astal_wp_device_finalize;
     object_class->get_property = astal_wp_device_get_property;
     object_class->set_property = astal_wp_device_set_property;
-
+    /**
+     * AstalWpDevice:id
+     *
+     * The id of this device.
+     */
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ID] =
         g_param_spec_uint("id", "id", "id", 0, UINT_MAX, 0, G_PARAM_READABLE);
+    /**
+     * AstalWpDevice:description
+     *
+     * The description of this device.
+     */
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_DESCRIPTION] =
         g_param_spec_string("description", "description", "description", NULL, G_PARAM_READABLE);
+    /**
+     * AstalWpDevice:icon
+     *
+     * The icon name for this device.
+     */
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ICON] =
         g_param_spec_string("icon", "icon", "icon", NULL, G_PARAM_READABLE);
     /**
@@ -293,10 +353,15 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
     /**
      * AstalWpDevice:profiles: (type GList(AstalWpProfile)) (transfer container)
      *
-     * A list of AstalWpProfile objects
+     * A list of available profiles
      */
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_PROFILES] =
         g_param_spec_pointer("profiles", "profiles", "profiles", G_PARAM_READABLE);
+    /**
+     * AstalWpDevice:active-profile-id
+     *
+     * The id of the currently active profile.
+     */
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE] =
         g_param_spec_int("active-profile-id", "active-profile-id", "active-profile-id", G_MININT,
                          G_MAXINT, 0, G_PARAM_READWRITE);

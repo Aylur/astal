@@ -54,7 +54,9 @@ static GParamSpec *astal_wp_audio_properties[ASTAL_WP_AUDIO_N_PROPERTIES] = {
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
  *
- * Returns: (transfer none) (nullable): the speaker with the given id
+ * gets the speaker with the given id
+ *
+ * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -70,7 +72,9 @@ AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id) {
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
  *
- * Returns: (transfer none) (nullable): the microphone with the given id
+ * gets the microphone with the given id
+ *
+ * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -86,7 +90,9 @@ AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
  *
- * Returns: (transfer none) (nullable): the recorder with the given id
+ * gets the recorder with the given id
+ *
+ * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -102,7 +108,9 @@ AstalWpEndpoint *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
  *
- * Returns: (transfer none) (nullable): the stream with the given id
+ * gets the stream with the given id
+ *
+ * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -118,7 +126,9 @@ AstalWpEndpoint *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
  * @self: the AstalWpAudio object
  * @id: the id of the device
  *
- * Returns: (transfer none) (nullable): the device with the given id
+ * gets the device with the given id
+ *
+ * Returns: (transfer none) (nullable)
  */
 AstalWpDevice *astal_wp_audio_get_device(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -130,8 +140,9 @@ AstalWpDevice *astal_wp_audio_get_device(AstalWpAudio *self, guint id) {
  * astal_wp_audio_get_microphones:
  * @self: the AstalWpAudio object
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
- * microphones
+ * a GList containing the microphones
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
  */
 GList *astal_wp_audio_get_microphones(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -151,8 +162,9 @@ GList *astal_wp_audio_get_microphones(AstalWpAudio *self) {
  * astal_wp_audio_get_speakers:
  * @self: the AstalWpAudio object
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
- * speaker
+ * a GList containing the speakers
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
  */
 GList *astal_wp_audio_get_speakers(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -172,8 +184,9 @@ GList *astal_wp_audio_get_speakers(AstalWpAudio *self) {
  * astal_wp_audio_get_recorders:
  * @self: the AstalWpAudio object
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
- * recorders
+ * a GList containing the recorders
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
  */
 GList *astal_wp_audio_get_recorders(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -193,8 +206,9 @@ GList *astal_wp_audio_get_recorders(AstalWpAudio *self) {
  * astal_wp_audio_get_streams:
  * @self: the AstalWpAudio object
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
- * streams
+ * a GList containing the streams
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
  */
 GList *astal_wp_audio_get_streams(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -214,8 +228,9 @@ GList *astal_wp_audio_get_streams(AstalWpAudio *self) {
  * astal_wp_audio_get_devices:
  * @self: the AstalWpAudio object
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpDevice)): a GList containing the
- * devices
+ * a GList containing the devices
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpDevice))
  */
 GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -236,7 +251,9 @@ GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
  *
- * Returns: (transfer none) (nullable): the endpoint with the given id
+ * the endpoint with the given id
+ *
+ * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_audio_get_endpoint(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -248,7 +265,9 @@ AstalWpEndpoint *astal_wp_audio_get_endpoint(AstalWpAudio *self, guint id) {
 /**
  * astal_wp_audio_get_default_speaker
  *
- * Returns: (nullable) (transfer none): gets the default speaker object
+ * gets the default speaker object
+ *
+ * Returns: (nullable) (transfer none)
  */
 AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -258,7 +277,9 @@ AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self) {
 /**
  * astal_wp_audio_get_default_microphone
  *
- * Returns: (nullable) (transfer none): gets the default microphone object
+ * gets the default microphone object
+ *
+ * Returns: (nullable) (transfer none)
  */
 AstalWpEndpoint *astal_wp_audio_get_default_microphone(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -364,7 +385,9 @@ static void astal_wp_audio_object_removed(AstalWpAudio *self, gpointer object) {
 /**
  * astal_wp_audio_get_default
  *
- * Returns: (nullable) (transfer none): gets the default audio object.
+ * gets the default audio object.
+ *
+ * Returns: (nullable) (transfer none)
  */
 AstalWpAudio *astal_wp_audio_get_default() {
     static AstalWpAudio *self = NULL;
@@ -377,7 +400,9 @@ AstalWpAudio *astal_wp_audio_get_default() {
 /**
  * astal_wp_get_default_audio
  *
- * Returns: (nullable) (transfer none): gets the default audio object.
+ * gets the default audio object. This function does the same as [func@AstalWp.Audio.get_default]
+ *
+ * Returns: (nullable) (transfer none)
  */
 AstalWpAudio *astal_wp_get_default_audio() { return astal_wp_audio_get_default(); }
 

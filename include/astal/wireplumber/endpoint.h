@@ -26,6 +26,8 @@ void astal_wp_endpoint_set_volume(AstalWpEndpoint *self, gdouble volume);
 void astal_wp_endpoint_set_mute(AstalWpEndpoint *self, gboolean mute);
 gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint *self);
 void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default);
+gboolean astal_wp_endpoint_get_lock_channels(AstalWpEndpoint *self);
+void astal_wp_endpoint_set_lock_channels(AstalWpEndpoint *self, gboolean lock_channels);
 
 AstalWpMediaClass astal_wp_endpoint_get_media_class(AstalWpEndpoint *self);
 guint astal_wp_endpoint_get_id(AstalWpEndpoint *self);

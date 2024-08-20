@@ -4,6 +4,7 @@
 
 #include "device.h"
 #include "endpoint-private.h"
+#include "glib.h"
 #include "wp.h"
 
 struct _AstalWpEndpoint {
@@ -16,6 +17,7 @@ struct _AstalWpEndpoint {
     gchar *name;
     AstalWpMediaClass type;
     gboolean is_default;
+    gboolean lock_channels;
 
     gchar *icon;
 };
@@ -55,6 +57,7 @@ typedef enum {
     ASTAL_WP_ENDPOINT_PROP_DEFAULT,
     ASTAL_WP_ENDPOINT_PROP_ICON,
     ASTAL_WP_ENDPOINT_PROP_VOLUME_ICON,
+    ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS,
     ASTAL_WP_ENDPOINT_N_PROPERTIES,
 } AstalWpEndpointProperties;
 
@@ -65,9 +68,10 @@ static GParamSpec *astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_N_PROPERTIES] 
 void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
-    gdouble volume;
+    gdouble volume = 0;
     gboolean mute;
     GVariant *variant = NULL;
+    GVariantIter *channels = NULL;
 
     g_signal_emit_by_name(priv->mixer, "get-volume", self->id, &variant);
 
@@ -75,6 +79,20 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
 
     g_variant_lookup(variant, "volume", "d", &volume);
     g_variant_lookup(variant, "mute", "b", &mute);
+    g_variant_lookup(variant, "channelVolumes", "a{sv}", &channels);
+
+    if (channels != NULL) {
+        const gchar *key;
+        const gchar *channel_str;
+        gdouble channel_volume;
+        GVariant *varvol;
+
+        while (g_variant_iter_loop(channels, "{&sv}", &key, &varvol)) {
+            g_variant_lookup(varvol, "volume", "d", &channel_volume);
+            g_variant_lookup(varvol, "channel", "&s", &channel_str);
+            if (channel_volume > volume) volume = channel_volume;
+        }
+    }
 
     if (mute != self->mute) {
         self->mute = mute;
@@ -89,15 +107,68 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
     g_object_notify(G_OBJECT(self), "volume-icon");
 }
 
+/**
+ * astal_wp_endpoint_set_volume:
+ * @self: the AstalWpEndpoint object
+ * @volume: The new volume level to set.
+ *
+ * Sets the volume level for this endpoint. The volume is clamped to be between
+ * 0 and 1.5.
+ */
 void astal_wp_endpoint_set_volume(AstalWpEndpoint *self, gdouble volume) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
     gboolean ret;
     if (volume >= 1.5) volume = 1.5;
-    GVariant *variant = g_variant_new_double(volume);
-    g_signal_emit_by_name(priv->mixer, "set-volume", self->id, variant, &ret);
+    if (volume <= 0) volume = 0;
+
+    gboolean mute;
+    GVariant *variant = NULL;
+    GVariantIter *channels = NULL;
+
+    g_auto(GVariantBuilder) vol_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+    g_signal_emit_by_name(priv->mixer, "get-volume", self->id, &variant);
+
+    if (variant == NULL) return;
+
+    g_variant_lookup(variant, "mute", "b", &mute);
+    g_variant_lookup(variant, "channelVolumes", "a{sv}", &channels);
+
+    if (channels != NULL && !self->lock_channels) {
+        g_auto(GVariantBuilder) channel_volumes_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+
+        const gchar *key;
+        const gchar *channel_str;
+        gdouble channel_volume;
+        GVariant *varvol;
+
+        while (g_variant_iter_loop(channels, "{&sv}", &key, &varvol)) {
+            g_auto(GVariantBuilder) channel_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+            g_variant_lookup(varvol, "volume", "d", &channel_volume);
+            g_variant_lookup(varvol, "channel", "&s", &channel_str);
+            gdouble vol = self->volume == 0 ? volume : channel_volume * volume / self->volume;
+            g_variant_builder_add(&channel_b, "{sv}", "volume", g_variant_new_double(vol));
+            g_variant_builder_add(&channel_volumes_b, "{sv}", key,
+                                  g_variant_builder_end(&channel_b));
+        }
+
+        g_variant_builder_add(&vol_b, "{sv}", "channelVolumes",
+                              g_variant_builder_end(&channel_volumes_b));
+    } else {
+        GVariant *volume_variant = g_variant_new_double(volume);
+        g_variant_builder_add(&vol_b, "{sv}", "volume", volume_variant);
+    }
+
+    g_signal_emit_by_name(priv->mixer, "set-volume", self->id, g_variant_builder_end(&vol_b), &ret);
 }
 
+/**
+ * astal_wp_endpoint_set_mute:
+ * @self: the AstalWpEndpoint instance.
+ * @mute: A boolean indicating whether to mute the endpoint.
+ *
+ * Sets the mute status for the endpoint.
+ */
 void astal_wp_endpoint_set_mute(AstalWpEndpoint *self, gboolean mute) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
@@ -137,6 +208,13 @@ void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default
         wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "media.class");
     g_signal_emit_by_name(priv->defaults, "set-default-configured-node-name", media_class, name,
                           &ret);
+}
+
+gboolean astal_wp_endpoint_get_lock_channels(AstalWpEndpoint *self) { return self->lock_channels; }
+
+void astal_wp_endpoint_set_lock_channels(AstalWpEndpoint *self, gboolean lock_channels) {
+    self->lock_channels = lock_channels;
+    astal_wp_endpoint_set_volume(self, self->volume);
 }
 
 const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self) {
@@ -179,6 +257,9 @@ static void astal_wp_endpoint_get_property(GObject *object, guint property_id, G
         case ASTAL_WP_ENDPOINT_PROP_DEFAULT:
             g_value_set_boolean(value, self->is_default);
             break;
+        case ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS:
+            g_value_set_boolean(value, self->lock_channels);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -202,6 +283,9 @@ static void astal_wp_endpoint_set_property(GObject *object, guint property_id, c
         case ASTAL_WP_ENDPOINT_PROP_ICON:
             g_free(self->icon);
             self->icon = g_strdup(g_value_get_string(value));
+            break;
+        case ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS:
+            astal_wp_endpoint_set_lock_channels(self, g_value_get_boolean(value));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -424,6 +508,8 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
                           G_PARAM_READABLE);
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_DEFAULT] =
         g_param_spec_boolean("is_default", "is_default", "is_default", FALSE, G_PARAM_READWRITE);
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS] = g_param_spec_boolean(
+        "lock_channels", "lock_channels", "lock channels", FALSE, G_PARAM_READWRITE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);
