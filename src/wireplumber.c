@@ -3,6 +3,8 @@
 #include "audio.h"
 #include "device-private.h"
 #include "endpoint-private.h"
+#include "glib-object.h"
+#include "glib.h"
 #include "video.h"
 #include "wp.h"
 
@@ -11,6 +13,11 @@ struct _AstalWpWp {
 
     AstalWpEndpoint *default_speaker;
     AstalWpEndpoint *default_microphone;
+
+    AstalWpAudio *audio;
+    AstalWpVideo *video;
+
+    AstalWpScale scale;
 };
 
 typedef struct {
@@ -26,6 +33,10 @@ typedef struct {
 } AstalWpWpPrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpWp, astal_wp_wp, G_TYPE_OBJECT);
+
+G_DEFINE_ENUM_TYPE(AstalWpScale, astal_wp_scale,
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_SCALE_LINEAR, "linear"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_WP_SCALE_CUBIC, "cubic"));
 
 typedef enum {
     ASTAL_WP_WP_SIGNAL_ENDPOINT_ADDED,
@@ -46,6 +57,7 @@ typedef enum {
     ASTAL_WP_WP_PROP_DEVICES,
     ASTAL_WP_WP_PROP_DEFAULT_SPEAKER,
     ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE,
+    ASTAL_WP_WP_PROP_SCALE,
     ASTAL_WP_WP_N_PROPERTIES,
 } AstalWpWpProperties;
 
@@ -110,14 +122,14 @@ GList *astal_wp_wp_get_devices(AstalWpWp *self) {
  *
  * Returns: (nullable) (transfer none): gets the audio object
  */
-AstalWpAudio *astal_wp_wp_get_audio() { return astal_wp_audio_get_default(); }
+AstalWpAudio *astal_wp_wp_get_audio(AstalWpWp *self) { return self->audio; }
 
 /**
  * astal_wp_wp_get_video
  *
  * Returns: (nullable) (transfer none): gets the video object
  */
-AstalWpVideo *astal_wp_wp_get_video() { return astal_wp_video_get_default(); }
+AstalWpVideo *astal_wp_wp_get_video(AstalWpWp *self) { return self->video; }
 
 /**
  * astal_wp_wp_get_default_speaker
@@ -135,6 +147,29 @@ AstalWpEndpoint *astal_wp_wp_get_default_microphone(AstalWpWp *self) {
     return self->default_microphone;
 }
 
+AstalWpScale astal_wp_wp_get_scale(AstalWpWp *self) { return self->scale; }
+
+void astal_wp_wp_set_scale(AstalWpWp *self, AstalWpScale scale) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    self->scale = scale;
+
+    if (priv->mixer == NULL) return;
+
+    g_object_set(priv->mixer, "scale", self->scale, NULL);
+
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init(&iter, priv->endpoints);
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        AstalWpEndpoint *ep = ASTAL_WP_ENDPOINT(value);
+        astal_wp_endpoint_update_volume(ep);
+    }
+
+    astal_wp_endpoint_update_volume(self->default_speaker);
+    astal_wp_endpoint_update_volume(self->default_microphone);
+}
+
 static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue *value,
                                      GParamSpec *pspec) {
     AstalWpWp *self = ASTAL_WP_WP(object);
@@ -142,10 +177,10 @@ static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue 
 
     switch (property_id) {
         case ASTAL_WP_WP_PROP_AUDIO:
-            g_value_set_object(value, astal_wp_wp_get_audio());
+            g_value_set_object(value, astal_wp_wp_get_audio(self));
             break;
         case ASTAL_WP_WP_PROP_VIDEO:
-            g_value_set_object(value, astal_wp_wp_get_video());
+            g_value_set_object(value, astal_wp_wp_get_video(self));
             break;
         case ASTAL_WP_WP_PROP_ENDPOINTS:
             g_value_set_pointer(value, g_hash_table_get_values(priv->endpoints));
@@ -158,6 +193,23 @@ static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue 
             break;
         case ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE:
             g_value_set_object(value, self->default_microphone);
+            break;
+        case ASTAL_WP_WP_PROP_SCALE:
+            g_value_set_enum(value, self->scale);
+            break;
+        default:
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
+            break;
+    }
+}
+
+static void astal_wp_wp_set_property(GObject *object, guint property_id, const GValue *value,
+                                     GParamSpec *pspec) {
+    AstalWpWp *self = ASTAL_WP_WP(object);
+
+    switch (property_id) {
+        case ASTAL_WP_WP_PROP_SCALE:
+            astal_wp_wp_set_scale(self, g_value_get_enum(value));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -184,7 +236,8 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
 
     if (WP_IS_NODE(object)) {
         WpNode *node = WP_NODE(object);
-        AstalWpEndpoint *endpoint = astal_wp_endpoint_create(node, priv->mixer, priv->defaults);
+        AstalWpEndpoint *endpoint =
+            astal_wp_endpoint_create(node, priv->mixer, priv->defaults, self);
 
         g_hash_table_insert(priv->endpoints,
                             GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))), endpoint);
@@ -230,9 +283,9 @@ static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     astal_wp_endpoint_init_as_default(self->default_speaker, priv->mixer, priv->defaults,
-                                      ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
+                                      ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER, self);
     astal_wp_endpoint_init_as_default(self->default_microphone, priv->mixer, priv->defaults,
-                                      ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE);
+                                      ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE, self);
 }
 
 static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
@@ -248,6 +301,7 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
     if (--priv->pending_plugins == 0) {
         priv->defaults = wp_plugin_find(priv->core, "default-nodes-api");
         priv->mixer = wp_plugin_find(priv->core, "mixer-api");
+        g_object_set(priv->mixer, "scale", self->scale, NULL);
 
         g_signal_connect_swapped(priv->obj_manager, "object-added",
                                  G_CALLBACK(astal_wp_wp_object_added), self);
@@ -296,6 +350,9 @@ static void astal_wp_wp_dispose(GObject *object) {
     AstalWpWp *self = ASTAL_WP_WP(object);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
+    g_clear_object(&self->video);
+    g_clear_object(&self->audio);
+
     wp_core_disconnect(priv->core);
     g_clear_object(&self->default_speaker);
     g_clear_object(&self->default_microphone);
@@ -326,6 +383,7 @@ static void astal_wp_wp_init(AstalWpWp *self) {
 
     if (!wp_core_connect(priv->core)) {
         g_critical("could not connect to PipeWire\n");
+        return;
     }
 
     priv->obj_manager = wp_object_manager_new();
@@ -365,6 +423,9 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     self->default_speaker = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
     self->default_microphone = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
 
+    self->audio = astal_wp_audio_new(self);
+    self->video = astal_wp_video_new(self);
+
     priv->pending_plugins = 2;
     wp_core_load_component(priv->core, "libwireplumber-module-default-nodes-api", "module", NULL,
                            "default-nodes-api", NULL,
@@ -378,11 +439,20 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     object_class->finalize = astal_wp_wp_finalize;
     object_class->dispose = astal_wp_wp_dispose;
     object_class->get_property = astal_wp_wp_get_property;
+    object_class->set_property = astal_wp_wp_set_property;
 
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_AUDIO] =
         g_param_spec_object("audio", "audio", "audio", ASTAL_WP_TYPE_AUDIO, G_PARAM_READABLE);
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_VIDEO] =
         g_param_spec_object("video", "video", "video", ASTAL_WP_TYPE_VIDEO, G_PARAM_READABLE);
+    /**
+     * AstalWpWp:scale: (type AstalWpScale)
+     *
+     * The scale used for the volume
+     */
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_SCALE] =
+        g_param_spec_enum("scale", "scale", "scale", ASTAL_WP_TYPE_SCALE, ASTAL_WP_SCALE_CUBIC,
+                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
     /**
      * AstalWpWp:endpoints: (type GList(AstalWpEndpoint)) (transfer container)

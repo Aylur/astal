@@ -26,6 +26,7 @@ typedef struct {
     WpNode *node;
     WpPlugin *mixer;
     WpPlugin *defaults;
+    AstalWpWp *wp;
 
     gboolean is_default_node;
     AstalWpMediaClass media_class;
@@ -242,8 +243,7 @@ void astal_wp_endpoint_set_lock_channels(AstalWpEndpoint *self, gboolean lock_ch
 }
 
 const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self) {
-    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
-    if (priv->media_class == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
+    if (self->type == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
         if (self->mute) return "microphone-sensitivity-muted-symbolic";
         if (self->volume <= 0.33) return "microphone-sensitivity-low-symbolic";
         if (self->volume <= 0.66) return "microphone-sensitivity-medium-symbolic";
@@ -362,7 +362,7 @@ static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
             const gchar *dev =
                 wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "device.id");
             guint device_id = g_ascii_strtoull(dev, NULL, 10);
-            AstalWpDevice *device = astal_wp_wp_get_device(astal_wp_wp_get_default(), device_id);
+            AstalWpDevice *device = astal_wp_wp_get_device(priv->wp, device_id);
             icon = astal_wp_device_get_icon(device);
             if (icon == NULL) {
                 icon = self->type == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER
@@ -406,8 +406,7 @@ static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) 
 
     if (defaultId != self->id) {
         if (priv->node != NULL) g_object_unref(priv->node);
-        AstalWpEndpoint *default_endpoint =
-            astal_wp_wp_get_endpoint(astal_wp_wp_get_default(), defaultId);
+        AstalWpEndpoint *default_endpoint = astal_wp_wp_get_endpoint(priv->wp, defaultId);
         if (default_endpoint != NULL &&
             astal_wp_endpoint_get_media_class(default_endpoint) == priv->media_class) {
             AstalWpEndpointPrivate *default_endpoint_priv =
@@ -441,7 +440,8 @@ static void astal_wp_endpoint_mixer_changed(AstalWpEndpoint *self, guint node_id
 }
 
 AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer,
-                                                   WpPlugin *defaults, AstalWpMediaClass type) {
+                                                   WpPlugin *defaults, AstalWpMediaClass type,
+                                                   AstalWpWp *wp) {
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
     priv->mixer = g_object_ref(mixer);
@@ -450,6 +450,7 @@ AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlug
     priv->media_class = type;
     priv->is_default_node = TRUE;
     self->is_default = TRUE;
+    priv->wp = g_object_ref(wp);
 
     priv->default_signal_handler_id = g_signal_connect_swapped(
         priv->defaults, "changed", G_CALLBACK(astal_wp_endpoint_default_changed_as_default), self);
@@ -461,7 +462,8 @@ AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlug
     return self;
 }
 
-AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugin *defaults) {
+AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugin *defaults,
+                                          AstalWpWp *wp) {
     AstalWpEndpoint *self = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
@@ -469,6 +471,7 @@ AstalWpEndpoint *astal_wp_endpoint_create(WpNode *node, WpPlugin *mixer, WpPlugi
     priv->defaults = g_object_ref(defaults);
     priv->node = g_object_ref(node);
     priv->is_default_node = FALSE;
+    priv->wp = g_object_ref(wp);
 
     priv->default_signal_handler_id = g_signal_connect_swapped(
         priv->defaults, "changed", G_CALLBACK(astal_wp_endpoint_default_changed), self);
@@ -485,6 +488,7 @@ static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
     priv->node = NULL;
     priv->mixer = NULL;
     priv->defaults = NULL;
+    priv->wp = NULL;
 
     self->volume = 0;
     self->mute = TRUE;
@@ -502,6 +506,7 @@ static void astal_wp_endpoint_dispose(GObject *object) {
     g_clear_object(&priv->node);
     g_clear_object(&priv->mixer);
     g_clear_object(&priv->defaults);
+    g_clear_object(&priv->wp);
 }
 
 static void astal_wp_endpoint_finalize(GObject *object) {

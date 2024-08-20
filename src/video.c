@@ -321,31 +321,10 @@ static void astal_wp_video_object_removed(AstalWpAudio *self, gpointer object) {
     }
 }
 
-/**
- * astal_wp_video_get_default
- *
- * Returns: (nullable) (transfer none): gets the default video object.
- */
-AstalWpVideo *astal_wp_video_get_default() {
-    static AstalWpVideo *self = NULL;
-
-    if (self == NULL) self = g_object_new(ASTAL_WP_TYPE_VIDEO, NULL);
-
-    return self;
-}
-
-/**
- * astal_wp_get_default_video
- *
- * Returns: (nullable) (transfer none): gets the default video object.
- */
-AstalWpVideo *astal_wp_get_default_video() { return astal_wp_video_get_default(); }
-
-static void astal_wp_video_init(AstalWpVideo *self) {
+AstalWpVideo *astal_wp_video_new(AstalWpWp *wp) {
+    AstalWpVideo *self = g_object_new(ASTAL_WP_TYPE_VIDEO, NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
-
-    priv->wp = astal_wp_wp_get_default();
-
+    priv->wp = g_object_ref(wp);
     g_signal_connect_swapped(priv->wp, "endpoint-added", G_CALLBACK(astal_wp_video_object_added),
                              self);
     g_signal_connect_swapped(priv->wp, "endpoint-removed",
@@ -354,11 +333,24 @@ static void astal_wp_video_init(AstalWpVideo *self) {
                              self);
     g_signal_connect_swapped(priv->wp, "device-removed", G_CALLBACK(astal_wp_video_device_removed),
                              self);
+
+    return self;
+}
+
+static void astal_wp_video_dispose(GObject *object) {
+    AstalWpVideo *self = ASTAL_WP_VIDEO(object);
+    AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
+    g_clear_object(&priv->wp);
+}
+
+static void astal_wp_video_init(AstalWpVideo *self) {
+    AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 }
 
 static void astal_wp_video_class_init(AstalWpVideoClass *class) {
     GObjectClass *object_class = G_OBJECT_CLASS(class);
     object_class->get_property = astal_wp_video_get_property;
+    object_class->dispose = astal_wp_video_dispose;
 
     /**
      * AstalWpVideo:sources: (type GList(AstalWpEndpoint)) (transfer container)

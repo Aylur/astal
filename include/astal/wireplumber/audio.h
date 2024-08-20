@@ -28,9 +28,6 @@ GList *astal_wp_audio_get_recorders(AstalWpAudio *self);
 GList *astal_wp_audio_get_streams(AstalWpAudio *self);
 GList *astal_wp_audio_get_devices(AstalWpAudio *self);
 
-AstalWpAudio *astal_wp_audio_get_default();
-AstalWpAudio *astal_wp_get_default_audio();
-
 G_END_DECLS
 
 #endif  // !ASTAL_WIREPLUMBER_AUDIO_H

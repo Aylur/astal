@@ -24,9 +24,6 @@ GList *astal_wp_video_get_recorders(AstalWpVideo *self);
 GList *astal_wp_video_get_streams(AstalWpVideo *self);
 GList *astal_wp_video_get_devices(AstalWpVideo *self);
 
-AstalWpVideo *astal_wp_video_get_default();
-AstalWpVideo *astal_wp_get_default_video();
-
 G_END_DECLS
 
 #endif  // !ASTAL_WIREPLUMBER_VIDEO_H
