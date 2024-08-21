@@ -63,26 +63,26 @@ public class Icon : Gtk.Image {
                 warning("cannot assign %s as icon, "+
                     "it is not a file nor a named icon", icon);
             }
-            display_icon();
+            display_icon.begin();
         });
 
         notify["pixbuf"].connect(() => {
             type = IconType.PIXBUF;
-            display_icon();
+            display_icon.begin();
         });
 
         size_allocate.connect(() => {
             size = get_style_context()
                 .get_property("font-size", Gtk.StateFlags.NORMAL).get_double();
 
-            display_icon();
+            display_icon.begin();
         });
 
         get_style_context().changed.connect(() => {
             size = get_style_context()
                 .get_property("font-size", Gtk.StateFlags.NORMAL).get_double();
 
-            display_icon();
+            display_icon.begin();
         });
     }
 }
