@@ -120,6 +120,8 @@ public class TrayItem : Object {
 
     public Gdk.Pixbuf icon_pixbuf { owned get { return _get_icon_pixbuf(); } }
 
+    public GLib.Icon gicon { get; private set; }
+    
     public string item_id { get; private set; }
 
     public signal void changed();
@@ -149,6 +151,8 @@ public class TrayItem : Object {
                         SignalHandler.disconnect(proxy, id);
                 }
             });
+           
+            update_gicon();
 
             ready();
         } catch (Error err) {
@@ -164,6 +168,33 @@ public class TrayItem : Object {
 
         changed();
     }
+
+    private void update_gicon() {
+        if(icon_name != null && icon_name != "") {
+            if(icon_theme_path != null && icon_theme_path != "") {
+
+                Gtk.IconTheme icon_theme = new Gtk.IconTheme();
+                string[] paths = {icon_theme_path};
+                icon_theme.set_search_path(paths);
+
+                int size = icon_theme.get_icon_sizes(icon_name)[0];
+                Gtk.IconInfo icon_info = icon_theme.lookup_icon(
+                    icon_name, size, Gtk.IconLookupFlags.FORCE_SIZE);
+
+                if (icon_info != null)
+                    gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_info.get_filename()));
+            } else {
+                gicon = new GLib.ThemedIcon(icon_name);
+            }
+        }
+        else {
+            Pixmap[] pixmaps = proxy.Status == Status.NEEDS_ATTENTION
+                ? proxy.AttentionIconPixmap
+                : proxy.IconPixmap;
+            gicon = pixmap_to_pixbuf(pixmaps);
+        }
+    }
+
 
     private void refresh_all_properties() {
         proxy.g_connection.call.begin(
@@ -188,6 +219,8 @@ public class TrayItem : Object {
                     while (prop_iter.next ("{sv}", out prop_key, out prop_value)) {
                         proxy.set_cached_property(prop_key, prop_value);
                     }
+
+                    update_gicon();
 
                     _notify();
                 } catch(Error e) {
