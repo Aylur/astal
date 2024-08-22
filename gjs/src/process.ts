@@ -1,4 +1,4 @@
-import { Astal, GLib } from "./imports.js"
+import { Astal } from "./imports.js"
 
 type Args<Out = void, Err = void> = {
     cmd: string | string[]
@@ -24,7 +24,7 @@ export function subprocess(
 export function subprocess(
     argsOrCmd: Args | string | string[],
     onOut: (stdout: string) => void = print,
-    onErr: (stderr: string) => void = console.log,
+    onErr: (stderr: string) => void = printerr,
 ) {
     const { cmd, err, out } = args(argsOrCmd, onOut, onErr)
     const proc = Array.isArray(cmd)
@@ -44,11 +44,26 @@ export function exec(cmd: string | string[]) {
 }
 
 export function execAsync(cmd: string | string[]): Promise<string> {
-    const proc = Array.isArray(cmd)
-        ? Astal.Process.exec_asyncv(cmd)
-        : Astal.Process.exec_async(cmd)
     return new Promise((resolve, reject) => {
-        proc.connect("stdout", (_, out: string) => resolve(out))
-        proc.connect("stderr", (_, err: string) => reject(err))
+        if (Array.isArray(cmd)) {
+            Astal.Process.exec_asyncv(cmd, (_, res) => {
+                try {
+                    resolve(Astal.Process.exec_asyncv_finish(res))
+                }
+                catch (error) {
+                    reject(error)
+                }
+            })
+        }
+        else {
+            Astal.Process.exec_async(cmd, (_, res) => {
+                try {
+                    resolve(Astal.Process.exec_finish(res))
+                }
+                catch (error) {
+                    reject(error)
+                }
+            })
+        }
     })
 }

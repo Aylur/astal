@@ -68,26 +68,27 @@ end
 ---@param commandline string | string[]
 ---@param on_stdout? fun(out: string): nil
 ---@param on_stderr? fun(err: string): nil
----@return { kill: function } | nil proc
 function M.exec_async(commandline, on_stdout, on_stderr)
     local out, err = defualt_proc_args(on_stdout, on_stderr)
-    local proc, fail
     if type(commandline) == "table" then
-        proc, fail = Astal.Process.exec_asyncv(commandline)
+        Astal.Process.exec_asyncv(commandline, function(_, res)
+            local stdout, fail = Astal.exec_asyncv_finish(res)
+            if fail ~= nil then
+                err(fail)
+            else
+                out(stdout)
+            end
+        end)
     else
-        proc, fail = Astal.Process.exec_async(commandline)
+        Astal.Process.exec_async(commandline, function(_, res)
+            local stdout, fail = Astal.exec_finish(res)
+            if fail ~= nil then
+                err(fail)
+            else
+                out(stdout)
+            end
+        end)
     end
-    if fail ~= nil then
-        err(fail)
-        return nil
-    end
-    proc.on_stdout = function(_, str)
-        out(str)
-    end
-    proc.on_stderr = function(_, str)
-        err(str)
-    end
-    return proc
 end
 
 return M

@@ -94,32 +94,26 @@ public class Astal.Process : Object {
         return Process.execv(argv);
     }
 
-    public Process.exec_asyncv(string[] cmd) throws Error {
-        Object(argv: cmd);
-        process = new Subprocess.newv(cmd,
+    public static async string exec_asyncv(string[] cmd) throws Error {
+        var process = new Subprocess.newv(
+            cmd,
             SubprocessFlags.STDERR_PIPE |
             SubprocessFlags.STDOUT_PIPE
         );
 
-        process.communicate_utf8_async.begin(null, null, (_, res) => {
-            string err_str, out_str;
-            try {
-                process.communicate_utf8_async.end(res, out out_str, out err_str);
-                if (process.get_successful())
-                    stdout(out_str.strip());
-                else
-                    stderr(err_str.strip());
-            } catch (Error err) {
-                printerr("%s\n", err.message);
-            } finally {
-                dispose();
-            }
-        });
+        string err_str, out_str;
+        yield process.communicate_utf8_async(null, null, out out_str, out err_str);
+        var success = process.get_successful();
+        process.dispose();
+        if (success)
+            return out_str.strip();
+        else
+            throw new IOError.FAILED(err_str.strip());
     }
 
-    public static Process exec_async(string cmd) throws Error {
+    public static async string exec_async(string cmd) throws Error {
         string[] argv;
         Shell.parse_argv(cmd, out argv);
-        return new Process.exec_asyncv(argv);
+        return yield exec_asyncv(argv);
     }
 }

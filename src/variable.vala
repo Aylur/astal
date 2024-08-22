@@ -141,20 +141,26 @@ public class Variable : VariableBase {
             }, Priority.DEFAULT);
         }
         if (poll_exec != null) {
-            var proc = new Process.exec_asyncv(poll_exec);
-            proc.stdout.connect((str) => set_closure(str, poll_transform));
-            proc.stderr.connect((str) => this.error(str));
-            poll_id = Timeout.add(poll_interval, () => {
+            Process.exec_asyncv.begin(poll_exec, (_, res) => {
                 try {
-                    proc = new Process.exec_asyncv(poll_exec);
-                    proc.stdout.connect((str) => set_closure(str, poll_transform));
-                    proc.stderr.connect((str) => this.error(str));
-                    return Source.CONTINUE;
+                    var str = Process.exec_asyncv.end(res);
+                    set_closure(str, poll_transform);
                 } catch (Error err) {
-                    printerr("%s\n", err.message);
-                    poll_id = 0;
-                    return Source.REMOVE;
+                    this.error(err.message);
                 }
+            });
+            poll_id = Timeout.add(poll_interval, () => {
+                Process.exec_asyncv.begin(poll_exec, (_, res) => {
+                    try {
+                        var str = Process.exec_asyncv.end(res);
+                        set_closure(str, poll_transform);
+                    } catch (Error err) {
+                        this.error(err.message);
+                        Source.remove(poll_id);
+                        poll_id = 0;
+                    }
+                });
+                return Source.CONTINUE;
             }, Priority.DEFAULT);
         }
     }
