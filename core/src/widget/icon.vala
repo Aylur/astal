@@ -10,6 +10,7 @@ public class Icon : Gtk.Image {
 
     public new Gdk.Pixbuf pixbuf { get; set; }
     public string icon { get; set; default = ""; }
+    public GLib.Icon g_icon {get; set;}
 
     private async void display_icon() {
         switch(type) {
@@ -45,6 +46,11 @@ public class Icon : Gtk.Image {
                 set_from_surface(cs);
             }
             break;
+        case IconType.GICON:
+            pixel_size = (int)size;
+            gicon = g_icon;
+            break;
+
         }
     }
 
@@ -71,6 +77,11 @@ public class Icon : Gtk.Image {
             display_icon.begin();
         });
 
+        notify["g-icon"].connect(() => {
+            type = IconType.GICON;
+            display_icon.begin();
+        });
+        
         size_allocate.connect(() => {
             size = get_style_context()
                 .get_property("font-size", Gtk.StateFlags.NORMAL).get_double();
@@ -91,5 +102,6 @@ private enum IconType {
     NAMED,
     FILE,
     PIXBUF,
+    GICON,
 }
 }
