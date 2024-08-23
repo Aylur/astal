@@ -161,7 +161,7 @@ public class TrayItem : Object {
     }
 
     private void _notify() {
-        string[] props = { "category", "id", "title", "status", "is-menu", "tooltip-markup" };
+        string[] props = { "category", "id", "title", "status", "is-menu", "tooltip-markup", "icon-name", "icon-pixbuf" };
 
         foreach (string prop in props)
             notify_property(prop);
