@@ -14,7 +14,7 @@ config = configure_file(
   },
 )
 
-deps = [
+pkgconfig_deps = [
   dependency('glib-2.0'),
   dependency('gio-unix-2.0'),
   dependency('gobject-2.0'),
@@ -24,12 +24,14 @@ deps = [
   dependency('gtk-layer-shell-0'),
 ]
 
+deps = pkgconfig_deps + meson.get_compiler('c').find_library('m')
+
 sources = [
   config,
   'widget/box.vala',
   'widget/button.vala',
   'widget/centerbox.vala',
-  # 'widget/circularprogress.vala', # TODO: math lib -X -lm
+  'widget/circularprogress.vala',
   'widget/eventbox.vala',
   'widget/icon.vala',
   'widget/label.vala',
@@ -65,7 +67,7 @@ if get_option('lib')
     filebase: meson.project_name() + '-' + api_version,
     version: meson.project_version(),
     subdirs: meson.project_name(),
-    requires: deps,
+    requires: pkgconfig_deps,
     install_dir: libdir / 'pkgconfig',
     variables: {
       'gjs': pkgdatadir / 'gjs',

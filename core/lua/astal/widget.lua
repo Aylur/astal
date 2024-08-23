@@ -209,7 +209,7 @@ local Widget = {
     Box = astalify(Astal.Box),
     Button = astalify(Astal.Button),
     CenterBox = astalify(Astal.CenterBox),
-    -- TODO: CircularProgress
+    CircularProgress = astalify(Astal.CircularProgress),
     DrawingArea = astalify(Gtk.DrawingArea),
     Entry = astalify(Gtk.Entry),
     EventBox = astalify(Astal.EventBox),

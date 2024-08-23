@@ -1,6 +1,5 @@
 namespace Astal {
 public class CircularProgress : Gtk.Bin {
-    public new Gtk.Widget child { get; set; }
     public double start_at { get; set; }
     public double end_at { get; set; }
     public double value { get; set; }
@@ -20,7 +19,7 @@ public class CircularProgress : Gtk.Bin {
         set_css_name("circular-progress");
     }
 
-    public new void get_preferred_height(out int minh, out int nath) {
+    public override void get_preferred_height(out int minh, out int nath) {
         var val = get_style_context().get_property("min-height", Gtk.StateFlags.NORMAL);
         if (val.get_int() <= 0) {
             minh = 40;
@@ -31,7 +30,7 @@ public class CircularProgress : Gtk.Bin {
         nath = val.get_int();
     }
 
-    public new void get_preferred_width(out int minw, out int natw) {
+    public override void get_preferred_width(out int minw, out int natw) {
         var val = get_style_context().get_property("min-width", Gtk.StateFlags.NORMAL);
         if (val.get_int() <= 0) {
             minw = 40;
@@ -89,7 +88,7 @@ public class CircularProgress : Gtk.Bin {
         return max;
     }
 
-    public new bool draw(Cairo.Context cr) {
+    public override bool draw(Cairo.Context cr) {
         Gtk.Allocation allocation;
         get_allocation(out allocation);
 
@@ -162,9 +161,9 @@ public class CircularProgress : Gtk.Bin {
             cr.fill();
         }
 
-        if (this.child != null) {
-            this.child.size_allocate(allocation);
-            this.propagate_draw(this.child, cr);
+        if (this.get_child() != null) {
+            this.get_child().size_allocate(allocation);
+            this.propagate_draw(this.get_child(), cr);
         }
 
         return true;

@@ -35,7 +35,7 @@ const ctors = {
     box: Widget.Box,
     button: Widget.Button,
     centerbox: Widget.CenterBox,
-    // TODO: circularprogress
+    circularprogress: Widget.CircularProgress,
     drawingarea: Widget.DrawingArea,
     entry: Widget.Entry,
     eventbox: Widget.EventBox,
@@ -63,7 +63,7 @@ declare global {
             box: Widget.BoxProps
             button: Widget.ButtonProps
             centerbox: Widget.CenterBoxProps
-            // TODO: circularprogress
+            circularprogress: Widget.CircularProgressProps,
             drawingarea: Widget.DrawingAreaProps
             entry: Widget.EntryProps
             eventbox: Widget.EventBoxProps
