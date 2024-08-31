@@ -24,6 +24,7 @@ end
 local app = AstalLua()
 
 ---@class StartConfig
+---@field icons? string
 ---@field instance_name? string
 ---@field gtk_theme? string
 ---@field icon_theme? string
@@ -55,6 +56,9 @@ function Astal.Application:start(config)
 
     if config.css then
         self:apply_css(config.css)
+    end
+    if config.icons then
+        self:add_icons(config.icons)
     end
     if config.instance_name then
         self.instance_name = config.instance_name

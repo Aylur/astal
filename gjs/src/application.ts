@@ -5,6 +5,7 @@ type RequestHandler = {
 }
 
 type Config = Partial<{
+    icons: string
     instanceName: string
     gtkTheme: string
     iconTheme: string
@@ -64,7 +65,7 @@ class AstalJS extends Astal.Application {
         exit(code ?? 0)
     }
 
-    start({ requestHandler, css, hold, main, client, ...cfg }: Config = {}) {
+    start({ requestHandler, css, hold, main, client, icons, ...cfg }: Config = {}) {
         client ??= () => {
             print(`Astal instance "${this.instanceName}" already running`)
             exit(1)
@@ -89,6 +90,9 @@ class AstalJS extends Astal.Application {
 
         if (css)
             this.apply_css(css, false)
+
+        if (icons)
+            this.add_icons(icons)
 
         hold ??= true
         if (hold)
