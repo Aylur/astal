@@ -2,7 +2,6 @@ version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
 gir = 'Astal-' + api_version + '.gir'
 typelib = 'Astal-' + api_version + '.typelib'
-so = 'libastal.so.' + meson.project_version()
 
 config = configure_file(
   input: 'config.vala.in',

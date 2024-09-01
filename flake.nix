@@ -9,51 +9,45 @@
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
 
-    nativeBuildInputs = with pkgs; [
-      wrapGAppsHook
-      gobject-introspection
-      meson
-      pkg-config
-      ninja
-      vala
-    ];
-
-    buildInputs = with pkgs; [
-      glib
-      gtk3
-      gtk-layer-shell
-    ];
+    lib = name: src: inputs:
+      pkgs.stdenv.mkDerivation {
+        nativeBuildInputs = with pkgs; [
+          wrapGAppsHook
+          gobject-introspection
+          meson
+          pkg-config
+          ninja
+          vala
+        ];
+        buildInputs = [pkgs.glib] ++ inputs;
+        pname = name;
+        version = version;
+        src = src;
+        outputs = ["out" "dev"];
+      };
   in {
     packages.${system} = rec {
       default = astal;
-      astal = pkgs.stdenv.mkDerivation {
-        inherit nativeBuildInputs buildInputs;
-        pname = "astal";
-        version = version;
-        src = ./.;
-        outputs = ["out" "dev"];
-      };
+      astal = with pkgs; lib "astal" ./core [gtk3 gtk-layer-shell];
     };
 
     devShells.${system} = let
-      inputs = with pkgs;
-        buildInputs
-        ++ [
-          (lua.withPackages (ps: [ps.lgi]))
-          gjs
-        ];
+      inputs = with pkgs; [
+        wrapGAppsHook
+        gobject-introspection
+        meson
+        pkg-config
+        ninja
+        vala
+        (lua.withPackages (ps: [ps.lgi]))
+        gjs
+      ];
     in {
       default = pkgs.mkShell {
-        inherit nativeBuildInputs;
-        buildInputs = inputs;
+        inherit inputs;
       };
       astal = pkgs.mkShell {
-        inherit nativeBuildInputs;
-        buildInputs =
-          inputs
-          ++ [
-            self.packages.${system}.astal
-          ];
+        inputs = inputs ++ [self.packages.${system}.astal];
       };
     };
   };
