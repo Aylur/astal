@@ -166,12 +166,14 @@ class VariableWrapper<T> extends Function {
 
     observe(
         objs: Array<[obj: Connectable, signal: string]>,
-        callback: (...args: any[]) => T): Variable<T>
+        callback: (...args: any[]) => T,
+    ): Variable<T>
 
     observe(
         obj: Connectable,
         signal: string,
-        callback: (...args: any[]) => T): Variable<T>
+        callback: (...args: any[]) => T,
+    ): Variable<T>
 
     observe(
         objs: Connectable | Array<[obj: Connectable, signal: string]>,
@@ -184,12 +186,15 @@ class VariableWrapper<T> extends Function {
         if (Array.isArray(objs)) {
             for (const obj of objs) {
                 const [o, s] = obj
-                o.connect(s, set)
+                const id = o.connect(s, set)
+                this.onDropped(() => o.disconnect(id))
             }
         }
         else {
-            if (typeof sigOrFn === "string")
-                objs.connect(sigOrFn, set)
+            if (typeof sigOrFn === "string") {
+                const id = objs.connect(sigOrFn, set)
+                this.onDropped(() => objs.disconnect(id))
+            }
         }
 
         return this as unknown as Variable<T>
@@ -199,7 +204,7 @@ class VariableWrapper<T> extends Function {
         const Deps extends Array<Variable<any> | Binding<any>>,
         Args extends {
             [K in keyof Deps]: Deps[K] extends Variable<infer T>
-                ? T : Deps[K] extends Binding<infer T> ? T : never
+            ? T : Deps[K] extends Binding<infer T> ? T : never
         },
         V = Args,
     >(deps: Deps, fn: (...args: Args) => V = (...args) => args as unknown as V) {
@@ -221,7 +226,7 @@ export const Variable = new Proxy(VariableWrapper as any, {
 }) as {
     derive: typeof VariableWrapper["derive"]
     <T>(init: T): Variable<T>
-    new<T>(init: T): Variable<T>
+    new <T>(init: T): Variable<T>
 }
 
 export default Variable

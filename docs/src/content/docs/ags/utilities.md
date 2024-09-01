@@ -169,7 +169,7 @@ They are **not** executed in a shell environment,
 they do **not** expand env variables like `$HOME`,
 and they do **not** handle logical operators like `&&` and `||`.
 
-If you want to run bash, run them with bash.
+If you want bash, run them with bash.
 
 ```js
 exec(["bash", "-c", "command $VAR && command"])

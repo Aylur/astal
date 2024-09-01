@@ -78,3 +78,82 @@ App.start({
 If there is a name clash with an icon from your current icon pack
 the icon pack will take precedence
 :::
+
+## Logging
+
+The `console` API in gjs uses glib logging functions.
+If you just want to print some text as is to stdout
+use the globally available `print` function or `printerr` for stderr.
+
+```js
+print("print this line to stdout")
+printerr("print this line to stderr")
+```
+
+## Binding custom structures
+
+The `bind` function can take two types of objects.
+
+```typescript
+interface Subscribable<T = unknown> {
+    subscribe(callback: (value: T) => void): () => void
+    get(): T
+}
+
+interface Connectable {
+    connect(signal: string, callback: (...args: any[]) => unknown): number
+    disconnect(id: number): void
+}
+```
+
+`Connectable` is for mostly gobjects, while `Subscribable` is for `Variables`
+and custom objects.
+
+For example you can compose `Variables` in using a class.
+
+```typescript
+type MyVariableValue = {
+    number: number
+    string: string
+}
+
+class MyVariable {
+    number = Variable(0)
+    string = Variable("")
+
+    get(): MyVariableValue {
+        return {
+            number: this.number.get(),
+            string: this.string.get(),
+        }
+    }
+
+    subscribe(callback: (v: MyVariableValue) => void) {
+        const unsub1 = this.number.subscribe((value) => {
+            callback({ string: value, number: this.number.get() })
+        })
+
+        const unsub2 = this.string.subscribe((value) => {
+            callback({ number: value, string: this.string.get() })
+        })
+
+        return () => {
+            unsub1()
+            unsub2()
+        }
+    }
+}
+```
+
+Then it can be used with `bind`.
+
+```tsx
+function MyWidget() {
+    const myvar = new MyVariableValue()
+    const label = bind(myvar).as(({ string, number }) => {
+        return `${string} ${number}`
+    })
+
+    return <label label={label} />
+}
+```
