@@ -1,32 +1,31 @@
 import { Astal } from "./imports.js"
 
-type Args<Out = void, Err = void> = {
+type Args = {
     cmd: string | string[]
-    out?: (stdout: string) => Out
-    err?: (stderr: string) => Err
-}
-
-function args<O, E>(argsOrCmd: Args | string | string[], onOut: O, onErr: E) {
-    const params = Array.isArray(argsOrCmd) || typeof argsOrCmd === "string"
-    return {
-        cmd: params ? argsOrCmd : argsOrCmd.cmd,
-        err: params ? onErr : argsOrCmd.err || onErr,
-        out: params ? onOut : argsOrCmd.out || onOut,
-    }
+    out?: (stdout: string) => void
+    err?: (stderr: string) => void
 }
 
 export function subprocess(args: Args): Astal.Process
+
 export function subprocess(
     cmd: string | string[],
     onOut?: (stdout: string) => void,
     onErr?: (stderr: string) => void,
 ): Astal.Process
+
 export function subprocess(
     argsOrCmd: Args | string | string[],
     onOut: (stdout: string) => void = print,
     onErr: (stderr: string) => void = printerr,
 ) {
-    const { cmd, err, out } = args(argsOrCmd, onOut, onErr)
+    const args = Array.isArray(argsOrCmd) || typeof argsOrCmd === "string"
+    const { cmd, err, out } = {
+        cmd: args ? argsOrCmd : argsOrCmd.cmd,
+        err: args ? onErr : argsOrCmd.err || onErr,
+        out: args ? onOut : argsOrCmd.out || onOut,
+    }
+
     const proc = Array.isArray(cmd)
         ? Astal.Process.subprocessv(cmd)
         : Astal.Process.subprocess(cmd)

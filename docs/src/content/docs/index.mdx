@@ -3,65 +3,65 @@ title: Build Your Own Desktop Shell
 description: The best way to make beautiful and functional widgets on wayland
 template: splash
 banner:
-  content: |
-    🚧 The library and this documentation is still under development. 🚧
+    content: 🚧 The library and this documentation is still under development. 🚧
 hero:
-  tagline: The best way to make <i>beautiful</i> <b>and</b> <i>functional</i> wayland widgets!
-  image:
-    file: ../../assets/front-image.png
-  actions:
-    - text: Get Started
-      link: /astal/getting-started/introduction/
-      icon: right-arrow
-      variant: primary
-    - text: Reference
-      link: /astal/reference/references
-      icon: open-book
-      variant: secondary
-    - text: View on GitHub
-      link: https://github.com/Aylur/Astal
-      icon: github
-      variant: minimal
+    tagline: The best way to make <i>beautiful</i> <b>and</b> <i>functional</i> wayland widgets!
+    image:
+        file: ../../assets/front-image.png
+    actions:
+        - text: Get Started
+          link: /astal/getting-started/introduction/
+          icon: right-arrow
+          variant: primary
+        - text: Reference
+          link: /astal/reference/references
+          icon: open-book
+          variant: secondary
+        - text: View on GitHub
+          link: https://github.com/Aylur/Astal
+          icon: github
+          variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
-import { showcases } from "../showcases.ts";
-import Showcase from "../../components/Showcase.astro";
+import { Card, CardGrid } from "@astrojs/starlight/components"
+import { showcases } from "../showcases.ts"
+import Showcase from "../../components/Showcase.astro"
 
 <CardGrid>
-  <Card title="Use your preferred language" icon="seti:json">
-    The main focus of Astal is TypeScript using JSX. But you can use the
-    libraries in any language that supports [Gobject
-    Introspection](https://en.wikipedia.org/wiki/List_of_language_bindings_for_GTK).
-  </Card>
-  <Card title="No bash scripts needed" icon="pencil">
-    Includes modules to work with Network, Bluetooth, Battery, Audio and more.
-    See the list of included [Libraries](./libraries/overview).
-  </Card>
-  <Card title="Use any Gtk widget" icon="puzzle">
-    With Astal you work with Gtk directly. You are not limited to only a set of
-    them. See the list of [Widgets](./libraries/widgets) that come bundled.
-  </Card>
-  <Card title="Examples" icon="open-book">
-    Have a look at some simple and not simple [examples](./config/examples). In
-    [TypeScript](https://github.com/Aylur/Astal/tree/main/examples/ts),
-    [Lua](https://github.com/Aylur/Astal/tree/main/examples/lua),
-    [Python](https://github.com/Aylur/Astal/tree/main/examples/python).
-  </Card>
+    <Card title="Use your preferred language" icon="seti:json">
+        The main focus of Astal is TypeScript using JSX. But you can use the
+        libraries in any language that supports [Gobject
+        Introspection](https://en.wikipedia.org/wiki/List_of_language_bindings_for_GTK).
+    </Card>
+    <Card title="No bash scripts needed" icon="pencil">
+        Includes modules to work with Network, Bluetooth, Battery, Audio and
+        more. See the list of included [Libraries](/astal/libraries/overview).
+    </Card>
+    <Card title="Use any Gtk widget" icon="puzzle">
+        With Astal you work with Gtk directly. You are not limited to only a set
+        of them. See the list of [Widgets](/astal/libraries/widgets) that come
+        bundled.
+    </Card>
+    <Card title="Examples" icon="open-book">
+        Have a look at some simple and not simple [examples](./config/examples).
+        In [TypeScript](https://github.com/Aylur/Astal/tree/main/examples/ts),
+        [Lua](https://github.com/Aylur/Astal/tree/main/examples/lua),
+        [Python](https://github.com/Aylur/Astal/tree/main/examples/python).
+    </Card>
 </CardGrid>
 
 ## Showcases
 
 <div class="showcases">
-  {showcases.map((showcase) =>
-    Array.isArray(showcase) ? (
-      <CardGrid>
-        {showcase.map((elem) => (
-          <Showcase {...elem} />
-        ))}
-      </CardGrid>
-    ) : (
-      <Showcase {...showcase} />
-    )
-  )}
+    {showcases.map((showcase) =>
+        Array.isArray(showcase) ? (
+            <CardGrid>
+                {showcase.map((elem) => (
+                    <Showcase {...elem} />
+                ))}
+            </CardGrid>
+        ) : (
+            <Showcase {...showcase} />
+        ),
+    )}
 </div>
