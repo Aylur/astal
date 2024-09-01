@@ -46,11 +46,11 @@
     authors ? "Aylur",
     dependencies ? {},
     out ? "libastal/${name}",
-  } @ args:
+  }:
     genRefForPkg {
-      name = "Astal${args.namespace}";
+      name = "Astal${namespace}";
       pkg = name;
-      outPath = args.out;
+      outPath = out;
       metaData = {
         library = {
           inherit description authors;
@@ -71,7 +71,7 @@ in
     name = "library-reference";
     src = builtins.path {
       name = "library-reference-src";
-      src = ./.;
+      path = ./.;
     };
 
     nativeBuildInputs = [

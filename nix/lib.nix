@@ -23,12 +23,12 @@
     pname,
     src,
     buildInputs ? [],
-  } @ args:
+  }:
     stdenv.mkDerivation {
       inherit pname version;
       src = path {
         name = "${pname}-${version}";
-        src = cleanSource args.src;
+        path = cleanSource src;
       };
 
       nativeBuildInputs = [
@@ -43,7 +43,7 @@
 
       buildInputs = concatLists [
         [glib]
-        args.buildInputs
+        buildInputs
       ];
 
       outputs = ["out" "dev"];
