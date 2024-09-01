@@ -1,33 +1,38 @@
 {
-  pkgs,
-  astal,
+  flakePkgs,
+  stdenvNoCC,
+  formats,
+  gi-docgen,
+  glib,
+  json-glib,
+  gobject-introspection,
+  gtk3,
+  gtk-layer-shell,
+  gdk-pixbuf,
+  libdbusmenu-gtk3,
+  wireplumber,
+  networkmanager,
+  ...
 }: let
-  toTOML = (pkgs.formats.toml {}).generate;
+  toTOML = (formats.toml {}).generate;
 
-  gen = pkg: name: out: toml: ''
-    mkdir -p $out/${out}
-    gi-docgen generate -C ${toTOML name toml} ${astal.${pkg}.dev}/share/gir-1.0/${name}-0.1.gir
-    cp -r ${name}-0.1/* $out/${out}
+  genRefForPkg = {
+    name,
+    pkg,
+    outPath,
+    metaData,
+  }: let
+    tomlMetaData = toTOML name metaData;
+    devOutput = flakePkgs.${pkg}.dev;
+  in ''
+    mkdir -p $out/${outPath}
+
+    gi-docgen generate \
+      -C ${tomlMetaData} ${devOutput}/share/gir-1.0/${name}-0.1.gir
+
+    # Copy files
+    cp -rv ${name}-0.1/* $out/${outPath}
   '';
-
-  lib = name: namespace: description: {
-    authors ? "Aylur",
-    dependencies ? {},
-    out ? "libastal/${name}",
-  }:
-    gen name "Astal${namespace}" out {
-      library = {
-        inherit description authors;
-        license = "LGPL-2.1";
-        browse_url = "https://github.com/Aylur/Astal";
-        repository_url = "https://github.com/Aylur/Aylur.git";
-        website_url = "https://aylur.github.io/astal";
-      };
-      dependencies = {
-        inherit (dependency) "GObject-2.0";
-        inherit dependencies;
-      };
-    };
 
   dependency = {
     "GObject-2.0" = {
@@ -36,9 +41,40 @@
       docs_url = "https://developer.gnome.org/gobject/stable";
     };
   };
+
+  lib = name: namespace: description: {
+    authors ? "Aylur",
+    dependencies ? {},
+    out ? "libastal/${name}",
+  } @ args:
+    genRefForPkg {
+      name = "Astal${args.namespace}";
+      pkg = name;
+      outPath = args.out;
+      metaData = {
+        library = {
+          inherit description authors;
+          license = "LGPL-2.1";
+          browse_url = "https://github.com/Aylur/Astal";
+          repository_url = "https://github.com/Aylur/Aylur.git";
+          website_url = "https://aylur.github.io/astal";
+        };
+
+        dependencies = {
+          inherit (dependency) "GObject-2.0";
+          inherit dependencies;
+        };
+      };
+    };
 in
-  pkgs.stdenv.mkDerivation {
-    nativeBuildInputs = with pkgs; [
+  stdenvNoCC.mkDerivation {
+    name = "library-reference";
+    src = builtins.path {
+      name = "library-reference-src";
+      src = ./.;
+    };
+
+    nativeBuildInputs = [
       gi-docgen
       glib
       json-glib
@@ -50,10 +86,9 @@ in
       wireplumber
       networkmanager
     ];
-    name = "library-reference";
-    src = ./.;
 
     installPhase = ''
+      runHook preInstall
       ${lib "astal" "" "Astal core library" {out = "libastal";}}
       ${lib "apps" "Apps" "Application query library" {}}
       ${lib "auth" "Auth" "Authentication using pam" {authors = "kotontrion";}}
@@ -67,5 +102,6 @@ in
       ${lib "river" "River" "IPC client for River" {authors = "kotontrion";}}
       ${lib "tray" "Tray" "StatusNotifierItem implementation" {authors = "kotontrion";}}
       ${lib "wireplumber" "Wp" "Wrapper library over the wireplumber API" {authors = "kotontrion";}}
+      runHook postInstall
     '';
   }

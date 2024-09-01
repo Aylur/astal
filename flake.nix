@@ -5,48 +5,97 @@
     self,
     nixpkgs,
   }: let
-    version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./version);
+    astalLib = pkgs.callPackage ./nix/lib.nix {inherit version;};
+    inherit (astalLib) getVersionFromFile mkAstalPkg;
+
+    version = getVersionFromFile ./version;
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
-
-    lib = name: src: inputs:
-      pkgs.stdenv.mkDerivation {
-        nativeBuildInputs = with pkgs; [
-          wrapGAppsHook
-          gobject-introspection
-          meson
-          pkg-config
-          ninja
-          vala
-          wayland
-        ];
-        buildInputs = [pkgs.glib] ++ inputs;
-        pname = name;
-        version = version;
-        src = src;
-        outputs = ["out" "dev"];
-      };
   in {
-    packages.${system} = rec {
-      default = astal;
-      docs = import ./docs {
-        inherit pkgs;
-        astal = self.packages.${system};
+    packages.${system} = let
+      inherit (pkgs) callPackage;
+      inherit (pkgs) gtk3 gtk-layer-shell json-glib pam gvfs networkmanager gdk-pixbuf libdbusmenu-gtk3;
+    in {
+      default = self.packages.${system}.astal;
+      docs = callPackage ./docs {
+        flakePkgs = self.packages.${system};
       };
 
-      astal = with pkgs; lib "astal" ./core [gtk3 gtk-layer-shell];
-      apps = with pkgs; lib "astal-apps" ./lib/apps [json-glib];
-      auth = with pkgs; lib "astal-auth" ./lib/auth [pam];
-      battery = lib "astal-battery" ./lib/battery [];
-      bluetooth = lib "astal-bluetooth" ./lib/bluetooth [];
-      hyprland = with pkgs; lib "astal-hyprland" ./lib/hyprland [json-glib];
-      mpris = with pkgs; lib "astal-mpris" ./lib/mpris [gvfs json-glib];
-      network = with pkgs; lib "astal-network" ./lib/network [networkmanager];
-      notifd = with pkgs; lib "astal-notifd" ./lib/notifd [json-glib gdk-pixbuf];
-      powerprofiles = with pkgs; lib "astal-power-profiles" ./lib/powerprofiles [json-glib];
-      river = with pkgs; lib "astal-river" ./lib/river [json-glib];
-      tray = with pkgs; lib "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
-      wireplumber = lib "astal-wireplumber" ./lib/wireplumber [pkgs.wireplumber];
+      astal = mkAstalPkg {
+        pname = "astal";
+        src = ./core;
+        buildInputs = [gtk3 gtk-layer-shell];
+      };
+
+      apps = mkAstalPkg {
+        pname = "astal-apps";
+        src = ./lib/apps;
+        buildInputs = [json-glib];
+      };
+
+      auth = mkAstalPkg {
+        pname = "astal-auth";
+        src = ./lib/auth;
+        buildInputs = [pam];
+      };
+
+      battery = mkAstalPkg {
+        pname = "astal-battery";
+        src = ./lib/battery;
+      };
+
+      bluetooth = mkAstalPkg {
+        pname = "astal-bluetooth";
+        src = ./lib/bluetooth;
+      };
+
+      hyprland = mkAstalPkg {
+        pname = "astal-hyprland";
+        src = ./lib/hyprland;
+        buildInputs = [json-glib];
+      };
+
+      mpris = mkAstalPkg {
+        pname = "astal-mpris";
+        src = ./lib/mpris;
+        buildInputs = [gvfs json-glib];
+      };
+
+      network = mkAstalPkg {
+        pname = "astal-network";
+        src = ./lib/network;
+        buildInputs = [networkmanager];
+      };
+
+      notifd = mkAstalPkg {
+        pname = "astal-notifd";
+        src = ./lib/notifd;
+        buildInputs = [json-glib gdk-pixbuf];
+      };
+
+      powerprofiles = mkAstalPkg {
+        pname = "astal-power-profiles";
+        src = ./lib/powerprofiles;
+        buildInputs = [json-glib];
+      };
+
+      river = mkAstalPkg {
+        pname = "astal-river";
+        src = ./lib/river;
+        buildInputs = [json-glib];
+      };
+
+      tray = mkAstalPkg {
+        pname = "astal-tray";
+        src = ./lib/tray;
+        buildInputs = [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
+      };
+
+      wireplumber = mkAstalPkg {
+        pname = "astal-wireplumber";
+        src = ./lib/wireplumber;
+        buildInputs = [pkgs.wireplumber];
+      };
     };
 
     devShells.${system} = let
