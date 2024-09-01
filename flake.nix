@@ -29,6 +29,11 @@
   in {
     packages.${system} = rec {
       default = astal;
+      docs = import ./docs {
+        inherit pkgs;
+        astal = self.packages.${system};
+      };
+
       astal = with pkgs; lib "astal" ./core [gtk3 gtk-layer-shell];
       apps = with pkgs; lib "astal-apps" ./lib/apps [json-glib];
       auth = with pkgs; lib "astal-auth" ./lib/auth [pam];

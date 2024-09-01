@@ -1,0 +1,92 @@
+---
+title: Installation
+description: How to install Astal
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components"
+
+## Nix
+
+maintainer: [@Aylur](https://github.com/Aylur)
+
+Read more about it on the [nix page](../nix)
+
+## Arch
+
+maintainer: [@kotontrion](https://github.com/kotontrion)
+
+<Tabs>
+  <TabItem label="Core Library">
+
+```bash
+yay -S libastal-git
+```
+
+  </TabItem>
+  <TabItem label="Every Library">
+
+```bash
+yay -S libastal-meta
+```
+
+  </TabItem>
+  <TabItem label="AGS">
+
+```bash
+yay -S aylurs-gtk-shell-git
+```
+
+  </TabItem>
+</Tabs>
+
+## From Source
+
+```bash
+git clone https://github.com/Aylur/Astal.git
+cd Astal
+```
+
+<Tabs>
+  <TabItem label="Fedora">
+
+```bash
+sudo dnf install meson
+
+meson setup --prefix /usr build
+meson install -C build
+```
+
+  </TabItem>
+  <TabItem label="Arch">
+
+```bash
+sudo pacman -Syu meson
+
+arch-meson build
+meson install -C build
+```
+
+  </TabItem>
+  <TabItem label="Alpine">
+
+```bash
+sudo apk add meson
+
+meson setup --prefix /usr build
+meson install -C build
+```
+
+  </TabItem>
+  <TabItem label="Ubuntu">
+
+```bash
+sudo apt install meson
+
+meson setup --prefix /usr build
+meson install -C build
+```
+
+  </TabItem>
+</Tabs>
