@@ -1,0 +1,6 @@
+namespace AstalNotifd {
+    public const int MAJOR_VERSION = @MAJOR_VERSION@;
+    public const int MINOR_VERSION = @MINOR_VERSION@;
+    public const int MICRO_VERSION = @MICRO_VERSION@;
+    public const string VERSION = "@VERSION@";
+}
