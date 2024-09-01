@@ -1,0 +1,3 @@
+*.mjs linguist-language=TypeScript
+*.js linguist-language=TypeScript
+*.h linguist-vendored
