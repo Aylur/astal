@@ -15,8 +15,6 @@ prefix = get_option('prefix')
 libdir = get_option('prefix') / get_option('libdir')
 pkgdatadir = prefix / get_option('datadir') / 'astal'
 
-# math
-add_project_arguments(['-X', '-lm'], language: 'vala')
 
 assert(
   get_option('lib') or get_option('cli'),

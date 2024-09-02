@@ -26,7 +26,11 @@ export type CenterBox = Widget<Astal.CenterBox>
 export const CenterBox = astalify<typeof Astal.CenterBox, CenterBoxProps, "CenterBox">(Astal.CenterBox)
 export type CenterBoxProps = ConstructProps<Astal.CenterBox, Astal.CenterBox.ConstructorProps>
 
-// TODO: CircularProgress
+// CircularProgress
+export type CircularProgress = Widget<Astal.CircularProgress>
+export const CircularProgress = astalify<typeof Astal.CircularProgress, CircularProgressProps, "CircularProgress">(Astal.CircularProgress)
+export type CircularProgressProps = ConstructProps<Astal.CircularProgress, Astal.CircularProgress.ConstructorProps>
+
 
 // DrawingArea
 export type DrawingArea = Widget<Gtk.DrawingArea>
