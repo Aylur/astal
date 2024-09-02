@@ -133,7 +133,7 @@ public class Device : Object {
 
 [CCode (type_signature = "u")]
 public enum State {
-    UNKNOWN = 0,
+    UNKNOWN,
     CHARGING,
     DISCHARGING,
     EMPTY,
@@ -144,7 +144,7 @@ public enum State {
 
 [CCode (type_signature = "u")]
 public enum Technology {
-    UNKNOWN = 0,
+    UNKNOWN,
     LITHIUM_ION,
     LITHIUM_POLYMER,
     LITHIUM_IRON_PHOSPHATE,
@@ -155,7 +155,7 @@ public enum Technology {
 
 [CCode (type_signature = "u")]
 public enum WarningLevel {
-    UNKNOWN = 0,
+    UNKNOWN,
     NONE,
     DISCHARGING,
     LOW,
@@ -165,7 +165,7 @@ public enum WarningLevel {
 
 [CCode (type_signature = "u")]
 public enum BatteryLevel {
-    UNKNOWN = 0,
+    UNKNOWN,
     NONE,
     LOW,
     CRITICIAL,
@@ -176,7 +176,7 @@ public enum BatteryLevel {
 
 [CCode (type_signature = "u")]
 public enum Type {
-    UNKNOWN = 0,
+    UNKNOWN,
     LINE_POWER,
     BATTERY,
     UPS,

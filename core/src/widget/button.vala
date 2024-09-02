@@ -33,7 +33,7 @@ public class Button : Gtk.Button {
 }
 
 public enum MouseButton {
-    PRIMARY = 0,
+    PRIMARY,
     MIDDLE,
     SECONDARY,
     BACK,

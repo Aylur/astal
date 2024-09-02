@@ -81,7 +81,7 @@ public class Icon : Gtk.Image {
             type = IconType.GICON;
             display_icon.begin();
         });
-        
+
         size_allocate.connect(() => {
             size = get_style_context()
                 .get_property("font-size", Gtk.StateFlags.NORMAL).get_double();
