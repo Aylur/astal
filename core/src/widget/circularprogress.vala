@@ -41,12 +41,12 @@ public class CircularProgress : Gtk.Bin {
         natw = val.get_int();
     }
 
-    private double _to_radian(double percentage) {
+    private double to_radian(double percentage) {
         percentage = Math.floor(percentage * 100);
         return (percentage / 100) * (2 * Math.PI);
     }
 
-    private bool _is_full_circle(double start, double end, double epsilon = 1e-10) {
+    private bool is_full_circle(double start, double end, double epsilon = 1e-10) {
         // Ensure that start and end are between 0 and 1
         start = (start % 1 + 1) % 1;
         end = (end % 1 + 1) % 1;
@@ -55,33 +55,31 @@ public class CircularProgress : Gtk.Bin {
         return Math.fabs(start - end) <= epsilon;
     }
 
-    private double _map_arc_value_to_range(double start, double end, double value) {
+    private double scale_arc_value(double start, double end, double value) {
         // Ensure that start and end are between 0 and 1
         start = (start % 1 + 1) % 1;
         end = (end % 1 + 1) % 1;
 
         // Calculate the length of the arc
-        var arcLength = end - start;
-        if (arcLength < 0)
-            arcLength += 1; // Adjust for circular representation
+        var arc_length = end - start;
+        if (arc_length < 0)
+            arc_length += 1; // Adjust for circular representation
 
         // Calculate the position on the arc based on the percentage value
-        var position = start + (arcLength * value);
+        var scaled = arc_length + value;
 
         // Ensure the position is between 0 and 1
-        position = (position % 1 + 1) % 1;
-
-        return position;
+        return (scaled % 1 + 1) % 1;
     }
 
-    private double _min(double[] arr) {
+    private double min(double[] arr) {
         double min = arr[0];
         foreach(var i in arr)
             if (min > i) min = i;
         return min;
     }
 
-    private double _max(double[] arr) {
+    private double max(double[] arr) {
         double max = arr[0];
         foreach(var i in arr)
             if (max < i) max = i;
@@ -100,47 +98,59 @@ public class CircularProgress : Gtk.Bin {
         var fg = styles.get_color(Gtk.StateFlags.NORMAL);
         var bg = styles.get_background_color(Gtk.StateFlags.NORMAL);
 
-        var bg_stroke = thickness + _min({margin.bottom, margin.top, margin.left, margin.right});
+        var bg_stroke = thickness + min({margin.bottom, margin.top, margin.left, margin.right});
         var fg_stroke = thickness;
-        var radius = _min({width, height}) / 2.0 - _max({bg_stroke, fg_stroke}) / 2.0;
+        var radius = min({width, height}) / 2.0 - max({bg_stroke, fg_stroke}) / 2.0;
         var center_x = width / 2;
         var center_y = height / 2;
 
-        var start_background = _to_radian(this.start_at);
-        var end_background = _to_radian(this.end_at);
-        var ranged_value = this.value + this.start_at;
+        var start_background = to_radian(start_at);
+        var end_background = to_radian(end_at);
+        var ranged_value = value + start_at;
 
-        var is_circle = _is_full_circle(this.start_at, this.end_at);
+        var is_circle = is_full_circle(this.start_at, this.end_at);
 
         if (is_circle) {
-            // Redefine endDraw in radius to create an accurate full circle
+            // Redefine end_draw in radius to create an accurate full circle
             end_background = start_background + 2 * Math.PI;
+            ranged_value = to_radian(value);
         } else {
             // Range the value for the arc shape
-            ranged_value = _map_arc_value_to_range(
-                this.start_at,
-                this.end_at,
-                this.value
-            );
+            ranged_value = to_radian(scale_arc_value(
+                start_at,
+                end_at,
+                value
+            ));
         }
 
-        var to = _to_radian(ranged_value);
         double start_progress, end_progress;
 
-        if (this.inverted) {
-            start_progress = (2 * Math.PI - to) - start_background;
-            end_progress = (2 * Math.PI - start_background) - start_background;
+        if (inverted) {
+            start_progress = end_background - ranged_value;
+            end_progress = end_background;
         } else {
             start_progress = start_background;
-            end_progress = to;
+            end_progress = start_background + ranged_value;
         }
 
         // Draw background
         cr.set_source_rgba(bg.red, bg.green, bg.blue, bg.alpha);
         cr.arc(center_x, center_y, radius, start_background, end_background);
-
         cr.set_line_width(bg_stroke);
         cr.stroke();
+
+        // Draw rounded background ends
+        if (rounded) {
+            var start_x = center_x + Math.cos(start_background) * radius;
+            var start_y = center_y + Math.sin(start_background) * radius;
+            var end_x = center_x + Math.cos(end_background) * radius;
+            var end_y = center_y + Math.sin(end_background) * radius;
+            cr.set_line_width(0);
+            cr.arc(start_x, start_y, bg_stroke / 2, 0, 0 - 0.01);
+            cr.fill();
+            cr.arc(end_x, end_y, bg_stroke / 2, 0, 0 - 0.01);
+            cr.fill();
+        }
 
         // Draw progress
         cr.set_source_rgba(fg.red, fg.green, fg.blue, fg.alpha);
@@ -148,12 +158,12 @@ public class CircularProgress : Gtk.Bin {
         cr.set_line_width(fg_stroke);
         cr.stroke();
 
-        // Draw rounded ends
-        if (this.rounded) {
-            var start_x = center_x + Math.cos(start_background);
-            var start_y = center_y + Math.cos(start_background);
-            var end_x = center_x + Math.cos(to) * radius;
-            var end_y = center_y + Math.cos(to) * radius;
+        // Draw rounded progress ends
+        if (rounded) {
+            var start_x = center_x + Math.cos(start_progress) * radius;
+            var start_y = center_y + Math.sin(start_progress) * radius;
+            var end_x = center_x + Math.cos(end_progress) * radius;
+            var end_y = center_y + Math.sin(end_progress) * radius;
             cr.set_line_width(0);
             cr.arc(start_x, start_y, fg_stroke / 2, 0, 0 - 0.01);
             cr.fill();
@@ -161,9 +171,9 @@ public class CircularProgress : Gtk.Bin {
             cr.fill();
         }
 
-        if (this.get_child() != null) {
-            this.get_child().size_allocate(allocation);
-            this.propagate_draw(this.get_child(), cr);
+        if (get_child() != null) {
+            get_child().size_allocate(allocation);
+            propagate_draw(get_child(), cr);
         }
 
         return true;
