@@ -37,7 +37,7 @@ Widget.Label({
 
 :::caution
 Make sure to make the transform functions pure. The `.get()` function can be called
-anytime by `astal` especially when `deriving`.
+anytime by `astal` especially when `deriving`, so make sure there are no sideeffects.
 :::
 
 ## Composing variables

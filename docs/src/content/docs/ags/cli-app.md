@@ -5,7 +5,7 @@ sidebar:
     order: 3
 ---
 
-`App` is a singleton **instance** of [Astal.Application](/libastal/class.Application.html).
+`App` is a singleton **instance** of [Astal.Application](/astal/reference/class.Application.html).
 
 ```tsx
 import { App } from "astal"

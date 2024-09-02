@@ -1,12 +1,6 @@
 import { defineConfig } from "astro/config"
 import starlight from "@astrojs/starlight"
 
-const directories = [
-    ["Getting Started", "/getting-started"],
-    ["AGS", "/ags"],
-    ["Libraries", "/libraries"],
-]
-
 export default defineConfig({
     site: "https://aylur.github.io",
     base: "astal",
@@ -22,10 +16,29 @@ export default defineConfig({
             },
             customCss: ["./src/style.css"],
             favicon: "./favicon.ico",
-            sidebar: directories.map(([label, directory]) => ({
-                label,
-                autogenerate: { directory },
-            })),
+            sidebar: [
+                { label: "Getting Started", autogenerate: { directory: "/getting-started" } },
+                { label: "AGS", autogenerate: { directory: "/ags" } },
+                {
+                    label: "Libraries",
+                    items: [
+                        "libraries/references",
+                        { label: "Astal", link: "/reference" },
+                        { label: "Apps", link: "/reference/apps" },
+                        { label: "Auth", link: "/reference/auth" },
+                        { label: "Battery", link: "/reference/battery" },
+                        { label: "Bluetooth", link: "/reference/bluetooth" },
+                        { label: "Hyprland", link: "/reference/hyprland" },
+                        { label: "Mpris", link: "/reference/mpris" },
+                        { label: "Network", link: "/reference/network" },
+                        { label: "Notifd", link: "/reference/notifd" },
+                        { label: "PowerProfiles", link: "/reference/powerprofiles" },
+                        { label: "River", link: "/reference/river" },
+                        { label: "Tray", link: "/reference/tray" },
+                        { label: "WirePlumber", link: "/reference/wireplumber" },
+                    ],
+                }
+            ]
         }),
     ],
 })

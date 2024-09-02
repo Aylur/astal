@@ -79,7 +79,7 @@ App.reset_css() // reset if need
 ```
 
 :::caution
-`App.apply_css` will apply over other stylesheets applied before.
+`App.apply_css` will apply on top of other stylesheets applied before.
 You can reset stylesheets with `App.resetCss`
 :::
 

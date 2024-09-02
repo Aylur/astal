@@ -16,7 +16,7 @@ These are properties that Astal.js additionally adds to Gtk.Widgets
 
 To have a full list of available properties, reference the documentation of the widget.
 
-- [Astal widgets](/libastal/#classes)
+- [Astal widgets](/astal/reference#classes)
 - [Gtk widgets](https://docs.gtk.org/gtk3/#classes)
 
 You can check the [source code](https://github.com/aylur/astal/blob/main/gjs/src/widgets.ts) to have a full list of builtin widgets.
@@ -97,28 +97,54 @@ function MyWidget() {
 
 ## How to use non builtin Gtk widgets
 
+Using `Widget.astalify` you can setup widget constructors to behave like builtin widgets.
+The `astalify` function will apply the following:
+
+- set `visible` to true by default (Gtk3 widgets are invisible by default)
+- make gobject properties accept and consume `Binding` objects
+- add properties and methods listed above
+- proxify the constructor so the `new` keyword is not needed
+- sets up signal handlers that are passed as props prefixed with `on`
+
 ```tsx
-import { astalify, Gtk } from "astal"
+import { Widget, Gtk } from "astal"
 
 // define its props, constructor and type
-export type ColorButtonProps = Widget.ConstructProps<Gtk.ColorButton, Gtk.ColorButton.ConstructorProps>
-export const ColorButton = Widget.astalify<typeof Gtk.ColorButton, ColorButtonProps, "ColorButton">(Gtk.ColorButton)
+export type ColorButtonProps = Widget.ConstructProps<
+    Gtk.ColorButton,
+    Gtk.ColorButton.ConstructorProps,
+    { onColorSet: [] }
+>
+export const ColorButton = Widget.astalify<
+    typeof Gtk.ColorButton,
+    ColorButtonProps,
+    "ColorButton"
+>(Gtk.ColorButton)
 export type ColorButton = ReturnType<typeof ColorButton>
 
 function MyWidget() {
-    function setup(button: ColorButton) {
-
-    }
+    function setup(button: ColorButton) {}
 
     return <ColorButton
         setup={setup}
         useAlpha
-        rgba={new Gdk.RGBA({
-            red: 1,
-            green: 0,
-            blue: 0,
-            alpha: 0.5,
-        })}
+        rgba={
+            new Gdk.RGBA({
+                red: 1,
+                green: 0,
+                blue: 0,
+                alpha: 0.5,
+            })
+        }
+        onColorSet={(self) => {
+            console.log(self.rgba)
+        }}
     />
 }
 ```
+
+:::note
+Signal properties have to be annotated manually for TypeScript.
+You can reference [Gtk3](https://gjs-docs.gnome.org/gtk30~3.0/)
+and [Astal](/astal/reference#classes) for available signals.
+:::

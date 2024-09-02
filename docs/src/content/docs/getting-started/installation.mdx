@@ -2,7 +2,7 @@
 title: Installation
 description: How to install Astal
 sidebar:
-  order: 1
+    order: 1
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components"
@@ -32,61 +32,72 @@ yay -S libastal-meta
 ```
 
   </TabItem>
-  <TabItem label="AGS">
-
-```bash
-yay -S aylurs-gtk-shell-git
-```
-
-  </TabItem>
 </Tabs>
 
-## From Source
+## Bulding core from source
+
+1. Clone the repo
 
 ```bash
-git clone https://github.com/Aylur/Astal.git
-cd Astal
+git clone https://github.com/aylur/astal.git
+cd astal/core
 ```
+
+2. Install the following dependencies
 
 <Tabs>
   <TabItem label="Fedora">
 
 ```bash
-sudo dnf install meson
-
-meson setup --prefix /usr build
-meson install -C build
+sudo dnf install meson gcc valac gtk3-devel gtk-layer-shell-devel
 ```
 
   </TabItem>
   <TabItem label="Arch">
 
 ```bash
-sudo pacman -Syu meson
-
-arch-meson build
-meson install -C build
+sudo pacman -Syu meson vala gtk3 gtk-layer-shell gobject-introspection
 ```
 
   </TabItem>
   <TabItem label="Alpine">
 
 ```bash
-sudo apk add meson
-
-meson setup --prefix /usr build
-meson install -C build
+sudo apk add meson g++ vala gtk+3.0-dev gtk-layer-shell-dev gobject-introspection-dev
 ```
 
   </TabItem>
   <TabItem label="Ubuntu">
 
 ```bash
-sudo apt install meson
+sudo apt install meson valac libgtk3-dev libgtk-layer-shell-dev gobject-introspection
+```
 
-meson setup --prefix /usr build
-meson install -C build
+  </TabItem>
+  <TabItem label="openSUSE">
+
+```bash
+sudo zypper install gcc meson vala gtk3-devel gtk-layer-shell-devel gobject-introspection-devel
 ```
 
   </TabItem>
 </Tabs>
+
+3. Build and install with `meson`
+
+```bash
+meson setup build
+meson install -C build
+```
+
+:::note
+Most distros recommend manual installs in `/usr/local`,
+which is what `meson` defaults to. If you want to install to `/usr`
+instead which most package managers do, you set the `prefix` option:
+
+```bash
+meson setup --prefix /usr build
+meson install -C build
+```
+
+:::

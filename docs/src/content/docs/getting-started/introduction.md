@@ -8,8 +8,8 @@ sidebar:
 ## What is Astal?
 
 Astal (_meaning "desk"_) is a bundle of libraries built using [GLib](https://docs.gtk.org/glib/) in Vala and C.
-The core library [libastal](/libastal) has some Gtk widgets that come packaged,
-the most important one is the [Window](/libastal/class.Window.html) which is the main toplevel component using [gtk-layer-shell](https://github.com/wmww/gtk-layer-shell).
+The core library [libastal](/astal/reference) has some Gtk widgets that come packaged,
+the most important one is the [Window](/astal/reference/class.Window.html) which is the main toplevel component using [gtk-layer-shell](https://github.com/wmww/gtk-layer-shell).
 This is what allows us to use Gtk as shell components on Wayland.
 libastal also comes with some utility functions such as running external processes,
 reading, writing and monitoring files.
