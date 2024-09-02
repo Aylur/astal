@@ -33,7 +33,7 @@ public class AstalNotifd.Notification : Object {
     public bool transient { get { return get_bool_hint("transient"); } }
     public int x { get { return get_int_hint("x"); } }
     public int y { get { return get_int_hint("y"); } }
-    public Urgency urgency { get { return get_int_hint("urgency"); } }
+    public Urgency urgency { get { return get_hint("urgency").get_byte(); } }
 
     internal Notification(
         string app_name,
