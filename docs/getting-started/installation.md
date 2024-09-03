@@ -1,40 +1,28 @@
----
-title: Installation
-description: How to install Astal
-sidebar:
-    order: 1
----
-
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+# Installation
 
 ## Nix
 
 maintainer: [@Aylur](https://github.com/Aylur)
 
-Read more about it on the [nix page](../nix)
+Read more about it on the [nix page](./nix)
 
 ## Arch
 
 maintainer: [@kotontrion](https://github.com/kotontrion)
 
-<Tabs>
-  <TabItem label="Core Library">
+:::code-group
 
-```bash
+```sh [Core Library]
 yay -S libastal-git
 ```
 
-  </TabItem>
-  <TabItem label="Every Library">
-
-```bash
+```sh [Every Library]
 yay -S libastal-meta
 ```
 
-  </TabItem>
-</Tabs>
+:::
 
-## Bulding core from source
+## Bulding libastal from source
 
 1. Clone the repo
 
@@ -45,43 +33,29 @@ cd astal/core
 
 2. Install the following dependencies
 
-<Tabs>
-  <TabItem label="Fedora">
+:::code-group
 
-```bash
+```sh [Fedora]
 sudo dnf install meson gcc valac gtk3-devel gtk-layer-shell-devel
 ```
 
-  </TabItem>
-  <TabItem label="Arch">
-
-```bash
+```sh [Arch]
 sudo pacman -Syu meson vala gtk3 gtk-layer-shell gobject-introspection
 ```
 
-  </TabItem>
-  <TabItem label="Alpine">
-
-```bash
+```sh [Alpine]
 sudo apk add meson g++ vala gtk+3.0-dev gtk-layer-shell-dev gobject-introspection-dev
 ```
 
-  </TabItem>
-  <TabItem label="Ubuntu">
-
-```bash
+```sh [Ubuntu]
 sudo apt install meson valac libgtk3-dev libgtk-layer-shell-dev gobject-introspection
 ```
 
-  </TabItem>
-  <TabItem label="openSUSE">
-
-```bash
+```bash [openSUSE]
 sudo zypper install gcc meson vala gtk3-devel gtk-layer-shell-devel gobject-introspection-devel
 ```
 
-  </TabItem>
-</Tabs>
+:::
 
 3. Build and install with `meson`
 
@@ -90,10 +64,10 @@ meson setup build
 meson install -C build
 ```
 
-:::note
+:::info
 Most distros recommend manual installs in `/usr/local`,
 which is what `meson` defaults to. If you want to install to `/usr`
-instead which most package managers do, you set the `prefix` option:
+instead which most package managers do, set the `prefix` option:
 
 ```bash
 meson setup --prefix /usr build

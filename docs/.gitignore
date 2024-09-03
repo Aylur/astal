@@ -1,7 +1,7 @@
 dist/
 result/
+.vitepress/cache/
 
-.astro/
 node_modules/
 
 npm-debug.log*

@@ -1,34 +1,26 @@
----
-title: First Widgets
-description: Getting started with creating widgets
-sidebar:
-    order: 0
----
-
-import { FileTree } from "@astrojs/starlight/components"
-import { Tabs, TabItem } from "@astrojs/starlight/components"
+# First Widgets
 
 AGS is the predecessor of Astal, which was written purely in TypeScript and so only supported
 JavaScript/TypeScript. Now it serves as a scaffolding tool for Astal projects in TypeScript.
 While what made AGS what it is, is now part of the Astal project, for simplicity we will
 refer to the Astal TypeScript lib as AGS.
 
-## JavaScript
-
+:::tip
 If you are not familiar with the JavaScript syntax [MDN](https://developer.mozilla.org/en-US/)
 and [javascript.info](https://javascript.info/) have great references.
+:::
 
 ## Getting Started
 
 Start by initializing a project
 
-```bash
+```sh
 ags --init
 ```
 
 then run `ags` in the terminal
 
-```bash
+```sh
 ags
 ```
 
@@ -40,39 +32,27 @@ it will bundle everything into a single javascript file which then GJS can execu
 The bundler used is [esbuild](https://esbuild.github.io/).
 :::
 
-The generated project structure is the following:
-
-<FileTree>
-
-- @girs/ generated types with [ts-for-gir](https://github.com/gjsify/ts-for-gir)
-- widget
-  - Bar.tsx
-- app.ts entry point of our app
-- style.css
-- env.d.ts informs the LSP about the environment
-- tsconfig.json configuration of the LSP
-
-</FileTree>
-
 ## Root of every shell component: Window
 
 Astal apps are composed of widgets. A widget is a piece of UI that has its own logic and style.
 A widget can be as small as a button or an entire bar.
 The top level widget is always a [Window]() which will hold all widgets.
 
-```tsx
-// widget/Bar.tsx
+::: code-group
+
+```tsx [widget/Bar.tsx]
 function Bar(monitor = 0) {
-    return (
-        <window className="Bar" monitor={monitor}>
-            <box>Content of the widget</box>
-        </window>
-    )
+    return <window className="Bar" monitor={monitor}>
+        <box>Content of the widget</box>
+    </window>
 }
 ```
 
-```tsx
-// app.ts
+:::
+
+::: code-group
+
+```ts [app.ts]
 import Bar from "./widget/Bar"
 
 App.start({
@@ -83,24 +63,24 @@ App.start({
 })
 ```
 
+:::
+
 ## Creating and nesting widgets
 
 Widgets are JavaScript functions which return Gtk widgets,
 either by using JSX or using a widget constructor.
 
-<Tabs>
-  <TabItem label="markup">
+:::code-group
 
-```tsx
+```tsx [MyButton.tsx]
 function MyButton(): JSX.Element {
-    return <button onClicked="echo hello">Clicke Me!</button>
+    return <button onClicked="echo hello">
+        Clicke Me!
+    </button>
 }
 ```
 
-  </TabItem>
-  <TabItem label="constructor functions">
-
-```tsx
+```ts [MyButton.ts]
 import { Widget } from "astal"
 
 function MyButton(): Widget.Button {
@@ -111,10 +91,9 @@ function MyButton(): Widget.Button {
 }
 ```
 
-  </TabItem>
-</Tabs>
+:::
 
-:::note
+:::info
 The only difference between the two is the return type.
 Using markup the return type is always `Gtk.Widget` (globally available as `JSX.Element`),
 while using constructors the return type is the type of the widget.
@@ -125,14 +104,12 @@ Now that you have declared `MyButton`, you can nest it into another component.
 
 ```tsx
 function MyBar() {
-    return (
-        <window>
-            <box>
-                Click The button
-                <MyButton />
-            </box>
-        </window>
-    )
+    return <window>
+        <box>
+            Click The button
+            <MyButton />
+        </box>
+    </window>
 }
 ```
 
@@ -198,7 +175,7 @@ function MyWidget() {
 }
 ```
 
-:::note
+:::info
 As you can guess from the above snippet, [falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) values are not rendered.
 :::
 
@@ -244,7 +221,7 @@ function MyButton() {
 }
 ```
 
-:::note
+:::info
 Attributes prefixed with `on` will connect to a `signal` of the widget.
 Their types are not generated, but written by hand, which means not all of them are typed.
 Refer to the Gtk and Astal docs to have a full list of them.
@@ -268,22 +245,18 @@ function MyWidget({ myprop, child, children }: Props) {
 
 ```tsx
 // child prop of MyWidget is the box
-return (
-    <MyWidget myprop="hello">
-        <box />
-    </MyWidget>
-)
+return <MyWidget myprop="hello">
+    <box />
+</MyWidget>
 ```
 
 ```tsx
 // children prop of MyWidget is [box, box, box]
-return (
-    <MyWidget myprop="hello">
-        <box />
-        <box />
-        <box />
-    </MyWidget>
-)
+return <MyWidget myprop="hello">
+    <box />
+    <box />
+    <box />
+</MyWidget>
 ```
 
 ## State management
@@ -317,7 +290,7 @@ function Counter() {
 }
 ```
 
-:::note
+:::info
 Bindings have an `.as()` method which lets you transform the assigned value.
 In the case of a Label, its label property expects a string, so it needs to be
 turned to a string first.
@@ -330,13 +303,11 @@ turned to a string first.
 const v = Variable(0)
 const transform = (v) => v.toString()
 
-// these two are equivalent
-return (
-    <box>
-        <label label={bind(v).as(transform)} />
-        <label label={v(transform)} />
-    </box>
-)
+return <box>
+    {/* these two are equivalent */}
+    <label label={bind(v).as(transform)} />
+    <label label={v(transform)} />
+</box>
 ```
 
 :::
@@ -378,14 +349,14 @@ return <box>
 <box>
 ```
 
-:::caution
+:::warning
 Only bind children of the `box` widget. Gtk does not cleanup widgets by default,
 they have to be explicitly destroyed. The box widget is a special container that
 will implicitly call `.destroy()` on its removed child widgets.
 You can disable this behavior by setting the `noImplicityDestroy` property.
 :::
 
-:::note
+:::info
 The above example destroys and recreates every widget in the list everytime
 the value of the `Variable` changes. There might be cases where you would
 want to handle child creation yourself, because you don't want to lose the
@@ -416,7 +387,7 @@ return <MyContainer>
 </MyContainer>
 ```
 
-:::note
+:::info
 You can pass the followings as children:
 
 - widgets
@@ -424,6 +395,6 @@ You can pass the followings as children:
 - bindings of widgets,
 - bindings of deeply nested arrays of widgets
 
-falsy values are not rendered and anything not from this list
+[falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) values are not rendered and anything not from this list
 will be coerced into a string and rendered as a label
 :::

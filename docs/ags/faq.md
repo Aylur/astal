@@ -1,7 +1,4 @@
----
-title: FAQ
-description: Frequently asked question, common issues, tips and tricks
----
+# Frequently asked question, common issues, tips and tricks
 
 ## Monitor id does not match compositor
 
@@ -39,7 +36,7 @@ const HOME = exec("echo $HOME") // does not work
 shell environment, so the above example just passes `$HOME` as a string literal
 to the `echo` program.
 
-:::caution[Please don't do this]
+:::danger Please don't do this
 You could pass it to bash, but that is a horrible approach.
 
 ```tsx
@@ -74,7 +71,7 @@ App.start({
 })
 ```
 
-:::note
+:::info
 If there is a name clash with an icon from your current icon pack
 the icon pack will take precedence
 :::

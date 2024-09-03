@@ -1,9 +1,4 @@
----
-title: Variable
-description: Reference of the builtin Variable type
-sidebar:
-    order: 6
----
+# Variable
 
 ```js
 import { Variable } from "astal"
@@ -35,7 +30,7 @@ Widget.Label({
 })
 ```
 
-:::caution
+:::warning
 Make sure to make the transform functions pure. The `.get()` function can be called
 anytime by `astal` especially when `deriving`, so make sure there are no sideeffects.
 :::
@@ -69,7 +64,7 @@ Using `.poll` and `.watch` we can start subprocess and capture their
 output in `Variables`. They can poll and watch at the same time, but they
 can only poll/watch one subprocess.
 
-:::caution
+:::warning
 The command parameter is passed to [execAsync](/astal/ags/utilities/#executing-external-commands-and-scripts)
 which means they are **not** executed in a shell environment,
 they do **not** expand env variables like `$HOME`,
@@ -127,7 +122,7 @@ This will stop the interval and force exit the subprocess and disconnect gobject
 myVar.drop()
 ```
 
-:::caution
+:::warning
 Don't forget to drop them when they are defined inside widgets
 with either `.poll`, `.watch` or `.observe`
 

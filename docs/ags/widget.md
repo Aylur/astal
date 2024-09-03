@@ -1,9 +1,4 @@
----
-title: Widget
-description: Reference of the builtin and gtk widgets
-sidebar:
-    order: 4
----
+# Widget
 
 ## AGS widget properties
 
@@ -143,7 +138,7 @@ function MyWidget() {
 }
 ```
 
-:::note
+:::info
 Signal properties have to be annotated manually for TypeScript.
 You can reference [Gtk3](https://gjs-docs.gnome.org/gtk30~3.0/)
 and [Astal](/astal/reference#classes) for available signals.

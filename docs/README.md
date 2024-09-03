@@ -1,8 +1,7 @@
 # Astal Docs
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
-
-This directory contains the Astal documentation website. Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/)
+This directory contains the Astal documentation and Library references.
+Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.github.io/libastal](https://aylur.github.io/libastal/)
 
 ## Commands
 
@@ -17,9 +16,9 @@ This directory contains the Astal documentation website. Hosted at [aylur.github
 
 1. Add your image as a webp to `public/showcase`
 2. Add it to `src/content/showcases.ts`
-   - `src` should be `/astal/showcase/your-name-optional-title.webp`
-   - `url` should point to the source code of the showcased widget
-   - `author` your name
+    - `src` should be `/astal/showcase/your-name-optional-title.webp`
+    - `url` should point to the source code of the showcased widget
+    - `author` your name
 
 ```
 .

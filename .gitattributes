@@ -1,3 +1,4 @@
 *.mjs linguist-language=TypeScript
 *.js linguist-language=TypeScript
+*.vue linguist-vendored
 *.h linguist-vendored

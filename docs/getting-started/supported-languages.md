@@ -1,9 +1,4 @@
----
-title: Supported Languages
-description: Choosing a language to get started
-banner:
-  content: 🚧 Examples are in the works. 🚧
----
+# Supported Languages
 
 ## JavaScript
 
@@ -11,7 +6,7 @@ The main intended usage of Astal is in TypeScript with [AGS](/astal/ags/first-wi
 It supports JSX and has a state management solution similar to web frameworks.
 Only a minimal knowledge of JavaScript's syntax is needed to get started.
 
-:::tip
+:::info
 The runtime is [GJS](https://gitlab.gnome.org/GNOME/gjs) and **not** nodejs
 :::
 
@@ -35,7 +30,7 @@ Examples:
 There is a WIP [library for python](), to make it behave similar to the above two
 but I don't plan on finishing it, because I'm not a fan of python.
 If you are interested in picking it up, feel free to open a PR.
-Nonetheless you can still use python the OOP way [pygobject]() intended it.
+Nonetheless you can still use python the OOP way [pygobject](https://pygobject.gnome.org/tutorials/gobject/subclassing.html) intended it.
 
 Examples:
 

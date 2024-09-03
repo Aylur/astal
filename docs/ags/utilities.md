@@ -1,9 +1,4 @@
----
-title: Utilities
-description: Reference of bultin utility functions
-sidebar:
-    order: 5
----
+# Utilities
 
 ## File functions
 
@@ -163,7 +158,7 @@ execAsync(["bash", "-c", "/path/to/script.sh"])
     .catch((err) => console.error(err))
 ```
 
-:::caution
+:::warning
 `subprocess`, `exec`, and `execAsync` executes the passed executable as is.
 They are **not** executed in a shell environment,
 they do **not** expand env variables like `$HOME`,

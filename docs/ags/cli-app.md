@@ -1,9 +1,4 @@
----
-title: CLI and App
-description: Reference of the singleton App instance
-sidebar:
-    order: 3
----
+# CLI and App
 
 `App` is a singleton **instance** of [Astal.Application](/astal/reference/class.Application.html).
 
@@ -13,8 +8,9 @@ import { App } from "astal"
 
 ## Entry point
 
-```tsx
-// app.ts
+:::code-group
+
+```ts [app.ts]
 App.start({
     main() {
         // setup anything
@@ -23,7 +19,9 @@ App.start({
 })
 ```
 
-:::caution
+:::
+
+:::warning
 You can not instantiate widgets outside of the main function.
 :::
 
@@ -32,7 +30,6 @@ You can not instantiate widgets outside of the main function.
 You can run multiple instance by defining a unique instance name.
 
 ```tsx
-// app.ts
 App.start({
     instanceName: "my-instance", // defaults to "astal"
     main() {},
@@ -44,7 +41,6 @@ App.start({
 If you want to interact with an instance from the cli, you can do so by sending a message.
 
 ```ts
-// app.ts
 App.start({
     main() {},
     requestHandler(request: string, res: (response: any) => void) {
@@ -70,7 +66,6 @@ If you want to run arbitrary JavaScript from cli, you can use `App.eval`.
 It will evaluate the passed string as the body of an `async` function.
 
 ```ts
-// app.ts
 App.start({
     main() {},
     requestHandler(js: string, res) {
@@ -107,8 +102,9 @@ The first time you run your bundled script the `main` function gets executed.
 While that instance is running any subsequent execution of the script will call
 the `client` function.
 
-```ts
-// main.ts
+:::code-group
+
+```ts [main.ts]
 App.start({
     // main instance
     main(...args: Array<string>) {
@@ -127,3 +123,5 @@ App.start({
     },
 })
 ```
+
+:::
