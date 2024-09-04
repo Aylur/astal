@@ -1,31 +1,45 @@
 {
+  self,
   pkgs,
-  astal,
 }: let
   toTOML = (pkgs.formats.toml {}).generate;
 
-  gen = pkg: name: out: toml: ''
-    mkdir -p $out/${out}
-    gi-docgen generate -C ${toTOML name toml} ${astal.${pkg}.dev}/share/gir-1.0/${name}-0.1.gir
-    cp -r ${name}-0.1/* $out/${out}
+  genRefForPkg = {
+    name,
+    pkg,
+    outPath,
+    metaData,
+  }: let
+    data = toTOML name metaData;
+    output = self.packages.${pkgs.system}.${pkg}.dev;
+  in ''
+    mkdir -p $out/${outPath}
+    gi-docgen generate -C ${data} ${output}/share/gir-1.0/${name}-0.1.gir
+    cp -r ${name}-0.1/* $out/${outPath}
   '';
 
-  lib = name: namespace: description: {
+  genLib = name: namespace: description: {
     authors ? "Aylur",
     dependencies ? {},
     out ? "libastal/${name}",
   }:
-    gen name "Astal${namespace}" out {
-      library = {
-        inherit description authors;
-        license = "LGPL-2.1";
-        browse_url = "https://github.com/Aylur/Astal";
-        repository_url = "https://github.com/Aylur/Aylur.git";
-        website_url = "https://aylur.github.io/astal";
-      };
-      dependencies = {
-        inherit (dependency) "GObject-2.0";
-        inherit dependencies;
+    genRefForPkg {
+      name = "Astal${namespace}";
+      pkg = name;
+      outPath = out;
+      metaData = {
+        library = {
+          inherit description authors;
+          license = "LGPL-2.1";
+          browse_url = "https://github.com/Aylur/Astal";
+          repository_url = "https://github.com/Aylur/Aylur.git";
+          website_url = "https://aylur.github.io/astal";
+        };
+
+        dependencies = {
+          inherit (dependency) "GObject-2.0";
+          inherit dependencies;
+        };
       };
     };
 
@@ -37,7 +51,7 @@
     };
   };
 in
-  pkgs.stdenv.mkDerivation {
+  pkgs.stdenvNoCC.mkDerivation {
     nativeBuildInputs = with pkgs; [
       gi-docgen
       glib
@@ -54,18 +68,20 @@ in
     src = ./.;
 
     installPhase = ''
-      ${lib "astal" "" "Astal core library" {out = "libastal";}}
-      ${lib "apps" "Apps" "Application query library" {}}
-      ${lib "auth" "Auth" "Authentication using pam" {authors = "kotontrion";}}
-      ${lib "battery" "Battery" "DBus proxy for upowerd devices" {}}
-      ${lib "bluetooth" "Bluetooth" "DBus proxy for bluez" {}}
-      ${lib "hyprland" "Hyprland" "IPC client for Hyprland" {}}
-      ${lib "mpris" "Mpris" "Control mpris players" {}}
-      ${lib "network" "Network" "NetworkManager wrapper library" {}}
-      ${lib "notifd" "Notifd" "Notification daemon library" {}}
-      ${lib "powerprofiles" "PowerProfiles" "DBus proxy for upowerd profiles" {}}
-      ${lib "river" "River" "IPC client for River" {authors = "kotontrion";}}
-      ${lib "tray" "Tray" "StatusNotifierItem implementation" {authors = "kotontrion";}}
-      ${lib "wireplumber" "Wp" "Wrapper library over the wireplumber API" {authors = "kotontrion";}}
+      runHook preInstall
+      ${genLib "astal" "" "Astal core library" {out = "libastal";}}
+      ${genLib "apps" "Apps" "Application query library" {}}
+      ${genLib "auth" "Auth" "Authentication using pam" {authors = "kotontrion";}}
+      ${genLib "battery" "Battery" "DBus proxy for upowerd devices" {}}
+      ${genLib "bluetooth" "Bluetooth" "DBus proxy for bluez" {}}
+      ${genLib "hyprland" "Hyprland" "IPC client for Hyprland" {}}
+      ${genLib "mpris" "Mpris" "Control mpris players" {}}
+      ${genLib "network" "Network" "NetworkManager wrapper library" {}}
+      ${genLib "notifd" "Notifd" "Notification daemon library" {}}
+      ${genLib "powerprofiles" "PowerProfiles" "DBus proxy for upowerd profiles" {}}
+      ${genLib "river" "River" "IPC client for River" {authors = "kotontrion";}}
+      ${genLib "tray" "Tray" "StatusNotifierItem implementation" {authors = "kotontrion";}}
+      ${genLib "wireplumber" "Wp" "Wrapper library over the wireplumber API" {authors = "kotontrion";}}
+      runHook postInstall
     '';
   }

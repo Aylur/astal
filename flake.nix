@@ -5,11 +5,13 @@
     self,
     nixpkgs,
   }: let
-    version = builtins.replaceStrings ["\n"] [""] (builtins.readFile ./version);
+    inherit (builtins) replaceStrings readFile;
+
+    version = replaceStrings ["\n"] [""] (readFile ./version);
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
 
-    lib = name: src: inputs:
+    mkPkg = name: src: inputs:
       pkgs.stdenv.mkDerivation {
         nativeBuildInputs = with pkgs; [
           wrapGAppsHook
@@ -27,26 +29,23 @@
         outputs = ["out" "dev"];
       };
   in {
-    packages.${system} = rec {
-      default = astal;
-      docs = import ./docs {
-        inherit pkgs;
-        astal = self.packages.${system};
-      };
+    packages.${system} = with pkgs; {
+      docs = import ./docs {inherit self pkgs;};
+      default = self.packages.${system}.astal;
 
-      astal = with pkgs; lib "astal" ./core [gtk3 gtk-layer-shell];
-      apps = with pkgs; lib "astal-apps" ./lib/apps [json-glib];
-      auth = with pkgs; lib "astal-auth" ./lib/auth [pam];
-      battery = lib "astal-battery" ./lib/battery [];
-      bluetooth = lib "astal-bluetooth" ./lib/bluetooth [];
-      hyprland = with pkgs; lib "astal-hyprland" ./lib/hyprland [json-glib];
-      mpris = with pkgs; lib "astal-mpris" ./lib/mpris [gvfs json-glib];
-      network = with pkgs; lib "astal-network" ./lib/network [networkmanager];
-      notifd = with pkgs; lib "astal-notifd" ./lib/notifd [json-glib gdk-pixbuf];
-      powerprofiles = with pkgs; lib "astal-power-profiles" ./lib/powerprofiles [json-glib];
-      river = with pkgs; lib "astal-river" ./lib/river [json-glib];
-      tray = with pkgs; lib "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
-      wireplumber = lib "astal-wireplumber" ./lib/wireplumber [pkgs.wireplumber];
+      astal = mkPkg "astal" ./core [gtk3 gtk-layer-shell];
+      apps = mkPkg "astal-apps" ./lib/apps [json-glib];
+      auth = mkPkg "astal-auth" ./lib/auth [pam];
+      battery = mkPkg "astal-battery" ./lib/battery [];
+      bluetooth = mkPkg "astal-bluetooth" ./lib/bluetooth [];
+      hyprland = mkPkg "astal-hyprland" ./lib/hyprland [json-glib];
+      mpris = mkPkg "astal-mpris" ./lib/mpris [gvfs json-glib];
+      network = mkPkg "astal-network" ./lib/network [networkmanager];
+      notifd = mkPkg "astal-notifd" ./lib/notifd [json-glib gdk-pixbuf];
+      powerprofiles = mkPkg "astal-power-profiles" ./lib/powerprofiles [json-glib];
+      river = mkPkg "astal-river" ./lib/river [json-glib];
+      tray = mkPkg "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
+      wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
     };
 
     devShells.${system} = let
