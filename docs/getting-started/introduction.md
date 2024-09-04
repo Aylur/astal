@@ -19,5 +19,5 @@ Have you ever wanted to write a custom bar, custom notification popups
 or an applauncher, but gave up because writing a workspace widget,
 implementing the notification daemon or handling a search filter was too much of a hassle?
 
-Astal libraries have you [covered](/astal/libraries/overview), you don't have to worry about these,
+Astal libraries have you [covered](/astal/libraries/references), you don't have to worry about these,
 you just define the layout, style it with CSS and that's it.

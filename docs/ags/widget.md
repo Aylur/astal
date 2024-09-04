@@ -11,14 +11,14 @@ These are properties that Astal.js additionally adds to Gtk.Widgets
 
 To have a full list of available properties, reference the documentation of the widget.
 
-- [Astal widgets](/astal/reference#classes)
+- [Astal widgets](https://aylur.github.io/libastal/index.html#classes)
 - [Gtk widgets](https://docs.gtk.org/gtk3/#classes)
 
 You can check the [source code](https://github.com/aylur/astal/blob/main/gjs/src/widgets.ts) to have a full list of builtin widgets.
 
 ## AGS widget methods
 
-Additional methods that Astal.js add to Gtk.Widget instances
+Additional methods that Astal.js adds to Gtk.Widget instances
 
 ### setup
 
@@ -141,5 +141,5 @@ function MyWidget() {
 :::info
 Signal properties have to be annotated manually for TypeScript.
 You can reference [Gtk3](https://gjs-docs.gnome.org/gtk30~3.0/)
-and [Astal](/astal/reference#classes) for available signals.
+and [Astal](https://aylur.github.io/libastal/index.html#classes) for available signals.
 :::

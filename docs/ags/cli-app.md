@@ -1,6 +1,6 @@
 # CLI and App
 
-`App` is a singleton **instance** of [Astal.Application](/astal/reference/class.Application.html).
+`App` is a singleton **instance** of [Astal.Application](https://aylur.github.io/libastal/class.Application.html).
 
 ```tsx
 import { App } from "astal"

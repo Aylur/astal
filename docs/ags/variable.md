@@ -7,6 +7,10 @@ import { Variable } from "astal"
 Variable is just a simple `GObject` that holds a value.
 And has shortcuts for hooking up subprocesses.
 
+:::info
+The `Variable` object imported from the `"astal"` package is **not** [Astal.Variable](https://aylur.github.io/libastal/class.Variable.html).
+:::
+
 ## Variable as state
 
 ```typescript

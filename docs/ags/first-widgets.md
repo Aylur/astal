@@ -36,7 +36,7 @@ The bundler used is [esbuild](https://esbuild.github.io/).
 
 Astal apps are composed of widgets. A widget is a piece of UI that has its own logic and style.
 A widget can be as small as a button or an entire bar.
-The top level widget is always a [Window]() which will hold all widgets.
+The top level widget is always a [Window](https://aylur.github.io/libastal/class.Window.html) which will hold all widgets.
 
 ::: code-group
 
@@ -261,10 +261,10 @@ return <MyWidget myprop="hello">
 
 ## State management
 
-The state of widgets are handled with [Bindings](). A `Binding` lets you
-connect the state of one [GObject]() to another, in our case it is used to
+The state of widgets are handled with Bindings. A `Binding` lets you
+connect the state of one [GObject](https://docs.gtk.org/gobject/class.Object.html) to another, in our case it is used to
 rerender part of a widget based on the state of a `GObject`.
-A `GObject` can be a [Variable]() or it can be from a [Library]().
+A `GObject` can be a [Variable](./variable) or it can be from a [Library](/libraries/references).
 
 We use the `bind` function to create a `Binding` object from a `Variable` or
 a regular GObject and one of its properties.
@@ -313,7 +313,7 @@ return <box>
 :::
 
 Here is an example of a battery percent label that binds the `percentage`
-property of the Battery object from the [Battery Library]():
+property of the Battery object from the [Battery Library](/libraries/battery):
 
 ```tsx
 import Battery from "gi://AstalBattery"

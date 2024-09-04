@@ -1,9 +1,5 @@
 import { defineConfig } from 'vitepress'
 
-function reference(lib = "") {
-    return `https://aylur.github.io/libastal${lib}`
-}
-
 function github(url = "") {
     return `https://github.com/aylur/astal${url}`
 }
@@ -65,19 +61,19 @@ export default defineConfig({
                 collapsed: true,
                 items: [
                     { text: 'References', link: '/libraries/references' },
-                    { text: "Astal", link: reference("") },
-                    { text: "Apps", link: reference("/apps") },
-                    { text: "Auth", link: reference("/auth") },
-                    { text: "Battery", link: reference("/battery") },
-                    { text: "Bluetooth", link: reference("/bluetooth") },
-                    { text: "Hyprland", link: reference("/hyprland") },
-                    { text: "Mpris", link: reference("/mpris") },
-                    { text: "Network", link: reference("/network") },
-                    { text: "Notifd", link: reference("/notifd") },
-                    { text: "PowerProfiles", link: reference("/powerprofiles") },
-                    { text: "River", link: reference("/river") },
-                    { text: "Tray", link: reference("/tray") },
-                    { text: "WirePlumber", link: reference("/wireplumber") },
+                    { text: "Astal", link: "/libraries/libastal" },
+                    { text: "Apps", link: "/libraries/apps" },
+                    { text: "Auth", link: "/libraries/auth" },
+                    { text: "Battery", link: "/libraries/battery" },
+                    { text: "Bluetooth", link: "/libraries/bluetooth" },
+                    { text: "Hyprland", link: "/libraries/hyprland" },
+                    { text: "Mpris", link: "/libraries/mpris" },
+                    { text: "Network", link: "/libraries/network" },
+                    { text: "Notifd", link: "/libraries/notifd" },
+                    { text: "PowerProfiles", link: "/libraries/powerprofiles" },
+                    { text: "River", link: "/libraries/river" },
+                    { text: "Tray", link: "/libraries/tray" },
+                    { text: "WirePlumber", link: "/libraries/wireplumber" },
                 ],
             },
         ],

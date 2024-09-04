@@ -48,7 +48,7 @@ import { interval, timeout, idle } from "astal"
 You can use javascript native `setTimeout` or `setInterval`
 they return a [GLib.Source](https://docs.gtk.org/glib/struct.Source.html) instance.
 Alternatively you can use these functions provided by Astal,
-which return an [Astal.Time]() instance.
+which return an [Astal.Time](https://aylur.github.io/libastal/class.Time.html) instance.
 
 `Astal.Time` has a `now` signal and a `cancelled` signal.
 
@@ -105,7 +105,7 @@ import { subprocess, exec, execAsync } from "astal"
 ### Subprocess
 
 You can start a subprocess and run callback functions whenever it outputs to
-stdout or stderr. [Astal.Process]() has a `stdout` and `stderr` signal.
+stdout or stderr. [Astal.Process](https://aylur.github.io/libastal/class.Process.html) has a `stdout` and `stderr` signal.
 
 ```typescript
 function subprocess(args: {

@@ -1,9 +1,4 @@
----
-title: Theming
-description: GTK3 CSS theming
-sidebar:
-    order: 1
----
+# Theming
 
 Since the widget toolkit is **GTK3** theming is done with **CSS**.
 
