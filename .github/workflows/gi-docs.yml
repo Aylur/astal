@@ -50,11 +50,9 @@ jobs:
         run: |
           cd dist
           git add .
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
+          if [ -n "$(git diff --cached)" ]; then
+            echo "No Changes Found"
             exit 0
-          else
-            echo "Changes detected, proceeding with commit."
           fi
 
       - name: Push to Pages Repo
