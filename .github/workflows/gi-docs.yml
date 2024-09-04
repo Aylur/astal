@@ -1,0 +1,64 @@
+name: Deploy GI docs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  gi-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+        with:
+          logger: pretty
+
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Build Documentation
+        run: |
+          cd src
+          nix build .#docs --print-build-logs
+
+      - name: Checkout Destination Repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.token }}
+          repository: aylur/aylur.github.io
+          ref: main
+          path: dist
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions Bot"
+
+      - name: Clean and Copy Files
+        run: |
+          rm -rf dist/libastal
+          cp -r src/result/libastal dist/libastal
+
+      - name: Check for Changes
+        run: |
+          cd dist
+          git add .
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          else
+            echo "Changes detected, proceeding with commit."
+          fi
+
+      - name: Push to Pages Repo
+        run: |
+          cd dist
+          git commit -m "Deployed from https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          git push origin main

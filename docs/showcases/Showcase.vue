@@ -1,6 +1,4 @@
 <script setup>
-import { defineProps } from 'vue';
-
 const props = defineProps({
     src: { type: String, required: true },
     author: { type: String, required: true },

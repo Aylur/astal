@@ -1,9 +1,8 @@
-name: Deploy VitePress site to Pages
+name: Deploy VitePress site
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,7 +10,7 @@ permissions:
   id-token: write
 
 jobs:
-  vitepress:
+  build-vitepress:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,7 +39,7 @@ jobs:
         with:
           path: docs/dist
 
-  deploy:
+  deploy-vitepress:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
