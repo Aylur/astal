@@ -49,14 +49,12 @@ jobs:
       - name: Check for Changes
         run: |
           cd dist
-          git add .
-          if [ -n "$(git diff --cached)" ]; then
-            echo "No Changes Found"
-            exit 0
-          fi
 
       - name: Push to Pages Repo
         run: |
           cd dist
-          git commit -m "Deployed from https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
-          git push origin main
+          git add .
+          if [ -n "$(git diff --cached)" ]; then
+            git commit -m "Deployed from https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+            git push origin main
+          fi
