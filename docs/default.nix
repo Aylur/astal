@@ -14,19 +14,10 @@
     output = self.packages.${pkgs.system}.${pkg}.dev;
   in ''
     mkdir -p $out/${outPath}
+    cat ${urlmap} > urlmap.js
     gi-docgen generate -C ${data} ${output}/share/gir-1.0/${name}-0.1.gir
     cp -r ${name}-0.1/* $out/${outPath}
-    echo ${data} >> $out/data.txt
   '';
-
-  urlMap = builtins.toJSON [
-    ["GLib" "https://docs.gtk.org/glib/"]
-    ["GObject" "https://docs.gtk.org/gobject/"]
-    ["Gio" "https://docs.gtk.org/gio/"]
-    ["Gdk" "https://docs.gtk.org/gdk4/"]
-    ["Gtk" "https://docs.gtk.org/gtk4/"]
-    ["GdkPixbuf" "https://docs.gtk.org/gdk-pixbuf/"]
-  ];
 
   genLib = name: namespace: description: {
     authors ? "Aylur",
@@ -47,12 +38,7 @@
           dependencies = ["GObject-2.0"] ++ (builtins.attrNames dependencies);
         };
 
-        extra = {
-          urlmap_file = pkgs.writeText "urlmap" ''
-            baseURLs = ${urlMap}
-          '';
-        };
-
+        extra.urlmap_file = "urlmap.js";
         dependencies = dependencies // dependency;
       };
     };
@@ -64,8 +50,22 @@
       docs_url = "https://developer.gnome.org/gobject/stable";
     };
   };
+
+  urlmap = pkgs.writeText "urlmap" ''
+    baseURLs = ${builtins.toJSON [
+      ["GLib" "https://docs.gtk.org/glib/"]
+      ["GObject" "https://docs.gtk.org/gobject/"]
+      ["Gio" "https://docs.gtk.org/gio/"]
+      ["Gdk" "https://docs.gtk.org/gdk4/"]
+      ["Gtk" "https://docs.gtk.org/gtk4/"]
+      ["GdkPixbuf" "https://docs.gtk.org/gdk-pixbuf/"]
+    ]}
+  '';
 in
   pkgs.stdenvNoCC.mkDerivation {
+    name = "library-reference";
+    src = ./.;
+
     nativeBuildInputs = with pkgs; [
       gi-docgen
       glib
@@ -78,8 +78,6 @@ in
       wireplumber
       networkmanager
     ];
-    name = "library-reference";
-    src = ./.;
 
     installPhase = ''
       runHook preInstall
