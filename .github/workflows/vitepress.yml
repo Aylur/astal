@@ -43,7 +43,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    needs: vitepress
+    needs: build-vitepress
     runs-on: ubuntu-latest
     name: Deploy
     steps:
