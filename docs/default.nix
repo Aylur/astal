@@ -16,7 +16,17 @@
     mkdir -p $out/${outPath}
     gi-docgen generate -C ${data} ${output}/share/gir-1.0/${name}-0.1.gir
     cp -r ${name}-0.1/* $out/${outPath}
+    echo ${data} >> $out/data.txt
   '';
+
+  urlMap = builtins.toJSON [
+    ["GLib" "https://docs.gtk.org/glib/"]
+    ["GObject" "https://docs.gtk.org/gobject/"]
+    ["Gio" "https://docs.gtk.org/gio/"]
+    ["Gdk" "https://docs.gtk.org/gdk4/"]
+    ["Gtk" "https://docs.gtk.org/gtk4/"]
+    ["GdkPixbuf" "https://docs.gtk.org/gdk-pixbuf/"]
+  ];
 
   genLib = name: namespace: description: {
     authors ? "Aylur",
@@ -31,15 +41,19 @@
         library = {
           inherit description authors;
           license = "LGPL-2.1";
-          browse_url = "https://github.com/Aylur/Astal";
-          repository_url = "https://github.com/Aylur/Aylur.git";
+          browse_url = "https://github.com/aylur/astal";
+          repository_url = "https://github.com/aylur/aylur.git";
           website_url = "https://aylur.github.io/astal";
+          dependencies = ["GObject-2.0"] ++ (builtins.attrNames dependencies);
         };
 
-        dependencies = {
-          inherit (dependency) "GObject-2.0";
-          inherit dependencies;
+        extra = {
+          urlmap_file = pkgs.writeText "urlmap" ''
+            baseURLs = ${urlMap}
+          '';
         };
+
+        dependencies = dependencies // dependency;
       };
     };
 
