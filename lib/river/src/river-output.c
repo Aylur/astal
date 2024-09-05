@@ -48,8 +48,16 @@ static GParamSpec* astal_river_output_properties[ASTAL_RIVER_OUTPUT_N_PROPERTIES
 };
 
 /**
- * astal_river_output_get_nid
+ *  AstalRiverOutput
+ *
+ *  holds all the information associated with a monitor.
+ */
+
+/**
+ * astal_river_output_get_id
  * @self: the AstalRiverOutput object
+ *
+ * the id of the underlying wl_output object
  *
  * Returns: the id of the underlying wl_output object
  */
@@ -59,6 +67,8 @@ guint astal_river_output_get_id(AstalRiverOutput* self) { return self->id; }
  * astal_river_output_get_name
  * @self: the AstalRiverOutput object
  *
+ * the name of the output
+ *
  * Returns: (transfer none) (nullable): the name of the output
  */
 gchar* astal_river_output_get_name(AstalRiverOutput* self) { return self->name; }
@@ -67,6 +77,8 @@ gchar* astal_river_output_get_name(AstalRiverOutput* self) { return self->name; 
  * astal_river_output_get_layout_name
  * @self: the AstalRiverOutput object
  *
+ * the currently used layout name of the output
+ *
  * Returns: (transfer none) (nullable): the currently used layout name of the output
  */
 gchar* astal_river_output_get_layout_name(AstalRiverOutput* self) { return self->layout_name; }
@@ -74,6 +86,8 @@ gchar* astal_river_output_get_layout_name(AstalRiverOutput* self) { return self-
 /**
  * astal_river_output_get_focused_view
  * @self: the AstalRiverOutput object
+ *
+ * the focused view on the output
  *
  * Returns: (transfer none) (nullable): the focused view on the output
  */
@@ -90,6 +104,8 @@ void astal_river_output_set_focused_view(AstalRiverOutput* self, const gchar* fo
  * astal_river_output_get_focused_tags
  * @self: the AstalRiverOutput object
  *
+ * the focused tags of the output
+ *
  * Returns: the focused tags of the output
  */
 guint astal_river_output_get_focused_tags(AstalRiverOutput* self) { return self->focused_tags; }
@@ -98,6 +114,8 @@ guint astal_river_output_get_focused_tags(AstalRiverOutput* self) { return self-
  * astal_river_output_get_urgent_tags
  * @self: the AstalRiverOutput object
  *
+ * the urgent tags of the output
+ *
  * Returns: the urgent tags of the output
  */
 guint astal_river_output_get_urgent_tags(AstalRiverOutput* self) { return self->urgent_tags; }
@@ -105,6 +123,8 @@ guint astal_river_output_get_urgent_tags(AstalRiverOutput* self) { return self->
 /**
  * astal_river_output_get_occupied_tags
  * @self: the AstalRiverOutput object
+ *
+ * the occupied tags of the output
  *
  * Returns: the occupied tags of the output
  */

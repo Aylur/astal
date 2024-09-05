@@ -95,8 +95,16 @@ static AstalRiverOutput* find_output_by_name(AstalRiverRiver* self, gchar* name)
 }
 
 /**
+ *  AstalRiverRiver
+ *
+ *  This class creates a connection to the river compositor.
+ */
+
+/**
  * astal_river_river_get_outputs
  * @self: the AstalRiverRiver object
+ *
+ * returns a list of all outputs
  *
  * Returns: (transfer none) (element-type AstalRiver.Output): a list of all outputs
  *
@@ -108,6 +116,8 @@ GList* astal_river_river_get_outputs(AstalRiverRiver* self) { return self->outpu
  * @self: the AstalRiverRiver object
  * @name: the name of the output
  *
+ * returns the output with the given name or null
+ *
  * Returns: (transfer none) (nullable): the output with the given name or null
  */
 AstalRiverOutput* astal_river_river_get_output(AstalRiverRiver* self, gchar* name) {
@@ -118,6 +128,8 @@ AstalRiverOutput* astal_river_river_get_output(AstalRiverRiver* self, gchar* nam
  * astal_river_river_get_focused_view
  * @self: the AstalRiverOutput object
  *
+ * returns the currently focused view
+ *
  * Returns: (transfer none) (nullable): the currently focused view
  */
 gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) { return self->focused_view; }
@@ -126,6 +138,8 @@ gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) { return self->
  * astal_river_river_get_focused_output
  * @self: the AstalRiverOutput object
  *
+ * returns the name of the currently focused output
+ *
  * Returns: (transfer none) (nullable): the name of the currently focused output
  */
 gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) { return self->focused_output; }
@@ -133,6 +147,8 @@ gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) { return self
 /**
  * astal_river_river_get_mode
  * @self: the AstalRiverOutput object
+ *
+ * returns the currently active mode
  *
  * Returns: (transfer none) (nullable): the currently active mode
  */
@@ -274,7 +290,7 @@ const struct zriver_command_callback_v1_listener cb_listener = {
  * @cmd: (array length=length): the command to execute
  * @callback: (scope async) (nullable): the callback to invoke.
  *
- * Calls the given callback with the provided parameters.
+ * Sends a given command to the compositor and calls the callback after it was executed.
  */
 void astal_river_river_run_command_async(AstalRiverRiver* self, gint length, const gchar** cmd,
                                          AstalRiverCommandCallback callback) {
@@ -376,7 +392,7 @@ static void astal_river_river_init(AstalRiverRiver* self) {
 /**
  * astal_river_river_new
  *
- * creates a new River object. It is recommended to use the get_default() method
+ * creates a new River object. It is recommended to use the [func@AstalRiver.get_default] method
  * instead of this method.
  *
  * Returns: (nullable): a newly created connection to river
@@ -394,6 +410,8 @@ static void disconnect_signal(gpointer key, gpointer value, gpointer user_data) 
 
 /**
  * astal_river_river_get_default
+ *
+ * returns the default River object.
  *
  * Returns: (nullable) (transfer none): gets the default River object.
  */
@@ -470,7 +488,7 @@ static void astal_river_river_class_init(AstalRiverRiverClass* class) {
     /**
      * AstalRiverRiver:outputs: (type GList(AstalRiverOutput))
      *
-     * A list of AstalRiverOutput objects
+     * A list of [class@AstalRiver.Output] objects
      */
     astal_river_river_properties[ASTAL_RIVER_RIVER_PROP_OUTPUTS] =
         g_param_spec_pointer("outputs", "outputs", "a list of all outputs", G_PARAM_READABLE);

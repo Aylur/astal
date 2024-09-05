@@ -1,9 +1,10 @@
+#include "astal-river.h"
+
 #include <getopt.h>
 #include <json-glib/json-glib.h>
 #include <stdlib.h>
 
 #include "gio/gio.h"
-#include "astal-river.h"
 
 GMainLoop* loop;
 
