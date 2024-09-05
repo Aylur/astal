@@ -51,6 +51,15 @@ static GParamSpec *astal_wp_audio_properties[ASTAL_WP_AUDIO_N_PROPERTIES] = {
 };
 
 /**
+ *  AstalWpAudio
+ *
+ *  is instanciated by [class@AstalWp.Wp]. An instance of class can only be received there.
+ *
+ *  This is a convinience class and acts as a filter for [class@AstalWp.Wp] to filter for audio
+ * endpoints and devices.
+ */
+
+/**
  * astal_wp_audio_get_speaker:
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint

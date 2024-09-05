@@ -48,13 +48,24 @@ static GParamSpec *astal_wp_video_properties[ASTAL_WP_VIDEO_N_PROPERTIES] = {
 };
 
 /**
+ *  AstalWpVideo
+ *
+ *  is instanciated by [class@AstalWp.Wp]. An instance of class can only be received there.
+ *
+ *  This is a convinience class and acts as a filter for [class@AstalWp.Wp] to filter for video
+ * endpoints and devices.
+ */
+
+/**
  * astal_wp_video_get_source:
  * @self: the AstalWpVideo object
  * @id: the id of the endpoint
  *
+ * the source with the given id
+ *
  * Returns: (transfer none) (nullable): the source with the given id
  */
-AstalWpEndpoint *astal_wp_video_get_speaker(AstalWpVideo *self, guint id) {
+AstalWpEndpoint *astal_wp_video_get_source(AstalWpVideo *self, guint id) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
     AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
@@ -67,6 +78,8 @@ AstalWpEndpoint *astal_wp_video_get_speaker(AstalWpVideo *self, guint id) {
  * astal_wp_video_get_sink:
  * @self: the AstalWpVideo object
  * @id: the id of the endpoint
+ *
+ * the sink with the given id
  *
  * Returns: (transfer none) (nullable): the sink with the given id
  */
@@ -84,6 +97,8 @@ AstalWpEndpoint *astal_wp_video_get_sink(AstalWpVideo *self, guint id) {
  * @self: the AstalWpVideo object
  * @id: the id of the endpoint
  *
+ * the stream with the given id
+ *
  * Returns: (transfer none) (nullable): the stream with the given id
  */
 AstalWpEndpoint *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
@@ -99,6 +114,8 @@ AstalWpEndpoint *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
  * astal_wp_video_get_recorder:
  * @self: the AstalWpVideo object
  * @id: the id of the endpoint
+ *
+ * the recorder with the given id
  *
  * Returns: (transfer none) (nullable): the recorder with the given id
  */
@@ -116,6 +133,8 @@ AstalWpEndpoint *astal_wp_video_get_recorder(AstalWpVideo *self, guint id) {
  * @self: the AstalWpVideo object
  * @id: the id of the device
  *
+ * the device with the given id
+ *
  * Returns: (transfer none) (nullable): the device with the given id
  */
 AstalWpDevice *astal_wp_video_get_device(AstalWpVideo *self, guint id) {
@@ -129,6 +148,8 @@ AstalWpDevice *astal_wp_video_get_device(AstalWpVideo *self, guint id) {
 /**
  * astal_wp_video_get_sources:
  * @self: the AstalWpVideo object
+ *
+ * a list containing the video sources
  *
  * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
  * video sources
@@ -151,6 +172,8 @@ GList *astal_wp_video_get_sources(AstalWpVideo *self) {
  * astal_wp_video_get_sinks
  * @self: the AstalWpVideo object
  *
+ * a list containing the video sinks
+ *
  * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
  * video sinks
  */
@@ -171,6 +194,8 @@ GList *astal_wp_video_get_sinks(AstalWpVideo *self) {
 /**
  * astal_wp_video_get_recorders:
  * @self: the AstalWpVideo object
+ *
+ * a list containing the video recorders
  *
  * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
  * video recorders
@@ -193,6 +218,8 @@ GList *astal_wp_video_get_recorders(AstalWpVideo *self) {
  * astal_wp_video_get_streams:
  * @self: the AstalWpVideo object
  *
+ * a list containing the video streams
+ *
  * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
  * video streams
  */
@@ -214,7 +241,9 @@ GList *astal_wp_video_get_streams(AstalWpVideo *self) {
  * astal_wp_video_get_devices:
  * @self: the AstalWpAudio object
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpVideo)): a GList containing the
+ * a list containing the devices
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpDevice)): a GList containing the
  * devices
  */
 GList *astal_wp_video_get_devices(AstalWpVideo *self) {

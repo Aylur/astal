@@ -214,10 +214,28 @@ gboolean astal_wp_endpoint_get_mute(AstalWpEndpoint *self) { return self->mute; 
  */
 gdouble astal_wp_endpoint_get_volume(AstalWpEndpoint *self) { return self->volume; }
 
+/**
+ * astal_wp_endpoint_get_description:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the description of this endpoint
+ */
 const gchar *astal_wp_endpoint_get_description(AstalWpEndpoint *self) { return self->description; }
 
+/**
+ * astal_wp_endpoint_get_name:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the name of this endpoint
+ */
 const gchar *astal_wp_endpoint_get_name(AstalWpEndpoint *self) { return self->name; }
 
+/**
+ * astal_wp_endpoint_get_icon:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the icon for this endpoint
+ */
 const gchar *astal_wp_endpoint_get_icon(AstalWpEndpoint *self) { return self->icon; }
 
 gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint *self) { return self->is_default; }
@@ -521,19 +539,54 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
     object_class->finalize = astal_wp_endpoint_finalize;
     object_class->get_property = astal_wp_endpoint_get_property;
     object_class->set_property = astal_wp_endpoint_set_property;
-
+    /**
+     * AstalWpEndpoint:id:
+     *
+     * The pipewire id of this endpoint.
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_ID] =
         g_param_spec_uint("id", "id", "id", 0, UINT_MAX, 0, G_PARAM_READABLE);
+    /**
+     * AstalWpEndpoint:volume:
+     *
+     * The volume of this endpoint
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_VOLUME] =
         g_param_spec_double("volume", "volume", "volume", 0, G_MAXFLOAT, 0, G_PARAM_READWRITE);
+    /**
+     * AstalWpEndpoint:mute:
+     *
+     * The mute state of this endpoint
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_MUTE] =
         g_param_spec_boolean("mute", "mute", "mute", TRUE, G_PARAM_READWRITE);
+    /**
+     * AstalWpEndpoint:description:
+     *
+     * The description of this endpoint
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_DESCRIPTION] =
         g_param_spec_string("description", "description", "description", NULL, G_PARAM_READABLE);
+    /**
+     * AstalWpEndpoint:name:
+     *
+     * The name of this endpoint
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_NAME] =
         g_param_spec_string("name", "name", "name", NULL, G_PARAM_READABLE);
+    /**
+     * AstalWpEndpoint:icon:
+     *
+     * The icon of this endpoint. Note that endpoints do not have icons associated with them in
+     * pipewire, so the icon of the associated device is used instead.
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_ICON] = g_param_spec_string(
         "icon", "icon", "icon", "audio-card-symbolic", G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    /**
+     * AstalWpEndpoint:volume-icon:
+     *
+     * The volume icon of this endpoint
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_VOLUME_ICON] = g_param_spec_string(
         "volume-icon", "volume-icon", "volume-icon", "audio-volume-muted", G_PARAM_READABLE);
     /**
@@ -544,10 +597,21 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_MEDIA_CLASS] =
         g_param_spec_enum("media-class", "media-class", "media-class", ASTAL_WP_TYPE_MEDIA_CLASS, 1,
                           G_PARAM_READABLE);
+    /**
+     * AstalWpEndpoint:is-default:
+     *
+     * Whether this endpoint is the default one used for this media-class. Note that setting this
+     * property to false has no effect.
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_DEFAULT] =
-        g_param_spec_boolean("is_default", "is_default", "is_default", FALSE, G_PARAM_READWRITE);
+        g_param_spec_boolean("is-default", "is-default", "is-default", FALSE, G_PARAM_READWRITE);
+    /**
+     * AstalWpEndpoint:lock-channels:
+     *
+     * Whether to lock the channels together or not.
+     */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS] = g_param_spec_boolean(
-        "lock_channels", "lock_channels", "lock channels", FALSE, G_PARAM_READWRITE);
+        "lock-channels", "lock-channels", "lock channels", FALSE, G_PARAM_READWRITE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);

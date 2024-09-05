@@ -66,9 +66,19 @@ static GParamSpec *astal_wp_wp_properties[ASTAL_WP_WP_N_PROPERTIES] = {
 };
 
 /**
+ * AstalWpWp
+ *
+ * manages the connection to wireplumber. Usually you don't want to use this class directly, but use
+ * the [class@AstalWp.Audio] or [class@AstalWp.Video] instead.
+ *
+ */
+
+/**
  * astal_wp_wp_get_endpoint:
  * @self: the AstalWpWp object
  * @id: the id of the endpoint
+ *
+ * the endpoint with the given id
  *
  * Returns: (transfer none) (nullable): the endpoint with the given id
  */
@@ -83,6 +93,8 @@ AstalWpEndpoint *astal_wp_wp_get_endpoint(AstalWpWp *self, guint id) {
  * astal_wp_wp_get_endpoints:
  * @self: the AstalWpWp object
  *
+ * a GList containing all endpoints
+ *
  * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
  * endpoints
  */
@@ -95,6 +107,8 @@ GList *astal_wp_wp_get_endpoints(AstalWpWp *self) {
  * astal_wp_wp_get_device:
  * @self: the AstalWpWp object
  * @id: the id of the device
+ *
+ * the device with the given id
  *
  * Returns: (transfer none) (nullable): the device with the given id
  */
@@ -109,6 +123,8 @@ AstalWpDevice *astal_wp_wp_get_device(AstalWpWp *self, guint id) {
  * astal_wp_wp_get_devices:
  * @self: the AstalWpWp object
  *
+ * the GList containing the devices
+ *
  * Returns: (transfer container) (nullable) (type GList(AstalWpDevice)): a GList containing the
  * devices
  */
@@ -120,12 +136,16 @@ GList *astal_wp_wp_get_devices(AstalWpWp *self) {
 /**
  * astal_wp_wp_get_audio
  *
+ * gets the [class@AstalWp.Audio] object
+ *
  * Returns: (nullable) (transfer none): gets the audio object
  */
 AstalWpAudio *astal_wp_wp_get_audio(AstalWpWp *self) { return self->audio; }
 
 /**
  * astal_wp_wp_get_video
+ *
+ * gets the video object
  *
  * Returns: (nullable) (transfer none): gets the video object
  */
@@ -134,12 +154,16 @@ AstalWpVideo *astal_wp_wp_get_video(AstalWpWp *self) { return self->video; }
 /**
  * astal_wp_wp_get_default_speaker
  *
+ * gets the default speaker object
+ *
  * Returns: (nullable) (transfer none): gets the default speaker object
  */
 AstalWpEndpoint *astal_wp_wp_get_default_speaker(AstalWpWp *self) { return self->default_speaker; }
 
 /**
  * astal_wp_wp_get_default_microphone
+ *
+ * gets the default microphone object
  *
  * Returns: (nullable) (transfer none): gets the default microphone object
  */
@@ -218,20 +242,6 @@ static void astal_wp_wp_set_property(GObject *object, guint property_id, const G
 }
 
 static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
-    // print pipewire properties
-    // WpIterator *iter = wp_pipewire_object_new_properties_iterator(WP_PIPEWIRE_OBJECT(object));
-    // GValue item = G_VALUE_INIT;
-    // const gchar *key, *value;
-    //
-    // g_print("\n\n");
-    // while (wp_iterator_next (iter, &item)) {
-    //     WpPropertiesItem *pi = g_value_get_boxed (&item);
-    //     key = wp_properties_item_get_key (pi);
-    //     value = wp_properties_item_get_value (pi);
-    //     g_print("%s: %s\n", key, value);
-    //     g_value_unset(&item);
-    // }
-
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     if (WP_IS_NODE(object)) {
@@ -329,6 +339,8 @@ static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, Astal
 /**
  * astal_wp_wp_get_default
  *
+ * gets the default wireplumber object.
+ *
  * Returns: (nullable) (transfer none): gets the default wireplumber object.
  */
 AstalWpWp *astal_wp_wp_get_default() {
@@ -341,6 +353,8 @@ AstalWpWp *astal_wp_wp_get_default() {
 
 /**
  * astal_wp_get_default_wp
+ *
+ * gets the default wireplumber object.
  *
  * Returns: (nullable) (transfer none): gets the default wireplumber object.
  */
@@ -457,21 +471,21 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     /**
      * AstalWpWp:endpoints: (type GList(AstalWpEndpoint)) (transfer container)
      *
-     * A list of AstalWpEndpoint objects
+     * A list of [class@AstalWp.Endpoint] objects
      */
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_ENDPOINTS] =
         g_param_spec_pointer("endpoints", "endpoints", "endpoints", G_PARAM_READABLE);
     /**
      * AstalWpWp:devices: (type GList(AstalWpDevice)) (transfer container)
      *
-     * A list of AstalWpDevice objects
+     * A list of [class@AstalWp.Device] objects
      */
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_DEVICES] =
         g_param_spec_pointer("devices", "devices", "devices", G_PARAM_READABLE);
     /**
      * AstalWpWp:default-speaker:
      *
-     * The AstalWndpoint object representing the default speaker
+     * The [class@AstalWp.Endpoint] representing the default speaker
      */
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_DEFAULT_SPEAKER] =
         g_param_spec_object("default-speaker", "default-speaker", "default-speaker",
@@ -479,7 +493,7 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     /**
      * AstalWpWp:default-microphone:
      *
-     * The AstalWndpoint object representing the default speaker
+     * The [class@AstalWp.Endpoint] representing the default speaker
      */
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE] =
         g_param_spec_object("default-microphone", "default-microphone", "default-microphone",
