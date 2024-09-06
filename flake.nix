@@ -22,7 +22,7 @@
           vala
           wayland
         ];
-        buildInputs = [pkgs.glib] ++ inputs;
+        propagatedBuildInputs = [pkgs.glib] ++ inputs;
         pname = name;
         version = version;
         src = src;
