@@ -47,6 +47,7 @@ export default defineConfig({
                 base: "/ags",
                 collapsed: false,
                 items: [
+                    { text: 'Installation', link: '/installation' },
                     { text: 'First Widgets', link: '/first-widgets' },
                     { text: 'Theming', link: '/theming' },
                     { text: 'CLI and App', link: '/cli-app' },
