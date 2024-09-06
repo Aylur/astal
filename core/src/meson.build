@@ -69,9 +69,6 @@ if get_option('lib')
     subdirs: meson.project_name(),
     requires: pkgconfig_deps,
     install_dir: libdir / 'pkgconfig',
-    variables: {
-      'gjs': pkgdatadir / 'gjs',
-    },
   )
 
   custom_target(
