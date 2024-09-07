@@ -21,24 +21,16 @@ nix run github:aylur/ags/v2 -- --help
 
 :::code-group
 
-```sh [Arch]
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
 sudo pacman -Syu go npm gjs
 ```
 
-```sh [Fedora]
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
 sudo dnf install golang npm gjs
 ```
 
-```sh [Alpine]
-sudo apk add go npm gjs
-```
-
-```sh [Ubuntu]
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
 sudo apt install golang-go npm gjs
-```
-
-```sh [openSUSE]
-sudo zypper install go npm gjs
 ```
 
 :::

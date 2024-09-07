@@ -8,7 +8,7 @@ Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.git
 | Command           | Action                                      |
 | :---------------- | :------------------------------------------ |
 | `npm install`     | Installs dependencies                       |
-| `npm run dev`     | Starts local dev server at `localhost:4321` |
+| `npm run dev`     | Starts local dev server at `localhost:5173` |
 | `npm run build`   | Build your production site to `./dist/`     |
 | `npm run preview` | Preview your build locally                  |
 

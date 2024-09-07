@@ -11,5 +11,8 @@
         "build": "vitepress build",
         "preview": "vitepress preview",
         "vitepress": "vitepress"
+    },
+    "dependencies": {
+        "devicon": "^2.16.0"
     }
 }

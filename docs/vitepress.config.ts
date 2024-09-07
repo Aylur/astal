@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress'
+import { defineConfig } from "vitepress"
 
 function github(url = "") {
     return `https://github.com/aylur/astal${url}`
@@ -16,7 +16,7 @@ export default defineConfig({
     ignoreDeadLinks: true, // FIXME:
 
     head: [
-        ['link', { rel: 'icon', href: '/astal/favicon.ico' }],
+        ["link", { rel: "icon", href: "/astal/favicon.ico" }],
     ],
 
     themeConfig: {
@@ -24,45 +24,45 @@ export default defineConfig({
         //
 
         nav: [{
-            text: '0.1.0',
+            text: "0.1.0",
             items: [
-                { text: 'Contributing', link: github("/blob/main/CONTRIBUTING.md") },
-                { text: 'Changelog', link: github("/blob/main/CHANGELOG.md") },
+                { text: "Contributing", link: github("/blob/main/CONTRIBUTING.md") },
+                { text: "Changelog", link: github("/blob/main/CHANGELOG.md") },
             ],
         }],
 
         sidebar: [
             {
-                text: 'Getting Started',
+                text: "Getting Started",
                 base: "/getting-started",
                 collapsed: false,
                 items: [
-                    { text: 'Introduction', link: '/introduction' },
-                    { text: 'Installation', link: '/installation' },
-                    { text: 'Supported Languages', link: '/supported-languages' },
+                    { text: "Introduction", link: "/introduction" },
+                    { text: "Installation", link: "/installation" },
+                    { text: "Supported Languages", link: "/supported-languages" },
                 ],
             },
             {
-                text: 'AGS',
+                text: "AGS",
                 base: "/ags",
                 collapsed: false,
                 items: [
-                    { text: 'Installation', link: '/installation' },
-                    { text: 'First Widgets', link: '/first-widgets' },
-                    { text: 'Theming', link: '/theming' },
-                    { text: 'CLI and App', link: '/cli-app' },
-                    { text: 'Widget', link: '/widget' },
-                    { text: 'Utilities', link: '/utilities' },
-                    { text: 'Variable', link: '/variable' },
-                    { text: 'FAQ', link: '/faq' },
+                    { text: "Installation", link: "/installation" },
+                    { text: "First Widgets", link: "/first-widgets" },
+                    { text: "Theming", link: "/theming" },
+                    { text: "CLI and App", link: "/cli-app" },
+                    { text: "Widget", link: "/widget" },
+                    { text: "Utilities", link: "/utilities" },
+                    { text: "Variable", link: "/variable" },
+                    { text: "FAQ", link: "/faq" },
                 ],
             },
             {
-                text: 'Libraries',
+                text: "Libraries",
                 collapsed: true,
                 items: [
-                    { text: 'References', link: '/libraries/references' },
-                    { text: "Astal", link: "/libraries/libastal" },
+                    { text: "References", link: "/libraries/references" },
+                    { text: "Astal", link: "https://aylur.github.io/libastal" },
                     { text: "Apps", link: "/libraries/apps" },
                     { text: "Auth", link: "/libraries/auth" },
                     { text: "Battery", link: "/libraries/battery" },
@@ -80,17 +80,17 @@ export default defineConfig({
         ],
 
         socialLinks: [
-            { icon: 'github', link: github() },
-            { icon: 'discord', link: '"https://discord.gg/CXQpHwDuhY"' },
+            { icon: "github", link: github() },
+            { icon: "discord", link: "https://discord.gg/CXQpHwDuhY" },
         ],
 
         editLink: {
             pattern: github("/edit/main/docs/:path"),
-            text: 'Edit this page on GitHub',
+            text: "Edit this page on GitHub",
         },
 
         lastUpdated: {
-            text: 'Last updated',
+            text: "Last updated",
         },
 
         search: {

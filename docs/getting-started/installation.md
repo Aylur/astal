@@ -35,24 +35,16 @@ cd astal/core
 
 :::code-group
 
-```sh [Arch]
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
 sudo pacman -Syu meson vala gtk3 gtk-layer-shell gobject-introspection
 ```
 
-```sh [Fedora]
-sudo dnf install meson gcc valac gtk3-devel gtk-layer-shell-devel
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
+sudo dnf install meson gcc valac gtk3-devel gtk-layer-shell-devel gobject-introspection-devel
 ```
 
-```sh [Alpine]
-sudo apk add meson g++ vala gtk+3.0-dev gtk-layer-shell-dev gobject-introspection-dev
-```
-
-```sh [Ubuntu]
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
 sudo apt install meson valac libgtk3-dev libgtk-layer-shell-dev gobject-introspection
-```
-
-```sh [openSUSE]
-sudo zypper install gcc meson vala gtk3-devel gtk-layer-shell-devel gobject-introspection-devel
 ```
 
 :::
@@ -64,7 +56,7 @@ meson setup build
 meson install -C build
 ```
 
-:::info
+:::tip
 Most distros recommend manual installs in `/usr/local`,
 which is what `meson` defaults to. If you want to install to `/usr`
 instead which most package managers do, set the `prefix` option:
