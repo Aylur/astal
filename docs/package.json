@@ -13,6 +13,7 @@
         "vitepress": "vitepress"
     },
     "dependencies": {
-        "devicon": "^2.16.0"
+        "devicon": "^2.16.0",
+        "font-logos": "^1.2.0"
     }
 }
