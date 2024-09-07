@@ -2,7 +2,7 @@
 
 `App` is a singleton **instance** of [Astal.Application](https://aylur.github.io/libastal/class.Application.html).
 
-```tsx
+```ts
 import { App } from "astal"
 ```
 
@@ -29,7 +29,7 @@ You can not instantiate widgets outside of the main function.
 
 You can run multiple instance by defining a unique instance name.
 
-```tsx
+```ts
 App.start({
     instanceName: "my-instance", // defaults to "astal"
     main() {},
@@ -52,15 +52,19 @@ App.start({
 })
 ```
 
-```bash
-# ags cli
-$ ags -m "say hi"
-hi cli
+:::code-group
 
-# astal cli
-$ astal say hi
-hi cli
+```sh [ags]
+ags -m "say hi"
+# hi cli
 ```
+
+```sh [astal]
+astal say hi
+# hi cli
+```
+
+:::
 
 If you want to run arbitrary JavaScript from cli, you can use `App.eval`.
 It will evaluate the passed string as the body of an `async` function.
@@ -76,19 +80,19 @@ App.start({
 
 If the string does not contain a semicolon, a single expression is assumed and returned implicity.
 
-```bash
-$ ags -m "'hello'"
-hello
+```sh
+ags -m "'hello'"
+# hello
 ```
 
 If the string contains a semicolon, you have to return explicitly
 
-```bash
-$ ags -m "'hello';"
-undefined
+```sh
+ags -m "'hello';"
+# undefined
 
-$ ags -m "return 'hello';"
-hello
+ags -m "return 'hello';"
+# hello
 ```
 
 ## App without AGS

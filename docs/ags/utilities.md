@@ -4,7 +4,7 @@
 
 Import them from `astal` or `astal/file`
 
-```js
+```ts
 import {
     readFile,
     readFileAsync,
@@ -16,21 +16,21 @@ import {
 
 ### Reading files
 
-```typescript
+```ts
 function readFile(path: string): string
 function readFileAsync(path: string): Promise<string>
 ```
 
 ### Writing files
 
-```typescript
+```ts
 function writeFile(path: string, content: string): void
 function writeFileAsync(path: string, content: string): Promise<void>
 ```
 
 ### Monitoring files
 
-```typescript
+```ts
 function monitorFile(
     path: string,
     callback: (file: string, event: Gio.FileMonitorEvent) => void,
@@ -41,7 +41,7 @@ function monitorFile(
 
 Import them from `astal` or `astal/time`
 
-```js
+```ts
 import { interval, timeout, idle } from "astal"
 ```
 
@@ -56,7 +56,7 @@ which return an [Astal.Time](https://aylur.github.io/libastal/class.Time.html) i
 
 Will immediately execute the function and every `interval` millisecond.
 
-```typescript
+```ts
 function interval(interval: number, callback?: () => void): Astal.Time
 ```
 
@@ -64,7 +64,7 @@ function interval(interval: number, callback?: () => void): Astal.Time
 
 Will execute the `callback` after `timeout` millisecond.
 
-```typescript
+```ts
 function timeout(timeout: number, callback?: () => void): Astal.Time
 ```
 
@@ -72,13 +72,13 @@ function timeout(timeout: number, callback?: () => void): Astal.Time
 
 Executes `callback` whenever there are no higher priority events pending.
 
-```typescript
+```ts
 function idle(callback?: () => void): Astal.Time
 ```
 
 Example:
 
-```typescript
+```ts
 const timer = interval(1000, () => {
     console.log("optional callback")
 })
@@ -98,7 +98,7 @@ timer.cancel()
 
 Import them from `astal` or `astal/proc`
 
-```js
+```ts
 import { subprocess, exec, execAsync } from "astal"
 ```
 
@@ -107,7 +107,7 @@ import { subprocess, exec, execAsync } from "astal"
 You can start a subprocess and run callback functions whenever it outputs to
 stdout or stderr. [Astal.Process](https://aylur.github.io/libastal/class.Process.html) has a `stdout` and `stderr` signal.
 
-```typescript
+```ts
 function subprocess(args: {
     cmd: string | string[]
     out?: (stdout: string) => void
@@ -123,7 +123,7 @@ function subprocess(
 
 Example:
 
-```typescript
+```ts
 const proc = subprocess(
     "some-command",
     (out) => console.log(out), // optional
@@ -138,14 +138,14 @@ proc.connect("stderr", (err) => console.error(err))
 
 ### Executing external commands and scripts
 
-```typescript
+```ts
 function exec(cmd: string | string[]): string
 function execAsync(cmd: string | string[]): Promise<string>
 ```
 
 Example:
 
-```typescript
+```ts
 try {
     const out = exec("/path/to/script")
     console.log(out)
@@ -166,7 +166,7 @@ and they do **not** handle logical operators like `&&` and `||`.
 
 If you want bash, run them with bash.
 
-```js
+```ts
 exec(["bash", "-c", "command $VAR && command"])
 exec("bash -c 'command $VAR' && command")
 ```

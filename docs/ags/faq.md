@@ -8,7 +8,7 @@ a `Gdk.Monitor` object which you can get from compositor libraries.
 
 Example with Hyprland
 
-```js
+```tsx
 import Hyprland from "gi://AstalHyprland"
 
 function Bar(gdkmonitor) {
@@ -28,7 +28,7 @@ App.start({ main })
 
 JavaScript is **not** an bash.
 
-```tsx
+```ts
 const HOME = exec("echo $HOME") // does not work
 ```
 
@@ -39,7 +39,7 @@ to the `echo` program.
 :::danger Please don't do this
 You could pass it to bash, but that is a horrible approach.
 
-```tsx
+```ts
 const HOME = exec("bash -c 'echo $HOME'")
 ```
 
@@ -47,7 +47,7 @@ const HOME = exec("bash -c 'echo $HOME'")
 
 You can read environment variables with [GLib.getenv](https://gjs-docs.gnome.org/glib20~2.0/glib.getenv).
 
-```tsx
+```ts
 import GLib from "gi://GLib"
 
 const HOME = GLib.getenv("HOME")
@@ -58,8 +58,9 @@ const HOME = GLib.getenv("HOME")
 Put the svgs in a directory, named `<icon-name>-symbolic.svg`
 and use `App.add_icons` or `icons` parameter in `App.start`
 
-```js
-// app.ts
+:::code-group
+
+```ts [app.ts]
 App.start({
     icons: `${SRC}/icons`,
     main() {
@@ -70,6 +71,8 @@ App.start({
     },
 })
 ```
+
+:::
 
 :::info
 If there is a name clash with an icon from your current icon pack
@@ -82,7 +85,7 @@ The `console` API in gjs uses glib logging functions.
 If you just want to print some text as is to stdout
 use the globally available `print` function or `printerr` for stderr.
 
-```js
+```ts
 print("print this line to stdout")
 printerr("print this line to stderr")
 ```
@@ -91,7 +94,7 @@ printerr("print this line to stderr")
 
 The `bind` function can take two types of objects.
 
-```typescript
+```ts
 interface Subscribable<T = unknown> {
     subscribe(callback: (value: T) => void): () => void
     get(): T
@@ -108,7 +111,7 @@ and custom objects.
 
 For example you can compose `Variables` in using a class.
 
-```typescript
+```ts
 type MyVariableValue = {
     number: number
     string: string
@@ -154,3 +157,58 @@ function MyWidget() {
     return <label label={label} />
 }
 ```
+
+## Populate the global scope with frequently accessed variables
+
+It might be annoying to always import Gtk only for `Gtk.Align` enums.
+
+:::code-group
+
+```ts [globals.ts]
+import Gtk from "gi://Gtk"
+
+declare global {
+    const START: number
+    const CENTER: number
+    const END: number
+    const FILL: number
+}
+
+Object.assign(globalThis, {
+    START: Gtk.Align.START,
+    CENTER: Gtk.Align.CENTER,
+    END: Gtk.Align.END,
+    FILL: Gtk.Align.FILL,
+})
+```
+
+:::
+
+:::code-group
+
+```tsx [Bar.tsx]
+export default function Bar() {
+    return <window>
+        <box halign={START} />
+    </window>
+}
+```
+
+:::
+
+:::code-group
+
+```ts [app.ts]
+import "./globals"
+import Bar from "./Bar"
+
+App.start({
+    main: Bar
+})
+```
+
+:::
+
+:::info
+It is considered bad practice to populate the global scope, but its your code, not a public library.
+:::

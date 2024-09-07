@@ -123,14 +123,12 @@ function MyWidget() {
     return <ColorButton
         setup={setup}
         useAlpha
-        rgba={
-            new Gdk.RGBA({
-                red: 1,
-                green: 0,
-                blue: 0,
-                alpha: 0.5,
-            })
-        }
+        rgba={new Gdk.RGBA({
+            red: 1,
+            green: 0,
+            blue: 0,
+            alpha: 0.5,
+        })}
         onColorSet={(self) => {
             console.log(self.rgba)
         }}
@@ -143,3 +141,42 @@ Signal properties have to be annotated manually for TypeScript.
 You can reference [Gtk3](https://gjs-docs.gnome.org/gtk30~3.0/)
 and [Astal](https://aylur.github.io/libastal/index.html#classes) for available signals.
 :::
+
+## TypeScript
+
+Type of widgets are available through `Widget`.
+Here is an example Widget that takes in and handles a possibly `Binding` prop.
+
+```tsx
+import { Binding, Variable, Widget } from "astal"
+
+export interface ToggleButtonProps extends Widget.ButtonProps {
+    onToggled?: (self: Widget.Button, on: boolean) => void
+    state?: Binding<boolean> | boolean
+    child?: JSX.Element
+}
+
+export default function ToggleButton(btnprops: ToggleButtonProps) {
+    const { state = false, onToggled, setup, child, ...props } = btnprops
+    const innerState = Variable(state instanceof Binding ? state.get() : state)
+
+    return <button
+        {...props}
+        setup={self => {
+            setup?.(self)
+
+            self.toggleClassName("active", innerState.get())
+            self.hook(innerState, () => self.toggleClassName("active", innerState.get()))
+
+            if (state instanceof Binding) {
+                self.hook(state, () => innerState.set(state.get()))
+            }
+        }}
+        onClicked={self => {
+            onToggled?.(self, !innerState.get())
+        }}
+    >
+        {child}
+    </button>
+}
+```

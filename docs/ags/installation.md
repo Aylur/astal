@@ -14,12 +14,12 @@ Read more about it on the [nix page](../getting-started/nix.md)
 
 :::code-group
 
-```sh [Fedora]
-sudo dnf install golang npm gjs
-```
-
 ```sh [Arch]
 sudo pacman -Syu go npm gjs
+```
+
+```sh [Fedora]
+sudo dnf install golang npm gjs
 ```
 
 ```sh [Alpine]
@@ -30,7 +30,7 @@ sudo apk add go npm gjs
 sudo apt install golang-go npm gjs
 ```
 
-```bash [openSUSE]
+```sh [openSUSE]
 sudo zypper install go npm gjs
 ```
 
@@ -38,10 +38,10 @@ sudo zypper install go npm gjs
 
 3. Clone the repo and Install
 
-```bash
+```sh
 git clone https://github.com/aylur/ags.git
 cd ags
-git checkout v2
+git checkout v2 # https://github.com/Aylur/ags/pull/504
 go install
 ```
 

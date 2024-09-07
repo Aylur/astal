@@ -115,7 +115,7 @@ sudo apk add dart-sass
 npm install -g sass # not packaged on Ubuntu
 ```
 
-```bash [openSUSE]
+```sh [openSUSE]
 sudo zypper install dart-sass
 ```
 
@@ -128,7 +128,7 @@ Importing `scss` files will simply return transpiled css.
 ```ts [app.ts]
 import style from "./style.scss"
 
-App.config({
+App.start({
     css: style,
     main() {},
 })
@@ -156,7 +156,7 @@ writeFile(tmpscss, `
 
 exec(`sass ${tmpscss} ${target}`)
 
-App.config({
+App.start({
     css: target,
 })
 
