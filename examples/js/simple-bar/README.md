@@ -1,5 +1,7 @@
 # Simple Bar Example
 
+![sime-bar](https://github.com/user-attachments/assets/a306c864-56b7-44c4-8820-81f424f32b9b)
+
 A simple bar for Hyprland using
 
 - [Audio library](https://aylur.github.io/astal/libraries/audio).
