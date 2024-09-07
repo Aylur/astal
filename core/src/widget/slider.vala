@@ -10,6 +10,8 @@ public class Slider : Gtk.Scale {
     public signal void dragged ();
 
     construct {
+        draw_value = false;
+
         if (adjustment == null)
             adjustment = new Gtk.Adjustment(0,0,0,0,0,0);
 
