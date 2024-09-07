@@ -212,3 +212,46 @@ App.start({
 :::info
 It is considered bad practice to populate the global scope, but its your code, not a public library.
 :::
+
+## Auto create Window for each Monitor
+
+To have Window widgets appear on a monitor when its plugged in, listen to `App.monitor_added`.
+
+:::code-group
+
+```tsx [Bar.tsx]
+export default function Bar(gdkmonitor: Gdk.Monitor) {
+    return <window gdkmonitor={gdkmonitor} />
+}
+```
+
+:::
+
+:::code-group
+
+```ts [app.ts]
+import { Gdk, Gtk } from "astal"
+import Bar from "./Bar"
+
+function main() {
+    const bars = new Map<Gdk.Monitor, Gtk.Widget>()
+
+    // initialize
+    for (const gdkmonitor of App.get_monitors()) {
+        bars.set(gdkmonitor, Bar(gdkmonitor))
+    }
+
+    App.connect("monitor-added", (_, gdkmonitor) => {
+        bars.set(gdkmonitor, Bar(gdkmonitor))
+    })
+
+    App.connect("monitor-removed", (_, gdkmonitor) => {
+        bars.get(gdkmonitor)?.destroy()
+        bars.delete(gdkmonitor)
+    })
+}
+
+App.start({ main })
+```
+
+:::

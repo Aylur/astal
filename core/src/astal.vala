@@ -9,6 +9,27 @@ public class Application : Gtk.Application {
     public string socket_path { get; private set; }
 
     [DBus (visible=false)]
+    public signal void monitor_added(Gdk.Monitor monitor);
+
+    [DBus (visible=false)]
+    public signal void monitor_removed(Gdk.Monitor monitor);
+
+    [DBus (visible=false)]
+    public List<weak Gdk.Monitor> monitors {
+        owned get {
+            var display = Gdk.Display.get_default();
+            var list = new List<weak Gdk.Monitor>();
+            for (var i = 0; i <= display.get_n_monitors(); ++i) {
+                var mon = display.get_monitor(i);
+                if (mon != null) {
+                    list.append(mon);
+                }
+            }
+            return list;
+        }
+    }
+
+    [DBus (visible=false)]
     public string instance_name {
         get { return _instance_name; }
         set {
@@ -218,6 +239,18 @@ public class Application : Gtk.Application {
     construct {
         if (instance_name == null)
             instance_name = "astal";
+
+        activate.connect(() => {
+            var display = Gdk.Display.get_default();
+            display.monitor_added.connect((mon) => {
+                monitor_added(mon);
+                notify_property("monitors");
+            });
+            display.monitor_removed.connect((mon) => {
+                monitor_removed(mon);
+                notify_property("monitors");
+            });
+        });
 
         shutdown.connect(() => { try { quit(); } catch(Error err) {} });
         Unix.signal_add(1, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);

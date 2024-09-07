@@ -22,7 +22,7 @@ type Config = Partial<{
 import { setConsoleLogDomain } from "console"
 import { exit, programArgs } from "system"
 
-class AstalJS extends Astal.Application {
+export default new (class AstalJS extends Astal.Application {
     static { GObject.registerClass(this) }
 
     eval(body: string): Promise<any> {
@@ -100,6 +100,4 @@ class AstalJS extends Astal.Application {
 
         this.runAsync([])
     }
-}
-
-export default new AstalJS()
+})
