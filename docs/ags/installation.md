@@ -4,7 +4,14 @@
 
 maintainer: [@Aylur](https://github.com/Aylur)
 
-Read more about it on the [nix page](../getting-started/nix.md)
+Read more about it on the [nix page](../getting-started/nix#ags)
+
+You can try without installing.
+
+<!--TODO: remove v2 after merge-->
+```sh
+nix run github:aylur/ags/v2 -- --help
+```
 
 ## Bulding AGS from source
 
@@ -38,6 +45,7 @@ sudo zypper install go npm gjs
 
 3. Clone the repo and Install
 
+<!--TODO: remove v2 after merge-->
 ```sh
 git clone https://github.com/aylur/ags.git
 cd ags
