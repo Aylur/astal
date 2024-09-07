@@ -30,7 +30,7 @@ window {
 `
 
 App.start({
-    css: "/home/username/.config/ags/style.css",
+    css: "./style.css",
     css: `${SRC}/style.css'`,
     css: inlineCss,
 })
@@ -40,7 +40,7 @@ App.start({
 
 :::info
 The global `SRC` will point to the directory `app.ts` is in.
-You can pass a relative path, but its resolution will be relative to the current working directory.
+AGS will set the current working directory to `--config`, so `./style.css` also works.
 :::
 
 ## Css Property on Widgets
@@ -91,24 +91,79 @@ you can use the [GTK inspector](https://wiki.gnome.org/Projects/GTK/Inspector)
 ags --inspector
 ```
 
-## Using pre-processors like SCSS
+## Using SCSS
+
+Gtk's CSS only supports a subset of what the web offers.
+Most notably nested selectors are unsupported by Gtk, but this can be
+workaround by using preprocessors like [SCSS](https://sass-lang.com/).
+
+:::code-group
+
+```sh [Arch]
+sudo pacman -Syu dart-sass
+```
+
+```sh [Fedora]
+npm install -g sass # not packaged on Fedora
+```
+
+```sh [Alpine]
+sudo apk add dart-sass
+```
+
+```sh [Ubuntu]
+npm install -g sass # not packaged on Ubuntu
+```
+
+```bash [openSUSE]
+sudo zypper install dart-sass
+```
+
+:::
+
+Importing `scss` files will simply return transpiled css.
 
 :::code-group
 
 ```ts [app.ts]
-// main scss file
-const scss = `${SRC}/style.scss`
-
-// target css file
-const css = `/tmp/my-style.css`
-
-// make sure sassc is installed on your system
-exec(`sassc ${scss} ${css}`)
+import style from "./style.scss"
 
 App.config({
-    css,
+    css: style,
     main() {},
 })
 ```
 
+:::
+
+:::tip
+If you for example want to set scss varibles from JS,
+You can inline import, compose, and transpile yourself.
+
+```ts [app.ts]
+import style1 from "inline:./style1.scss"
+import style2 from "inline:./style2.scss"
+
+const tmpscss = "/tmp/style.scss"
+const target = "/tmp/style.css"
+
+writeFile(tmpscss, `
+  $var1: red;
+  $var1: blue;
+  ${style1}
+  ${style1}
+`)
+
+exec(`sass ${tmpscss} ${target}`)
+
+App.config({
+    css: target,
+})
+
+```
+
+:::
+
+:::info
+If you want other preprocessors support builtin open an Issue.
 :::
