@@ -1,9 +1,45 @@
-import { Variable, Astal, Gtk, Gdk, GLib, bind } from "astal"
+import { App, Variable, Astal, Gtk, Gdk, GLib, bind } from "astal"
 import Hyprland from "gi://AstalHyprland"
 import Mpris from "gi://AstalMpris"
 import Battery from "gi://AstalBattery"
 import Wp from "gi://AstalWp"
 import Network from "gi://AstalNetwork"
+import Tray from "gi://AstalTray"
+
+function SysTray() {
+    const tray = Tray.get_default()
+
+    return <box>
+        {bind(tray, "items").as(items => items.map(item => {
+            if (item.iconThemePath)
+                App.add_icons(item.iconThemePath)
+
+            const menu = item.create_menu()
+
+            return <button
+                tooltipMarkup={bind(item, "tooltipMarkup")}
+                onDestroy={() => menu?.destroy()}
+                onClickRelease={self => {
+                    menu?.popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, null)
+                }}>
+                <icon
+                    setup={self => {
+                        if (item.iconName) self.icon = item.iconName
+                        if (item.iconPixbuf) self.pixbuf = item.iconPixbuf
+
+                        self.hook(item, "notify::icon-name", () => {
+                            self.icon = item.iconName
+                        })
+
+                        self.hook(item, "notify::icon-pixbuf", () => {
+                            self.pixbuf = item.iconPixbuf
+                        })
+                    }}
+                />
+            </button>
+        }))}
+    </box>
+}
 
 function Wifi() {
     const { wifi } = Network.get_default()
@@ -120,6 +156,7 @@ export default function Bar(monitor: Gdk.Monitor) {
                 <Media />
             </box>
             <box hexpand halign={Gtk.Align.END} >
+                <SysTray />
                 <Wifi />
                 <AudioSlider />
                 <BatteryLevel />
