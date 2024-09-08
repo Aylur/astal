@@ -11,9 +11,9 @@ The runtime is [GJS](https://gitlab.gnome.org/GNOME/gjs) and **not** nodejs
 :::
 
 Examples:
-- [Simple Bar](https://github.com/Aylur/astal/tree/main/examples/js/simple-bar)
-![sime-bar](https://github.com/user-attachments/assets/a306c864-56b7-44c4-8820-81f424f32b9b)
 
+- [Simple Bar](https://github.com/Aylur/astal/tree/main/examples/js/simple-bar)
+![simple-bar](https://github.com/user-attachments/assets/a306c864-56b7-44c4-8820-81f424f32b9b)
 
 ## Lua
 
@@ -29,15 +29,14 @@ Examples:
 
 ## Python
 
-<!--TODO: move python PR to monorepo and link-->
-There is a WIP [library for python](), to make it behave similar to the above two
+There was a WIP [library for python](https://github.com/aylur/astal/tree/feat/python), to make it behave similar to the above two
 but I don't plan on finishing it, because I'm not a fan of python.
 If you are interested in picking it up, feel free to open a PR.
 Nonetheless you can still use python the OOP way [pygobject](https://pygobject.gnome.org/tutorials/gobject/subclassing.html) intended it.
 
 Examples:
 
-- TODO
+- [Starter Bar](https://github.com/Aylur/astal/tree/main/examples/py/starter-bar)
 
 ## Vala
 

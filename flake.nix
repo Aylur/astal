@@ -66,7 +66,9 @@
         wireplumber
         libdbusmenu-gtk3
         wayland
+
         (lua.withPackages (ps: [ps.lgi]))
+        (python3.withPackages (ps: [ps.pygobject3 ps.pygobject-stubs]))
         gjs
       ];
     in {

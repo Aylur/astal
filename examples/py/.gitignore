@@ -1,0 +1,3 @@
+pygobject-stubs/
+*.pyi
+__pycache__/
