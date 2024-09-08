@@ -269,3 +269,22 @@ notifd.notifications // ❌ // [!code error]
 
 notifd.get_notifications() // ✅
 ```
+
+## How to create regular floating windows
+
+Use `Gtk.Window` with [Widget.astalify](/ags/widget#how-to-use-non-builtin-gtk-widgets).
+
+By default `Gtk.Window` is destroyed on close. To prevent this add a handler for `delete-event`.
+
+```tsx {4-7}
+const RegularWindow = Widget.astalify(Gtk.Window)
+
+return <RegularWindow
+    onDeleteEvent={(self) => {
+        self.hide()
+        return true
+    }}
+>
+    {child}
+</RegularWindow>
+```
