@@ -142,6 +142,29 @@ You can reference [Gtk3](https://gjs-docs.gnome.org/gtk30~3.0/)
 and [Astal](https://aylur.github.io/libastal/index.html#classes) for available signals.
 :::
 
+:::tip
+
+As stated before children are passed as either `child` or `children` property,
+when passing a container widget with `Widget.astalify` these rules still apply.
+While subclasses of `Gtk.Bin` *can* take a `child` property in gjs, you might notice
+a warning that it is deprecated. You can workaround this with a simple wrapper function.
+
+```tsx
+const GtkFrame = Widget.astalify<
+    typeof Gtk.Frame,
+    FrameProps,
+    "Frame"
+>(Gtk.Frame)
+
+export function Frame({ child, ...props }: FrameProps) {
+  const frame = GtkFrame(props)
+  frame.add(child) // use the widget's child adding function
+  return frame
+}
+```
+
+:::
+
 ## TypeScript
 
 Type of widgets are available through `Widget`.
