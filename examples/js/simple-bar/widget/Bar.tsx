@@ -22,20 +22,7 @@ function SysTray() {
                 onClickRelease={self => {
                     menu?.popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, null)
                 }}>
-                <icon
-                    setup={self => {
-                        if (item.iconName) self.icon = item.iconName
-                        if (item.iconPixbuf) self.pixbuf = item.iconPixbuf
-
-                        self.hook(item, "notify::icon-name", () => {
-                            self.icon = item.iconName
-                        })
-
-                        self.hook(item, "notify::icon-pixbuf", () => {
-                            self.pixbuf = item.iconPixbuf
-                        })
-                    }}
-                />
+                <icon g_icon={bind(item, "gicon")}/>
             </button>
         }))}
     </box>
