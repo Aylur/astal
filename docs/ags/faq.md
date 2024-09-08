@@ -255,3 +255,17 @@ App.start({ main })
 ```
 
 :::
+
+## Error: Can't convert non-null pointer to JS value
+
+These happen when accessing list type properties. Gjs fails to correctly bind
+`List` and other array like types of Vala as a property.
+
+```ts
+import Notifd from "gi://AstalNotifd"
+const notifd = Notifd.get_default()
+
+notifd.notifications // ❌ // [!code error]
+
+notifd.get_notifications() // ✅
+```
