@@ -20,9 +20,9 @@ public class Client : Object {
     public uint pid { get; private set; }
     public bool xwayland { get; private set; }
     public bool pinned { get; private set; }
-    public bool fullscreen { get; private set; }
-    public int fullscreen_mode { get; private set; }
-    public bool fake_fullscreen { get; private set; }
+    public Fullscreen fullscreen { get; private set; }
+    public Fullscreen fullscreen_client { get; private set; }
+
     // TODO: public Group[] grouped { get; private set; }
     // TODO: public Tag[] tags { get; private set; }
     public string swallowing { get; private set; }
@@ -42,34 +42,41 @@ public class Client : Object {
         pid = (uint)obj.get_int_member("pid");
         xwayland = obj.get_boolean_member("xwayland");
         pinned = obj.get_boolean_member("pinned");
-        fullscreen = obj.get_boolean_member("fullscreen");
-        fullscreen_mode = (int)obj.get_int_member("fullscreenMode"); // is this used?
-        fake_fullscreen = obj.get_boolean_member("fakeFullscreen");
         swallowing = obj.get_string_member("swallowing");
         focus_history_id = (int)obj.get_int_member("focusHistoryID");
         x = (int)obj.get_array_member("at").get_int_element(0);
         y = (int)obj.get_array_member("at").get_int_element(1);
         width = (int)obj.get_array_member("size").get_int_element(0);
         height = (int)obj.get_array_member("size").get_int_element(1);
+        fullscreen = (Fullscreen)obj.get_int_member("fullscreen");
+        fullscreen_client = (Fullscreen)obj.get_int_member("fullscreenClient");
 
         workspace = hyprland.get_workspace((int)obj.get_object_member("workspace").get_int_member("id"));
         monitor = hyprland.get_monitor((int)obj.get_int_member("monitor"));
     }
 
     public void kill() {
-        Hyprland.get_default().dispatch("closewindow", "address:" + "0x" + address);
+        Hyprland.get_default().dispatch("closewindow", @"address:0x$address");
     }
 
     public void focus() {
-        Hyprland.get_default().dispatch("focuswindow", "address:" + "0x" + address);
+        Hyprland.get_default().dispatch("focuswindow", @"address:0x$address");
     }
 
     public void move_to(Workspace ws) {
-        Hyprland.get_default().dispatch("movetoworkspacesilent", ws.id.to_string() + ",address:" + "0x" + address);
+        var id = ws.id;
+        Hyprland.get_default().dispatch("movetoworkspacesilent", @"$id,address:0x$address");
     }
 
     public void toggle_floating() {
-        Hyprland.get_default().dispatch("togglefloating", "address:" + "0x" + address);
+        Hyprland.get_default().dispatch("togglefloating", @"address:0x$address");
     }
+}
+
+public enum Fullscreen {
+    CURRENT = -1,
+    NONE = 0,
+    FULLSCREEN = 1,
+    MAXIMIZED = 2,
 }
 }
