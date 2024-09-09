@@ -124,8 +124,9 @@ internal class AstalNotifd.Daemon : Object {
         hints.remove("image_data");
         hints.remove("icon_data");
 
-        var id = replaces_id > 0 ? replaces_id : n_id++;
+        var id = notifs.contains(replaces_id) ? replaces_id : n_id++;
 
+        // TODO: update existing Notification object when replaced
         var replaced = add_notification(new Notification(
             app_name, id, app_icon, summary, body, actions, hints, expire_timeout
         ));
