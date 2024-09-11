@@ -30,7 +30,7 @@ git clone https://github.com/aylur/astal.git
 cd astal/lib/apps
 ```
 
-3. clone repo
+3. install
 
 ```sh
 meson setup build
@@ -44,7 +44,6 @@ instead which most package managers do, set the `prefix` option:
 
 ```sh
 meson setup --prefix /usr build
-meson install -C build
 ```
 
 :::
