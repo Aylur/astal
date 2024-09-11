@@ -7,7 +7,7 @@ public class Box : Gtk.Box {
     }
 
     /**
-     * wether to implicity destroy previous children when setting them
+     * whether to implicity destroy previous children when setting them
      */
     public bool no_implicit_destroy { get; set; default = false; }
 

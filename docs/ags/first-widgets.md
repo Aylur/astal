@@ -350,7 +350,7 @@ return <box>
 ```
 
 :::warning
-Only bind children of the `box` widget. Gtk does not cleanup widgets by default,
+Only bind children of the `box` or the `stack` widget. Gtk does not cleanup widgets by default,
 they have to be explicitly destroyed. The box widget is a special container that
 will implicitly call `.destroy()` on its removed child widgets.
 You can disable this behavior by setting the `noImplicityDestroy` property.

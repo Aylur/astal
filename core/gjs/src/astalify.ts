@@ -20,8 +20,12 @@ function setChildren(parent: Gtk.Widget, children: Gtk.Widget[]) {
             parent.remove(ch)
     }
 
-    // FIXME: add rest of the edge cases like Stack
+    // TODO: add more container types
     if (parent instanceof Astal.Box) {
+        parent.set_children(children)
+    }
+
+    else if (parent instanceof Astal.Stack) {
         parent.set_children(children)
     }
 

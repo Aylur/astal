@@ -39,6 +39,7 @@ sources = [
   'widget/overlay.vala',
   'widget/scrollable.vala',
   'widget/slider.vala',
+  'widget/stack.vala',
   'widget/widget.vala',
   'widget/window.vala',
   'astal.vala',

@@ -62,8 +62,10 @@ local function set_children(parent, children)
         end
     end
 
-    -- FIXME: add rest of the edge cases like Stack
+    -- TODO: add more container types
     if Astal.Box:is_type_of(parent) then
+        parent:set_children(children)
+    elseif Astal.Stack:is_type_of(parent) then
         parent:set_children(children)
     elseif Astal.CenterBox:is_type_of(parent) then
         parent.start_widget = children[1]
@@ -223,7 +225,7 @@ local Widget = {
     Revealer = astalify(Gtk.Revealer),
     Scrollable = astalify(Astal.Scrollable),
     Slider = astalify(Astal.Slider),
-    -- TODO: Stack
+    Stack = astalify(Astal.Stack),
     Switch = astalify(Gtk.Switch),
     Window = astalify(Astal.Window),
 }

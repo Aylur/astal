@@ -100,7 +100,10 @@ export type SliderProps = ConstructProps<Astal.Slider, Astal.Slider.ConstructorP
     onDragged: []
 }>
 
-// TODO: Stack
+// Stack
+export type Stack = Widget<Astal.Stack>
+export const Stack = astalify<typeof Astal.Stack, StackProps, "Stack">(Astal.Stack)
+export type StackProps = ConstructProps<Astal.Stack, Astal.Stack.ConstructorProps>
 
 // Switch
 export type Switch = Widget<Gtk.Switch>

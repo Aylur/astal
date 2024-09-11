@@ -49,7 +49,7 @@ const ctors = {
     revealer: Widget.Revealer,
     scrollable: Widget.Scrollable,
     slider: Widget.Slider,
-    // TODO: stack
+    stack: Widget.Stack,
     switch: Widget.Switch,
     window: Widget.Window,
 }
