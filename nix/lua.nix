@@ -52,7 +52,7 @@ in
 
     preFixup = ''
       gappsWrapperArgs+=(
-        --prefix PATH : ${pkgs.lib.makeBinPath extraPacakges}
+        --prefix PATH : "${pkgs.lib.makeBinPath extraPacakges}"
       )
     '';
   }
