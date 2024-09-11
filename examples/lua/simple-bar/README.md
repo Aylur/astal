@@ -9,3 +9,4 @@ A simple bar for Hyprland using
 - [Hyprland library](https://aylur.github.io/astal/libraries/hyprland).
 - [Mpris library](https://aylur.github.io/astal/libraries/mpris).
 - [Network library](https://aylur.github.io/astal/libraries/network).
+- [dart-sass](https://sass-lang.com/dart-sass/) as the css precompiler

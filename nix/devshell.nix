@@ -38,6 +38,7 @@
     libdbusmenu-gtk3
     wayland
 
+    dart-sass
     lua
     python
     gjs
@@ -47,6 +48,10 @@ in {
     inherit buildInputs;
   };
   astal = pkgs.mkShell {
-    buildInputs = buildInputs ++ (builtins.attrValues self.packages.${pkgs.system});
+    buildInputs =
+      buildInputs
+      ++ builtins.attrValues (
+        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
+      );
   };
 }

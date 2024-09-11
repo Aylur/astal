@@ -1,6 +1,6 @@
 import Binding, { type Connectable } from "./binding.js"
 import { Astal } from "./imports.js"
-import { interval } from "./time.js"
+import { interval, idle } from "./time.js"
 import { execAsync, subprocess } from "./process.js"
 
 class VariableWrapper<T> extends Function {
@@ -101,7 +101,7 @@ class VariableWrapper<T> extends Function {
 
     drop() {
         this.variable.emit("dropped")
-        this.variable.run_dispose()
+        idle(() => this.variable.run_dispose())
     }
 
     onDropped(callback: () => void) {

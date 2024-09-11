@@ -29,10 +29,13 @@ function Binding:__tostring()
 end
 
 function Binding:get()
+    if self.property ~= nil and GObject.Object:is_type_of(self.emitter) then
+        return self.transformFn(self.emitter[self.property])
+    end
     if type(self.emitter.get) == "function" then
         return self.transformFn(self.emitter:get())
     end
-    return self.transformFn(self.emitter[self.property])
+    error("can not get: Not a GObject or a Variable " + self)
 end
 
 ---@param transform fun(value: any): any
@@ -48,17 +51,20 @@ end
 ---@param callback fun(value: any)
 ---@return function
 function Binding:subscribe(callback)
+    if self.property ~= nil and GObject.Object:is_type_of(self.emitter) then
+        local id = self.emitter.on_notify:connect(function()
+            callback(self:get())
+        end, self.property, false)
+        return function()
+            GObject.signal_handler_disconnect(self.emitter, id)
+        end
+    end
     if type(self.emitter.subscribe) == "function" then
         return self.emitter:subscribe(function()
             callback(self:get())
         end)
     end
-    local id = self.emitter.on_notify:connect(function()
-        callback(self:get())
-    end, self.property, false)
-    return function()
-        GObject.signal_handler_disconnect(self.emitter, id)
-    end
+    error("can not subscribe: Not a GObject or a Variable " + self)
 end
 
 Binding.__index = Binding
