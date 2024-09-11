@@ -6,19 +6,32 @@ Using Astal on Nix will require you to package your project.
 
 :::code-group
 
-```nix [typescript.nix]
+```nix [<i class="devicon-lua-plain"></i> Lua]
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    astal = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nixos/nixpkgs/nixos-unstable";
+    };
+  };
+
+  outputs = { self, nixpkgs, astal }: let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
+    packages.${system}.default = astal.lib.mkLuaPacakge {
+      inherit pkgs;
+    };
+  };
+}
+```
+
+```nix [<i class="devicon-python-plain"></i> Python]
 # Not documented yet
 ```
 
-```nix [lua.nix]
-# Not documented yet
-```
-
-```nix [python.nix]
-# Not documented yet
-```
-
-```nix [vala.nix]
+```nix [<i class="devicon-vala-plain"></i> Vala]
 # Not documented yet
 ```
 
@@ -34,7 +47,7 @@ Example content of a `flake.nix` file that contains your `homeConfigurations`.
 
 :::code-group
 
-```nix [flake.nix]
+```nix [<i class="devicon-nixos-plain"></i> flake.nix]
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -71,7 +84,7 @@ Example content of `home.nix` file
 
 :::code-group
 
-```nix [home.nix]
+```nix [<i class="devicon-nixos-plain"></i> home.nix]
 { inputs, pkgs, ... }:
 {
   # add the home manager module

@@ -8,8 +8,8 @@
     inherit (builtins) replaceStrings readFile;
 
     version = replaceStrings ["\n"] [""] (readFile ./version);
-    system = "x86_64-linux";
-    pkgs = import nixpkgs {inherit system;};
+    system = "x86_64-linux"; # TODO: other architectures
+    pkgs = nixpkgs.legacyPackages.${system};
 
     mkPkg = name: src: inputs:
       pkgs.stdenv.mkDerivation {
@@ -29,6 +29,17 @@
         outputs = ["out" "dev"];
       };
   in {
+    devShells.${system} = import ./nix/devshell.nix {
+      inherit self pkgs;
+    };
+
+    lib = {
+      mkLuaPackage = import ./nix/lua.nix {
+        inherit pkgs;
+        astal = self;
+      };
+    };
+
     packages.${system} = with pkgs; {
       docs = import ./docs {inherit self pkgs;};
       default = self.packages.${system}.astal;
@@ -46,38 +57,6 @@
       river = mkPkg "astal-river" ./lib/river [json-glib];
       tray = mkPkg "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
       wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
-    };
-
-    devShells.${system} = let
-      buildInputs = with pkgs; [
-        wrapGAppsHook
-        gobject-introspection
-        meson
-        pkg-config
-        ninja
-        vala
-        gtk3
-        gtk-layer-shell
-        json-glib
-        pam
-        gvfs
-        networkmanager
-        gdk-pixbuf
-        wireplumber
-        libdbusmenu-gtk3
-        wayland
-
-        (lua.withPackages (ps: [ps.lgi]))
-        (python3.withPackages (ps: [ps.pygobject3 ps.pygobject-stubs]))
-        gjs
-      ];
-    in {
-      default = pkgs.mkShell {
-        inherit buildInputs;
-      };
-      astal = pkgs.mkShell {
-        buildInputs = buildInputs ++ (builtins.attrValues self.packages.${system});
-      };
     };
   };
 }

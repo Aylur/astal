@@ -22,7 +22,7 @@ function SysTray() {
                 onClickRelease={self => {
                     menu?.popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, null)
                 }}>
-                <icon g_icon={bind(item, "gicon")}/>
+                <icon gIcon={bind(item, "gicon")} />
             </button>
         }))}
     </box>
@@ -64,21 +64,27 @@ function BatteryLevel() {
 }
 
 function Media() {
-    const player = Mpris.Player.new("spotify")
+    const mpris = Mpris.get_default()
 
     return <box className="Media">
-        <box
-            className="Cover"
-            valign={Gtk.Align.CENTER}
-            css={bind(player, "coverArt").as(cover =>
-                `background-image: url('${cover}');`
-            )}
-        />
-        <label
-            label={bind(player, "title").as(() =>
-                `${player.title} - ${player.artist}`
-            )}
-        />
+        {bind(mpris, "players").as(ps => ps[0] ? (
+            <box>
+                <box
+                    className="Cover"
+                    valign={Gtk.Align.CENTER}
+                    css={bind(ps[0], "coverArt").as(cover =>
+                        `background-image: url('${cover}');`
+                    )}
+                />
+                <label
+                    label={bind(ps[0], "title").as(() =>
+                        `${ps[0].title} - ${ps[0].artist}`
+                    )}
+                />
+            </box>
+        ) : (
+            "Nothing Playing"
+        ))}
     </box>
 }
 

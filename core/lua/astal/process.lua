@@ -72,7 +72,7 @@ function M.exec_async(commandline, on_stdout, on_stderr)
     local out, err = defualt_proc_args(on_stdout, on_stderr)
     if type(commandline) == "table" then
         Astal.Process.exec_asyncv(commandline, function(_, res)
-            local stdout, fail = Astal.exec_asyncv_finish(res)
+            local stdout, fail = Astal.Process.exec_asyncv_finish(res)
             if fail ~= nil then
                 err(fail)
             else
@@ -81,7 +81,7 @@ function M.exec_async(commandline, on_stdout, on_stderr)
         end)
     else
         Astal.Process.exec_async(commandline, function(_, res)
-            local stdout, fail = Astal.exec_finish(res)
+            local stdout, fail = Astal.Process.exec_finish(res)
             if fail ~= nil then
                 err(fail)
             else

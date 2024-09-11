@@ -123,7 +123,9 @@ end
 
 function Variable:drop()
     self.variable.emit_dropped()
-    self.variable.run_dispose()
+    Astal.Time.idle(GObject.Closure(function()
+        self.variable.run_dispose()
+    end))
 end
 
 ---@param callback function
