@@ -12,7 +12,7 @@ Using Astal on Nix will require you to package your project.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     astal = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nixos/nixpkgs/nixos-unstable";
+      url = "github:aylur/astal";
     };
   };
 
