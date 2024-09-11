@@ -258,7 +258,7 @@ public class TrayItem : Object {
     }
 
 
-    public DbusmenuGtk.Menu? create_menu() {
+    public Gtk.Menu? create_menu() {
         if (proxy.Menu == null)
             return null;
 
