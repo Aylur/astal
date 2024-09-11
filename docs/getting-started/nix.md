@@ -22,7 +22,13 @@ Using Astal on Nix will require you to package your project.
   in {
     packages.${system}.default = astal.lib.mkLuaPacakge {
       inherit pkgs;
-      src = ./path/to/project; # should contain app.lua
+      src = ./path/to/project; # should contain init.lua
+
+      # add extra glib packages or binaries
+      extraPackages = [
+        astal.packages.${system}.battery
+        pkgs.dart-sass
+      ];
     };
   };
 }

@@ -1,4 +1,4 @@
-public class Astal.Switch : Gtk.Stack {
+public class Astal.Stack : Gtk.Stack {
     /**
      * whether to implicity destroy previous children when setting them
      */
