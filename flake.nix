@@ -29,6 +29,11 @@
         outputs = ["out" "dev"];
       };
   in {
+    mkLuaPackage = import ./nix/lua.nix {
+      inherit pkgs;
+      astal = self;
+    };
+
     packages.${system} = with pkgs; {
       docs = import ./docs {inherit self pkgs;};
       default = self.packages.${system}.astal;
