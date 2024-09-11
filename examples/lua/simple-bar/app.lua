@@ -1,4 +1,3 @@
-#!/usr/bin/lua
 local astal = require("astal")
 local App = astal.App
 
