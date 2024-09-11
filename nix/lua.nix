@@ -4,7 +4,7 @@ defaults: {
   name ? "astal-lua",
   src,
   extraLuaPackages ? (ps: []),
-  extraPacakges ? [],
+  extraPackages ? [],
 }: let
   lua = pkgs.lua.withPackages (ps:
     (extraLuaPackages ps)
@@ -22,37 +22,35 @@ defaults: {
       }))
     ]);
 
-  nativeBuildInputs = with pkgs; [
-    wrapGAppsHook
-    gobject-introspection
-  ];
-
-  buildInputs =
-    extraPacakges
-    ++ [
-      lua
-      astal.packages.${pkgs.system}.default
-    ];
-
-  script = pkgs.writeScript "astal-lua" ''
+  script = ''
     #!${lua}/bin/lua
     package.path = package.path .. ";${src}/?.lua"
     require "app"
   '';
 in
-  pkgs.stdenv.mkDerivation {
-    inherit nativeBuildInputs buildInputs src name;
+  pkgs.stdenvNoCC.mkDerivation {
+    inherit src name;
+
+    nativeBuildInputs = with pkgs; [
+      wrapGAppsHook
+      gobject-introspection
+    ];
+
+    buildInputs =
+      extraPackages
+      ++ [
+        lua
+        astal.packages.${pkgs.system}.default
+      ];
 
     installPhase = ''
       mkdir -p $out/bin
       cp -r * $out/bin
-      cp ${script} $out/bin/${name}
-      chmod +x $out/bin/${name}
+      echo '${script}' > astal-lua
+      install -m 755 astal-lua $out/bin/${name}
     '';
 
-    preFixup = ''
-      gappsWrapperArgs+=(
-        --prefix PATH : "${pkgs.lib.makeBinPath extraPacakges}"
-      )
-    '';
+    gappsWrapperArgs = [
+      "--prefix PATH : ${pkgs.lib.makeBinPath extraPackages}"
+    ];
   }

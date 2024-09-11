@@ -8,8 +8,8 @@
     inherit (builtins) replaceStrings readFile;
 
     version = replaceStrings ["\n"] [""] (readFile ./version);
-    system = "x86_64-linux";
-    pkgs = import nixpkgs {inherit system;};
+    system = "x86_64-linux"; # TODO: other architectures
+    pkgs = nixpkgs.legacyPackages.${system};
 
     mkPkg = name: src: inputs:
       pkgs.stdenv.mkDerivation {
@@ -33,9 +33,11 @@
       inherit self pkgs;
     };
 
-    mkLuaPackage = import ./nix/lua.nix {
-      inherit pkgs;
-      astal = self;
+    lib = {
+      mkLuaPackage = import ./nix/lua.nix {
+        inherit pkgs;
+        astal = self;
+      };
     };
 
     packages.${system} = with pkgs; {
