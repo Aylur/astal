@@ -4,7 +4,7 @@
 
 maintainer: [@Aylur](https://github.com/Aylur)
 
-Read more about it on the [nix page](./nix)
+Read more about it on the [nix page](./nix#astal)
 
 ## Arch
 
