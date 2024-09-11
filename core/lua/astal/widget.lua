@@ -115,18 +115,20 @@ end
 
 local function astalify(ctor)
     function ctor:hook(object, signalOrCallback, callback)
-        if type(object.subscribe) == "function" then
+        if GObject.Object:is_type_of(object) and type(signalOrCallback) == "string" then
+            local id = object["on_" .. signalOrCallback]:connect(function(_, ...)
+                callback(self, ...)
+            end)
+            self.on_destroy = function()
+                GObject.signal_handler_disconnect(object, id)
+            end
+        elseif type(object.subscribe) == "function" then
             local unsub = object.subscribe(function(...)
                 signalOrCallback(self, ...)
             end)
             self.on_destroy = unsub
-            return
-        end
-        local id = object["on_" .. signalOrCallback](function(_, ...)
-            callback(self, ...)
-        end)
-        self.on_destroy = function()
-            GObject.signal_handler_disconnect(object, id)
+        else
+            error("can not hook: not gobject+signal or subscribable")
         end
     end
 
