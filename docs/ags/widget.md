@@ -14,8 +14,6 @@ To have a full list of available properties, reference the documentation of the 
 - [Astal widgets](https://aylur.github.io/libastal/index.html#classes)
 - [Gtk widgets](https://docs.gtk.org/gtk3/#classes)
 
-You can check the [source code](https://github.com/aylur/astal/blob/main/gjs/src/widgets.ts) to have a full list of builtin widgets.
-
 ## AGS widget methods
 
 Additional methods that Astal.js adds to Gtk.Widget instances
@@ -203,3 +201,27 @@ export default function ToggleButton(btnprops: ToggleButtonProps) {
     </button>
 }
 ```
+
+## Builtin Widgets
+
+You can check the [source code](https://github.com/aylur/astal/blob/main/core/gjs/src/widgets.ts) to have a full list of builtin widgets.
+
+These widgets are available by default in JSX.
+
+- box: [Astal.Box](https://aylur.github.io/libastal/class.Box.html)
+- button: [Astal.Button](https://aylur.github.io/libastal/class.Button.html)
+- centerbox: [Astal.CenterBox](https://aylur.github.io/libastal/class.CenterBox.html)
+- circularprogress: [Astal.CircularProgress](https://aylur.github.io/libastal/class.CircularProgress.html)
+- drawingarea: [Gtk.DrawingArea](https://docs.gtk.org/gtk3/class.DrawingArea.html)
+- entry: [Gtk.Entry](https://docs.gtk.org/gtk3/class.Entry.html)
+- eventbox: [Astal.EventBox](https://aylur.github.io/libastal/class.EventBox.html)
+- icon: [Astal.Icon](https://aylur.github.io/libastal/class.Icon.html)
+- label: [Astal.Label](https://aylur.github.io/libastal/class.Label.html)
+- levelbar: [Astal.LevelBar](https://aylur.github.io/libastal/class.LevelBar.html)
+- overlay: [Astal.Overlay](https://aylur.github.io/libastal/class.Overlay.html)
+- revealer: [Gtk.Revealer](https://docs.gtk.org/gtk3/class.Revealer.html)
+- scrollable: [Astal.Scrollable](https://aylur.github.io/libastal/class.Scrollable.html)
+- slider: [Astal.Slider](https://aylur.github.io/libastal/class.Slider.html)
+- stack: [Astal.Stack](https://aylur.github.io/libastal/class.Stack.html)
+- switch: [Gtk.Switch](https://docs.gtk.org/gtk3/class.Switch.html)
+- window: [Astal.Window](https://aylur.github.io/libastal/class.Window.html)

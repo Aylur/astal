@@ -77,7 +77,7 @@ declare global {
             revealer: Widget.RevealerProps
             scrollable: Widget.ScrollableProps
             slider: Widget.SliderProps
-            // TODO: stack
+            stack: Widget.StackProps
             switch: Widget.SwitchProps
             window: Widget.WindowProps
         }
