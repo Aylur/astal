@@ -154,12 +154,12 @@ local function astalify(ctor)
             tbl.visible = true
         end
 
-        -- filter props
+        -- collect props
         local props = filter(tbl, function(_, key)
             return type(key) == "string" and key ~= "setup"
         end)
 
-        -- handle on_ handlers that are strings
+        -- collect signal handlers
         for prop, value in pairs(props) do
             if string.sub(prop, 0, 2) == "on" and type(value) ~= "function" then
                 props[prop] = function()
@@ -168,7 +168,7 @@ local function astalify(ctor)
             end
         end
 
-        -- handle bindings
+        -- collect bindings
         for prop, value in pairs(props) do
             if getmetatable(value) == Binding then
                 bindings[prop] = value
@@ -179,16 +179,6 @@ local function astalify(ctor)
         -- construct, attach bindings, add children
         local widget = ctor()
 
-        for prop, value in pairs(props) do
-            widget[prop] = value
-        end
-
-        for prop, binding in pairs(bindings) do
-            widget.on_destroy = binding:subscribe(function(v)
-                widget[prop] = v
-            end)
-        end
-
         if getmetatable(children) == Binding then
             set_children(widget, children:get())
             widget.on_destroy = children:subscribe(function(v)
@@ -198,6 +188,16 @@ local function astalify(ctor)
             if #children > 0 then
                 set_children(widget, children)
             end
+        end
+
+        for prop, binding in pairs(bindings) do
+            widget.on_destroy = binding:subscribe(function(v)
+                widget[prop] = v
+            end)
+        end
+
+        for prop, value in pairs(props) do
+            widget[prop] = value
         end
 
         if type(setup) == "function" then

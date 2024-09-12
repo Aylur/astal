@@ -129,16 +129,17 @@ function ctor(self: any, config: any = {}, children: any = []) {
     const { setup, ...props } = config
     props.visible ??= true
 
+    // collect bindings
     const bindings = Object.keys(props).reduce((acc: any, prop) => {
         if (props[prop] instanceof Binding) {
             const binding = props[prop]
-            setProp(self, prop, binding.get())
             delete props[prop]
             return [...acc, [prop, binding]]
         }
         return acc
     }, [])
 
+    // collect signal handlers
     const onHandlers = Object.keys(props).reduce((acc: any, key) => {
         if (key.startsWith("on")) {
             const sig = kebabify(key).split("-").slice(1).join("-")
@@ -149,8 +150,21 @@ function ctor(self: any, config: any = {}, children: any = []) {
         return acc
     }, [])
 
-    Object.assign(self, props)
+    // set children
+    children = mergeBindings(children.flat(Infinity))
+    if (children instanceof Binding) {
+        setChildren(self, children.get())
+        self.connect("destroy", children.subscribe((v) => {
+            setChildren(self, v)
+        }))
+    }
+    else {
+        if (children.length > 0) {
+            setChildren(self, children)
+        }
+    }
 
+    // setup signal handlers
     for (const [signal, callback] of onHandlers) {
         if (typeof callback === "function") {
             self.connect(signal, callback)
@@ -161,29 +175,20 @@ function ctor(self: any, config: any = {}, children: any = []) {
         }
     }
 
-    for (const [prop, bind] of bindings) {
+    // setup bindings handlers
+    for (const [prop, binding] of bindings) {
         if (prop === "child" || prop === "children") {
-            self.connect("destroy", bind.subscribe((v: any) => {
+            self.connect("destroy", binding.subscribe((v: any) => {
                 setChildren(self, v)
             }))
         }
-        self.connect("destroy", bind.subscribe((v: any) => {
+        self.connect("destroy", binding.subscribe((v: any) => {
             setProp(self, prop, v)
         }))
+        setProp(self, prop, binding.get())
     }
 
-    children = mergeBindings(children.flat(Infinity))
-    if (children instanceof Binding) {
-        setChildren(self, children.get())
-        self.connect("destroy", children.subscribe((v) => {
-            setChildren(self, v)
-        }))
-    }
-    else {
-        if (children.length > 0)
-            setChildren(self, children)
-    }
-
+    Object.assign(self, props)
     setup?.(self)
     return self
 }
