@@ -2,12 +2,12 @@ package = "astal"
 version = "dev-1"
 
 source = {
-    url = "git+https://github.com/astal-sh/libastal",
+    url = "git+https://github.com/aylur/astal",
 }
 
 description = {
     summary = "lua bindings for libastal.",
-    homepage = "https://github.com/astal-sh/libastal",
+    homepage = "https://aylur.github.io/astal/",
     license = "GPL-3",
 }
 
