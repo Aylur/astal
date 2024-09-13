@@ -149,7 +149,7 @@ Then it can be used with `bind`.
 
 ```tsx
 function MyWidget() {
-    const myvar = new MyVariableValue()
+    const myvar = new MyVariable()
     const label = bind(myvar).as(({ string, number }) => {
         return `${string} ${number}`
     })
