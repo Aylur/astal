@@ -64,17 +64,33 @@ astal-hyprland # starts monitoring
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
 import Hyprland from "gi://AstalHyprland";
 
-const hyprland = Hyprland.get_default()
+const hyprland = Hyprland.get_default();
 
-console.log(hyprland.get_clients().map(c => c.title))
+console.log(hyprland.get_clients().map((c) => c.title));
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+import gi
+
+gi.require_version("AstalHyprland", "0.1")
+
+from gi.repository import AstalHyprland
+
+hyprland = AstalHyprland.get_default()
+
+print("\n".join(c.get_title() for c in hyprland.get_clients()))
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local lgi = require("lgi")
+
+local AstalHyprland = lgi.require("AstalHyprland", "0.1")
+
+local hyprland = AstalHyprland.get_default()
+
+for _, c in ipairs(hyprland.clients) do
+	print(c.title)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

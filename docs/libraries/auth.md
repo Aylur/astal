@@ -84,11 +84,35 @@ await Auth.Pam.authenticate("password")
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+import gi
+
+gi.require_version("AstalAuth", "0.1")
+
+from gi.repository import AstalAuth 
+
+def callback(_, task) -> None:
+    try:
+        AstalAuth.Pam.authenticate_finish(task)
+        print("success")
+    except Exception as e:
+        print(e)
+
+AstalAuth.Pam.authenticate("password", callback)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local lgi = require("lgi")
+
+local AstalAuth = lgi.require("AstalAuth", "0.1")
+
+AstalAuth.Pam.authenticate("password", function(_, task)
+	local status, err = AstalAuth.Pam.authenticate_finish(task)
+	if status == 0 then
+		print("success")
+	else
+		print(err)
+	end
+end)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

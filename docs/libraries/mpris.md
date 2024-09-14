@@ -68,18 +68,34 @@ astal-mpris --help
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
 import Mpris from "gi://AstalMpris";
 
-const spotify = Mpris.Player.new("spotify")
+const spotify = Mpris.Player.new("spotify");
 
-if (spotify.available)
-    console.log(spotify.title)
+if (spotify.available) console.log(spotify.title);
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+import gi
+
+gi.require_version("AstalMpris", "0.1")
+
+from gi.repository import AstalMpris
+
+spotify = AstalMpris.Player.new("spotify")
+
+if spotify.get_available():
+    print(spotify.get_title())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local lgi = require("lgi")
+
+local AstalMpris = lgi.require("AstalMpris", "0.1")
+
+local spotify = AstalMpris.Player.new("spotify")
+
+if spotify.available then
+	print(spotify.title)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

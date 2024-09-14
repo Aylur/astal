@@ -66,17 +66,31 @@ wpctl --help
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
 import Wp from "gi://AstalWp";
 
-const audio = Wp.get_default_wp().audio
+const audio = Wp.get_default_wp().audio;
 
-console.log(audio.volume)
+console.log(audio.default_speaker.volume);
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+import gi
+
+gi.require_version("AstalWp", "0.1")
+
+from gi.repository import AstalWp
+
+audio = AstalWp.get_default_wp().get_audio()
+
+print(audio.get_default_speaker().get_volume())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local lgi = require("lgi")
+
+local AstalWp = lgi.require("AstalWp", "0.1")
+
+local audio = AstalWp.get_default_wp().audio
+
+print(audio.default_speaker.volume)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

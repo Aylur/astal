@@ -63,24 +63,47 @@ astal-apps --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Apps from "gi://AstalApps"
+import Apps from "gi://AstalApps";
 
 const apps = new Apps.Apps({
-    includeEntry: true,
-    includeExecutable: true,
-})
+  includeEntry: true,
+  includeExecutable: true,
+});
 
 print(apps.fuzzy_query("spotify")
     .map(app => app.name)
     .join("\n"))
+
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented, contributions are appreciated
+import gi
+
+gi.require_version("AstalApps", "0.1")
+
+from gi.repository import AstalApps
+
+apps = AstalApps.Apps(include_entry = True, include_executable = True )
+
+match = apps.fuzzy_query("obsidian")
+print("\n".join(app.get_name() for app in match))
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented, contributions are appreciated
+local lgi = require("lgi")
+
+local AstalApps = lgi.require("AstalApps", "0.1")
+
+local apps = AstalApps.Apps({
+	include_entry = true,
+	include_executable = true,
+})
+
+local match = apps:fuzzy_query("lutris")
+
+for _, app in ipairs(match) do
+	print(app.name)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

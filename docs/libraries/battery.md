@@ -69,17 +69,28 @@ astal-battery --help
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
 import Battery from "gi://AstalBattery";
 
-const battery = Battery.get_default()
+const battery = Battery.get_default();
 
-console.log(battery.percentage)
+console.log(battery.percentage);
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+import gi
+gi.require_version("AstalBattery", "0.1")
+
+from gi.repository import AstalBattery
+
+battery = AstalBattery.get_default()
+
+print(battery.get_percentage())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local lgi = require("lgi")
+local AstalBattery = lgi.require("AstalBattery", "0.1")
+
+local battery = AstalBattery.get_default()
+print(battery.percentage)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
