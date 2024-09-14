@@ -2,6 +2,9 @@
   self,
   pkgs,
 }: let
+  inherit (builtins) replaceStrings readFile;
+  readVer = file: replaceStrings ["\n"] [""] (readFile file);
+
   toTOML = (pkgs.formats.toml {}).generate;
 
   genRefForPkg = {
@@ -19,7 +22,9 @@
     cp -r ${name}-0.1/* $out/${outPath}
   '';
 
-  genLib = name: namespace: description: {
+  genLib = name: namespace: {
+    description,
+    version,
     authors ? "Aylur",
     dependencies ? {},
     out ? "libastal/${name}",
@@ -31,6 +36,7 @@
       metaData = {
         library = {
           inherit description authors;
+          version = readVer version;
           license = "LGPL-2.1";
           browse_url = "https://github.com/aylur/astal";
           repository_url = "https://github.com/aylur/aylur.git";
@@ -39,7 +45,7 @@
         };
 
         extra.urlmap_file = "urlmap.js";
-        dependencies = dependencies // dependency;
+        dependencies = {inherit (dependency) "GObject-2.0";} // dependencies;
       };
     };
 
@@ -47,7 +53,22 @@
     "GObject-2.0" = {
       name = "GObject";
       description = "The base type system library";
-      docs_url = "https://developer.gnome.org/gobject/stable";
+      docs_url = "https://docs.gtk.org/gobject/";
+    };
+    "Gtk-3.0" = {
+      name = "Gtk";
+      description = "The GTK toolkit";
+      docs_url = "https://docs.gtk.org/gtk3/";
+    };
+    "NM-1.0" = {
+      name = "NetworkManager";
+      description = "The standard Linux network configuration tool suite";
+      docs_url = "https://networkmanager.dev/docs/libnm/latest/";
+    };
+    "WP-0.5" = {
+      name = "WirePlumber";
+      description = "Modular session/policy manager for PipeWire";
+      docs_url = "https://pipewire.pages.freedesktop.org/wireplumber/";
     };
   };
 
@@ -56,9 +77,13 @@
       ["GLib" "https://docs.gtk.org/glib/"]
       ["GObject" "https://docs.gtk.org/gobject/"]
       ["Gio" "https://docs.gtk.org/gio/"]
-      ["Gdk" "https://docs.gtk.org/gdk4/"]
-      ["Gtk" "https://docs.gtk.org/gtk4/"]
+      ["Gdk" "https://docs.gtk.org/gdk3/"]
+      ["Gtk" "https://docs.gtk.org/gtk3/"]
       ["GdkPixbuf" "https://docs.gtk.org/gdk-pixbuf/"]
+
+      # FIXME: these are not gi-docgen generated, therefore links are broken
+      ["NM" "https://networkmanager.dev/docs/libnm/latest/"]
+      ["WP" "https://pipewire.pages.freedesktop.org/wireplumber/"]
     ]}
   '';
 in
@@ -81,19 +106,66 @@ in
 
     installPhase = ''
       runHook preInstall
-      ${genLib "astal" "" "Astal core library" {out = "libastal";}}
-      ${genLib "apps" "Apps" "Application query library" {}}
-      ${genLib "auth" "Auth" "Authentication using pam" {authors = "kotontrion";}}
-      ${genLib "battery" "Battery" "DBus proxy for upowerd devices" {}}
-      ${genLib "bluetooth" "Bluetooth" "DBus proxy for bluez" {}}
-      ${genLib "hyprland" "Hyprland" "IPC client for Hyprland" {}}
-      ${genLib "mpris" "Mpris" "Control mpris players" {}}
-      ${genLib "network" "Network" "NetworkManager wrapper library" {}}
-      ${genLib "notifd" "Notifd" "Notification daemon library" {}}
-      ${genLib "powerprofiles" "PowerProfiles" "DBus proxy for upowerd profiles" {}}
-      ${genLib "river" "River" "IPC client for River" {authors = "kotontrion";}}
-      ${genLib "tray" "Tray" "StatusNotifierItem implementation" {authors = "kotontrion";}}
-      ${genLib "wireplumber" "Wp" "Wrapper library over the wireplumber API" {authors = "kotontrion";}}
+      ${genLib "astal" "" "Astal core library" {
+        out = "libastal";
+        description = "Astal core library";
+        version = ../core/version;
+        dependencies = {inherit (dependency) "Gtk-3.0";};
+      }}
+      ${genLib "apps" "Apps" {
+        description = "Application query library";
+        version = ../lib/apps/version;
+      }}
+      ${genLib "auth" "Auth" {
+        authors = "kotontrion";
+        description = "Authentication using pam";
+        version = ../lib/auth/version;
+      }}
+      ${genLib "battery" "Battery" {
+        description = "DBus proxy for upowerd devices";
+        version = ../lib/battery/version;
+      }}
+      ${genLib "bluetooth" "Bluetooth" {
+        description = "DBus proxy for bluez";
+        version = ../lib/bluetooth/version;
+      }}
+      ${genLib "hyprland" "Hyprland" {
+        description = "IPC client for Hyprland";
+        version = ../lib/hyprland/version;
+      }}
+      ${genLib "mpris" "Mpris" {
+        description = "Control mpris players";
+        version = ../lib/mpris/version;
+      }}
+      ${genLib "network" "Network" {
+        description = "NetworkManager wrapper library";
+        version = ../lib/network/version;
+        dependencies = {inherit (dependency) "NM-1.0";}; # FIXME: why does this not work?
+      }}
+      ${genLib "notifd" "Notifd" {
+        description = "Notification daemon library";
+        version = ../lib/notifd/version;
+      }}
+      ${genLib "powerprofiles" "PowerProfiles" {
+        description = "DBus proxy for upowerd profiles";
+        version = ../lib/powerprofiles/version;
+      }}
+      ${genLib "river" "River" {
+        description = "IPC client for River";
+        version = ../lib/river/version;
+        authors = "kotontrion";
+      }}
+      ${genLib "tray" "Tray" {
+        description = "StatusNotifierItem implementation";
+        version = ../lib/tray/version;
+        authors = "kotontrion";
+      }}
+      ${genLib "wireplumber" "Wp" {
+        description = "Wrapper library over the wireplumber API";
+        version = ../lib/wireplumber/version;
+        authors = "kotontrion";
+        dependencies = {inherit (dependency) "WP-0.5";}; # FIXME: why does this not work?
+      }}
       runHook postInstall
     '';
   }

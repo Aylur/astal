@@ -6,8 +6,8 @@
     nixpkgs,
   }: let
     inherit (builtins) replaceStrings readFile;
+    readVer = file: replaceStrings ["\n"] [""] (readFile file);
 
-    version = replaceStrings ["\n"] [""] (readFile ./version);
     system = "x86_64-linux"; # TODO: other architectures
     pkgs = nixpkgs.legacyPackages.${system};
 
@@ -24,7 +24,7 @@
         ];
         propagatedBuildInputs = [pkgs.glib] ++ inputs;
         pname = name;
-        version = version;
+        version = readVer "${src}/version";
         src = src;
         outputs = ["out" "dev"];
       };
