@@ -70,17 +70,35 @@ const apps = new Apps.Apps({
     includeExecutable: true,
 })
 
-print(apps.fuzzy_query("spotify")
-    .map(app => app.name)
-    .join("\n"))
+for (const app of apps.fuzzy_query("spotify")) {
+    print(app.name)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented, contributions are appreciated
+from gi.repository import AstalApps as Apps
+
+apps = Apps.Apps(
+    include_entry=True,
+    include_executable=True,
+)
+
+for app in apps.fuzzy_query("obsidian"):
+    print(app.get_name())
+
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented, contributions are appreciated
+local Apps = require("lgi").require("AstalApps")
+
+local apps = Apps.Apps({
+    include_entry = true,
+    include_executable = true,
+})
+
+for _, app in ipairs(apps:fuzzy_query("lutris")) do
+    print(app.name)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

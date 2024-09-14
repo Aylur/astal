@@ -67,19 +67,27 @@ astal-power-profiles --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import PowerProfiles from "gi://AstalPowerProfiles";
+import PowerProfiles from "gi://AstalPowerProfiles"
 
 const powerprofiles = PowerProfiles.get_default()
 
-console.log(powerprofiles.activeProfile)
+print(powerprofiles.activeProfile)
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+from gi.repository import AstalPowerProfiles as PowerProfiles
+
+powerprofiles = PowerProfiles.get_default()
+
+print(powerprofiles.get_active_profile())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local PowerProfiles = require("lgi").require("AstalPowerProfiles")
+
+local powerprofiles = PowerProfiles.get_default()
+
+print(powerprofiles.active_profile)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

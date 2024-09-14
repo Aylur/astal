@@ -62,15 +62,32 @@ astal-river --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-// Not yet documented
+import River from "gi://AstalRiver"
+
+const river = River.get_default()
+
+for (const output of river.get_outputs()) {
+    print(output.name)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+from gi.repository import AstalRiver as River
+
+river = River.get_default()
+
+for output in river.get_outputs():
+    print(output.get_name())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local River = require("lgi").require("AstalRiver")
+
+local river = River.River.get_default()
+
+for _, o in ipairs(river.outputs) do
+    print(o.name)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

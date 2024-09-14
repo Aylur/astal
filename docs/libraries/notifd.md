@@ -66,22 +66,37 @@ astal-notifd --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Notifd from "gi://AstalNotifd";
+import Notifd from "gi://AstalNotifd"
 
 const notifd = Notifd.get_default()
 
 notifd.connect("notified", (_, id) => {
     const n = notifd.get_notification(id)
-    console.log(n.summary, n.body)
+    print(n.summary, n.body)
 })
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+from gi.repository import AstalNotifd as Notifd
+
+notifd = Notifd.get_default()
+
+def on_notified(_, id):
+    n = notifd.get_notification(id)
+    print(n.get_body(), n.get_body())
+
+notifd.connect("notified", on_notified)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local Notifd = require("lgi").require("AstalNotifd")
+
+local notifd = Notifd.get_default()
+
+notifd.on_notified = function(_, id)
+    local n = notifd.get_notification(id)
+    print(n.body, n.summary)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

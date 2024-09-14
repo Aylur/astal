@@ -66,15 +66,28 @@ import Tray from "gi://AstalTray"
 
 const tray = Tray.get_default()
 
-console.log(tray.get_items().map(i => i.title))
+for (const item of tray.get_items()) {
+    print(item.title)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+from gi.repository import AstalTray as Tray
+
+tray = Tray.get_default()
+
+for item in tray.get_items():
+    print(item.title)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local Tray = require("lgi").require("AstalTray")
+
+local tray = Tray.get_default()
+
+for _, i in ipairs(tray.items) do
+    print(i.title)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]

@@ -73,22 +73,42 @@ astal-auth --password my-password
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Auth from "gi://AstalAuth";
-import Gio from "gi://Gio";
+import Auth from "gi://AstalAuth"
 
-Gio._promisify(Auth.Pam, "authenticate");
-
-await Auth.Pam.authenticate("password")
-    .then(_ => print("authentication sucessful"))
-    .catch(logError);
+Auth.Pam.authenticate("password", (_, task) => {
+    try {
+        AstalAuth.Pam.authenticate_finish(task)
+        print("authentication sucessful")
+    } catch (error) {
+        print(error)
+    }
+})
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+from gi.repository import AstalAuth as Auth
+
+def callback(_, task) -> None:
+    try:
+        Auth.Pam.authenticate_finish(task)
+        print("success")
+    except Exception as e:
+        print(e)
+
+Auth.Pam.authenticate("password", callback)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local Auth = require("lgi").require("AstalAuth")
+
+Auth.Pam.authenticate("password", function(_, task)
+    local status, err = Auth.Pam.authenticate_finish(task)
+    if err ~= nil then
+        print(err)
+    else
+        print("success")
+    end
+end)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
