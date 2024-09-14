@@ -3,90 +3,74 @@ local Astal = lgi.require("Astal", "0.1")
 
 local M = {}
 
-local defualt_proc_args = function(on_stdout, on_stderr)
+---@param commandline string | string[]
+---@param on_stdout? fun(out: string): nil
+---@param on_stderr? fun(err: string): nil
+---@return { kill: function } | nil proc
+function M.subprocess(commandline, on_stdout, on_stderr)
     if on_stdout == nil then
         on_stdout = function(out)
             io.stdout:write(tostring(out) .. "\n")
-            return tostring(out)
         end
     end
 
     if on_stderr == nil then
         on_stderr = function(err)
             io.stderr:write(tostring(err) .. "\n")
-            return tostring(err)
         end
     end
 
-    return on_stdout, on_stderr
-end
-
----@param commandline string | string[]
----@param on_stdout? fun(out: string): nil
----@param on_stderr? fun(err: string): nil
----@return { kill: function } | nil proc
-function M.subprocess(commandline, on_stdout, on_stderr)
-    local out, err = defualt_proc_args(on_stdout, on_stderr)
-    local proc, fail
+    local proc, err
     if type(commandline) == "table" then
-        proc, fail = Astal.Process.subprocessv(commandline)
+        proc, err = Astal.Process.subprocessv(commandline)
     else
-        proc, fail = Astal.Process.subprocess(commandline)
+        proc, err = Astal.Process.subprocess(commandline)
     end
-    if fail ~= nil then
-        err(fail)
+    if err ~= nil then
+        err(err)
         return nil
     end
-    proc.on_stdout = function(_, str)
-        out(str)
+    proc.on_stdout = function(_, stdoud)
+        on_stdout(stdoud)
     end
-    proc.on_stderr = function(_, str)
-        err(str)
+    proc.on_stderr = function(_, stderr)
+        on_stderr(stderr)
     end
     return proc
 end
 
----@generic T
 ---@param commandline string | string[]
----@param on_stdout? fun(out: string): T
----@param on_stderr? fun(err: string): T
----@return T
-function M.exec(commandline, on_stdout, on_stderr)
-    local out, err = defualt_proc_args(on_stdout, on_stderr)
-    local stdout, stderr
+---@return string, string
+function M.exec(commandline)
     if type(commandline) == "table" then
-        stdout, stderr = Astal.Process.execv(commandline)
+        return Astal.Process.execv(commandline)
     else
-        stdout, stderr = Astal.Process.exec(commandline)
+        return Astal.Process.exec(commandline)
     end
-    if stderr then
-        return err(stderr)
-    end
-    return out(stdout)
 end
 
 ---@param commandline string | string[]
----@param on_stdout? fun(out: string): nil
----@param on_stderr? fun(err: string): nil
-function M.exec_async(commandline, on_stdout, on_stderr)
-    local out, err = defualt_proc_args(on_stdout, on_stderr)
+---@param callback? fun(out: string, err: string): nil
+function M.exec_async(commandline, callback)
+    if callback == nil then
+        callback = function(out, err)
+            if err ~= nil then
+                io.stdout:write(tostring(out) .. "\n")
+            else
+                io.stderr:write(tostring(err) .. "\n")
+            end
+        end
+    end
+
     if type(commandline) == "table" then
         Astal.Process.exec_asyncv(commandline, function(_, res)
-            local stdout, fail = Astal.Process.exec_asyncv_finish(res)
-            if fail ~= nil then
-                err(fail)
-            else
-                out(stdout)
-            end
+            local out, err = Astal.Process.exec_asyncv_finish(res)
+            callback(out, err)
         end)
     else
         Astal.Process.exec_async(commandline, function(_, res)
-            local stdout, fail = Astal.Process.exec_finish(res)
-            if fail ~= nil then
-                err(fail)
-            else
-                out(stdout)
-            end
+            local out, err = Astal.Process.exec_finish(res)
+            callback(out, err)
         end)
     end
 end
