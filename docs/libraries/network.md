@@ -9,15 +9,15 @@ Wrapper library over [networkmanager](https://networkmanager.dev/) to better int
 :::code-group
 
 ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala networkmanager gobject-introspection
+sudo pacman -Syu meson vala libnm gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac NetworkManager gobject-introspection-devel
+sudo dnf install meson gcc valac NetworkManager-libnm-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac network-manager-dev gobject-introspection
+sudo apt install meson valac libnm-dev gobject-introspection
 ```
 
 :::

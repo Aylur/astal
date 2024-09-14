@@ -49,7 +49,7 @@ public class AstalNetwork.Network : Object {
         }
     }
 
-    private NM.Device get_device(NM.DeviceType t) {
+    private NM.Device? get_device(NM.DeviceType t) {
         var valid = new GenericArray<NM.Device>();
         foreach (var device in client.get_devices()) {
             if (device.device_type == t)
@@ -61,7 +61,10 @@ public class AstalNetwork.Network : Object {
                 return device;
         }
 
-        return valid.get(0);
+        if (valid.length > 0)
+            return valid.get(0);
+
+        return null;
     }
 
     private void sync() {
