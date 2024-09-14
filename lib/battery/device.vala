@@ -64,26 +64,6 @@ public class Device : Object {
     public string device_type_name { get; private set; }
     public string device_type_icon { get; private set; }
 
-    private unowned string get_battery_icon() {
-        if (percentage <= 0)
-            return "battery-good";
-
-        if (percentage < 0.10)
-            return "battery-empty";
-
-        if (percentage < 0.37)
-            return "battery-caution";
-
-        if (percentage < 0.62)
-            return "battery-low";
-
-        if (percentage < 0.87)
-            return "battery-good";
-
-        return "battery-full";
-    }
-
-
     public void sync() {
         device_type = (Type)proxy.Type;
         native_path = proxy.native_path;
@@ -119,12 +99,15 @@ public class Device : Object {
         charging = state == State.FULLY_CHARGED || state == State.CHARGING;
         is_battery = device_type != Type.UNKNOWN && device_type != Type.LINE_POWER;
 
-        if (!is_battery)
-            battery_icon_name = "preferences-system-power";
-        else if (percentage == 1.0 && charging)
-            battery_icon_name = "battery-full-charged";
-        else
-            battery_icon_name = charging ? get_battery_icon() + "-charging" : get_battery_icon();
+        if (!is_battery) {
+            battery_icon_name = "battery-missing-symbolic";
+        } else if (percentage == 1.0 && charging) {
+            battery_icon_name = "battery-level-100-charged";
+        } else {
+            var state = charging ? "-charging" : "";
+            var level = (int)Math.round(percentage * 100);
+            battery_icon_name = @"battery-level-$level$state-symbolic";
+        }
 
         device_type_name = device_type.get_name();
         device_type_icon = device_type.get_icon_name();
