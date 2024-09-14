@@ -78,10 +78,11 @@ function Variable:start_poll()
         end)
     elseif self.poll_exec then
         self._poll = Time.interval(self.poll_interval, function()
-            Process.exec_async(self.poll_exec, function(out)
+            Process.exec_async(self.poll_exec, function(out, err)
+                if err ~= nil then
+                    return self.variable.emit_error(err)
+                end
                 self:set(self.poll_transform(out, self:get()))
-            end, function(err)
-                self.variable.emit_error(err)
             end)
         end)
     end
