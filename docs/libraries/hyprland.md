@@ -62,34 +62,31 @@ astal-hyprland # starts monitoring
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Hyprland from "gi://AstalHyprland";
+import Hyprland from "gi://AstalHyprland"
 
-const hyprland = Hyprland.get_default();
+const hyprland = Hyprland.get_default()
 
-console.log(hyprland.get_clients().map((c) => c.title));
+for (const client of hyprland.get_clients()) {
+    print(client.title)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-import gi
+from gi.repository import AstalHyprland as Hyprland
 
-gi.require_version("AstalHyprland", "0.1")
+hyprland = Hyprland.get_default()
 
-from gi.repository import AstalHyprland
-
-hyprland = AstalHyprland.get_default()
-
-print("\n".join(c.get_title() for c in hyprland.get_clients()))
+for client in hyprland.get_clients():
+    print(client.get_title())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
-local lgi = require("lgi")
+local Hyprland = require("lgi").require("AstalHyprland")
 
-local AstalHyprland = lgi.require("AstalHyprland", "0.1")
-
-local hyprland = AstalHyprland.get_default()
+local hyprland = Hyprland.get_default()
 
 for _, c in ipairs(hyprland.clients) do
-	print(c.title)
+    print(c.title)
 end
 ```
 

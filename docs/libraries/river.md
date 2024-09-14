@@ -62,34 +62,31 @@ astal-river --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import River from "gi://AstalRiver";
+import River from "gi://AstalRiver"
 
-const river = River.get_default();
+const river = River.get_default()
 
-console.log(river.get_outputs().map((o) => o.name));
+for (const output of river.get_outputs()) {
+    print(output.name)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-import gi
+from gi.repository import AstalRiver as River
 
-gi.require_version("AstalRiver", "0.1")
+river = River.get_default()
 
-from gi.repository import AstalRiver
-
-river = AstalRiver.get_default()
-
-print("\n".join(o.get_name() for o in river.get_outputs()))
+for output in river.get_outputs():
+    print(output.get_name())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
-local lgi = require("lgi")
+local River = require("lgi").require("AstalRiver")
 
-local AstalRiver = lgi.require("AstalRiver", "0.1")
-
-local river = AstalRiver.River.get_default()
+local river = River.River.get_default()
 
 for _, o in ipairs(river.outputs) do
-	print(o.name)
+    print(o.name)
 end
 ```
 

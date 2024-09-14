@@ -66,24 +66,20 @@ astal-notifd --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Notifd from "gi://AstalNotifd";
+import Notifd from "gi://AstalNotifd"
 
-const notifd = Notifd.get_default();
+const notifd = Notifd.get_default()
 
 notifd.connect("notified", (_, id) => {
-  const n = notifd.get_notification(id);
-  console.log(n.summary, n.body);
-});
+    const n = notifd.get_notification(id)
+    print(n.summary, n.body)
+})
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-import gi
+from gi.repository import AstalNotifd as Notifd
 
-gi.require_version("AstalNotifd", "0.1")
-
-from gi.repository import AstalNotifd
-
-notifd = AstalNotifd.get_default()
+notifd = Notifd.get_default()
 
 def on_notified(_, id):
     n = notifd.get_notification(id)
@@ -93,15 +89,13 @@ notifd.connect("notified", on_notified)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
-local lgi = require("lgi")
+local Notifd = require("lgi").require("AstalNotifd")
 
-local AstalNotifd = lgi.require("AstalNotifd", "0.1")
-
-local notifd = AstalNotifd.get_default()
+local notifd = Notifd.get_default()
 
 notifd.on_notified = function(_, id)
-	local n = notifd.get_notification(id)
-	print(n.body, n.summary)
+    local n = notifd.get_notification(id)
+    print(n.body, n.summary)
 end
 ```
 

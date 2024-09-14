@@ -69,34 +69,31 @@ bluetoothctl --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Bluetooth from "gi://AstalBluetooth";
+import Bluetooth from "gi://AstalBluetooth"
 
-const bluetooth = Bluetooth.get_default();
+const bluetooth = Bluetooth.get_default()
 
-console.log(bluetooth.get_devices().map((d) => d.name));
+for (const device of bluetooth.get_devices()) {
+    print(device.name)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-import gi
+from gi.repository import AstalBluetooth as Bluetooth
 
-gi.require_version("AstalBluetooth", "0.1")
+bluetooth = Bluetooth.get_default()
 
-from gi.repository import AstalBluetooth
-
-bluetooth = AstalBluetooth.get_default()
-
-print("\n".join(d.get_name() for d in bluetooth.get_devices()))
+for device in bluetooth.get_devices():
+    print(device.get_name())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
-local lgi = require("lgi")
+local Bluetooth = require("lgi").require("AstalBluetooth")
 
-local AstalBluetooth = lgi.require("AstalBluetooth", "0.1")
-
-local bluetooth = AstalBluetooth.get_default()
+local bluetooth = Bluetooth.get_default()
 
 for _, d in ipairs(bluetooth.devices) do
-	print(d.name)
+    print(d.name)
 end
 ```
 

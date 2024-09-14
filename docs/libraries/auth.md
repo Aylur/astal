@@ -73,45 +73,41 @@ astal-auth --password my-password
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Auth from "gi://AstalAuth";
-import Gio from "gi://Gio";
+import Auth from "gi://AstalAuth"
 
-Gio._promisify(Auth.Pam, "authenticate");
-
-await Auth.Pam.authenticate("password")
-    .then(_ => print("authentication sucessful"))
-    .catch(logError);
+Auth.Pam.authenticate("password", (_, task) => {
+    try {
+        AstalAuth.Pam.authenticate_finish(task)
+        print("authentication sucessful")
+    } catch (error) {
+        print(error)
+    }
+})
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-import gi
-
-gi.require_version("AstalAuth", "0.1")
-
-from gi.repository import AstalAuth 
+from gi.repository import AstalAuth as Auth
 
 def callback(_, task) -> None:
     try:
-        AstalAuth.Pam.authenticate_finish(task)
+        Auth.Pam.authenticate_finish(task)
         print("success")
     except Exception as e:
         print(e)
 
-AstalAuth.Pam.authenticate("password", callback)
+Auth.Pam.authenticate("password", callback)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
-local lgi = require("lgi")
+local Auth = require("lgi").require("AstalAuth")
 
-local AstalAuth = lgi.require("AstalAuth", "0.1")
-
-AstalAuth.Pam.authenticate("password", function(_, task)
-	local status, err = AstalAuth.Pam.authenticate_finish(task)
-	if status == 0 then
-		print("success")
-	else
-		print(err)
-	end
+Auth.Pam.authenticate("password", function(_, task)
+    local status, err = Auth.Pam.authenticate_finish(task)
+    if err ~= nil then
+        print(err)
+    else
+        print("success")
+    end
 end)
 ```
 

@@ -64,31 +64,25 @@ nmcli --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Network from "gi://AstalNetwork";
+import Network from "gi://AstalNetwork"
 
-const network = Network.get_default();
+const network = Network.get_default()
 
-console.log(network.wifi.ssid);
+print(network.wifi.ssid)
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-import gi
+from gi.repository import AstalNetwork as Network
 
-gi.require_version("AstalNetwork", "0.1")
-
-from gi.repository import AstalNetwork
-
-network = AstalNetwork.get_default()
+network = Network.get_default()
 
 print(network.get_wifi().get_ssid())
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
-local lgi = require("lgi")
+local Network = require("lgi").require("AstalNetwork")
 
-local AstalNetwork = lgi.require("AstalNetwork", "0.1")
-
-local network = AstalNetwork.get_default()
+local network = Network.get_default()
 
 print(network.wifi.ssid)
 ```

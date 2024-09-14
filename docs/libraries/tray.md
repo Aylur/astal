@@ -62,34 +62,31 @@ astal-tray --help
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Tray from "gi://AstalTray";
+import Tray from "gi://AstalTray"
 
-const tray = Tray.get_default();
+const tray = Tray.get_default()
 
-console.log(tray.get_items().map((i) => i.title));
+for (const item of tray.get_items()) {
+    print(item.title)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-import gi
+from gi.repository import AstalTray as Tray
 
-gi.require_version("AstalTray", "0.1")
+tray = Tray.get_default()
 
-from gi.repository import AstalTray
-
-tray = AstalTray.get_default()
-
-print("\n".join(i.title for i in tray.get_items()))
+for item in tray.get_items():
+    print(item.title)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
-local lgi = require("lgi")
+local Tray = require("lgi").require("AstalTray")
 
-local AstalTray = lgi.require("AstalTray", "0.1")
-
-local tray = AstalTray.get_default()
+local tray = Tray.get_default()
 
 for _, i in ipairs(tray.items) do
-	print(i.title)
+    print(i.title)
 end
 ```
 
