@@ -40,7 +40,7 @@ sudo apt install golang-go npm gjs
 <!--TODO: remove v2 after merge-->
 ```sh
 git clone https://github.com/aylur/ags.git
-cd ags
+cd ags/src
 git checkout v2 # https://github.com/Aylur/ags/pull/504
 go install
 ```
