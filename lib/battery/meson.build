@@ -32,11 +32,13 @@ config = configure_file(
   },
 )
 
-deps = [
+pkgconfig_deps = [
   dependency('glib-2.0'),
   dependency('gio-2.0'),
   dependency('gobject-2.0'),
 ]
+
+deps = pkgconfig_deps + meson.get_compiler('c').find_library('m')
 
 sources = [
   config,
@@ -64,7 +66,7 @@ if get_option('lib')
     filebase: meson.project_name() + '-' + api_version,
     version: meson.project_version(),
     subdirs: meson.project_name(),
-    requires: deps,
+    requires: pkgconfig_deps,
     install_dir: get_option('libdir') / 'pkgconfig',
   )
 

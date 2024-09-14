@@ -106,7 +106,7 @@ in
 
     installPhase = ''
       runHook preInstall
-      ${genLib "astal" "" "Astal core library" {
+      ${genLib "astal" "" {
         out = "libastal";
         description = "Astal core library";
         version = ../core/version;
