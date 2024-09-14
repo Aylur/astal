@@ -86,7 +86,7 @@ if spotify.get_available():
 ```lua [<i class="devicon-lua-plain"></i> Lua]
 local Mpris = require("lgi").require("AstalMpris")
 
-local Mpris = Mpris.Player.new("spotify")
+local spotify = Mpris.Player.new("spotify")
 
 if spotify.available then
     print(spotify.title)
