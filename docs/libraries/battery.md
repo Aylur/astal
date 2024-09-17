@@ -9,15 +9,15 @@ Library and CLI tool for monitoring [upowerd](https://upower.freedesktop.org/) d
 :::code-group
 
 ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala gobject-introspection
+sudo pacman -Syu meson vala json-glib gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac gobject-introspection-devel
+sudo dnf install meson gcc valac json-glib-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac gobject-introspection
+sudo apt install meson valac libjson-glib-dev gobject-introspection
 ```
 
 :::

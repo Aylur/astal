@@ -105,7 +105,7 @@ public class Device : Object {
             battery_icon_name = "battery-level-100-charged";
         } else {
             var state = charging ? "-charging" : "";
-            var level = (int)Math.round(percentage * 100);
+            var level = (int)Math.round(percentage * 10)*10;
             battery_icon_name = @"battery-level-$level$state-symbolic";
         }
 

@@ -36,6 +36,7 @@ pkgconfig_deps = [
   dependency('glib-2.0'),
   dependency('gio-2.0'),
   dependency('gobject-2.0'),
+  dependency('json-glib-1.0'),
 ]
 
 deps = pkgconfig_deps + meson.get_compiler('c').find_library('m')

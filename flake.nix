@@ -47,7 +47,7 @@
       astal = mkPkg "astal" ./core [gtk3 gtk-layer-shell];
       apps = mkPkg "astal-apps" ./lib/apps [json-glib];
       auth = mkPkg "astal-auth" ./lib/auth [pam];
-      battery = mkPkg "astal-battery" ./lib/battery [];
+      battery = mkPkg "astal-battery" ./lib/battery [json-glib];
       bluetooth = mkPkg "astal-bluetooth" ./lib/bluetooth [];
       hyprland = mkPkg "astal-hyprland" ./lib/hyprland [json-glib];
       mpris = mkPkg "astal-mpris" ./lib/mpris [gvfs json-glib];
