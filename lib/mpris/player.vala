@@ -245,10 +245,16 @@ public class Player : Object {
         // metadata
         metadata = proxy.metadata;
         if (metadata != null) {
-            if (metadata.get("mpris:length") != null)
-                length = (double)metadata.get("mpris:length").get_uint64() / 1000000;
-            else
+            if (metadata.get("mpris:length") != null) {
+                var v = metadata.get("mpris:length");
+                if (v.get_type_string() == "x") {
+                    length = (double)v.get_int64() / 1000000;
+                } else if (v.get_type_string() == "t") {
+                    length = (double)v.get_uint64() / 1000000;
+                }
+            } else {
                 length = -1;
+            }
 
             trackid = get_str("mpris:trackid");
             art_url = get_str("mpris:artUrl");
