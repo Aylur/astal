@@ -33,7 +33,7 @@ public class AstalNotifd.Notification : Object {
     public bool transient { get { return get_bool_hint("transient"); } }
     public int x { get { return get_int_hint("x"); } }
     public int y { get { return get_int_hint("y"); } }
-    public Urgency urgency { get { return get_hint("urgency").get_byte(); } }
+    public Urgency urgency { get { return get_byte_hint("urgency"); } }
 
     internal Notification(
         string app_name,
@@ -79,6 +79,20 @@ public class AstalNotifd.Notification : Object {
 
     public int get_int_hint(string hint) {
         return hints.contains(hint) ? hints.get(hint).get_int32() : 0;
+    }
+
+    public uint8 get_byte_hint(string hint) {
+        if (!hints.contains(hint))
+            return 0;
+
+        var v = hints.get(hint);
+        if (v.get_type_string() == "b")
+            return v.get_byte();
+
+        if (v.get_type_string() == "x")
+            return (uint8)v.get_int64();
+
+        return 0;
     }
 
     public signal void resolved(ClosedReason reason);

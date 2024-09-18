@@ -37,38 +37,14 @@ int main(string[] argv) {
     }
 
     var battery = AstalBattery.get_default();
-    print("%s\n", to_json(battery));
+    print("%s\n", Json.gobject_to_data(battery, null));
 
     if (monitor) {
-        battery.notify.connect((prop) => {
-            if (prop.get_name() == "percentage"
-                || prop.get_name() == "state"
-                || prop.get_name() == "icon-name"
-                || prop.get_name() == "time-to-full"
-                || prop.get_name() == "time-to-empty"
-            ) {
-                print("%s\n", to_json(battery));
-            }
+        battery.notify.connect(() => {
+            print("%s\n", Json.gobject_to_data(battery, null));
         });
         new GLib.MainLoop(null, false).run();
     }
 
     return 0;
-}
-
-private string to_json(AstalBattery.Device device) {
-    string s = "unknown";
-    if (device.state == AstalBattery.State.CHARGING)
-        s = "charging";
-    if (device.state == AstalBattery.State.DISCHARGING)
-        s = "discharging";
-    if (device.state == AstalBattery.State.FULLY_CHARGED)
-        s = "fully_charged";
-
-    var p = device.percentage;
-    var i = device.icon_name;
-    var r = device.state == AstalBattery.State.CHARGING
-        ? device.time_to_full : device.time_to_empty;
-
-    return "{ \"percentage\": %f, \"state\": \"%s\", \"icon_name\": \"%s\", \"time_remaining\": %f }".printf(p, s, i, r);
 }

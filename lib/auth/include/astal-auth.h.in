@@ -4,6 +4,12 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 
+
+#define ASTAL_AUTH_MAJOR_VERSION @MAJOR_VERSION@
+#define ASTAL_AUTH_MINOR_VERSION @MINOR_VERSION@
+#define ASTAL_AUTH_MICRO_VERSION @MICRO_VERSION@
+#define ASTAL_AUTH_VERSION "@VERSION@"
+
 G_BEGIN_DECLS
 
 #define ASTAL_AUTH_TYPE_PAM (astal_auth_pam_get_type())

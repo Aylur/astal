@@ -72,7 +72,7 @@ local function Wifi()
 end
 
 local function AudioSlider()
-	local speaker = Wp.get_default_wp().audio.default_speaker
+	local speaker = Wp.get_default().audio.default_speaker
 
 	return Widget.Box({
 		class_name = "AudioSlider",

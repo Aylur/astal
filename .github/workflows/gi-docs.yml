@@ -46,10 +46,6 @@ jobs:
           rm -rf dist/libastal
           cp -r src/result/libastal dist/libastal
 
-      - name: Check for Changes
-        run: |
-          cd dist
-
       - name: Push to Pages Repo
         run: |
           cd dist
