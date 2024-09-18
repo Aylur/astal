@@ -135,13 +135,18 @@ public class AstalNetwork.AccessPoint : Object {
             uuid = null;
         }
 
-        var connection = find_saved_connection_by_ssid(ssid);
-        saved = connection != null;
-
-        uuid = null;
-        if (connection != null){
-            uuid = connection.get_uuid();
+        try{
+            var connection = find_saved_connection_by_ssid(ssid);
+            saved = connection != null;
+            uuid = null;
+            if (connection != null){
+                uuid = connection.get_uuid();
+            }
+        } catch (Error e) {
+            saved = false;
+            uuid = null;
         }
+
 
     }
 
