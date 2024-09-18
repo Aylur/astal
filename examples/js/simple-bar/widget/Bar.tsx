@@ -39,7 +39,7 @@ function Wifi() {
 }
 
 function AudioSlider() {
-    const speaker = Wp.get_default_wp()?.audio.defaultSpeaker!
+    const speaker = Wp.get_default()?.audio.defaultSpeaker!
 
     return <box className="AudioSlider" css="min-width: 140px">
         <icon icon={bind(speaker, "volumeIcon")} />

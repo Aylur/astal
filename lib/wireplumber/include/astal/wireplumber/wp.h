@@ -22,7 +22,7 @@ typedef enum {
 G_DECLARE_FINAL_TYPE(AstalWpWp, astal_wp_wp, ASTAL_WP, WP, GObject)
 
 AstalWpWp* astal_wp_wp_get_default();
-AstalWpWp* astal_wp_get_default_wp();
+AstalWpWp* astal_wp_get_default();
 
 AstalWpAudio* astal_wp_wp_get_audio(AstalWpWp* self);
 AstalWpVideo* astal_wp_wp_get_video(AstalWpWp* self);

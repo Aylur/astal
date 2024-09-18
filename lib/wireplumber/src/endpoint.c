@@ -345,6 +345,7 @@ static void astal_wp_endpoint_set_property(GObject *object, guint property_id, c
 }
 
 static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
+    
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
     if (priv->node == NULL) return;
     self->id = wp_proxy_get_bound_id(WP_PROXY(priv->node));
@@ -379,9 +380,11 @@ static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
         case ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE:
             const gchar *dev =
                 wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "device.id");
-            guint device_id = g_ascii_strtoull(dev, NULL, 10);
-            AstalWpDevice *device = astal_wp_wp_get_device(priv->wp, device_id);
-            icon = astal_wp_device_get_icon(device);
+            if (dev != NULL) {
+                guint device_id = g_ascii_strtoull(dev, NULL, 10);
+                AstalWpDevice *device = astal_wp_wp_get_device(priv->wp, device_id);
+                icon = astal_wp_device_get_icon(device);
+            }
             if (icon == NULL) {
                 icon = self->type == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER
                            ? "audio-card-symbolic"

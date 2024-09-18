@@ -352,13 +352,13 @@ AstalWpWp *astal_wp_wp_get_default() {
 }
 
 /**
- * astal_wp_get_default_wp
+ * astal_wp_get_default
  *
  * gets the default wireplumber object.
  *
  * Returns: (nullable) (transfer none): gets the default wireplumber object.
  */
-AstalWpWp *astal_wp_get_default_wp() { return astal_wp_wp_get_default(); }
+AstalWpWp *astal_wp_get_default() { return astal_wp_wp_get_default(); }
 
 static void astal_wp_wp_dispose(GObject *object) {
     AstalWpWp *self = ASTAL_WP_WP(object);

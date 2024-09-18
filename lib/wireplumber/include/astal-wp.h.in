@@ -1,0 +1,14 @@
+
+#ifndef WP_H
+#define WP_H
+
+#include "astal/wireplumber/audio.h"
+#include "astal/wireplumber/endpoint.h"
+#include "astal/wireplumber/wp.h"
+
+#define ASTAL_WP_MAJOR_VERSION @MAJOR_VERSION@
+#define ASTAL_WP_MINOR_VERSION @MINOR_VERSION@
+#define ASTAL_WP_MICRO_VERSION @MICRO_VERSION@
+#define ASTAL_WP_VERSION "@VERSION@"
+
+#endif // WP_H
