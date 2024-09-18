@@ -13,6 +13,10 @@ public class AstalNetwork.AccessPoint : Object {
     public NM.80211ApFlags flags { get { return ap.flags; } }
     public NM.80211ApSecurityFlags rsn_flags { get { return ap.rsn_flags; } }
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
+    public bool hidden { get; private set; }
+    public bool requires_password { get; private set; }
+    public bool saved { get; private set; }
+    public string uuid { get; private set; }
 
     public string? ssid {
         owned get {
@@ -33,6 +37,112 @@ public class AstalNetwork.AccessPoint : Object {
                 icon_name = _icon();
         });
         icon_name = _icon();
+        set_attrs();
+    }
+
+    private NM.Connection? find_saved_connection_by_ssid(string ssid) {
+        foreach (var connection in ap.client.get_connections()) {
+            var wireless_setting = connection.get_setting_wireless();
+            if (wireless_setting == null) {
+                continue;
+            }
+
+            var connection_ssid_data = wireless_setting.get_ssid();
+            if (connection_ssid_data == null) {
+                continue;
+            }
+
+            var connection_ssid = NM.Utils.ssid_to_utf8(connection_ssid_data.get_data());
+            if (connection_ssid == ssid) {
+                return connection;
+            }
+        }
+        return null;
+    }
+
+    private async void activate_saved_connection(NM.Connection saved_connection) throws Error {
+        try {
+            yield ap.client.activate_connection_async(saved_connection, wifi.device, ap.get_path(), null);
+        } catch (Error err) {
+            critical(err.message);
+        }
+    }
+
+    private async void create_new_connection(string? password = null) throws Error {
+        var connection = NM.SimpleConnection.new();
+        var setting = new NM.SettingWireless();
+
+        setting.set_property("ssid", ap.get_ssid());
+        setting.set_property("bssid", ap.get_bssid());
+        setting.set_property("mode", "infrastructure");
+        connection.add_setting(setting);
+
+        if (password != null) {
+            var setting_wireless_security = new NM.SettingWirelessSecurity();
+            setting_wireless_security.set_property("key-mgmt", "wpa-psk");
+            setting_wireless_security.set_property("psk", password);
+            connection.add_setting(setting_wireless_security);
+        }
+
+        yield ap.client.add_and_activate_connection_async(connection, wifi.device, ap.get_path(), null);
+    }
+
+    public async void connect_to_ap(string? password = null) {
+        try {
+            var saved_connection = find_saved_connection_by_ssid(ssid);
+
+            if (saved_connection != null) {
+                yield activate_saved_connection(saved_connection);
+            }
+            else {
+                yield create_new_connection(password);
+            }
+        } catch (Error e) {
+            critical(e.message);
+        }
+    }
+
+    public async void forget_ap(string uuid) throws Error {
+        try{
+            var connection = (NM.RemoteConnection?) null;
+            foreach (var conn in ap.client.get_connections()) {
+                if (conn.get_uuid() == uuid) {
+                    connection = conn;
+                    break;
+                }
+            }
+
+            if (connection == null) {
+                critical("Connection with UUID %s not found.".printf(uuid));
+            }
+
+            yield connection.delete_async(null);
+        } catch (Error e) {
+            critical(e.message);
+        }
+    }
+
+    private void set_attrs(){
+        hidden = false;
+        if (ssid == "Unknown"){
+            hidden = true;
+        }
+
+        requires_password = ap.get_wpa_flags() != NM.80211ApSecurityFlags.NONE || ap.get_rsn_flags() != NM.80211ApSecurityFlags.NONE;
+
+        if (ssid == null){
+            saved = false;
+            uuid = null;
+        }
+
+        var connection = find_saved_connection_by_ssid(ssid);
+        saved = connection != null;
+
+        uuid = null;
+        if (connection != null){
+            uuid = connection.get_uuid();
+        }
+
     }
 
     private string _icon() {
