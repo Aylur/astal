@@ -13,8 +13,8 @@ public class AstalNetwork.AccessPoint : Object {
     public NM.80211ApFlags flags { get { return ap.flags; } }
     public NM.80211ApSecurityFlags rsn_flags { get { return ap.rsn_flags; } }
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
-    public bool hidden { get; private set; }
-    public bool requires_password { get; private set; }
+    public bool hidden { get { return ssid == "Unknown" || ssid == null; } }
+    public bool requires_password { get { return wpa_flags != NM.80211ApSecurityFlags.NONE || rsn_flags != NM.80211ApSecurityFlags.NONE; } }
     public bool saved { get; private set; }
     public string uuid { get; private set; }
 
@@ -72,8 +72,8 @@ public class AstalNetwork.AccessPoint : Object {
         var connection = NM.SimpleConnection.new();
         var setting = new NM.SettingWireless();
 
-        setting.set_property("ssid", ap.get_ssid());
-        setting.set_property("bssid", ap.get_bssid());
+        setting.set_property("ssid", ssid);
+        setting.set_property("bssid", bssid);
         setting.set_property("mode", "infrastructure");
         connection.add_setting(setting);
 
@@ -122,32 +122,41 @@ public class AstalNetwork.AccessPoint : Object {
         }
     }
 
-    private void set_attrs(){
-        hidden = false;
-        if (ssid == "Unknown"){
-            hidden = true;
+    public async void disconnect_from_ap() {
+        try {
+            var active_connection = wifi.device.get_active_connection();
+
+            if (active_connection == null) {
+                critical("No active connection found.");
+                return;
+            }
+
+            if (active_connection.uuid != uuid){
+                critical("you are not connected to this access point.");
+                return;
+            }
+
+            yield ap.client.deactivate_connection_async(active_connection, null);
+
+        } catch (Error e) {
+            critical(e.message);
         }
+    }
 
-        requires_password = ap.get_wpa_flags() != NM.80211ApSecurityFlags.NONE || ap.get_rsn_flags() != NM.80211ApSecurityFlags.NONE;
-
+    private void set_attrs(){
         if (ssid == null){
             saved = false;
             uuid = null;
+
+            return;
         }
 
-        try{
-            var connection = find_saved_connection_by_ssid(ssid);
-            saved = connection != null;
-            uuid = null;
-            if (connection != null){
-                uuid = connection.get_uuid();
-            }
-        } catch (Error e) {
-            saved = false;
-            uuid = null;
+        var connection = find_saved_connection_by_ssid(ssid);
+        saved = connection != null;
+        uuid = null;
+        if (connection != null){
+            uuid = connection.get_uuid();
         }
-
-
     }
 
     private string _icon() {
