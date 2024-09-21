@@ -42,10 +42,11 @@ public class Box : Gtk.Box {
 
     private void _set_children(List<weak Gtk.Widget> arr) {
         foreach(var child in get_children()) {
-            remove(child);
-
-            if (!no_implicit_destroy && arr.find(child).length() == 0)
+            if (!no_implicit_destroy && arr.find(child).length() == 0) {
                 child.destroy();
+            } else {
+                remove(child);
+            }
         }
 
         foreach(var child in arr)
