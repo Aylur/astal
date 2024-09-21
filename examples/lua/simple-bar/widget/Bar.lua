@@ -97,7 +97,7 @@ local function BatteryLevel()
 		class_name = "Battery",
 		visible = bind(bat, "is-present"),
 		Widget.Icon({
-			icon = bind(bat, "icon-name"),
+			icon = bind(bat, "battery-icon-name"),
 		}),
 		Widget.Label({
 			label = bind(bat, "percentage"):as(function(p)
