@@ -21,6 +21,7 @@
           ninja
           vala
           wayland
+          wayland-scanner
         ];
         propagatedBuildInputs = [pkgs.glib] ++ inputs;
         pname = name;
