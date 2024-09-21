@@ -101,7 +101,6 @@ class VariableWrapper<T> extends Function {
 
     drop() {
         this.variable.emit("dropped")
-        idle(() => this.variable.run_dispose())
     }
 
     onDropped(callback: () => void) {
