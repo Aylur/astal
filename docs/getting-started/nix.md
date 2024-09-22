@@ -11,8 +11,8 @@ Using Astal on Nix will require you to package your project.
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     astal = {
-      inputs.nixpkgs.follows = "nixpkgs";
       url = "github:aylur/astal";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
@@ -39,7 +39,39 @@ Using Astal on Nix will require you to package your project.
 ```
 
 ```nix [<i class="devicon-vala-plain"></i> Vala]
-# Not documented yet
+# keep in mind that this is just the nix derivation
+# and you still have to use some build tool like meson
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    astal.url = "github:aylur/astal";
+  };
+
+  outputs = { self, nixpkgs, astal }: let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
+    packages.${system} = {
+      default = pkgs.stdenv.mkDerivation {
+        name = "my-shell";
+        src = ./.;
+
+        nativeBuildInputs = with pkgs; [
+          meson
+          ninja
+          pkg-config
+          vala
+          gobject-introspection
+        ];
+
+        # add extra packages
+        buildInputs = [
+          astal.packages.${system}.astal
+        ];
+      };
+    };
+  };
+}
 ```
 
 :::

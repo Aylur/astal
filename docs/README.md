@@ -24,6 +24,6 @@ Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.git
 .
 ├── public/showcase
 │   └── your-name-optional-title.webp   # 1. add image
-└── src/content/
+└── showcases/
     └── showcases.ts                    # 2. add information
 ```

@@ -42,7 +42,8 @@ Examples:
 ## Vala
 
 Vala is a language that simply put uses C# syntax and compiles to C.
-It is the language most of Astal is written in.
+It is the language most of Astal is written in. I would still recommend
+using TypeScript or Lua over Vala as they don't need a build step.
 
 Examples:
 
@@ -51,7 +52,8 @@ Examples:
 
 ## C
 
-I don't recommend using C as it requires quite a lot of boilerplate.
+I don't recommend using C as it requires quite a lot of boilerplate, both for
+build step and code.
 
 Examples:
 
