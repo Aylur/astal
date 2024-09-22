@@ -345,7 +345,6 @@ static void astal_wp_endpoint_set_property(GObject *object, guint property_id, c
 }
 
 static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
-    
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
     if (priv->node == NULL) return;
     self->id = wp_proxy_get_bound_id(WP_PROXY(priv->node));
@@ -426,7 +425,7 @@ static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) 
     g_type_class_unref(enum_class);
 
     if (defaultId != self->id) {
-        if (priv->node != NULL) g_object_unref(priv->node);
+        if (priv->node != NULL) g_clear_object(&priv->node);
         AstalWpEndpoint *default_endpoint = astal_wp_wp_get_endpoint(priv->wp, defaultId);
         if (default_endpoint != NULL &&
             astal_wp_endpoint_get_media_class(default_endpoint) == priv->media_class) {
