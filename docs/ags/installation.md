@@ -46,10 +46,18 @@ go install
 ```
 
 :::info
-If you have installed Astal **not** in `/usr` make sure to set its path.
+If you have installed Astal **not** in `/usr` (e.g. `/usr/local`) make sure to set its path.
 
 ```sh
 go install -ldflags "-X main.astalGjs=$(pkg-config --variable prefix astal-0.1)/share/astal/gjs"
+```
+
+Also, you have to manualy set Gjs library path before running.
+
+```sh
+# Example
+export GI_TYPELIB_PATH="$(pkg-config --variable prefix astal-0.1)/lib64/girepository-1.0"
+ags &
 ```
 
 :::
