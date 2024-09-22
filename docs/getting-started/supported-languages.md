@@ -46,7 +46,8 @@ It is the language most of Astal is written in.
 
 Examples:
 
-- TODO
+- [Simple Bar](https://github.com/Aylur/astal/tree/main/examples/vala/simple-bar)
+![simple-bar](https://github.com/user-attachments/assets/a306c864-56b7-44c4-8820-81f424f32b9b)
 
 ## C
 

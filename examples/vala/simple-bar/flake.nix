@@ -14,21 +14,26 @@
   in {
     packages.${system} = {
       default = pkgs.stdenv.mkDerivation {
-        pname = "simple-bar";
-        version = "git";
+        name = "simple-bar";
         src = ./.;
 
-        nativeBuildInputs = [
-          pkgs.meson
-          pkgs.ninja
-          pkgs.pkg-config
-          pkgs.vala
-          pkgs.gobject-introspection
+        nativeBuildInputs = with pkgs; [
+          meson
+          ninja
+          pkg-config
+          vala
+          gobject-introspection
+          dart-sass
         ];
 
         buildInputs = [
-          astal.packages.${system}.default
+          astal.packages.${system}.astal
           astal.packages.${system}.battery
+          astal.packages.${system}.wireplumber
+          astal.packages.${system}.network
+          astal.packages.${system}.tray
+          astal.packages.${system}.mpris
+          astal.packages.${system}.hyprland
         ];
       };
     };
