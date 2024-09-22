@@ -16,12 +16,16 @@ export default defineConfig({
     ignoreDeadLinks: true, // FIXME:
 
     head: [
-        ["link", { rel: "icon", href: "/astal/favicon.ico" }],
+        ["link", { rel: "icon", href: "/astal/icon.svg" }],
     ],
 
     themeConfig: {
-        // logo: "",
-        //
+        logo: "/icon.svg",
+
+        footer: {
+            message: 'Released under the LGPL v2.1 License',
+            copyright: 'Logo is created by VDawg'
+        },
 
         nav: [{
             text: "0.1.0",

@@ -4,9 +4,9 @@ pageClass: home-page
 
 hero:
   name: "Astal"
-  text: "Library and Framework for building Desktop Shells"
-  tagline: "The best way to make <i>beautiful</i> <b>and</b> <i>functional</i> wayland widgets!"
-  image: /front-image.png
+  text: "Create Beautiful Widgets With Ease"
+  tagline: "The Framework to Craft Desktop Shells and <i>beautiful</i> <i>functional</i> Wayland Widgets with GTK!"
+  image: /icon.svg
   actions:
     - theme: brand
       text: What is Astal?
@@ -35,13 +35,14 @@ import Showcases from './showcases/Showcases.vue'
 
 <Showcases />
 
-<!--TODO: add feature icons-->
 <!--TODO: add icons for buttons https://github.com/vuejs/vitepress/pull/3795-->
 
 <style>
 :root {
   --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, var(--vp-c-brand-1), var(--vp-c-brand-3));
+  --vp-home-hero-name-background: -webkit-linear-gradient(120deg, var(--vp-c-purple-3), var(--vp-c-brand-3));
+
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, var(--vp-c-purple-3), var(--vp-c-brand-3));
 }
 
 :root {
@@ -62,7 +63,7 @@ import Showcases from './showcases/Showcases.vue'
     font-weight: bold;
   }
 
-  .VPNavBar {
+  .VPNavBar:not(.top) {
     background-color: transparent !important;
     -webkit-backdrop-filter: blur(16px);
     backdrop-filter: blur(16px);
@@ -70,6 +71,18 @@ import Showcases from './showcases/Showcases.vue'
     div.divider {
       display: none;
     }
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --vp-home-hero-image-filter: blur(46px);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --vp-home-hero-image-filter: blur(58px);
   }
 }
 </style>
