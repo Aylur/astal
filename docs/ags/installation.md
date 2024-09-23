@@ -53,3 +53,13 @@ go install -ldflags "-X main.astalGjs=$(pkg-config --variable prefix astal-0.1)/
 ```
 
 :::
+
+:::tip
+`go install` installs the `ags` binary to `$GOPATH/bin` so make sure its in your `$PATH`.
+You can move it to another directory if you like. For example
+
+```sh
+mv $GOPATH/bin/ags ~/.local/bin/ags
+```
+
+:::

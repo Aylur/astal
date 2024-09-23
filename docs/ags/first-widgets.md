@@ -120,7 +120,7 @@ Lowercase tags are builtin widgets, while capital letter is for custom widgets.
 
 JSX lets you put markup into JavaScript.
 Curly braces let you “escape back” into JavaScript so that you can embed some variable
-from your code and display it to the user.
+from your code and display it.
 
 ```tsx
 function MyWidget() {
