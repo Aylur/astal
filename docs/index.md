@@ -43,6 +43,7 @@ import Showcases from './showcases/Showcases.vue'
   --vp-home-hero-name-background: -webkit-linear-gradient(120deg, var(--vp-c-purple-3), var(--vp-c-brand-3));
 
   --vp-home-hero-image-background-image: linear-gradient(-45deg, var(--vp-c-purple-3), var(--vp-c-brand-3));
+  --vp-home-hero-image-filter: blur(44px);
 }
 
 :root {
@@ -76,13 +77,13 @@ import Showcases from './showcases/Showcases.vue'
 
 @media (min-width: 640px) {
   :root {
-    --vp-home-hero-image-filter: blur(46px);
+    --vp-home-hero-image-filter: blur(56px);
   }
 }
 
 @media (min-width: 960px) {
   :root {
-    --vp-home-hero-image-filter: blur(58px);
+    --vp-home-hero-image-filter: blur(68px);
   }
 }
 </style>
