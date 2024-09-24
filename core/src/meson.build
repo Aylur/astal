@@ -22,9 +22,40 @@ pkgconfig_deps = [
   dependency('gtk+-3.0'),
   dependency('gdk-pixbuf-2.0'),
   dependency('gtk-layer-shell-0'),
+  dependency('wayland-client'),
 ]
 
 deps = pkgconfig_deps + meson.get_compiler('c').find_library('m')
+
+
+wayland_protos = dependency('wayland-protocols')
+wayland_scanner = find_program('wayland-scanner')
+
+wl_protocol_dir = wayland_protos.get_variable(pkgconfig: 'pkgdatadir')
+
+gen_client_header = generator(
+  wayland_scanner,
+  output: ['@BASENAME@-client.h'],
+  arguments: ['-c', 'client-header', '@INPUT@', '@BUILD_DIR@/@BASENAME@-client.h'],
+)
+
+gen_private_code = generator(
+  wayland_scanner,
+  output: ['@BASENAME@.c'],
+  arguments: ['-c', 'private-code', '@INPUT@', '@BUILD_DIR@/@BASENAME@.c'],
+)
+
+protocols = [
+  join_paths(wl_protocol_dir, 'unstable/idle-inhibit/idle-inhibit-unstable-v1.xml')
+]
+
+client_protocol_srcs = []
+
+foreach protocol : protocols
+  client_header = gen_client_header.process(protocol)
+  code = gen_private_code.process(protocol)
+  client_protocol_srcs += [client_header, code]
+endforeach
 
 sources = [
   config,
@@ -47,13 +78,16 @@ sources = [
   'process.vala',
   'time.vala',
   'variable.vala',
-]
+  'idle-inhibit.h',
+  'idle-inhibit.c',
+] + client_protocol_srcs
 
 if get_option('lib')
   lib = library(
     meson.project_name(),
     sources,
     dependencies: deps,
+    vala_args: ['--pkg', 'AstalInhibitManager'],
     vala_header: meson.project_name() + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
     vala_gir: gir,
@@ -92,6 +126,7 @@ if get_option('cli')
   executable(
     meson.project_name(),
     ['cli.vala', sources],
+    vala_args: ['--pkg', 'AstalInhibitManager'],
     dependencies: deps,
     install: true,
   )

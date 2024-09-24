@@ -15,6 +15,8 @@ prefix = get_option('prefix')
 libdir = get_option('prefix') / get_option('libdir')
 pkgdatadir = prefix / get_option('datadir') / 'astal'
 
+vapi_dir = meson.current_source_dir() / 'vapi'
+add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
 
 assert(
   get_option('lib') or get_option('cli'),
