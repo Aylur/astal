@@ -25,12 +25,6 @@ typedef struct {
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalInhibitManager, astal_inhibit_manager, G_TYPE_OBJECT)
 
-void astal_inhibitor_free(AstalInhibitor* inhibitor) {
-  g_print("free inhibitor\n");
-  g_assert_nonnull(inhibitor);
-  zwp_idle_inhibitor_v1_destroy(inhibitor);
-}
-
 AstalInhibitor* astal_inhibit_manager_inhibit(AstalInhibitManager *self, GtkWindow *window) {
   AstalInhibitManagerPrivate* priv = astal_inhibit_manager_get_instance_private(self);
   g_assert_true(priv->init);

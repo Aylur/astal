@@ -12,7 +12,6 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(AstalInhibitManager, astal_inhibit_manager, ASTAL, INHIBIT_MANAGER, GObject)
 
 typedef struct zwp_idle_inhibitor_v1 AstalInhibitor;
-void astal_inhibitor_free(AstalInhibitor* inhibitor);
 
 AstalInhibitManager* astal_inhibit_manager_get_default();
 AstalInhibitor* astal_inhibit_manager_inhibit(AstalInhibitManager *self, GtkWindow *window);
