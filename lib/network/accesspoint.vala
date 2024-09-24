@@ -102,7 +102,7 @@ public class AstalNetwork.AccessPoint : Object {
         }
     }
 
-    public async void forget_ap(string uuid) throws Error {
+    public async void forget_ap() throws Error {
         try{
             var connection = (NM.RemoteConnection?) null;
             foreach (var conn in ap.client.get_connections()) {
