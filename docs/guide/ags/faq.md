@@ -288,3 +288,87 @@ return <RegularWindow
     {child}
 </RegularWindow>
 ```
+
+## Avoiding unnecessary re-rendering
+
+As mentioned before, any object can be bound that implements the `Subscribable` interface.
+
+```ts
+interface Subscribable<T = unknown> {
+    subscribe(callback: (value: T) => void): () => void
+    get(): T
+}
+```
+
+This can be used to our advantage to create a reactive `Map` object.
+
+```ts
+import { type Subscribable } from "astal/binding"
+import { Gtk } from "astal"
+
+export class VarMap<K, T = Gtk.Widget> implements Subscribable {
+    #subs = new Set<(v: Array<[K, T]>) => void>()
+    #map: Map<K, T>
+
+    #notifiy() {
+        const value = this.get()
+        for (const sub of this.#subs) {
+            sub(value)
+        }
+    }
+
+    #delete(key: K) {
+        const v = this.#map.get(key)
+
+        if (v instanceof Gtk.Widget) {
+            v.destroy()
+        }
+
+        this.#map.delete(key)
+    }
+
+    constructor(initial?: Iterable<[K, T]>) {
+        this.#map = new Map(initial)
+    }
+
+    add(key: K, value: T) {
+        this.#delete(key)
+        this.#map.set(key, value)
+        this.#notifiy()
+    }
+
+    delete(key: K) {
+        this.#delete(key)
+        this.#notifiy()
+    }
+
+    get() {
+        return [...this.#map.entries()]
+    }
+
+    subscribe(callback: (v: Array<[K, T]>) => void) {
+        this.#subs.add(callback)
+        return () => this.#subs.delete(callback)
+    }
+}
+```
+
+And this `VarMap<key, Widget>` can be used as an alternative to `Variable<Array<Widget>>`.
+
+```tsx
+function MappedBox() {
+    const map = new VarMap([
+        [1, <MyWidget id={id} />]
+        [2, <MyWidget id={id} />]
+    ])
+
+    const conns = [
+        gobject.connect("added", (_, id) => map.set(id, MyWidget({ id }))),
+        gobject.connect("removed", (_, id) => map.delete(id, MyWidget({ id }))),
+    ]
+
+    return <box onDestroy={() => conns.map(id => gobject.disconnect(id))}>
+        {bind(map).as(arr => arr.sort(([a], [b]) => a - b).map(([,w]) => w))}
+    </box>
+}
+```

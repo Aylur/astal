@@ -359,7 +359,8 @@ You can disable this behavior by setting the `noImplicityDestroy` property.
 :::info
 The above example destroys and recreates every widget in the list everytime
 the value of the `Variable` changes. There might be cases where you would
-want to handle child creation yourself, because you don't want to lose the
+want to [handle child creation and deletion](/guide/ags/faq#avoiding-unnecessary-re-rendering)
+yourself, because you don't want to lose the
 inner state of widgets that does not need to be recreated.
 :::
 
