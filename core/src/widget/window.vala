@@ -68,6 +68,13 @@ public class Window : Gtk.Window {
       }
     }
 
+    public override void show() {
+        base.show();
+        if(inhibit) {
+          inhibitor = inhibit_manager.inhibit(this);
+        }
+    }
+
     public string namespace {
         get { return get_namespace(this); }
         set { set_namespace(this, value); }
