@@ -1,7 +1,7 @@
 <script setup>
 const props = defineProps({
     src: { type: String, required: true },
-    author: { type: String, required: true },
+    label: { type: String, required: true },
     url: { type: String, required: true }
 });
 </script>
@@ -9,10 +9,10 @@ const props = defineProps({
 <template>
     <figure>
         <a :href="url">
-            <img :src="src" :alt="author" />
+            <img :src="src" :alt="label" />
         </a>
         <figcaption>
-            <span>Author: {{ author }}</span>
+            <span>{{ label }}</span>
         </figcaption>
     </figure>
 </template>

@@ -264,7 +264,7 @@ return <MyWidget myprop="hello">
 The state of widgets are handled with Bindings. A `Binding` lets you
 connect the state of one [GObject](https://docs.gtk.org/gobject/class.Object.html) to another, in our case it is used to
 rerender part of a widget based on the state of a `GObject`.
-A `GObject` can be a [Variable](./variable) or it can be from a [Library](/libraries/references).
+A `GObject` can be a [Variable](./variable) or it can be from a [Library](../libraries/references).
 
 We use the `bind` function to create a `Binding` object from a `Variable` or
 a regular GObject and one of its properties.
@@ -313,7 +313,7 @@ return <box>
 :::
 
 Here is an example of a battery percent label that binds the `percentage`
-property of the Battery object from the [Battery Library](/libraries/battery):
+property of the Battery object from the [Battery Library](/guide/libraries/battery):
 
 ```tsx
 import Battery from "gi://AstalBattery"

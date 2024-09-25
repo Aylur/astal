@@ -69,7 +69,7 @@ output in `Variables`. They can poll and watch at the same time, but they
 can only poll/watch one subprocess.
 
 :::warning
-The command parameter is passed to [execAsync](/astal/ags/utilities/#executing-external-commands-and-scripts)
+The command parameter is passed to [execAsync](/guide/ags/utilities#executing-external-commands-and-scripts)
 which means they are **not** executed in a shell environment,
 they do **not** expand env variables like `$HOME`,
 and they do **not** handle logical operators like `&&` and `||`.

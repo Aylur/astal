@@ -10,13 +10,13 @@ hero:
   actions:
     - theme: brand
       text: What is Astal?
-      link: /getting-started/introduction
+      link: /guide/getting-started/introduction
     - theme: alt
       text: Get Started
-      link: /getting-started/installation
+      link: /guide/getting-started/installation
     - theme: alt
       text: References
-      link: /libraries/references
+      link: /guide/libraries/references
 
 features:
   - title: Use Your Preferred Language
@@ -29,12 +29,6 @@ features:
     icon: <i style="color:var(--vp-c-brand-3)" class="fl-gtk"></i>
     details: With Astal you work with Gtk directly. You are not limited to only a set of them.
 ---
-<script setup>
-import Showcases from './showcases/Showcases.vue'
-</script>
-
-<Showcases />
-
 <!--TODO: add icons for buttons https://github.com/vuejs/vitepress/pull/3795-->
 
 <style>
@@ -62,6 +56,11 @@ import Showcases from './showcases/Showcases.vue'
 
   .VPFeature a {
     font-weight: bold;
+  }
+
+  .VPFooter {
+    background-color: transparent !important;
+    border: none;
   }
 
   .VPNavBar:not(.top) {
