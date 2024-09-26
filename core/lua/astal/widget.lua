@@ -133,7 +133,7 @@ local function astalify(ctor)
     end
 
     function ctor:toggle_class_name(name, on)
-        Astal.toggle_class_name(self, name, on)
+        Astal.widget_toggle_class_name(self, name, on)
     end
 
     return function(tbl)
