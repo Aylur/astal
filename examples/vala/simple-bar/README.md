@@ -11,3 +11,4 @@ A simple bar for Hyprland using
 - [Network library](https://aylur.github.io/astal/libraries/network).
 - [Tray library](https://aylur.github.io/astal/libraries/tray).
 - [WirePlumber library](https://aylur.github.io/astal/libraries/wireplumber).
+- [dart-sass](https://sass-lang.com/dart-sass/) as the css precompiler

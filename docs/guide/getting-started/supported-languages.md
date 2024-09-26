@@ -37,7 +37,8 @@ Nonetheless you can still use python the OOP way [pygobject](https://pygobject.g
 
 Examples:
 
-- [Starter Bar](https://github.com/Aylur/astal/tree/main/examples/py/starter-bar)
+- [Simple Bar](https://github.com/Aylur/astal/tree/main/examples/py/simple-bar)
+![simple-bar](https://github.com/user-attachments/assets/a306c864-56b7-44c4-8820-81f424f32b9b)
 
 ## Vala
 
