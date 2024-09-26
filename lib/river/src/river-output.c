@@ -1,5 +1,7 @@
 #include <gio/gio.h>
 
+#include "glib-object.h"
+#include "glib.h"
 #include "river-private.h"
 #include "river-status-unstable-v1-client.h"
 
@@ -17,6 +19,8 @@ struct _AstalRiverOutput {
 typedef struct {
     struct zriver_status_manager_v1* river_status_manager;
     struct zriver_output_status_v1* river_output_status;
+    struct zriver_control_v1* river_control;
+    struct wl_seat* seat;
     struct wl_display* wl_display;
     struct wl_output* wl_output;
 } AstalRiverOutputPrivate;
@@ -101,6 +105,25 @@ void astal_river_output_set_focused_view(AstalRiverOutput* self, const gchar* fo
 }
 
 /**
+ * astal_river_output_set_focused_tags
+ * @self: the AstalRiverOutput object
+ * @tags: the tagmask to be focused
+ *
+ * sets the focused tags of the output
+ *
+ */
+void astal_river_output_set_focused_tags(AstalRiverOutput* self, guint tags) { 
+    AstalRiverOutputPrivate* priv = astal_river_output_get_instance_private(self);
+    gchar *tagstring = g_strdup_printf("%i", tags);
+
+    zriver_control_v1_add_argument(priv->river_control, "set-focused-tags");
+    zriver_control_v1_add_argument(priv->river_control, tagstring);
+
+    zriver_control_v1_run_command(priv->river_control, priv->seat);
+    g_free(tagstring);
+}
+
+/**
  * astal_river_output_get_focused_tags
  * @self: the AstalRiverOutput object
  *
@@ -109,6 +132,7 @@ void astal_river_output_set_focused_view(AstalRiverOutput* self, const gchar* fo
  * Returns: the focused tags of the output
  */
 guint astal_river_output_get_focused_tags(AstalRiverOutput* self) { return self->focused_tags; }
+
 
 /**
  * astal_river_output_get_urgent_tags
@@ -175,6 +199,9 @@ static void astal_river_output_set_property(GObject* object, guint property_id, 
         case ASTAL_RIVER_OUTPUT_PROP_ID:
             self->id = g_value_get_uint(value);
             g_object_notify(G_OBJECT(self), "id");
+            break;
+        case ASTAL_RIVER_OUTPUT_PROP_FOCUSED_TAGS:
+            astal_river_output_set_focused_tags(self, g_value_get_uint(value));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -276,6 +303,8 @@ static void astal_river_output_init(AstalRiverOutput* self) {}
 
 AstalRiverOutput* astal_river_output_new(guint id, struct wl_output* wl_output,
                                          struct zriver_status_manager_v1* status_manager,
+                                         struct zriver_control_v1* river_control,
+                                         struct wl_seat* seat,
                                          struct wl_display* wl_display) {
     AstalRiverOutput* self = g_object_new(ASTAL_RIVER_TYPE_OUTPUT, NULL);
     AstalRiverOutputPrivate* priv = astal_river_output_get_instance_private(self);
@@ -284,6 +313,8 @@ AstalRiverOutput* astal_river_output_new(guint id, struct wl_output* wl_output,
     priv->wl_display = wl_display;
     priv->wl_output = wl_output;
     priv->river_status_manager = status_manager;
+    priv->river_control = river_control;
+    priv->seat = seat;
 
     priv->river_output_status =
         zriver_status_manager_v1_get_river_output_status(priv->river_status_manager, wl_output);
@@ -308,7 +339,7 @@ static void astal_river_output_class_init(AstalRiverOutputClass* class) {
      * The currently focused tags
      */
     astal_river_output_properties[ASTAL_RIVER_OUTPUT_PROP_FOCUSED_TAGS] = g_param_spec_uint(
-        "focused-tags", "focused-tags", "currently focused tags", 0, INT_MAX, 0, G_PARAM_READABLE);
+        "focused-tags", "focused-tags", "currently focused tags", 0, INT_MAX, 0, G_PARAM_READWRITE);
     /**
      * AstalRiverOutput:occupied-tags:
      *

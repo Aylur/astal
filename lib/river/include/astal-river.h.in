@@ -26,6 +26,8 @@ gchar *astal_river_output_get_focused_view(AstalRiverOutput *self);
 
 guint astal_river_output_get_focused_tags(AstalRiverOutput *self);
 
+void astal_river_output_set_focused_tags(AstalRiverOutput* self, guint tags);
+
 guint astal_river_output_get_urgent_tags(AstalRiverOutput *self);
 
 guint astal_river_output_get_occupied_tags(AstalRiverOutput *self);
