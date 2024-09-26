@@ -116,9 +116,17 @@ end
 local function astalify(ctor)
     function ctor:hook(object, signalOrCallback, callback)
         if GObject.Object:is_type_of(object) and type(signalOrCallback) == "string" then
-            local id = object["on_" .. signalOrCallback]:connect(function(_, ...)
-                callback(self, ...)
-            end)
+            local id
+            if string.sub(signalOrCallback, 1, 8) == "notify::" then
+                local prop = string.gsub(signalOrCallback, "notify::", "")
+                id = object.on_notify:connect(function()
+                    callback(self, object[prop])
+                end, prop, false)
+            else
+                id = object["on_" .. signalOrCallback]:connect(function(_, ...)
+                    callback(self, ...)
+                end)
+            end
             self.on_destroy = function()
                 GObject.signal_handler_disconnect(object, id)
             end
