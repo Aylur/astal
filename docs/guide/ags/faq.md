@@ -372,3 +372,8 @@ function MappedBox() {
     </box>
 }
 ```
+
+## Is there a way to limit the width/height of a widget?
+
+Unfortunately not. You can set a minimum size with `min-width` and `min-heigth` css attributes,
+but you can not set max size.
