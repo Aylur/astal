@@ -52,26 +52,26 @@ public class Window : Gtk.Window {
     }
 
     public bool inhibit {
-      set {
-        if(inhibit_manager == null) {
-          return;
+        set {
+            if (inhibit_manager == null) {
+                return;
+            }
+            if (value && inhibitor == null) {
+                inhibitor = inhibit_manager.inhibit(this);
+            }
+            else if (!value && inhibitor != null) {
+                inhibitor = null;
+            }
         }
-        if(value && inhibitor == null) {
-          inhibitor = inhibit_manager.inhibit(this);
+        get {
+            return inhibitor != null;
         }
-        else if(!value && inhibitor != null){
-          inhibitor = null;
-        }
-      }
-      get {
-        return inhibitor != null;
-      }
     }
 
     public override void show() {
         base.show();
         if(inhibit) {
-          inhibitor = inhibit_manager.inhibit(this);
+            inhibitor = inhibit_manager.inhibit(this);
         }
     }
 
