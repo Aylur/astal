@@ -3,6 +3,9 @@ api_version = version_split[0] + '.' + version_split[1]
 gir = 'Astal-' + api_version + '.gir'
 typelib = 'Astal-' + api_version + '.typelib'
 
+vapi_dir = meson.current_source_dir() / 'vapi'
+add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
+
 config = configure_file(
   input: 'config.vala.in',
   output: 'config.vala',
