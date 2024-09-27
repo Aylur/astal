@@ -38,6 +38,9 @@ public class Window : Gtk.Window {
         return false;
     }
 
+    private InhibitManager? inhibit_manager;
+    private Inhibitor? inhibitor;
+
     construct {
         if (check("initialize layer shell"))
             return;
@@ -45,6 +48,31 @@ public class Window : Gtk.Window {
         height_request = 1;
         width_request = 1;
         init_for_window(this);
+        inhibit_manager = InhibitManager.get_default();
+    }
+
+    public bool inhibit {
+        set {
+            if (inhibit_manager == null) {
+                return;
+            }
+            if (value && inhibitor == null) {
+                inhibitor = inhibit_manager.inhibit(this);
+            }
+            else if (!value && inhibitor != null) {
+                inhibitor = null;
+            }
+        }
+        get {
+            return inhibitor != null;
+        }
+    }
+
+    public override void show() {
+        base.show();
+        if(inhibit) {
+            inhibitor = inhibit_manager.inhibit(this);
+        }
     }
 
     public string namespace {

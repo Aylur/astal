@@ -15,7 +15,6 @@ prefix = get_option('prefix')
 libdir = get_option('prefix') / get_option('libdir')
 pkgdatadir = prefix / get_option('datadir') / 'astal'
 
-
 assert(
   get_option('lib') or get_option('cli'),
   'Either lib or cli option must be set to true.',
