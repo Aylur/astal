@@ -33,9 +33,6 @@ config = configure_file(
 )
 
 deps = [
-  dependency('glib-2.0'),
-  dependency('gobject-2.0'),
-  dependency('gio-2.0'),
   dependency('gio-unix-2.0'),
   dependency('json-glib-1.0'),
 ]
@@ -43,7 +40,10 @@ deps = [
 sources = [
   config,
   'cli.vala',
+  'ipc.vala',
   'niri.vala',
+  'window.vala',
+  'workspace.vala',
 ]
 
 if get_option('lib')
