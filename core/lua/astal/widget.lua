@@ -60,6 +60,12 @@ local function set_children(parent, children)
         if rm ~= nil then
             parent:remove(rm)
         end
+    elseif Gtk.Container:is_type_of(parent) and
+           !(Astal.Box:is_type_of(parent) or
+             Astal.Stack:is_type_of(parent)) then
+        for _, ch in ipairs(parent:get_children()) do
+            parent:remove(ch)
+        end
     end
 
     -- TODO: add more container types
