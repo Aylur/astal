@@ -111,6 +111,7 @@ export default defineConfig({
                     { text: "Hyprland", link: "/guide/libraries/hyprland" },
                     { text: "Mpris", link: "/guide/libraries/mpris" },
                     { text: "Network", link: "/guide/libraries/network" },
+                    { text: "Niri", link: "/guide/libraries/niri" },
                     { text: "Notifd", link: "/guide/libraries/notifd" },
                     { text: "PowerProfiles", link: "/guide/libraries/powerprofiles" },
                     { text: "River", link: "/guide/libraries/river" },

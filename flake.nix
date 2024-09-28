@@ -32,6 +32,7 @@
       hyprland = mkPkg ./lib/hyprland;
       mpris = mkPkg ./lib/mpris;
       network = mkPkg ./lib/network;
+      niri = mkPkg ./lib/niri;
       notifd = mkPkg ./lib/notifd;
       powerprofiles = mkPkg ./lib/powerprofiles;
       river = mkPkg ./lib/river;
