@@ -248,8 +248,8 @@ function Variable.derive(deps, transform)
 
     local update = function()
         local params = {}
-        for _, binding in ipairs(deps) do
-            table.insert(params, binding:get())
+        for i, binding in ipairs(deps) do
+            params[i] = binding:get()
         end
         return transform(table.unpack(params))
     end
@@ -257,13 +257,13 @@ function Variable.derive(deps, transform)
     local var = Variable.new(update())
 
     local unsubs = {}
-    for _, b in ipairs(deps) do
-        table.insert(unsubs, b:subscribe(update))
+    for i, b in ipairs(deps) do
+        unsubs[i] = b:subscribe(update)
     end
 
     var.variable.on_dropped = function()
         for _, unsub in ipairs(unsubs) do
-            var:set(unsub())
+            unsub()
         end
     end
     return var
