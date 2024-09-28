@@ -59,6 +59,7 @@
       hyprland = mkPkg "astal-hyprland" ./lib/hyprland [json-glib];
       mpris = mkPkg "astal-mpris" ./lib/mpris [gvfs json-glib];
       network = mkPkg "astal-network" ./lib/network [networkmanager];
+      niri = mkPkg "astal-niri" ./lib/niri [json-glib];
       notifd = mkPkg "astal-notifd" ./lib/notifd [json-glib gdk-pixbuf];
       powerprofiles = mkPkg "astal-power-profiles" ./lib/powerprofiles [json-glib];
       river = mkPkg "astal-river" ./lib/river [json-glib];
