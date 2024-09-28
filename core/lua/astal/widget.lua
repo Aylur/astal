@@ -61,7 +61,7 @@ local function set_children(parent, children)
             parent:remove(rm)
         end
     elseif Gtk.Container:is_type_of(parent) and
-           !(Astal.Box:is_type_of(parent) or
+           not (Astal.Box:is_type_of(parent) or
              Astal.Stack:is_type_of(parent)) then
         for _, ch in ipairs(parent:get_children()) do
             parent:remove(ch)
