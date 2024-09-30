@@ -118,19 +118,24 @@ public class AstalNetwork.AccessPoint : Object {
         return ip4_setting;
     }
 
-    private NM.SettingConnection set_general_settings(bool autoconnect = false, bool read_only = false){
+    private NM.SettingConnection set_general_settings(string? profile_name = null, int priority = 0, bool autoconnect = false){
         var general_setting = new NM.SettingConnection();
+        if (profile_name != null){
+            general_setting.set_property("id", profile_name);
+        }
         general_setting.set_property("autoconnect", autoconnect);
-        general_setting.set_property("read-only", read_only);
+        general_setting.set_property("priority", priority);
         return general_setting;
     }
 
-    public async void create_new_connection(
+    public async void create_full_connection(
         string? password = null,
+        string? profile_name = null,
+        int priority = 0,
         string? ssid = this.ssid,
         string? bssid = this.bssid,
         string mode = "infrastructure",
-        string? band = null,
+        string? band = null, // "a", "b", or "g"
         uint channel = 0,
         string? mac_address = null,
         bool powersave = true,
@@ -139,36 +144,43 @@ public class AstalNetwork.AccessPoint : Object {
         string ip4_method = "auto",
         string[]? ip4_dns = null,
         string ip6_method = "auto",
-        bool autoconnect = false,
-        bool read_only = false
+        bool autoconnect = false
     ) throws Error {
-        var connection = NM.SimpleConnection.new();
+        try{
+            var connection = NM.SimpleConnection.new();
 
-        // Wireless settings
-        var wireless_setting = set_wireless_settings(ssid, bssid, mode, band, channel, mac_address, powersave);
-        connection.add_setting(wireless_setting);
+            // Wireless settings
+            var wireless_setting = set_wireless_settings(ssid, bssid, mode, band, channel, mac_address, powersave);
+            connection.add_setting(wireless_setting);
 
-        // Security settings
-        if (password != null) {
-            var security_setting = set_security_settings(password, security_type, auth_alg);
-            connection.add_setting(security_setting);
+            // Security settings
+            if (password != null) {
+                var security_setting = set_security_settings(password, security_type, auth_alg);
+                connection.add_setting(security_setting);
+            }
+
+            // IPv4 settings
+            var ip4_setting = set_ip4_settings(ip4_method, ip4_dns);
+            connection.add_setting(ip4_setting);
+
+            // IPv6 settings
+            var ip6_setting = new NM.SettingIP6Config();
+            ip6_setting.set_property("method", ip6_method);
+            connection.add_setting(ip6_setting);
+
+            // General connection settings
+            var general_setting = set_general_settings(profile_name, priority, autoconnect);
+            connection.add_setting(general_setting);
+
+            // Activate the connection on the device
+            yield ap.client.add_and_activate_connection_async(connection, wifi.device, ap.get_path(), null);
+        } catch (Error e){
+            critical(e.message);
         }
+    }
 
-        // IPv4 settings
-        var ip4_setting = set_ip4_settings(ip4_method, ip4_dns);
-        connection.add_setting(ip4_setting);
-
-        // IPv6 settings
-        var ip6_setting = new NM.SettingIP6Config();
-        ip6_setting.set_property("method", ip6_method);
-        connection.add_setting(ip6_setting);
-
-        // General connection settings
-        var general_setting = set_general_settings(autoconnect, read_only);
-        connection.add_setting(general_setting);
-
-        // Activate the connection on the device
-        yield ap.client.add_and_activate_connection_async(connection, wifi.device, ap.get_path(), null);
+    public async void create_new_connection(string? password = null) throws Error {
+        yield this.create_full_connection(password);
     }
 
     public async void deactivate_connection() {
@@ -193,7 +205,4 @@ public class AstalNetwork.AccessPoint : Object {
         return Wifi.ICON_NONE;
     }
 
-    // TODO: connect to ap
-    // public signal void auth();
-    // public void try_connect(string? password) { }
 }
