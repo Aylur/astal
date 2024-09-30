@@ -7,8 +7,9 @@ public class AstalNetwork.ConnectionProfile : Object {
     public bool is_active { get { return uuid == wifi.device.get_active_connection().uuid; } }
 
     public string id { get { return connection.get_id(); } }
-    public int autoconnect_priority { get { return connection.get_setting_connection().autoconnect_priority; } }
+    public int autoconnect_autoconnect_priority { get { return connection.get_setting_connection().autoconnect_priority; } }
     public bool autoconnect { get { return connection.get_setting_connection().autoconnect; } }
+    public bool visible { get { return connection.visible; } }
 
     public string ip4_method { get { return connection.get_setting_ip4_config().get_method(); } }
     public string ip6_method { get { return connection.get_setting_ip6_config().get_method(); } }
@@ -46,7 +47,7 @@ public class AstalNetwork.ConnectionProfile : Object {
 
     public string? get_psk() {
         // FIX: -> find out why this does not return psk
-        return connection.get_setting_wireless_security().get_psk();
+        return connection.get_setting_wireless_security().psk;
     }
 
     public string? get_key() {
@@ -97,14 +98,6 @@ public class AstalNetwork.ConnectionProfile : Object {
         }
     }
 
-    private uint8[] stringToByteArray(string str) {
-        uint8[] bytes = new uint8[str.length];
-        for (int i = 0; i < str.length; i++) {
-            bytes[i] = (uint8)str[i];
-        }
-        return bytes;
-    }
-
     private NM.SettingWireless set_wireless_settings(
         string? ssid = null,
         string? bssid = this.ap.bssid,
@@ -114,8 +107,12 @@ public class AstalNetwork.ConnectionProfile : Object {
         string? mac_address = null,
         bool powersave = true
     ){
-        var wireless_setting = new NM.SettingWireless();
-        wireless_setting.set_property("ssid", ssid);
+        var wireless_setting = connection.get_setting_wireless();
+
+        var ssid_bytes = ssid.data;
+        var ssid_gbytes = new GLib.Bytes(ssid_bytes);
+        wireless_setting.set_property("ssid", ssid_gbytes);
+
         if (bssid != null) {
             wireless_setting.set_property("bssid", bssid);
         }
@@ -139,7 +136,7 @@ public class AstalNetwork.ConnectionProfile : Object {
         string security_type = "wpa-psk",
         string auth_alg = "open"
     ){
-        var security_setting = new NM.SettingWirelessSecurity();
+        var security_setting = connection.get_setting_wireless_security();
         security_setting.set_property("key-mgmt", security_type);
         security_setting.set_property("psk", password);
         security_setting.set_property("auth-alg", auth_alg);
@@ -147,7 +144,7 @@ public class AstalNetwork.ConnectionProfile : Object {
     }
 
     private NM.SettingIP4Config set_ip4_settings(string ip4_method, string[]? ip4_dns = null){
-        var ip4_setting = new NM.SettingIP4Config();
+        var ip4_setting = connection.get_setting_ip4_config();
         ip4_setting.set_property("method", ip4_method);
         if (ip4_dns != null) {
             ip4_setting.set_property("dns", ip4_dns);
@@ -155,20 +152,20 @@ public class AstalNetwork.ConnectionProfile : Object {
         return ip4_setting;
     }
 
-    private NM.SettingConnection set_general_settings(string? profile_name = null, int priority = 0, bool autoconnect = false){
-        var general_setting = new NM.SettingConnection();
+    private NM.SettingConnection set_general_settings(string? profile_name = null, int autoconnect_priority = 0, bool autoconnect = false){
+        var general_setting = connection.get_setting_connection();
         if (profile_name != null){
             general_setting.set_property("id", profile_name);
         }
         general_setting.set_property("autoconnect", autoconnect);
-        general_setting.set_property("priority", priority);
+        general_setting.set_property("autoconnect_priority", autoconnect_priority);
         return general_setting;
     }
 
     public async void update_profile(
         string? password = null,
         string? profile_name = null,
-        int priority = 0,
+        int autoconnect_priority = 0,
         string? ssid = null,
         string? bssid = null,
         string mode = "infrastructure",
@@ -185,7 +182,6 @@ public class AstalNetwork.ConnectionProfile : Object {
     ) throws Error {
         try{
             // Wireless settings
-            connection.clear_settings();
             var wireless_setting = set_wireless_settings(ssid, bssid, mode, band, channel, mac_address, powersave);
             connection.add_setting(wireless_setting);
 
@@ -205,11 +201,10 @@ public class AstalNetwork.ConnectionProfile : Object {
             connection.add_setting(ip6_setting);
 
             // General connection settings
-            var general_setting = set_general_settings(profile_name, priority, autoconnect);
+            var general_setting = set_general_settings(profile_name, autoconnect_priority, autoconnect);
             connection.add_setting(general_setting);
 
-            // FIX: does not save profile, maybe use update2
-            yield connection.save_async(null);
+            yield connection.commit_changes_async(true, null);
         } catch (Error e){
             critical(e.message);
         }

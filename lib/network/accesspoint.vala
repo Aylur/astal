@@ -118,20 +118,20 @@ public class AstalNetwork.AccessPoint : Object {
         return ip4_setting;
     }
 
-    private NM.SettingConnection set_general_settings(string? profile_name = null, int priority = 0, bool autoconnect = false){
+    private NM.SettingConnection set_general_settings(string? profile_name = null, int autoconnect_priority = 0, bool autoconnect = false){
         var general_setting = new NM.SettingConnection();
         if (profile_name != null){
             general_setting.set_property("id", profile_name);
         }
         general_setting.set_property("autoconnect", autoconnect);
-        general_setting.set_property("priority", priority);
+        general_setting.set_property("autoconnect_priority", autoconnect_priority);
         return general_setting;
     }
 
     public async void create_full_connection(
         string? password = null,
         string? profile_name = null,
-        int priority = 0,
+        int autoconnect_priority = 0,
         string? ssid = this.ssid,
         string? bssid = this.bssid,
         string mode = "infrastructure",
@@ -169,7 +169,7 @@ public class AstalNetwork.AccessPoint : Object {
             connection.add_setting(ip6_setting);
 
             // General connection settings
-            var general_setting = set_general_settings(profile_name, priority, autoconnect);
+            var general_setting = set_general_settings(profile_name, autoconnect_priority, autoconnect);
             connection.add_setting(general_setting);
 
             // Activate the connection on the device
