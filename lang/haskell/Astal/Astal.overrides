@@ -1,0 +1,81 @@
+namespace Astal
+
+
+set-attr Astal/Box/vertical transfer-ownership none
+set-attr Astal/Box/children transfer-ownership none
+set-attr Astal/Box/child transfer-ownership none
+set-attr Astal/Box/no-implicit-destroy transfer-ownership none
+
+set-attr Astal/Stack/no-implicit-destroy transfer-ownership none
+set-attr Astal/Stack/shown transfer-ownership none
+set-attr Astal/Stack/children transfer-ownership none
+
+set-attr Astal/CenterBox/vertical transfer-ownership none
+set-attr Astal/CenterBox/start-widget transfer-ownership none
+set-attr Astal/CenterBox/center-widget transfer-ownership none
+set-attr Astal/CenterBox/end-widget transfer-ownership none
+
+set-attr Astal/CircularProgress/start-at transfer-ownership none
+set-attr Astal/CircularProgress/end-at transfer-ownership none
+set-attr Astal/CircularProgress/value transfer-ownership none
+set-attr Astal/CircularProgress/inverted transfer-ownership none
+set-attr Astal/CircularProgress/rounded transfer-ownership none
+
+set-attr Astal/Icon/pixbuf transfer-ownership none
+set-attr Astal/Icon/icon transfer-ownership none
+set-attr Astal/Icon/g-icon transfer-ownership none
+
+set-attr Astal/Label/truncate transfer-ownership none
+set-attr Astal/Label/justify-fill transfer-ownership none
+
+set-attr Astal/LevelBar/vertical transfer-ownership none
+
+set-attr Astal/Overlay/pass-through transfer-ownership none
+set-attr Astal/Overlay/overlay transfer-ownership none
+set-attr Astal/Overlay/overlays transfer-ownership none
+set-attr Astal/Overlay/child transfer-ownership none
+
+set-attr Astal/Scrollable/hscroll transfer-ownership none
+set-attr Astal/Scrollable/vscroll transfer-ownership none
+
+set-attr Astal/Slider/vertical transfer-ownership none
+set-attr Astal/Slider/dragging transfer-ownership none
+set-attr Astal/Slider/value transfer-ownership none
+set-attr Astal/Slider/min transfer-ownership none
+set-attr Astal/Slider/max transfer-ownership none
+set-attr Astal/Slider/step transfer-ownership none
+
+set-attr Astal/Window/anchor transfer-ownership none
+set-attr Astal/Window/exclusivity transfer-ownership none
+set-attr Astal/Window/layer transfer-ownership none
+set-attr Astal/Window/keymode transfer-ownership none
+set-attr Astal/Window/gdkmonitor transfer-ownership none
+set-attr Astal/Window/margin transfer-ownership none
+set-attr Astal/Window/margin-top transfer-ownership none
+set-attr Astal/Window/margin-bottom transfer-ownership none
+set-attr Astal/Window/margin-left transfer-ownership none
+set-attr Astal/Window/margin-right transfer-ownership none
+set-attr Astal/Window/monitor transfer-ownership none
+set-attr Astal/Window/inhibit transfer-ownership none
+set-attr Astal/Window/namespace transfer-ownership none
+
+set-attr Astal/Application/application-id transfer-ownership none
+set-attr Astal/Application/instance-name transfer-ownership none
+set-attr Astal/Application/windows transfer-ownership none
+set-attr Astal/Application/settings transfer-ownership none
+set-attr Astal/Application/screen transfer-ownership none
+set-attr Astal/Application/gtk-theme transfer-ownership none
+set-attr Astal/Application/icon-theme transfer-ownership none
+set-attr Astal/Application/cursor-theme transfer-ownership none
+set-attr Astal/Application/socket-path transfer-ownership none
+set-attr Astal/Application/monitors transfer-ownership none
+
+set-attr Astal/Process/argv transfer-ownership none
+
+set-attr Astal/Variable/value transfer-ownership none
+
+set-attr Astal/MAJOR_VERSION c:type gint
+set-attr Astal/MINOR_VERSION c:type gint
+set-attr Astal/MICRO_VERSION c:type gint
+set-attr Astal/VERSION c:type gchar*
+
