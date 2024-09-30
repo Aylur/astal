@@ -146,9 +146,34 @@ Example content of `home.nix` file
 
 AGS by default only includes the core `libastal` library.
 If you want to include any other [library](../libraries/references) you have to add them to `extraPackages`.
-You can also add binaries which will be added to `$PATH`.
+You can also add binaries which will be added to the gjs runtime.
 
 :::warning
 The `configDir` option symlinks the given path to `~/.config/ags`.
 If you already have your source code there leave it as `null`.
+:::
+
+The AGS flake does not expose the `astal` cli to the home environment, you have to do that yourself if you want:
+
+:::code-group
+
+```nix [<i class="devicon-nixos-plain"></i> home.nix]
+home.packages = [ inputs.ags.packages.${pkgs.system}.astal ];
+```
+
+:::
+
+Same applies to the `extraPackages` option, it does not expose the passed packages to the home environment.
+To make astal cli tools available to home environments, you have to add them yourself:
+
+:::code-group
+
+```nix [<i class="devicon-nixos-plain"></i> home.nix]
+home.packages = [ inputs.ags.packages.${pkgs.system}.notifd ];
+```
+
+```sh [<i class="devicon-bash-plain"></i> sh]
+astal-notifd --help
+```
+
 :::
