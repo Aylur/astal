@@ -7,7 +7,7 @@ public class AstalNetwork.ConnectionProfile : Object {
     public bool is_active { get { return uuid == wifi.device.get_active_connection().uuid; } }
 
     public string id { get { return connection.get_id(); } }
-    public int autoconnect_autoconnect_priority { get { return connection.get_setting_connection().autoconnect_priority; } }
+    public int autoconnect_priority { get { return connection.get_setting_connection().autoconnect_priority; } }
     public bool autoconnect { get { return connection.get_setting_connection().autoconnect; } }
     public bool visible { get { return connection.visible; } }
 
