@@ -133,7 +133,9 @@ internal class AstalNotifd.Daemon : Object {
 
         if (!ignore_timeout && expire_timeout > 0) {
             Timeout.add(expire_timeout, () => {
-                resolved(id, ClosedReason.EXPIRED);
+                if (!ignore_timeout) {
+                    resolved(id, ClosedReason.EXPIRED);
+                }
                 return Source.REMOVE;
             }, Priority.DEFAULT);
         }
