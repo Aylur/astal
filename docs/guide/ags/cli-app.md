@@ -100,7 +100,7 @@ ags -m "return 'hello';"
 In order for AGS to know about your windows, you have to register them.
 You can do this by specifying a **unique** `name` and calling `App.add_window`
 
-```tsx
+```tsx {4}
 import { App } from "astal"
 
 function Bar() {
@@ -112,7 +112,7 @@ function Bar() {
 
 You can also invoke `App.add_window` by simply passing the `App` to the `application` prop.
 
-```tsx
+```tsx  {4}
 import { App } from "astal"
 
 function Bar() {
