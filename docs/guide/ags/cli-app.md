@@ -95,6 +95,42 @@ ags -m "return 'hello';"
 # hello
 ```
 
+## Toggling Windows by their name
+
+In order for AGS to know about your windows, you have to register them.
+You can do this by specifying a **unique** `name` and calling `App.add_window`
+
+```tsx
+import { App } from "astal"
+
+function Bar() {
+    return <window name="Bar" setup={self => App.add_window(self)}>
+        <box />
+    </window>
+}
+```
+
+You can also invoke `App.add_window` by simply passing the `App` to the `application` prop.
+
+```tsx
+import { App } from "astal"
+
+function Bar() {
+    return <window name="Bar" application={App}>
+        <box />
+    </window>
+}
+```
+
+:::warning
+When assigning the `application` prop make sure `name` comes before.
+Props are set sequentially and if name is applied after application it won't work.
+:::
+
+```sh
+ags -t Bar
+```
+
 ## App without AGS
 
 As mentioned before AGS is only a scaffolding tool. You can setup

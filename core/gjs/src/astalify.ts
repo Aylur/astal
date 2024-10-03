@@ -19,11 +19,12 @@ function setChildren(parent: Gtk.Widget, children: Gtk.Widget[]) {
         if (ch)
             parent.remove(ch)
     }
-    else if (parent instanceof Gtk.Container &&
-            !(parent instanceof Astal.Box ||
-              parent instanceof Astal.Stack)) {
-        for(const ch of parent.get_children())
-	          parent.remove(ch)
+    else if (
+        parent instanceof Gtk.Container &&
+        !(parent instanceof Astal.Box || parent instanceof Astal.Stack)
+    ) {
+        for (const ch of parent.get_children())
+            parent.remove(ch)
     }
 
     // TODO: add more container types
