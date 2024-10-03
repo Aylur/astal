@@ -7,12 +7,12 @@
 #include <gio/gio.h>
 #include <cava/common.h>
 #include <linux/limits.h>
+#include <string.h>
 
 struct _AstalCavaCava {
     GObject parent_instance;
 
     gint bars;
-    gchar* config_path; 
 
     GArray* values;
 };
@@ -34,7 +34,6 @@ G_DEFINE_TYPE_WITH_PRIVATE(AstalCavaCava, astal_cava_cava, G_TYPE_OBJECT)
 typedef enum {
     ASTAL_CAVA_CAVA_PROP_VALUES = 1,
     ASTAL_CAVA_CAVA_PROP_BARS,
-    ASTAL_CAVA_CAVA_PROP_CONFIG_PATH,
     ASTAL_CAVA_CAVA_N_PROPERTIES
 } AstalCavaProperties;
 
@@ -59,9 +58,6 @@ static void astal_cava_cava_set_property(GObject* object, guint property_id, con
         case ASTAL_CAVA_CAVA_PROP_BARS:
             self->bars = g_value_get_int(value);
             break;
-        case ASTAL_CAVA_CAVA_PROP_CONFIG_PATH:
-            self->config_path = g_strdup(g_value_get_string(value));
-            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -78,9 +74,6 @@ static void astal_cava_cava_get_property(GObject* object, guint property_id, GVa
             break;
         case ASTAL_CAVA_CAVA_PROP_VALUES:
             g_value_set_pointer(value, self->values);
-            break;
-        case ASTAL_CAVA_CAVA_PROP_CONFIG_PATH:
-            g_value_set_string(value, self->config_path);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -109,20 +102,73 @@ static void astal_cava_cava_constructed(GObject* object) {
     AstalCavaCava* self = ASTAL_CAVA_CAVA(object);
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
 
-    struct error_s error = {};
+    priv->cfg = (struct config_params) {
+      .inAtty = 0,
+      .output = OUTPUT_RAW,
+      .raw_target = strdup("/dev/stdout"),
+      .data_format = strdup("binary"),
 
-    if (!load_config(self->config_path, &priv->cfg, false, &error)) {
-      g_critical("Error loading config. %s", error.message);
-      return;
-    }
+      .fixedbars = self->bars,
 
-    priv->cfg.inAtty = 0;
-    priv->cfg.output = OUTPUT_RAW;
-    priv->cfg.raw_target = strdup("/dev/stdout");
-    priv->cfg.data_format = strdup("binary");
+      //TODO: make more of those configurable
+      .audio_source = strdup("auto"),
+      .input = INPUT_PIPEWIRE,
 
-    if(self->bars > 0) priv->cfg.fixedbars = self->bars;
-    else self->bars = priv->cfg.fixedbars;
+      .monstercat = 0,
+      .sens = 1,
+      .noise_reduction = 0.77,
+      .lower_cut_off = 50,
+      .upper_cut_off = 10000,
+      .mono_opt = AVERAGE,
+      .stereo = 0,
+      .framerate = 60,
+      .autosens = 1,
+      .channels = 2,
+      .waves = 0, 
+      .userEQ = NULL,
+      .userEQ_keys = 0,
+      .userEQ_enabled = 0,
+      .samplerate = 44100,
+      .samplebits = 16,
+      .autoconnect = 2,
+      .waveform = 0,
+
+      //not needed in this lib
+      .sleep_timer = 0,
+      .show_idle_bar_heads = 1,
+      .continuous_rendering = 0,
+      .sdl_width = 1000,
+      .sdl_height = 500, 
+      .sdl_x = -1,
+      .sdl_y = -1,
+      .sdl_full_screen = 0,
+      .draw_and_quit = 0,
+      .zero_test = 0,
+      .non_zero_test = 0,
+      .reverse = 0,
+      .sync_updates = 0,
+      .disable_blanking = 0,
+      .bar_height = 32, 
+      .col = 0,
+      .bgcol = 0,
+      .autobars = 0,
+      .raw_format = FORMAT_BINARY,
+      .ascii_range = 1000,
+      .bit_format = 16,
+      .gradient = 0,
+      .gradient_count = 0, 
+      .bar_width = 2,
+      .bar_spacing = 1,
+      .xaxis = NONE,
+      .orientation = ORIENT_BOTTOM,
+      .color = NULL,
+      .bcolor = NULL,
+      .gradient_colors = NULL,
+      .vertex_shader = NULL,
+      .fragment_shader = NULL,
+      .bar_delim = ';',
+      .frame_delim = '\n',
+    };
 
     priv->audio_data = (struct audio_data) {
       .cava_in = calloc(BUFFER_SIZE * priv->cfg.channels * 8, sizeof(gdouble)),
@@ -197,17 +243,15 @@ static void astal_cava_cava_class_init(AstalCavaCavaClass* class) {
     object_class->finalize = astal_cava_cava_finalize;
 
     /**
-     * AstalCava:values: (type GList(gdouble))
+     * AstalCava:values: (type GArray(gdouble))
      *
      * A list of values
      */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_VALUES] =
         g_param_spec_pointer("values", "values", "a list of values", G_PARAM_READABLE);
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_BARS] =
-        g_param_spec_int("bars", "bars", "number of bars per channel", 0, G_MAXINT, 0,
+        g_param_spec_int("bars", "bars", "number of bars per channel", 1, G_MAXINT, 20,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_CONFIG_PATH] =
-        g_param_spec_string("config-path", "config-path", "config-path", "", G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     g_object_class_install_properties(object_class, ASTAL_CAVA_CAVA_N_PROPERTIES,
                                       astal_cava_cava_properties);
 }
