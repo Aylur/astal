@@ -112,7 +112,7 @@ function Bar() {
 
 You can also invoke `App.add_window` by simply passing the `App` to the `application` prop.
 
-```tsx  {4}
+```tsx {4}
 import { App } from "astal"
 
 function Bar() {
