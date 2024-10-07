@@ -9,30 +9,75 @@ public struct AstalNotifd.Action {
     public string label;
 }
 
+/**
+ * Class representing a notification.
+ */
 public class AstalNotifd.Notification : Object {
     private List<Action?> _actions;
     private HashTable<string, Variant> hints;
 
-    public int64 time { construct set; get; }
-    public string app_name { construct set; get; }
-    public string app_icon { construct set; get; }
-    public string summary { construct set; get; }
-    public string body { construct set; get; }
-    public uint id { construct set; get; }
-    public int expire_timeout { construct set; get; }
+    /** Unix time of when the notification was sent. */
+    public int64 time { private construct set; get; }
+
+    /** Name of the sending application. */
+    public string app_name { private construct set; get; }
+
+    /** Icon name of the sending application. */
+    public string app_icon { private construct set; get; }
+
+    /** Single line overview of the notification. */
+    public string summary { private construct set; get; }
+
+    /** Multi-line body of text, where each line is a paragraph. May contain markup. */
+    public string body { private construct set; get; }
+
+    /** Id of the notification. */
+    public uint id { private construct set; get; }
+
+    /** Time in milliseconds after the notification expires. */
+    public int expire_timeout { private construct set; get; }
+
+    /**
+     * List of {@link Action} of the notification.
+     *
+     * Can be invoked by calling {@link Notification.invoke} with the action's id.
+     */
     public List<Action?> actions { get { return _actions; } }
 
+    /** Path of an image  */
     public string image { get { return get_str_hint("image-path"); } }
+
+    /** Indicates whether {@link Action} identifier should be interpreted as a named icon.  */
     public bool action_icons { get { return get_bool_hint("action-icons"); } }
+
+    /** [[https://specifications.freedesktop.org/notification-spec/latest/categories.html|Category of the notification.]] */
     public string category { get { return get_str_hint("category"); } }
+
+    /** Specifies the name of the desktop filename representing the calling program. */
     public string desktop_entry { get { return get_str_hint("desktop-entry"); } }
+
+    /** Indicates whether notification is kept after action invocation.  */
     public bool resident { get { return get_bool_hint("resident"); } }
+
+    /** The path to a sound file to play when the notification pops up.  */
     public string sound_file { get { return get_str_hint("sound-file"); } }
+
+    /** A themeable named sound from to play when the notification pops up */
     public string sound_name { get { return get_str_hint("sound-name"); } }
+
+    /** Indicates to suppress playing any sounds. */
     public bool suppress_sound { get { return get_bool_hint("suppress-sound"); } }
+
+    /** Indicates that the notification should be excluded from persistency. */
     public bool transient { get { return get_bool_hint("transient"); } }
+
+    /** Specifies the X location on the screen that the notification should point to. The "y" hint must also be specified.  */
     public int x { get { return get_int_hint("x"); } }
+
+    /** Specifies the Y location on the screen that the notification should point to. The "x" hint must also be specified.  */
     public int y { get { return get_int_hint("y"); } }
+
+    /** {@link Urgency} level of the notification. */
     public Urgency urgency { get { return get_byte_hint("urgency"); } }
 
     internal Notification(
@@ -95,12 +140,44 @@ public class AstalNotifd.Notification : Object {
         return 0;
     }
 
+    /**
+     * Emitted when this {@link Notification} is resolved.
+     *
+     * @param reason The reason how the Notification was resolved.
+     */
     public signal void resolved(ClosedReason reason);
-    public signal void dismissed();
-    public signal void invoked(string action);
 
+    /**
+     * Emitted when the user dismisses this {@link Notification}
+     *
+     * @see dismiss
+     */
+    public signal void dismissed();
+
+    /**
+     * Emitted when an {@link Action} of this {@link Notification} is invoked.
+     *
+     * @param action_id id of the invoked action
+     * @see invoke
+     */
+    public signal void invoked(string action_id);
+
+    /**
+     * Dismiss this notification popup
+     *
+     * This method doesn't have any functionality on its own, but should be handled
+     * by frontend implementation to hide notification popups.
+     */
     public void dismiss() { dismissed(); }
-    public void invoke(string action) { invoked(action); }
+
+    /**
+     * Invoke an {@link Action} of this {@link Notification}
+     *
+     * Note that this method just notifies the client that this action was invoked
+     * by the user. If for example this notification persists through the lifetime
+     * of the sending program this action will have no effect.
+     */
+    public void invoke(string action_id) { invoked(action_id); }
 
     internal Notification.from_json(Json.Object root) throws GLib.Error {
         foreach (var key in root.get_members()) {
@@ -141,7 +218,7 @@ public class AstalNotifd.Notification : Object {
         return new Notification.from_json(parser.get_root().get_object());
     }
 
-    public string to_json_string() {
+    internal string to_json_string() {
     	var generator = new Json.Generator();
         generator.set_root(to_json());
         return generator.to_data(null);
