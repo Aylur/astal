@@ -17,25 +17,25 @@ public class AstalNotifd.Notification : Object {
     private HashTable<string, Variant> hints;
 
     /** Unix time of when the notification was sent. */
-    public int64 time { private construct set; get; }
+    public int64 time { internal set; get; }
 
     /** Name of the sending application. */
-    public string app_name { private construct set; get; }
+    public string app_name { internal set; get; }
 
     /** Icon name of the sending application. */
-    public string app_icon { private construct set; get; }
+    public string app_icon { internal set; get; }
 
     /** Single line overview of the notification. */
-    public string summary { private construct set; get; }
+    public string summary { internal set; get; }
 
     /** Multi-line body of text, where each line is a paragraph. May contain markup. */
-    public string body { private construct set; get; }
+    public string body { internal set; get; }
 
     /** Id of the notification. */
-    public uint id { private construct set; get; }
+    public uint id { internal set; get; }
 
     /** Time in milliseconds after the notification expires. */
-    public int expire_timeout { private construct set; get; }
+    public int expire_timeout { internal set; get; }
 
     /**
      * List of {@link Action} of the notification.
