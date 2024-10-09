@@ -25,18 +25,17 @@ function mergeBindings(array: any[]) {
 
 function setProp(obj: any, prop: string, value: any) {
     try {
+        // the setter method has to be used because
+        // array like properties are not bound correctly as props
         const setter = `set_${snakeify(prop)}`
         if (typeof obj[setter] === "function")
             return obj[setter](value)
 
-        if (Object.hasOwn(obj, prop))
-            return (obj[prop] = value)
+        return (obj[prop] = value)
     }
     catch (error) {
         console.error(`could not set property "${prop}" on ${obj}:`, error)
     }
-
-    console.error(`could not set property "${prop}" on ${obj}`)
 }
 
 export default function astalify<
@@ -183,6 +182,19 @@ export default function astalify<
                 return acc
             }, [])
 
+            // setup bindings handlers
+            for (const [prop, binding] of bindings) {
+                if (prop === "child" || prop === "children") {
+                    this.connect("destroy", binding.subscribe((v: any) => {
+                        this._setChildren(v)
+                    }))
+                }
+                this.connect("destroy", binding.subscribe((v: any) => {
+                    setProp(this, prop, v)
+                }))
+                setProp(this, prop, binding.get())
+            }
+
             // set children
             const mergedChildren = mergeBindings(children.flat(Infinity))
             if (mergedChildren instanceof Binding) {
@@ -206,19 +218,6 @@ export default function astalify<
                     this.connect(signal, () => execAsync(callback)
                         .then(print).catch(console.error))
                 }
-            }
-
-            // setup bindings handlers
-            for (const [prop, binding] of bindings) {
-                if (prop === "child" || prop === "children") {
-                    this.connect("destroy", binding.subscribe((v: any) => {
-                        this._setChildren(v)
-                    }))
-                }
-                this.connect("destroy", binding.subscribe((v: any) => {
-                    setProp(this, prop, v)
-                }))
-                setProp(this, prop, binding.get())
             }
 
             Object.assign(this, props)

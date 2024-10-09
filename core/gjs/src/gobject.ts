@@ -67,6 +67,18 @@ export function property(declaration: PropertyDeclaration = Object) {
                 },
             })
 
+            Object.defineProperty(target, `set_${name.replace("-", "_")}`, {
+                value: function (v: any) {
+                    this[prop] = v
+                }
+            })
+
+            Object.defineProperty(target, `get_${name.replace("-", "_")}`, {
+                value: function () {
+                    return this[prop]
+                }
+            })
+
             target.constructor[meta].Properties[kebabify(prop)] = pspec(name, ParamFlags.READWRITE, declaration)
         }
 
@@ -81,10 +93,10 @@ export function property(declaration: PropertyDeclaration = Object) {
 }
 
 export function signal(...params: Array<{ $gtype: GObject.GType } | typeof Object>):
-(target: any, signal: any, desc?: PropertyDescriptor) => void
+    (target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(declaration?: SignalDeclaration):
-(target: any, signal: any, desc?: PropertyDescriptor) => void
+    (target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(
     declaration?: SignalDeclaration | { $gtype: GObject.GType } | typeof Object,
