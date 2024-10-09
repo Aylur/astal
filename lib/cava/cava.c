@@ -3,6 +3,7 @@
 #include "cava/config.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "glibconfig.h"
 
 #include <gio/gio.h>
 #include <cava/common.h>
@@ -13,6 +14,12 @@ struct _AstalCavaCava {
     GObject parent_instance;
 
     gint bars;
+    gboolean autosens;
+    gdouble sens;
+    gboolean stereo;
+    gboolean monstercat;
+    gdouble noise_reduction;
+    gint framerate;
 
     GArray* values;
 };
@@ -34,12 +41,20 @@ G_DEFINE_TYPE_WITH_PRIVATE(AstalCavaCava, astal_cava_cava, G_TYPE_OBJECT)
 typedef enum {
     ASTAL_CAVA_CAVA_PROP_VALUES = 1,
     ASTAL_CAVA_CAVA_PROP_BARS,
+    ASTAL_CAVA_CAVA_PROP_AUTOSENS,
+    ASTAL_CAVA_CAVA_PROP_SENS,
+    ASTAL_CAVA_CAVA_PROP_STEREO,
+    ASTAL_CAVA_CAVA_PROP_MONSTERCAT,
+    ASTAL_CAVA_CAVA_PROP_NOISE,
+    ASTAL_CAVA_CAVA_PROP_FRAMERATE,
     ASTAL_CAVA_CAVA_N_PROPERTIES
 } AstalCavaProperties;
 
 static GParamSpec* astal_cava_cava_properties[ASTAL_CAVA_CAVA_N_PROPERTIES] = {
     NULL,
 };
+
+
 
 /**
  * astal_cava_cava_get_values
@@ -50,6 +65,14 @@ static GParamSpec* astal_cava_cava_properties[ASTAL_CAVA_CAVA_N_PROPERTIES] = {
  */
 GArray* astal_cava_cava_get_values(AstalCavaCava* self) { return self->values; }
 
+gint astal_cava_cava_get_bars(AstalCavaCava* self) { return self->bars; }
+gboolean astal_cava_cava_get_autosens(AstalCavaCava* self) { return self->autosens; }
+gboolean astal_cava_cava_get_stereo(AstalCavaCava* self) { return self->stereo; }
+gboolean astal_cava_cava_get_monstercat(AstalCavaCava* self) { return self->monstercat; }
+gdouble astal_cava_cava_get_sensitivity(AstalCavaCava* self) { return self->sens; }
+gdouble astal_cava_cava_get_noise_reduction(AstalCavaCava* self) { return self->noise_reduction; }
+gint astal_cava_cava_get_framerate(AstalCavaCava* self) { return self->framerate; }
+
 static void astal_cava_cava_set_property(GObject* object, guint property_id, const GValue* value,
                                             GParamSpec* pspec) {
     AstalCavaCava* self = ASTAL_CAVA_CAVA(object);
@@ -57,6 +80,24 @@ static void astal_cava_cava_set_property(GObject* object, guint property_id, con
     switch (property_id) {
         case ASTAL_CAVA_CAVA_PROP_BARS:
             self->bars = g_value_get_int(value);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_AUTOSENS:
+            self->autosens = g_value_get_boolean(value);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_SENS:
+            self->sens = g_value_get_double(value);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_NOISE:
+            self->noise_reduction = g_value_get_double(value);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_STEREO:
+            self->stereo = g_value_get_boolean(value);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_MONSTERCAT:
+            self->monstercat = g_value_get_boolean(value);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_FRAMERATE:
+            self->framerate = g_value_get_int(value);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -74,6 +115,24 @@ static void astal_cava_cava_get_property(GObject* object, guint property_id, GVa
             break;
         case ASTAL_CAVA_CAVA_PROP_VALUES:
             g_value_set_pointer(value, self->values);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_AUTOSENS:
+            g_value_set_boolean(value, self->autosens);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_SENS:
+            g_value_set_double(value, self->sens);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_NOISE:
+            g_value_set_double(value, self->noise_reduction);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_STEREO:
+            g_value_set_boolean(value, self->stereo);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_MONSTERCAT:
+            g_value_set_boolean(value, self->monstercat);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_FRAMERATE:
+            g_value_set_int(value, self->framerate);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -109,31 +168,33 @@ static void astal_cava_cava_constructed(GObject* object) {
       .data_format = strdup("binary"),
 
       .fixedbars = self->bars,
-
-      //TODO: make more of those configurable
+      .autosens = self->autosens,
+      .sens = self->sens,
+      .stereo = self->stereo,
+      .channels = self->stereo + 1,
+      .monstercat = self->monstercat,
+      .noise_reduction = self->noise_reduction,
+      .framerate = self->framerate,
+      
+      //TODO: make these configurable
       .audio_source = strdup("auto"),
       .input = INPUT_PIPEWIRE,
 
-      .monstercat = 0,
-      .sens = 1,
-      .noise_reduction = 0.77,
+      //maybe make some of them configurable
       .lower_cut_off = 50,
       .upper_cut_off = 10000,
       .mono_opt = AVERAGE,
-      .stereo = 0,
-      .framerate = 60,
-      .autosens = 1,
-      .channels = 2,
       .waves = 0, 
       .userEQ = NULL,
       .userEQ_keys = 0,
       .userEQ_enabled = 0,
       .samplerate = 44100,
       .samplebits = 16,
-      .autoconnect = 2,
       .waveform = 0,
 
       //not needed in this lib
+      .autoconnect = 2,
+      .reverse = 0,
       .sleep_timer = 0,
       .show_idle_bar_heads = 1,
       .continuous_rendering = 0,
@@ -145,7 +206,6 @@ static void astal_cava_cava_constructed(GObject* object) {
       .draw_and_quit = 0,
       .zero_test = 0,
       .non_zero_test = 0,
-      .reverse = 0,
       .sync_updates = 0,
       .disable_blanking = 0,
       .bar_height = 32, 
@@ -196,9 +256,7 @@ static void astal_cava_cava_constructed(GObject* object) {
     priv->timer_id = g_timeout_add(1000 / priv->cfg.framerate, G_SOURCE_FUNC(exec_cava), self);
 }
 
-static void astal_cava_cava_init(AstalCavaCava* self) {
-    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
-}
+static void astal_cava_cava_init(AstalCavaCava* self) { }
 
 /**
  * astal_cava_cava_get_default
@@ -251,6 +309,23 @@ static void astal_cava_cava_class_init(AstalCavaCavaClass* class) {
         g_param_spec_pointer("values", "values", "a list of values", G_PARAM_READABLE);
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_BARS] =
         g_param_spec_int("bars", "bars", "number of bars per channel", 1, G_MAXINT, 20,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_AUTOSENS] =
+        g_param_spec_boolean("autosens", "autosens", "dynamically adjust sensitivity", TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_SENS] =
+        g_param_spec_double("sensitivity", "sensitivity", "sensitivity", 0, G_MAXDOUBLE, 1,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_STEREO] =
+        g_param_spec_boolean("stereo", "stereo", "stereo", FALSE,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_MONSTERCAT] =
+        g_param_spec_boolean("monstercat", "monstercat", "monstercat smoothing", FALSE,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_NOISE] =
+        g_param_spec_double("noise_reduction", "noise_reduction", "noise reduction", 0, G_MAXDOUBLE, 0.77,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_FRAMERATE] =
+        g_param_spec_int("framerate", "framerate", "framerate", 1, G_MAXINT, 60,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     g_object_class_install_properties(object_class, ASTAL_CAVA_CAVA_N_PROPERTIES,
                                       astal_cava_cava_properties);
