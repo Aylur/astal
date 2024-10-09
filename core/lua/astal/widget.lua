@@ -206,6 +206,10 @@ local function astalify(ctor)
         -- construct, attach bindings, add children
         local widget = ctor()
 
+        for prop, value in pairs(props) do
+            widget[prop] = value
+        end
+
         if getmetatable(children) == Binding then
             set_children(widget, children:get())
             widget.on_destroy = children:subscribe(function(v)
@@ -221,10 +225,6 @@ local function astalify(ctor)
             widget.on_destroy = binding:subscribe(function(v)
                 widget[prop] = v
             end)
-        end
-
-        for prop, value in pairs(props) do
-            widget[prop] = value
         end
 
         if type(setup) == "function" then
