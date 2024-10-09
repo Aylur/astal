@@ -43,6 +43,15 @@ flatten = function(tbl)
     return copy
 end
 
+local function includes(tbl, elem)
+    for _, value in pairs(tbl) do
+        if value == elem then
+            return true
+        end
+    end
+    return false
+end
+
 local function set_children(parent, children)
     children = map(flatten(children), function(item)
         if Gtk.Widget:is_type_of(item) then
@@ -56,15 +65,19 @@ local function set_children(parent, children)
 
     -- remove
     if Gtk.Bin:is_type_of(parent) then
-        local rm = parent:get_child()
-        if rm ~= nil then
-            parent:remove(rm)
+        local ch = parent:get_child()
+        if ch ~= nil then
+            parent:remove(ch)
         end
-    elseif Gtk.Container:is_type_of(parent) and
-           not (Astal.Box:is_type_of(parent) or
-             Astal.Stack:is_type_of(parent)) then
+        if ch ~= nil and not includes(children, ch) and not parent.no_implicit_destroy then
+            ch:destroy()
+        end
+    elseif Gtk.Container:is_type_of(parent) then
         for _, ch in ipairs(parent:get_children()) do
             parent:remove(ch)
+            if ch ~= nil and not includes(children, ch) and not parent.no_implicit_destroy then
+                ch:destroy()
+            end
         end
     end
 
@@ -177,7 +190,7 @@ local function astalify(ctor)
         for prop, value in pairs(props) do
             if string.sub(prop, 0, 2) == "on" and type(value) ~= "function" then
                 props[prop] = function()
-                    exec_async(value, print, print)
+                    exec_async(value, print)
                 end
             end
         end
@@ -280,6 +293,21 @@ Gtk.Widget._attribute.cursor = {
 Gtk.Widget._attribute.click_through = {
     get = Astal.widget_get_click_through,
     set = Astal.widget_set_click_through,
+}
+
+local no_implicit_destroy = {}
+Gtk.Widget._attribute.no_implicit_destroy = {
+    get = function(self)
+        return no_implicit_destroy[self] or false
+    end,
+    set = function(self, v)
+        if no_implicit_destroy[self] == nil then
+            self.on_destroy = function()
+                no_implicit_destroy[self] = nil
+            end
+        end
+        no_implicit_destroy[self] = v
+    end,
 }
 
 Astal.Box._attribute.children = {

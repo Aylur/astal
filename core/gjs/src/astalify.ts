@@ -77,14 +77,14 @@ export default function astalify<
                 const ch = this.get_child()
                 if (ch)
                     this.remove(ch)
-                // if (ch && !children.includes(ch) && !this.noImplicitDestroy)
-                //     ch?.destroy()
+                if (ch && !children.includes(ch) && !this.noImplicitDestroy)
+                    ch?.destroy()
             }
             else if (this instanceof Gtk.Container) {
                 for (const ch of this.get_children()) {
                     this.remove(ch)
-                    // if (!children.includes(ch) && !this.noImplicitDestroy)
-                    //     ch?.destroy()
+                    if (!children.includes(ch) && !this.noImplicitDestroy)
+                        ch?.destroy()
                 }
             }
 
