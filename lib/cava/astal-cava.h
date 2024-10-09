@@ -5,6 +5,21 @@
 
 G_BEGIN_DECLS
 
+#define ASTAL_CAVA_TYPE_INPUT (astal_cava_input_get_type())
+
+typedef enum {
+    ASTAL_CAVA_INPUT_FIFO,
+    ASTAL_CAVA_INPUT_PORTAUDIO,
+    ASTAL_CAVA_INPUT_PIPEWIRE,
+    ASTAL_CAVA_INPUT_ALSA,
+    ASTAL_CAVA_INPUT_PULSE,
+    ASTAL_CAVA_INPUT_SNDIO,
+    ASTAL_CAVA_INPUT_OSS,
+    ASTAL_CAVA_INPUT_JACK,
+    ASTAL_CAVA_INPUT_SHMEM,
+    ASTAL_CAVA_INPUT_WINSCAP,
+} AstalCavaInput;
+
 #define ASTAL_CAVA_TYPE_CAVA (astal_cava_cava_get_type())
 
 G_DECLARE_FINAL_TYPE(AstalCavaCava, astal_cava_cava, ASTAL_CAVA, CAVA, GObject)

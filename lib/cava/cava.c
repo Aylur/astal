@@ -20,6 +20,8 @@ struct _AstalCavaCava {
     gboolean monstercat;
     gdouble noise_reduction;
     gint framerate;
+    AstalCavaInput input;
+    gchar* audio_source;
 
     GArray* values;
 };
@@ -36,6 +38,16 @@ typedef struct {
 
 } AstalCavaCavaPrivate;
 
+G_DEFINE_ENUM_TYPE(AstalCavaInput, astal_cava_input,
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_FIFO, "fifo"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_PORTAUDIO, "portaudio"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_PIPEWIRE, "pipewire"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_ALSA, "alsa"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_PULSE, "pulse"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_SNDIO, "sndio"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_SHMEM, "shmem"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_WINSCAP, "winscap"));
+
 G_DEFINE_TYPE_WITH_PRIVATE(AstalCavaCava, astal_cava_cava, G_TYPE_OBJECT)
 
 typedef enum {
@@ -47,6 +59,8 @@ typedef enum {
     ASTAL_CAVA_CAVA_PROP_MONSTERCAT,
     ASTAL_CAVA_CAVA_PROP_NOISE,
     ASTAL_CAVA_CAVA_PROP_FRAMERATE,
+    ASTAL_CAVA_CAVA_PROP_INPUT,
+    ASTAL_CAVA_CAVA_PROP_SOURCE,
     ASTAL_CAVA_CAVA_N_PROPERTIES
 } AstalCavaProperties;
 
@@ -99,6 +113,13 @@ static void astal_cava_cava_set_property(GObject* object, guint property_id, con
         case ASTAL_CAVA_CAVA_PROP_FRAMERATE:
             self->framerate = g_value_get_int(value);
             break;
+        case ASTAL_CAVA_CAVA_PROP_INPUT:
+            self->input = g_value_get_enum(value);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_SOURCE:
+            g_free(self->audio_source);
+            self->audio_source = g_value_dup_string(value);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -133,6 +154,12 @@ static void astal_cava_cava_get_property(GObject* object, guint property_id, GVa
             break;
         case ASTAL_CAVA_CAVA_PROP_FRAMERATE:
             g_value_set_int(value, self->framerate);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_INPUT:
+            g_value_set_enum(value, self->input);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_SOURCE:
+            g_value_set_string(value, self->audio_source);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -171,16 +198,13 @@ static void astal_cava_cava_constructed(GObject* object) {
       .autosens = self->autosens,
       .sens = self->sens,
       .stereo = self->stereo,
-      .channels = self->stereo + 1,
       .monstercat = self->monstercat,
       .noise_reduction = self->noise_reduction,
       .framerate = self->framerate,
-      
-      //TODO: make these configurable
-      .audio_source = strdup("auto"),
-      .input = INPUT_PIPEWIRE,
+      .input = (enum input_method) self->input,
 
       //maybe make some of them configurable
+      .channels = 2,
       .lower_cut_off = 50,
       .upper_cut_off = 10000,
       .mono_opt = AVERAGE,
@@ -229,6 +253,43 @@ static void astal_cava_cava_constructed(GObject* object) {
       .bar_delim = ';',
       .frame_delim = '\n',
     };
+
+    if(strcmp(self->audio_source, "auto") == 0) {
+      switch (priv->cfg.input) {
+        case INPUT_ALSA:
+            priv->cfg.audio_source = strdup("hw:Loopback,1");
+            break;
+        case INPUT_FIFO:
+            priv->cfg.audio_source = strdup("/tmp/mpd.fifo");
+            break;
+        case INPUT_PULSE:
+            priv->cfg.audio_source = strdup("auto");
+            break;
+        case INPUT_PIPEWIRE:
+            priv->cfg.audio_source = strdup("auto");
+            break;
+        case INPUT_SNDIO:
+            priv->cfg.audio_source = strdup("default");
+            break;
+        case INPUT_OSS:
+            priv->cfg.audio_source = strdup("/dev/dsp");
+            break;
+        case INPUT_JACK:
+            priv->cfg.audio_source = strdup("default");
+            break;
+        case INPUT_SHMEM:
+            priv->cfg.audio_source = strdup("/squeezelite-00:00:00:00:00:00");
+            break;
+        case INPUT_PORTAUDIO:
+            priv->cfg.audio_source = strdup("auto");
+            break; 
+        default:
+          g_critical("unsupported audio source");
+      }
+    }
+    else {
+      priv->cfg.audio_source = strdup(self->audio_source);
+    }
 
     priv->audio_data = (struct audio_data) {
       .cava_in = calloc(BUFFER_SIZE * priv->cfg.channels * 8, sizeof(gdouble)),
@@ -326,6 +387,12 @@ static void astal_cava_cava_class_init(AstalCavaCavaClass* class) {
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_FRAMERATE] =
         g_param_spec_int("framerate", "framerate", "framerate", 1, G_MAXINT, 60,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_INPUT] =
+        g_param_spec_enum("input", "input", "input", ASTAL_CAVA_TYPE_INPUT, ASTAL_CAVA_INPUT_PIPEWIRE,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_SOURCE] =
+        g_param_spec_string("source", "source", "source", "auto",
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     g_object_class_install_properties(object_class, ASTAL_CAVA_CAVA_N_PROPERTIES,
                                       astal_cava_cava_properties);
