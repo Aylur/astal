@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "experimentalDecorators": true,
         "target": "ESNext",
         "module": "ESNext",
         "lib": [
@@ -13,11 +14,13 @@
         "checkJs": true,
         "allowJs": true,
         "jsx": "react-jsx",
-        "jsxImportSource": "./src/jsx",
+        "jsxImportSource": "src/jsx",
+        "baseUrl": ".",
     },
     "include": [
-        "./node_modules/@girs",
-        "./src/**/*",
-        "./index.ts",
+        "@girs",
+        "src/**/*",
+        "index.ts",
+        "app.ts"
     ]
 }

@@ -31,7 +31,6 @@ export type CircularProgress = Widget<Astal.CircularProgress>
 export const CircularProgress = astalify<typeof Astal.CircularProgress, CircularProgressProps, "CircularProgress">(Astal.CircularProgress)
 export type CircularProgressProps = ConstructProps<Astal.CircularProgress, Astal.CircularProgress.ConstructorProps>
 
-
 // DrawingArea
 export type DrawingArea = Widget<Gtk.DrawingArea>
 export const DrawingArea = astalify<typeof Gtk.DrawingArea, DrawingAreaProps, "DrawingArea">(Gtk.DrawingArea)

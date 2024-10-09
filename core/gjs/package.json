@@ -21,7 +21,8 @@
         "./process": "./src/process.ts",
         "./time": "./src/time.ts",
         "./variable": "./src/variable.ts",
-        "./widgets": "./src/widgets.ts"
+        "./widgets": "./src/widgets.ts",
+        "./gobject": "./src/gobject.ts"
     },
     "engines": {
         "gjs": ">=1.79.0"
@@ -41,6 +42,6 @@
     },
     "scripts": {
         "lint": "eslint . --fix",
-        "types": "ts-for-gir generate -o node_modules/@girs --package"
+        "types": "ts-for-gir generate -o @girs"
     }
 }
