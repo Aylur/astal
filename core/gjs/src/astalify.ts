@@ -182,19 +182,6 @@ export default function astalify<
                 return acc
             }, [])
 
-            // setup bindings handlers
-            for (const [prop, binding] of bindings) {
-                if (prop === "child" || prop === "children") {
-                    this.connect("destroy", binding.subscribe((v: any) => {
-                        this._setChildren(v)
-                    }))
-                }
-                this.connect("destroy", binding.subscribe((v: any) => {
-                    setProp(this, prop, v)
-                }))
-                setProp(this, prop, binding.get())
-            }
-
             // set children
             const mergedChildren = mergeBindings(children.flat(Infinity))
             if (mergedChildren instanceof Binding) {
@@ -218,6 +205,19 @@ export default function astalify<
                     this.connect(signal, () => execAsync(callback)
                         .then(print).catch(console.error))
                 }
+            }
+
+            // setup bindings handlers
+            for (const [prop, binding] of bindings) {
+                if (prop === "child" || prop === "children") {
+                    this.connect("destroy", binding.subscribe((v: any) => {
+                        this._setChildren(v)
+                    }))
+                }
+                this.connect("destroy", binding.subscribe((v: any) => {
+                    setProp(this, prop, v)
+                }))
+                setProp(this, prop, binding.get())
             }
 
             Object.assign(this, props)
