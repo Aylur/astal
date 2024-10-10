@@ -75,7 +75,7 @@ either by using JSX or using a widget constructor.
 ```tsx [MyButton.tsx]
 function MyButton(): JSX.Element {
     return <button onClicked="echo hello">
-        Clicke Me!
+        <label label="Click me!" />
     </button>
 }
 ```
@@ -84,10 +84,10 @@ function MyButton(): JSX.Element {
 import { Widget } from "astal"
 
 function MyButton(): Widget.Button {
-    return Widget.Button({
-        onClicked: "echo hello",
-        label: "Click Me!",
-    })
+    return new Widget.Button(
+        { onClicked: "echo hello" },
+        new Widget.Label({ label: "Click me!" }),
+    )
 }
 ```
 
@@ -96,7 +96,7 @@ function MyButton(): Widget.Button {
 :::info
 The only difference between the two is the return type.
 Using markup the return type is always `Gtk.Widget` (globally available as `JSX.Element`),
-while using constructors the return type is the type of the widget.
+while using constructors the return type is the actual type of the widget.
 It is rare to need the actual return type, so most if not all of the time, you can use markup.
 :::
 
@@ -261,13 +261,12 @@ return <MyWidget myprop="hello">
 
 ## State management
 
-The state of widgets are handled with Bindings. A `Binding` lets you
-connect the state of one [GObject](https://docs.gtk.org/gobject/class.Object.html) to another, in our case it is used to
-rerender part of a widget based on the state of a `GObject`.
-A `GObject` can be a [Variable](./variable) or it can be from a [Library](../libraries/references).
+The state of widgets are handled with Bindings. A [Binding](./binding) lets you
+connect the state of an [object](./binding#subscribable-and-connectable-interface)
+to a widget so it re-renders when that state changes.
 
-We use the `bind` function to create a `Binding` object from a `Variable` or
-a regular GObject and one of its properties.
+Use the `bind` function to create a `Binding` object from a `Variable` or
+a regular `GObject` and one of its properties.
 
 Here is an example of a Counter widget that uses a `Variable` as its state:
 
@@ -349,23 +348,25 @@ return <box>
 <box>
 ```
 
-:::warning
-Only bind children of the `box` or the `stack` widget. Gtk does not cleanup widgets by default,
-they have to be explicitly destroyed. The box widget is a special container that
-will implicitly call `.destroy()` on its removed child widgets.
-You can disable this behavior by setting the `noImplicityDestroy` property.
+:::tip
+Binding children of widgets will implicitly call `.destroy()` on widgets
+that would be left without a parent. You can opt out of this behavior
+by setting `noImplicityDestroy` property on the container widget.
 :::
 
 :::info
-The above example destroys and recreates every widget in the list everytime
+The above example destroys and recreates every widget in the list **every time**
 the value of the `Variable` changes. There might be cases where you would
 want to [handle child creation and deletion](/guide/ags/faq#avoiding-unnecessary-re-rendering)
 yourself, because you don't want to lose the
-inner state of widgets that does not need to be recreated.
+inner state of widgets that does not need to be recreated. In this case
+you can create a [custom reactive structure](./binding#example-custom-subscribable)
 :::
 
 When there is at least one `Binding` passed as a child, the `children`
-parameter will always be a flattened `Binding<Array<JSX.Element>>`
+parameter will always be a flattened `Binding<Array<JSX.Element>>`.
+When there is a single `Binding` passed as a child, the `child` parameter will
+be a `Binding<JSX.Element>` or a flattened `Binding<Array<JSX.Element>>`.
 
 ```tsx
 function MyContainer({ children }) {

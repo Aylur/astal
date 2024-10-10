@@ -4,17 +4,17 @@
 import { Variable } from "astal"
 ```
 
-Variable is just a simple `GObject` that holds a value.
-And has shortcuts for hooking up subprocesses.
+Variable is just a simple object which holds a single value.
+It also has some shortcuts for hooking up subprocesses, intervals and other gobjects.
 
 :::info
 The `Variable` object imported from the `"astal"` package is **not** [Astal.Variable](https://aylur.github.io/libastal/class.Variable.html).
 :::
 
-## Variable as state
+## Example Usage
 
 ```typescript
-const myvar = Variable<string>("initial-value")
+const myvar = Variable("initial-value")
 
 // whenever its value changes, callback will be executed
 myvar.subscribe((value: string) => {
@@ -35,43 +35,49 @@ Widget.Label({
 ```
 
 :::warning
-Make sure to make the transform functions pure. The `.get()` function can be called
-anytime by `astal` especially when `deriving`, so make sure there are no sideeffects.
+Make sure to make the transform functions passed to `.as()` are pure.
+The `.get()` function can be called anytime by `astal` especially when `deriving`,
+so make sure there are no sideeffects.
 :::
 
-## Composing variables
+## Variable Composition
 
-Using `Variable.derive` we can compose both Variables and Bindings.
+Using `Variable.derive` any `Subscribable` object can be composed.
 
 ```typescript
-const v1: Variable<number> = Variable(2)
-const v2: Variable<number> = Variable(3)
+const v1: Variable<number> = Variable(1)
+const v2: Binding<number> = bind(obj, "prop")
+const v3: Subscribable<number> = {
+    get: () => 3,
+    subscribe: () => () => {},
+}
 
 // first argument is a list of dependencies
 // second argument is a transform function,
 // where the parameters are the values of the dependencies in the order they were passed
-const v3: Variable<number> = Variable.derive([v1, v2], (v1, v2) => {
-    return v1 * v2
-})
-
-const b1: Binding<string> = bind(obj, "prop")
-const b2: Binding<string> = bind(obj, "prop")
-
-const b3: Variable<string> = Variable.derive([b1, b2], (b1, b2) => {
-    return `${b1}-${b2}`
-})
+const v4: Variable<number> = Variable.derive(
+    [v1, v2, v3],
+    (v1: number, v2: number, v3: number) => {
+        return v1 * v2 * v3
+    }
+)
 ```
+
+:::info
+The types are only for demonstration purposes, you do not have to declare
+the type of a Variable, they will be inferred from their initial value.
+:::
 
 ## Subprocess shorthands
 
-Using `.poll` and `.watch` we can start subprocess and capture their
-output in `Variables`. They can poll and watch at the same time, but they
-can only poll/watch one subprocess.
+Using `.poll` and `.watch` we can start subprocesses and capture their
+output. They can poll and watch at the same time, but they
+can only poll/watch once.
 
 :::warning
 The command parameter is passed to [execAsync](/guide/ags/utilities#executing-external-commands-and-scripts)
 which means they are **not** executed in a shell environment,
-they do **not** expand env variables like `$HOME`,
+they do **not** expand ENV variables like `$HOME`,
 and they do **not** handle logical operators like `&&` and `||`.
 
 If you want bash, run them with bash.
@@ -83,14 +89,14 @@ Variable("").poll(1000, ["bash", "-c", "command $VAR && command"])
 :::
 
 ```typescript
-const myVar = Variable<number>(0)
+const myVar = Variable(0)
     .poll(1000, "command", (out: string, prev: number) => parseInt(out))
     .poll(1000, ["bash", "-c", "command"], (out, prev) => parseInt(out))
     .poll(1000, (prev) => prev + 1)
 ```
 
 ```typescript
-const myVar = Variable<number>(0)
+const myVar = Variable(0)
     .watch("command", (out: string, prev: number) => parseInt(out))
     .watch(["bash", "-c", "command"], (out, prev) => parseInt(out))
 ```
@@ -127,14 +133,20 @@ myVar.drop()
 ```
 
 :::warning
-Don't forget to drop them when they are defined inside widgets
-with either `.poll`, `.watch` or `.observe`
+Don't forget to drop derived variables or variables with
+either `.poll`, `.watch` or `.observe` when they are defined inside closures.
 
 ```tsx
 function MyWidget() {
     const myvar = Variable().poll()
+    const derived = Variable.derive()
 
-    return <box onDestroy={() => myvar.drop()} />
+    return <box
+        onDestroy={() => {
+            myvar.drop()
+            derived.drop()
+        }}
+    />
 }
 ```
 

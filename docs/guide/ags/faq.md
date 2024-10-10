@@ -2,22 +2,22 @@
 
 ## Monitor id does not match compositor
 
-The monitor property that windows expect is mapped by Gdk, which is not always
+The monitor id property that windows expect is mapped by Gdk, which is not always
 the same as the compositor. Instead use the `gdkmonitor` property which expects
-a `Gdk.Monitor` object which you can get from compositor libraries.
-
-Example with Hyprland
+a `Gdk.Monitor` object.
 
 ```tsx
-import Hyprland from "gi://AstalHyprland"
+import { App } from "astal"
 
 function Bar(gdkmonitor) {
     return <window gdkmonitor={gdkmonitor} />
 }
 
 function main() {
-    for (const m of Hyprland.get_default().get_monitors()) {
-        Bar(m.gdk_monitor)
+    for (const monitor of App.get_monitors()) {
+        if (monitor.model == "your-desired-model") {
+            Bar(monitor)
+        }
     }
 }
 
@@ -53,7 +53,7 @@ import GLib from "gi://GLib"
 const HOME = GLib.getenv("HOME")
 ```
 
-## Custom svg symbolic icons
+## Custom SVG symbolic icons
 
 Put the svgs in a directory, named `<icon-name>-symbolic.svg`
 and use `App.add_icons` or `icons` parameter in `App.start`
@@ -88,74 +88,6 @@ use the globally available `print` function or `printerr` for stderr.
 ```ts
 print("print this line to stdout")
 printerr("print this line to stderr")
-```
-
-## Binding custom structures
-
-The `bind` function can take two types of objects.
-
-```ts
-interface Subscribable<T = unknown> {
-    subscribe(callback: (value: T) => void): () => void
-    get(): T
-}
-
-interface Connectable {
-    connect(signal: string, callback: (...args: any[]) => unknown): number
-    disconnect(id: number): void
-}
-```
-
-`Connectable` is for mostly gobjects, while `Subscribable` is for `Variables`
-and custom objects.
-
-For example you can compose `Variables` in using a class.
-
-```ts
-type MyVariableValue = {
-    number: number
-    string: string
-}
-
-class MyVariable {
-    number = Variable(0)
-    string = Variable("")
-
-    get(): MyVariableValue {
-        return {
-            number: this.number.get(),
-            string: this.string.get(),
-        }
-    }
-
-    subscribe(callback: (v: MyVariableValue) => void) {
-        const unsub1 = this.number.subscribe((value) => {
-            callback({ string: value, number: this.number.get() })
-        })
-
-        const unsub2 = this.string.subscribe((value) => {
-            callback({ number: value, string: this.string.get() })
-        })
-
-        return () => {
-            unsub1()
-            unsub2()
-        }
-    }
-}
-```
-
-Then it can be used with `bind`.
-
-```tsx
-function MyWidget() {
-    const myvar = new MyVariable()
-    const label = bind(myvar).as(({ string, number }) => {
-        return `${string} ${number}`
-    })
-
-    return <label label={label} />
-}
 ```
 
 ## Populate the global scope with frequently accessed variables
@@ -289,91 +221,46 @@ return <RegularWindow
 </RegularWindow>
 ```
 
-## Avoiding unnecessary re-rendering
-
-As mentioned before, any object can be bound that implements the `Subscribable` interface.
-
-```ts
-interface Subscribable<T = unknown> {
-    subscribe(callback: (value: T) => void): () => void
-    get(): T
-}
-```
-
-This can be used to our advantage to create a reactive `Map` object.
-
-```ts
-import { type Subscribable } from "astal/binding"
-import { Gtk } from "astal"
-
-export class VarMap<K, T = Gtk.Widget> implements Subscribable {
-    #subs = new Set<(v: Array<[K, T]>) => void>()
-    #map: Map<K, T>
-
-    #notifiy() {
-        const value = this.get()
-        for (const sub of this.#subs) {
-            sub(value)
-        }
-    }
-
-    #delete(key: K) {
-        const v = this.#map.get(key)
-
-        if (v instanceof Gtk.Widget) {
-            v.destroy()
-        }
-
-        this.#map.delete(key)
-    }
-
-    constructor(initial?: Iterable<[K, T]>) {
-        this.#map = new Map(initial)
-    }
-
-    add(key: K, value: T) {
-        this.#delete(key)
-        this.#map.set(key, value)
-        this.#notifiy()
-    }
-
-    delete(key: K) {
-        this.#delete(key)
-        this.#notifiy()
-    }
-
-    get() {
-        return [...this.#map.entries()]
-    }
-
-    subscribe(callback: (v: Array<[K, T]>) => void) {
-        this.#subs.add(callback)
-        return () => this.#subs.delete(callback)
-    }
-}
-```
-
-And this `VarMap<key, Widget>` can be used as an alternative to `Variable<Array<Widget>>`.
-
-```tsx
-function MappedBox() {
-    const map = new VarMap([
-        [1, <MyWidget id={id} />]
-        [2, <MyWidget id={id} />]
-    ])
-
-    const conns = [
-        gobject.connect("added", (_, id) => map.set(id, MyWidget({ id }))),
-        gobject.connect("removed", (_, id) => map.delete(id, MyWidget({ id }))),
-    ]
-
-    return <box onDestroy={() => conns.map(id => gobject.disconnect(id))}>
-        {bind(map).as(arr => arr.sort(([a], [b]) => a - b).map(([,w]) => w))}
-    </box>
-}
-```
-
 ## Is there a way to limit the width/height of a widget?
 
 Unfortunately not. You can set a minimum size with `min-width` and `min-heigth` css attributes,
 but you can not set max size.
+
+## Custom widgets with bindable properties
+
+In function components you can wrap any primitive to handle both
+binding and value cases as one.
+
+```tsx
+function MyWidget(props: { prop: string | Binding<string> }) {
+    const prop = props.prop instanceof Binding
+        ? props.prop
+        : bind({ get: () => props.prop, subscribe: () => () => {} })
+
+    function setup(self: Widget.Box) {
+        self.hook(prop, () => {
+            const value = prop.get()
+            // handler
+        })
+    }
+
+    return <box setup={setup}>
+    </box>
+}
+```
+
+You can pass the prop the super constructor in subclasses
+
+```tsx
+@register()
+class MyWidget extends Widget.Box {
+    @property(String)
+    set prop(v: string) {
+        // handler
+    }
+
+    constructor(props: { prop: string | Binding<string> }) {
+        super(props)
+    }
+}
+```
