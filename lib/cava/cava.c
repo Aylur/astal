@@ -412,14 +412,18 @@ static void astal_cava_cava_init(AstalCavaCava* self) {
 /**
  * astal_cava_get_default
  *
- * Returns: (nullable) (transfer none): gets the default Cava object.
+ * gets the default Cava object.
+ *
+ * Returns: (nullable) (transfer none):
  */
 AstalCavaCava* astal_cava_get_default() { return astal_cava_cava_get_default(); }
 
 /**
  * astal_cava_cava_get_default
  *
- * Returns: (nullable) (transfer none): gets the default Cava object.
+ * gets the default Cava object.
+ *
+ * Returns: (nullable) (transfer none):
  */
 AstalCavaCava* astal_cava_cava_get_default() {
     static AstalCavaCava* self = NULL;
@@ -453,31 +457,61 @@ static void astal_cava_cava_class_init(AstalCavaCavaClass* class) {
     object_class->finalize = astal_cava_cava_finalize;
 
     /**
-     * AstalCava:values: (type GArray(gdouble))
+     * AstalCavaCava:values: (type GArray(gdouble))
      *
-     * A list of values
+     * A list of values, each represent the height of one bar. The values are generally between 0 and 1 but can overshoot occasionally, in which case the sensitivity will be decreased automatically if [property@AstalCava.Cava:autosens] is set. The array will have [property@AstalCava.Cava:bars] entries. If [property@AstalCava.Cava:stereo] is set, the first half of the array will represent the left channel and the second half the right channel, so there will be only bars/2 bars per channel. If the number of bars is odd, the last value will be 0.
      */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_VALUES] =
         g_param_spec_pointer("values", "values", "a list of values", G_PARAM_READABLE);
+    /**
+    * AstalCavaCava:active:
+    *
+    * whether or not the audio capture and visualization is running. if false the values array will not be updated.
+    */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_ACTIVE] = g_param_spec_boolean(
         "active", "active", "active", TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+    * AstalCavaCava:bars:
+    *
+    * the number of bars the visualizer should create. 
+    */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_BARS] =
         g_param_spec_int("bars", "bars", "number of bars per channel", 1, G_MAXINT, 20,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+     * AstalCavaCava:autosens:
+     *
+     * When set, the sensitivity will automatically be adjusted.
+    */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_AUTOSENS] =
         g_param_spec_boolean("autosens", "autosens", "dynamically adjust sensitivity", TRUE,
                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+    * AstalCavaCava:cava:
+    *
+    * When set the output will contain visualization data for both channels.
+    */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_STEREO] = g_param_spec_boolean(
         "stereo", "stereo", "stereo", FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_NOISE] =
-        g_param_spec_double("noise_reduction", "noise_reduction", "noise reduction", 0, G_MAXDOUBLE,
+        g_param_spec_double("noise_reduction", "noise_reduction", "noise reduction", 0, 1,
                             0.77, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_FRAMERATE] =
         g_param_spec_int("framerate", "framerate", "framerate", 1, G_MAXINT, 60,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+    * AstalCavaCava:input: (type AstalCavaInput)
+    *
+    * specifies which audio server should be used.
+    */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_INPUT] =
         g_param_spec_enum("input", "input", "input", ASTAL_CAVA_TYPE_INPUT,
                           ASTAL_CAVA_INPUT_PIPEWIRE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+    * AstalCavaCava:source:
+    *
+    * specifies which audio source should be used. Refer to the cava docs on how to use this property.
+    */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_SOURCE] = g_param_spec_string(
         "source", "source", "source", "auto", G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     g_object_class_install_properties(object_class, ASTAL_CAVA_CAVA_N_PROPERTIES,
