@@ -101,7 +101,7 @@ public class Device : Object {
 
         if (!is_battery) {
             battery_icon_name = "battery-missing-symbolic";
-        } else if (percentage == 1.0 && charging) {
+        } else if (percentage >= 0.95 && charging) {
             battery_icon_name = "battery-level-100-charged-symbolic";
         } else {
             var state = charging ? "-charging" : "";

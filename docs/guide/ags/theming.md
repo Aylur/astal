@@ -99,24 +99,16 @@ workaround by using preprocessors like [SCSS](https://sass-lang.com/).
 
 :::code-group
 
-```sh [Arch]
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
 sudo pacman -Syu dart-sass
 ```
 
-```sh [Fedora]
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
 npm install -g sass # not packaged on Fedora
 ```
 
-```sh [Alpine]
-sudo apk add dart-sass
-```
-
-```sh [Ubuntu]
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
 npm install -g sass # not packaged on Ubuntu
-```
-
-```sh [openSUSE]
-sudo zypper install dart-sass
 ```
 
 :::

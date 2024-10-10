@@ -33,11 +33,11 @@ public class Button : Gtk.Button {
 }
 
 public enum MouseButton {
-    PRIMARY,
-    MIDDLE,
-    SECONDARY,
-    BACK,
-    FORWARD,
+    PRIMARY = 1,
+    MIDDLE = 2,
+    SECONDARY = 3,
+    BACK = 4,
+    FORWARD = 5,
 }
 
 // these structs are here because gjs converts every event

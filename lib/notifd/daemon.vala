@@ -36,8 +36,12 @@ internal class AstalNotifd.Daemon : Object {
     public signal void prop_changed(string prop);
 
     // emitting an event from proxy doesn't seem to work
-    public void emit_resolved(uint id, ClosedReason reason) { resolved(id, reason); }
-    public void emit_action_invoked(uint id, string action) { action_invoked(id, action); }
+    public void emit_resolved(uint id, ClosedReason reason) throws Error {
+        resolved(id, reason);
+    }
+    public void emit_action_invoked(uint id, string action) throws Error {
+        action_invoked(id, action);
+    }
 
     construct {
         cache_directory = Environment.get_user_cache_dir() + "/astal/notifd";
@@ -133,7 +137,9 @@ internal class AstalNotifd.Daemon : Object {
 
         if (!ignore_timeout && expire_timeout > 0) {
             Timeout.add(expire_timeout, () => {
-                resolved(id, ClosedReason.EXPIRED);
+                if (!ignore_timeout) {
+                    resolved(id, ClosedReason.EXPIRED);
+                }
                 return Source.REMOVE;
             }, Priority.DEFAULT);
         }
@@ -155,7 +161,9 @@ internal class AstalNotifd.Daemon : Object {
     private void write_state() {
         var list = new Json.Builder().begin_array();
         foreach (var n in notifications) {
-            list.add_value(n.to_json());
+            if (!n.transient) {
+                list.add_value(n.to_json());
+            }
         }
         list.end_array();
 

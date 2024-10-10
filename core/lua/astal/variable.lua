@@ -251,7 +251,7 @@ function Variable.derive(deps, transform)
         for i, binding in ipairs(deps) do
             params[i] = binding:get()
         end
-        return transform(table.unpack(params))
+        return transform(table.unpack(params), 1, #deps)
     end
 
     local var = Variable.new(update())

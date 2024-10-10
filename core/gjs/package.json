@@ -16,8 +16,10 @@
     },
     "exports": {
         ".": "./index.ts",
-        "./app": "./src/application.ts",
+        "./application": "./src/application.ts",
+        "./binding": "./src/binding.ts",
         "./file": "./src/file.ts",
+        "./gobject": "./src/gobject.ts",
         "./process": "./src/process.ts",
         "./time": "./src/time.ts",
         "./variable": "./src/variable.ts",
@@ -41,6 +43,6 @@
     },
     "scripts": {
         "lint": "eslint . --fix",
-        "types": "ts-for-gir generate -o node_modules/@girs --package"
+        "types": "ts-for-gir generate -o @girs"
     }
 }

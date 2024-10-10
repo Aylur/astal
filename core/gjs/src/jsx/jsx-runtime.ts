@@ -16,13 +16,14 @@ export function jsx(
 
     children = children.filter(Boolean)
 
-    if (typeof ctor === "string")
-        return (ctors as any)[ctor](props, children)
-
     if (children.length === 1)
         props.child = children[0]
     else if (children.length > 1)
         props.children = children
+
+    if (typeof ctor === "string") {
+        return new ctors[ctor](props)
+    }
 
     if (isArrowFunction(ctor))
         return ctor(props)
@@ -63,7 +64,7 @@ declare global {
             box: Widget.BoxProps
             button: Widget.ButtonProps
             centerbox: Widget.CenterBoxProps
-            circularprogress: Widget.CircularProgressProps,
+            circularprogress: Widget.CircularProgressProps
             drawingarea: Widget.DrawingAreaProps
             entry: Widget.EntryProps
             eventbox: Widget.EventBoxProps
