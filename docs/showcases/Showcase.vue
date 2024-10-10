@@ -1,22 +1,28 @@
 <script setup>
-const props = defineProps({
+defineProps({
     src: { type: String, required: true },
     label: { type: String, required: true },
     url: { type: String, required: true },
-    icon: { type: String, required: false },
-});
+    icon: { type: String, required: false, default: "" },
+})
 </script>
 
 <template>
     <figure class="showcase">
         <div>
             <a :href="url" target="_blank">
-                <img :src="src" :alt="label" />
+                <img :src="src" :alt="label">
             </a>
-            <i :class="icon" class="language-icon"></i>
+            <i :class="icon" class="language-icon" />
         </div>
         <figcaption>
-            <a :href="url" class="label-link" target="_blank">{{ label }}</a>
+            <a
+                :href="url"
+                class="label-link"
+                target="_blank"
+            >
+                {{ label }}
+            </a>
         </figcaption>
     </figure>
 </template>
