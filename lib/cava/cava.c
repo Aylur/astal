@@ -5,6 +5,7 @@
 #include "cava/config.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "glibconfig.h"
 
 struct _AstalCavaCava {
     GObject parent_instance;
@@ -17,6 +18,10 @@ struct _AstalCavaCava {
     AstalCavaInput input;
     gchar* audio_source;
     gboolean active;
+    gint channels;
+    gint low_cutoff;
+    gint high_cutoff;
+    gint samplerate;
 
     GArray* values;
 };
@@ -56,6 +61,10 @@ typedef enum {
     ASTAL_CAVA_CAVA_PROP_FRAMERATE,
     ASTAL_CAVA_CAVA_PROP_INPUT,
     ASTAL_CAVA_CAVA_PROP_SOURCE,
+    ASTAL_CAVA_CAVA_PROP_CHANNELS,
+    ASTAL_CAVA_CAVA_PROP_LOW_CUTOFF,
+    ASTAL_CAVA_CAVA_PROP_HIGH_CUTOFF,
+    ASTAL_CAVA_CAVA_PROP_SAMPLERATE,
     ASTAL_CAVA_CAVA_N_PROPERTIES
 } AstalCavaProperties;
 
@@ -102,6 +111,30 @@ static void astal_cava_cava_cleanup(AstalCavaCava* self) {
 static void astal_cava_cava_start(AstalCavaCava* self) {
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
 
+    if (self->framerate < 1) {
+        self->framerate = 1;
+    }
+
+    if (self->low_cutoff < 1) {
+        self->low_cutoff = 1;
+    }
+
+    if (self->high_cutoff < self->low_cutoff) {
+        self->high_cutoff = self->low_cutoff + 1;
+    }
+
+    if (self->samplerate / 2 <= self->high_cutoff) {
+        self->samplerate = self->high_cutoff * 2 + 1;
+    }
+
+    if (self->bars < 1) {
+        self->bars = 1;
+    }
+
+    if (self->channels < 1 || self->channels > 2) {
+        self->channels = 2;
+    }
+
     priv->cfg = (struct config_params){
         .inAtty = 0,
         .output = OUTPUT_RAW,
@@ -114,11 +147,10 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
         .noise_reduction = self->noise_reduction,
         .framerate = self->framerate,
         .input = (enum input_method)self->input,
-
-        // maybe make some of them configurable
-        .channels = 2,
-        .lower_cut_off = 50,
-        .upper_cut_off = 10000,
+        .channels = self->channels,
+        .lower_cut_off = self->low_cutoff,
+        .upper_cut_off = self->high_cutoff,
+        .samplerate = self->samplerate,
 
         // not needed in this lib
         .mono_opt = AVERAGE,
@@ -126,7 +158,6 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
         .userEQ = NULL,
         .userEQ_keys = 0,
         .userEQ_enabled = 0,
-        .samplerate = 44100,
         .samplebits = 16,
         .waveform = 0,
         .monstercat = 0,
@@ -317,6 +348,38 @@ void astal_cava_cava_set_source(AstalCavaCava* self, const gchar* source) {
     if (priv->constructed) astal_cava_cava_restart(self);
 }
 
+gint astal_cava_cava_get_channels(AstalCavaCava* self) { return self->channels; }
+
+void astal_cava_cava_set_channels(AstalCavaCava* self, gint channels) {
+    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    self->channels = channels;
+    if (priv->constructed) astal_cava_cava_restart(self);
+}
+
+gint astal_cava_cava_get_low_cutoff(AstalCavaCava* self) { return self->low_cutoff; }
+
+void astal_cava_cava_set_low_cutoff(AstalCavaCava* self, gint low_cutoff) {
+    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    self->low_cutoff = low_cutoff;
+    if (priv->constructed) astal_cava_cava_restart(self);
+}
+
+gint astal_cava_cava_get_high_cutoff(AstalCavaCava* self) { return self->high_cutoff; }
+
+void astal_cava_cava_set_high_cutoff(AstalCavaCava* self, gint high_cutoff) {
+    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    self->high_cutoff = high_cutoff;
+    if (priv->constructed) astal_cava_cava_restart(self);
+}
+
+gint astal_cava_cava_get_samplerate(AstalCavaCava* self) { return self->samplerate; }
+
+void astal_cava_cava_set_samplerate(AstalCavaCava* self, gint samplerate) {
+    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    self->samplerate = samplerate;
+    if (priv->constructed) astal_cava_cava_restart(self);
+}
+
 static void astal_cava_cava_set_property(GObject* object, guint property_id, const GValue* value,
                                          GParamSpec* pspec) {
     AstalCavaCava* self = ASTAL_CAVA_CAVA(object);
@@ -346,6 +409,18 @@ static void astal_cava_cava_set_property(GObject* object, guint property_id, con
         case ASTAL_CAVA_CAVA_PROP_SOURCE:
             g_free(self->audio_source);
             astal_cava_cava_set_source(self, g_value_get_string(value));
+            break;
+        case ASTAL_CAVA_CAVA_PROP_CHANNELS:
+            astal_cava_cava_set_channels(self, g_value_get_int(value));
+            break;
+        case ASTAL_CAVA_CAVA_PROP_LOW_CUTOFF:
+            astal_cava_cava_set_low_cutoff(self, g_value_get_int(value));
+            break;
+        case ASTAL_CAVA_CAVA_PROP_HIGH_CUTOFF:
+            astal_cava_cava_set_high_cutoff(self, g_value_get_int(value));
+            break;
+        case ASTAL_CAVA_CAVA_PROP_SAMPLERATE:
+            astal_cava_cava_set_samplerate(self, g_value_get_int(value));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -385,6 +460,18 @@ static void astal_cava_cava_get_property(GObject* object, guint property_id, GVa
         case ASTAL_CAVA_CAVA_PROP_SOURCE:
             g_value_set_string(value, self->audio_source);
             break;
+        case ASTAL_CAVA_CAVA_PROP_CHANNELS:
+            g_value_set_int(value, self->channels);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_LOW_CUTOFF:
+            g_value_set_int(value, self->low_cutoff);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_HIGH_CUTOFF:
+            g_value_set_int(value, self->high_cutoff);
+            break;
+        case ASTAL_CAVA_CAVA_PROP_SAMPLERATE:
+            g_value_set_int(value, self->samplerate);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -407,6 +494,9 @@ static void astal_cava_cava_constructed(GObject* object) {
 static void astal_cava_cava_init(AstalCavaCava* self) {
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     priv->constructed = false;
+    self->low_cutoff = 50;
+    self->high_cutoff = 10000;
+    self->samplerate = 44100;
 }
 
 /**
@@ -459,22 +549,29 @@ static void astal_cava_cava_class_init(AstalCavaCavaClass* class) {
     /**
      * AstalCavaCava:values: (type GArray(gdouble))
      *
-     * A list of values, each represent the height of one bar. The values are generally between 0 and 1 but can overshoot occasionally, in which case the sensitivity will be decreased automatically if [property@AstalCava.Cava:autosens] is set. The array will have [property@AstalCava.Cava:bars] entries. If [property@AstalCava.Cava:stereo] is set, the first half of the array will represent the left channel and the second half the right channel, so there will be only bars/2 bars per channel. If the number of bars is odd, the last value will be 0.
+     * A list of values, each represent the height of one bar. The values are generally between 0
+     * and 1 but can overshoot occasionally, in which case the sensitivity will be decreased
+     * automatically if [property@AstalCava.Cava:autosens] is set. The array will have
+     * [property@AstalCava.Cava:bars] entries. If [property@AstalCava.Cava:stereo] is set, the first
+     * half of the array will represent the left channel and the second half the right channel, so
+     * there will be only bars/2 bars per channel. If the number of bars is odd, the last value will
+     * be 0.
      */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_VALUES] =
         g_param_spec_pointer("values", "values", "a list of values", G_PARAM_READABLE);
     /**
-    * AstalCavaCava:active:
-    *
-    * whether or not the audio capture and visualization is running. if false the values array will not be updated.
-    */
+     * AstalCavaCava:active:
+     *
+     * whether or not the audio capture and visualization is running. if false the values array will
+     * not be updated.
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_ACTIVE] = g_param_spec_boolean(
         "active", "active", "active", TRUE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     /**
-    * AstalCavaCava:bars:
-    *
-    * the number of bars the visualizer should create. 
-    */
+     * AstalCavaCava:bars:
+     *
+     * the number of bars the visualizer should create.
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_BARS] =
         g_param_spec_int("bars", "bars", "number of bars per channel", 1, G_MAXINT, 20,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
@@ -482,36 +579,79 @@ static void astal_cava_cava_class_init(AstalCavaCavaClass* class) {
      * AstalCavaCava:autosens:
      *
      * When set, the sensitivity will automatically be adjusted.
-    */
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_AUTOSENS] =
         g_param_spec_boolean("autosens", "autosens", "dynamically adjust sensitivity", TRUE,
                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     /**
-    * AstalCavaCava:cava:
-    *
-    * When set the output will contain visualization data for both channels.
-    */
+     * AstalCavaCava:cava:
+     *
+     * When set the output will contain visualization data for both channels.
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_STEREO] = g_param_spec_boolean(
         "stereo", "stereo", "stereo", FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+     * AstalCavaCava:noise-reduction:
+     *
+     * adjusts the noise-reduction filter. low values are fast and noisy, large values are slow and
+     * smooth.
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_NOISE] =
-        g_param_spec_double("noise_reduction", "noise_reduction", "noise reduction", 0, 1,
-                            0.77, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+        g_param_spec_double("noise_reduction", "noise_reduction", "noise reduction", 0, 1, 0.77,
+                            G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+     * AstalCavaCava:framerate:
+     *
+     * how often the values should be updated
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_FRAMERATE] =
         g_param_spec_int("framerate", "framerate", "framerate", 1, G_MAXINT, 60,
                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     /**
-    * AstalCavaCava:input: (type AstalCavaInput)
-    *
-    * specifies which audio server should be used.
-    */
+     * AstalCavaCava:channels:
+     *
+     * how many input channels to consider
+     */
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_CHANNELS] = g_param_spec_int(
+        "channels", "channels", "channels", 1, 2, 2, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+     * AstalCavaCava:low-cutoff:
+     *
+     * cut off frequencies below this value
+     */
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_LOW_CUTOFF] =
+        g_param_spec_int("low-cutoff", "low-cutoff", "lower frequency cutoff", 1, G_MAXINT, 50,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+     * AstalCavaCava:high-cutoff:
+     *
+     * cut off frequencies above this value
+     */
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_HIGH_CUTOFF] =
+        g_param_spec_int("high-cutoff", "high-cutoff", "higher frequency cutoff", 1, G_MAXINT,
+                         10000, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+     * AstalCavaCava:samplerate:
+     *
+     * the samplerate of the input
+     */
+    astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_SAMPLERATE] =
+        g_param_spec_int("samplerate", "samplerate", "samplerate", 1, G_MAXINT, 44100,
+                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+    /**
+     * AstalCavaCava:input: (type AstalCavaInput)
+     *
+     * specifies which audio server should be used.
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_INPUT] =
         g_param_spec_enum("input", "input", "input", ASTAL_CAVA_TYPE_INPUT,
                           ASTAL_CAVA_INPUT_PIPEWIRE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     /**
-    * AstalCavaCava:source:
-    *
-    * specifies which audio source should be used. Refer to the cava docs on how to use this property.
-    */
+     * AstalCavaCava:source:
+     *
+     * specifies which audio source should be used. Refer to the cava docs on how to use this
+     * property.
+     */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_SOURCE] = g_param_spec_string(
         "source", "source", "source", "auto", G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     g_object_class_install_properties(object_class, ASTAL_CAVA_CAVA_N_PROPERTIES,

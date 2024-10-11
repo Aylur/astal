@@ -53,6 +53,18 @@ void astal_cava_cava_set_input(AstalCavaCava* self, AstalCavaInput input);
 gchar* astal_cava_cava_get_source(AstalCavaCava* self);
 void astal_cava_cava_set_source(AstalCavaCava* self, const gchar* source);
 
+gint astal_cava_cava_get_channels(AstalCavaCava* self);
+void astal_cava_cava_set_channels(AstalCavaCava* self, gint channels);
+
+gint astal_cava_cava_get_low_cutoff(AstalCavaCava* self);
+void astal_cava_cava_set_low_cutoff(AstalCavaCava* self, gint low_cutoff);
+
+gint astal_cava_cava_get_high_cutoff(AstalCavaCava* self);
+void astal_cava_cava_set_high_cutoff(AstalCavaCava* self, gint high_cutoff);
+
+gint astal_cava_cava_get_samplerate(AstalCavaCava* self);
+void astal_cava_cava_set_samplerate(AstalCavaCava* self, gint samplerate);
+
 G_END_DECLS
 
 #endif  // !ASTAL_CAVA_H
