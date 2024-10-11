@@ -2,7 +2,6 @@
 import showcases from "./showcases"
 import Showcase from "./Showcase.vue"
 </script>
-
 <template>
     <div class="Showcases">
         <template v-for="(showcase, index) in showcases" :key="index">
@@ -13,10 +12,25 @@ import Showcase from "./Showcase.vue"
                     class="item"
                     :class="`grid-${showcase.length}`"
                 >
-                    <Showcase v-bind="elem" />
+                    <Showcase
+                        :src="elem.src"
+                        :url="elem.url"
+                        :icon="elem.icon"
+                        :title="elem.title"
+                        :description="elem.description"
+                        :author="elem.author"
+                    />
                 </div>
             </div>
-            <Showcase v-else v-bind="showcase" />
+            <Showcase
+                v-else
+                :src="showcase.src"
+                :url="showcase.url"
+                :icon="showcase.icon"
+                :title="showcase.title"
+                :description="showcase.description"
+                :author="showcase.author"
+            />
         </template>
     </div>
 </template>
