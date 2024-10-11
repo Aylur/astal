@@ -20,7 +20,7 @@ Using Astal on Nix will require you to package your project.
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
   in {
-    packages.${system}.default = astal.lib.mkLuaPacakge {
+    packages.${system}.default = astal.lib.mkLuaPackage {
       inherit pkgs;
       src = ./path/to/project; # should contain init.lua
 

@@ -161,7 +161,7 @@ execAsync(["bash", "-c", "/path/to/script.sh"])
 :::warning
 `subprocess`, `exec`, and `execAsync` executes the passed executable as is.
 They are **not** executed in a shell environment,
-they do **not** expand env variables like `$HOME`,
+they do **not** expand ENV variables like `$HOME`,
 and they do **not** handle logical operators like `&&` and `||`.
 
 If you want bash, run them with bash.

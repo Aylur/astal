@@ -1,6 +1,6 @@
-import Binding, { type Connectable } from "./binding.js"
+import Binding, { type Connectable, type Subscribable } from "./binding.js"
 import { Astal } from "./imports.js"
-import { interval, idle } from "./time.js"
+import { interval } from "./time.js"
 import { execAsync, subprocess } from "./process.js"
 
 class VariableWrapper<T> extends Function {
@@ -200,10 +200,9 @@ class VariableWrapper<T> extends Function {
     }
 
     static derive<
-        const Deps extends Array<Variable<any> | Binding<any>>,
+        const Deps extends Array<Subscribable<any>>,
         Args extends {
-            [K in keyof Deps]: Deps[K] extends Variable<infer T>
-            ? T : Deps[K] extends Binding<infer T> ? T : never
+            [K in keyof Deps]: Deps[K] extends Subscribable<infer T> ? T : never
         },
         V = Args,
     >(deps: Deps, fn: (...args: Args) => V = (...args) => args as unknown as V) {
@@ -225,7 +224,7 @@ export const Variable = new Proxy(VariableWrapper as any, {
 }) as {
     derive: typeof VariableWrapper["derive"]
     <T>(init: T): Variable<T>
-    new <T>(init: T): Variable<T>
+    new<T>(init: T): Variable<T>
 }
 
 export default Variable

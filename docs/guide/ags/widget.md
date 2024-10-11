@@ -1,8 +1,8 @@
 # Widget
 
-## AGS widget properties
+## Additional widget properties
 
-These are properties that Astal.js additionally adds to Gtk.Widgets
+These are properties that Astal additionally adds to Gtk.Widgets
 
 - className: `string` - List of class CSS selectors separated by white space.
 - css: `string` - Inline CSS. e.g `label { color: white; }`. If no selector is specified `*` will be assumed. e.g `color: white;` will be inferred as `* { color: white; }`.
@@ -14,13 +14,12 @@ To have a full list of available properties, reference the documentation of the 
 - [Astal widgets](https://aylur.github.io/libastal/index.html#classes)
 - [Gtk widgets](https://docs.gtk.org/gtk3/#classes)
 
-## AGS widget methods
-
-Additional methods that Astal.js adds to Gtk.Widget instances
+## Additional widget methods
 
 ### setup
 
-`setup` is a convenience prop to not have predefine widgets before returning them
+`setup` is a convenience prop to remove the need to predefine widgets
+before returning them in cases where a reference is needed.
 
 without `setup`
 
@@ -46,17 +45,19 @@ function MyWidget() {
 
 ### hook
 
-Shorthand for connection and disconnecting to gobjects.
+Shorthand for connection and disconnecting to [Subscribable and Connectable](./binding#subscribable-and-connectable-interface) objects.
 
 without `hook`
 
 ```tsx
 function MyWidget() {
     const id = gobject.connect("signal", callback)
+    const unsub = variable.subscribe(callback)
 
     return <box
         onDestroy={() => {
             gobject.disconnect(id)
+            unsub()
         }}
     />
 }
@@ -69,6 +70,7 @@ function MyWidget() {
     return <box
         setup={(self) => {
             self.hook(gobject, "signal", callback)
+            self.hook(variable, callback)
         }}
     />
 }
@@ -90,33 +92,35 @@ function MyWidget() {
 
 ## How to use non builtin Gtk widgets
 
-Using `Widget.astalify` you can setup widget constructors to behave like builtin widgets.
-The `astalify` function will apply the following:
+Using the `Widget.astalify` mixin you can subclass widgets
+to behave like builtin widgets.
+The `astalify` mixin will apply the following:
 
 - set `visible` to true by default (Gtk3 widgets are invisible by default)
 - make gobject properties accept and consume `Binding` objects
 - add properties and methods listed above
-- proxify the constructor so the `new` keyword is not needed
 - sets up signal handlers that are passed as props prefixed with `on`
 
 ```tsx
-import { Widget, Gtk } from "astal"
+import { Widget, Gtk, GObject, Gdk } from "astal"
 
-// define its props, constructor and type
-export type ColorButtonProps = Widget.ConstructProps<
-    Gtk.ColorButton,
-    Gtk.ColorButton.ConstructorProps,
-    { onColorSet: [] }
->
-export const ColorButton = Widget.astalify<
-    typeof Gtk.ColorButton,
-    ColorButtonProps,
-    "ColorButton"
->(Gtk.ColorButton)
-export type ColorButton = ReturnType<typeof ColorButton>
+// subclass, register, define constructor props
+class ColorButton extends Widget.astalify(Gtk.ColorButton) {
+    static { GObject.registerClass(this) }
+
+    constructor(props: Widget.ConstructProps<
+        ColorButton,
+        Gtk.ColorButton.ConstructorProps,
+        { onColorSet: [] } // signals of Gtk.ColorButton have to be manually typed
+    >) {
+        super(props as any)
+    }
+}
 
 function MyWidget() {
-    function setup(button: ColorButton) {}
+    function setup(button: ColorButton) {
+
+    }
 
     return <ColorButton
         setup={setup}
@@ -138,29 +142,6 @@ function MyWidget() {
 Signal properties have to be annotated manually for TypeScript.
 You can reference [Gtk3](https://gjs-docs.gnome.org/gtk30~3.0/)
 and [Astal](https://aylur.github.io/libastal/index.html#classes) for available signals.
-:::
-
-:::tip
-
-As stated before children are passed as either `child` or `children` property,
-when passing a container widget with `Widget.astalify` these rules still apply.
-While subclasses of `Gtk.Bin` *can* take a `child` property in gjs, you might notice
-a warning that it is deprecated. You can workaround this with a simple wrapper function.
-
-```tsx
-const GtkFrame = Widget.astalify<
-    typeof Gtk.Frame,
-    FrameProps,
-    "Frame"
->(Gtk.Frame)
-
-export function Frame({ child, ...props }: FrameProps) {
-  const frame = GtkFrame(props)
-  frame.add(child) // use the widget's child adding function
-  return frame
-}
-```
-
 :::
 
 ## TypeScript

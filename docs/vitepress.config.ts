@@ -20,6 +20,7 @@ export default defineConfig({
 
     themeConfig: {
         logo: "/icon.svg",
+        outline: "deep",
 
         footer: {
             message: "Released under the LGPL v2.1 License",
@@ -67,8 +68,10 @@ export default defineConfig({
                     { text: "Theming", link: "/theming" },
                     { text: "CLI and App", link: "/cli-app" },
                     { text: "Widget", link: "/widget" },
-                    { text: "Utilities", link: "/utilities" },
                     { text: "Variable", link: "/variable" },
+                    { text: "Binding", link: "/binding" },
+                    { text: "GObject", link: "/gobject" },
+                    { text: "Utilities", link: "/utilities" },
                     { text: "FAQ", link: "/faq" },
                 ],
             },
