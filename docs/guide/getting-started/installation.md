@@ -44,7 +44,7 @@ sudo dnf install meson gcc valac gtk3-devel gtk-layer-shell-devel gobject-intros
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac libgtk3-dev libgtk-layer-shell-dev gobject-introspection
+sudo apt install meson valac libgtk-3-dev libgtk-layer-shell-dev gobject-introspection libgirepository1.0-dev
 ```
 
 :::
