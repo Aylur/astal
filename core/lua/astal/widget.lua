@@ -267,7 +267,7 @@ Gtk.Widget._attribute.css = {
 Gtk.Widget._attribute.class_name = {
     get = function(self)
         local result = ""
-        local strings = Astal.widget_set_class_names(self)
+        local strings = Astal.widget_get_class_names(self)
         for i, str in ipairs(strings) do
             result = result .. str
             if i < #strings then
