@@ -45,7 +45,7 @@ function MyWidget() {
 
 ### hook
 
-Shorthand for connection and disconnecting to [Subscribable and Connectable](http://localhost:5173/astal/guide/ags/binding#subscribable-and-connectable-interface) objects.
+Shorthand for connection and disconnecting to [Subscribable and Connectable](./binding#subscribable-and-connectable-interface) objects.
 
 without `hook`
 
