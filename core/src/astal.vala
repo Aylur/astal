@@ -15,6 +15,9 @@ public class Application : Gtk.Application {
     public signal void monitor_removed(Gdk.Monitor monitor);
 
     [DBus (visible=false)]
+    public signal void window_toggled(Gtk.Window window);
+
+    [DBus (visible=false)]
     public List<weak Gdk.Monitor> monitors {
         owned get {
             var display = Gdk.Display.get_default();
@@ -249,6 +252,17 @@ public class Application : Gtk.Application {
             display.monitor_removed.connect((mon) => {
                 monitor_removed(mon);
                 notify_property("monitors");
+            });
+        });
+
+        window_added.connect((window) => {
+            ulong id1, id2;
+            id1 = window.notify["visible"].connect(() => window_toggled(window));
+            id2 = window_removed.connect((removed) => {
+                if (removed == window) {
+                    window.disconnect(id1);
+                    this.disconnect(id2);
+                }
             });
         });
 
