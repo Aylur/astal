@@ -8,7 +8,7 @@ public class Apps : Object {
     public bool show_hidden { get; set; }
     public List<weak Application> list { owned get { return _list.copy(); } }
 
-    public double min_score { get; set; default = 0.5; }
+    public int min_score { get; set; default = 0; }
 
     public double name_multiplier { get; set; default = 2; }
     public double entry_multiplier { get; set; default = 1; }
