@@ -158,8 +158,10 @@ public class Hyprland : Object {
         out DataInputStream stream
     ) throws Error {
         conn = connection("socket");
-        conn.output_stream.write(message.data, null);
-        stream = new DataInputStream(conn.input_stream);
+        if (conn != null) {
+            conn.output_stream.write(message.data, null);
+            stream = new DataInputStream(conn.input_stream);
+        }
     }
 
     public string message(string message) {
