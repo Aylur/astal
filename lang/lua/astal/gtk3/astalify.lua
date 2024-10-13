@@ -28,8 +28,7 @@ local function map(tbl, fn)
     return copy
 end
 
-local flatten
-flatten = function(tbl)
+local function flatten(tbl)
     local copy = {}
     for _, value in pairs(tbl) do
         if type(value) == "table" and getmetatable(value) == nil then

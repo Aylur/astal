@@ -5,6 +5,15 @@ local AstalIO = lgi.require("AstalIO", "0.1")
 local AstalLua = Astal.Application:derive("AstalLua")
 local request_handler
 
+local function unpack(t, i)
+    i = i or 1
+    if t[i] == nil then
+        return nil
+	else
+        return t[i], unpack(t, i + 1)
+    end
+end
+
 function AstalLua:do_request(msg, conn)
     if type(request_handler) == "function" then
         request_handler(msg, function(response)
@@ -76,7 +85,7 @@ function Astal.Application:start(config)
 
     app.on_activate = function()
         if type(config.main) == "function" then
-            config.main(table.unpack(arg))
+            config.main(unpack(arg))
         end
         if config.hold then
             self:hold()
@@ -86,8 +95,13 @@ function Astal.Application:start(config)
     local _, err = app:acquire_socket()
     if err ~= nil then
         return config.client(function(msg)
+<<<<<<< HEAD:lang/lua/astal/gtk3/app.lua
             return AstalIO.send_message(self.instance_name, msg)
         end, table.unpack(arg))
+=======
+            return Astal.Application.send_message(self.instance_name, msg)
+        end, unpack(arg))
+>>>>>>> 18df91b (core: lua compat 5.1/5.4/luajit):core/lua/astal/application.lua
     end
 
     self:run(nil)

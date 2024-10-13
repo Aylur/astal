@@ -5,6 +5,7 @@ local Binding = require("astal.binding")
 local Time = require("astal.time")
 local Process = require("astal.process")
 
+
 ---@class Variable
 ---@field private variable table
 ---@field private err_handler? function
