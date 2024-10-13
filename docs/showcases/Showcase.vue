@@ -1,6 +1,7 @@
 <script setup>
+import { VPButton } from "vitepress/theme"
 defineProps({
-    src: { type: String, required: true },
+    image: { type: String, required: true },
     url: { type: String, required: true },
     icon: { type: String, required: false, default: "" },
     title: { type: String, required: false, default: "" },
@@ -12,7 +13,7 @@ defineProps({
 <template>
     <figure>
         <div class="image-wrapper">
-            <img :src="src" :alt="title">
+            <img :src="image" :alt="title">
             <div class="overlay">
                 <div class="text-content">
                     <h3 v-if="title.length">
@@ -25,11 +26,13 @@ defineProps({
                         {{ description }}
                     </p>
                     <span class="author">— {{ author }}</span>
-                    <a
+                    <VPButton
+                        tag
                         :href="url"
                         target="_blank"
-                        class="setup-button"
-                    >View Setup</a>
+                        size="medium"
+                        text="View Setup"
+                    />
                 </div>
             </div>
             <i
@@ -139,20 +142,8 @@ figure .language-icon {
     z-index: 1;
 }
 
-.setup-button {
+.VPButton {
     margin-top: 2rem;
-    padding: 0.5rem 1rem;
-    background-color: var(--vp-c-brand);
-    color: white;
     text-decoration: none;
-    border-radius: 0.5rem;
-    font-weight: bold;
-    display: inline-block;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-}
-
-.setup-button:hover {
-    background-color: darken(var(--vp-c-brand), 10%);
 }
 </style>

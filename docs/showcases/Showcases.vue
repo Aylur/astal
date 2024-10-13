@@ -13,7 +13,7 @@ import Showcase from "./Showcase.vue"
                     :class="`grid-${showcase.length}`"
                 >
                     <Showcase
-                        :src="elem.src"
+                        :image="elem.image"
                         :url="elem.url"
                         :icon="elem.icon"
                         :title="elem.title"
@@ -24,7 +24,7 @@ import Showcase from "./Showcase.vue"
             </div>
             <Showcase
                 v-else
-                :src="showcase.src"
+                :image="showcase.image"
                 :url="showcase.url"
                 :icon="showcase.icon"
                 :title="showcase.title"

@@ -1,5 +1,5 @@
 type Showcase = {
-    src: string
+    image: string
     url: string
     icon?: string // https://devicon.dev/
     title?: string
@@ -7,18 +7,19 @@ type Showcase = {
     author: string
 }
 
-type Grid<T> = T | [T, T] | [T, T, T] | [T, T, T, T]
+// TODO: support more layouts
+type Grid<T> = T | [T, T]
 
 export default [
     {
-        src: "/astal/showcase/aylur.png",
+        image: "/astal/showcase/aylur.png",
         url: "https://github.com/Aylur/dotfiles",
-        icon: "devicon-javascript-plain",
+        icon: "devicon-typescript-plain",
         description: "Placeholder (this is an ags v1 screenshot)",
         author: "Aylur",
     },
     {
-        src: "/astal/showcase/tokyob0t-super-duper-hiper-mega-ultra-contribution.webp",
+        image: "/astal/showcase/tokyob0t-super-duper-hiper-mega-ultra-contribution.webp",
         url: "https://github.com/tokyob0t/dotfiles",
         icon: "devicon-lua-plain",
         title: "Tokyob0t's Desktop",
