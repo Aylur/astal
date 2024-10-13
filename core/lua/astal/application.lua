@@ -4,6 +4,15 @@ local Astal = lgi.require("Astal", "0.1")
 local AstalLua = Astal.Application:derive("AstalLua")
 local request_handler
 
+local function unpack(t, i)
+    i = i or 1
+    if t[i] == nil then
+        return nil
+	else
+        return t[i], unpack(t, i + 1)
+    end
+end
+
 function AstalLua:do_request(msg, conn)
     if type(request_handler) == "function" then
         request_handler(msg, function(response)
@@ -75,7 +84,7 @@ function Astal.Application:start(config)
 
     app.on_activate = function()
         if type(config.main) == "function" then
-            config.main(table.unpack(arg))
+            config.main(unpack(arg))
         end
         if config.hold then
             self:hold()
@@ -85,7 +94,7 @@ function Astal.Application:start(config)
     if not app:acquire_socket() then
         return config.client(function(msg)
             return Astal.Application.send_message(self.instance_name, msg)
-        end, table.unpack(arg))
+        end, unpack(arg))
     end
 
     self:run(nil)
