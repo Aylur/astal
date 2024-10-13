@@ -26,5 +26,13 @@ export default [
         description: "Abandonad toda esperanza, vosotros que entráis aquí.",
         author: "tokyob0t",
     },
+    {
+        image: "/astal/showcase/kotontrion-kompass.webp",
+        url: "https://github.com/kotontrion/kompass",
+        icon: "devicon-vala-plain",
+        title: "kompass",
+        author: "kotontrion",
+    },
+
     // add more showcases here~
 ] satisfies Array<Grid<Showcase>>
