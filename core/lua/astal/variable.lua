@@ -5,15 +5,6 @@ local Binding = require("astal.binding")
 local Time = require("astal.time")
 local Process = require("astal.process")
 
-local function unpack(t, i)
-    i = i or 1
-    if t[i] == nil then
-        return nil
-	else
-        return t[i], unpack(t, i + 1)
-    end
-end
-
 ---@class Variable
 ---@field private variable table
 ---@field private err_handler? function

@@ -1,3 +1,7 @@
+if not table.unpack then
+    table.unpack = unpack
+end
+
 local lgi = require("lgi")
 local Astal = lgi.require("Astal", "0.1")
 local Gtk = lgi.require("Gtk", "3.0")
