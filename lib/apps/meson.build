@@ -44,6 +44,7 @@ sources = [
   'apps.vala',
   'application.vala',
   'cli.vala',
+  'fuzzy.vala',
 ]
 
 if get_option('lib')
