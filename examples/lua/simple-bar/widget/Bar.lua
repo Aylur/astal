@@ -1,9 +1,9 @@
 local astal = require("astal")
-local App = astal.App
-local Widget = astal.Widget
+local App = require("astal.gtk3.app")
+local Widget = require("astal.gtk3.widget")
 local Variable = astal.Variable
-local Gdk = astal.Gdk
-local GLib = astal.GLib
+local Gdk = astal.require("Gdk", "3.0")
+local GLib = astal.require("GLib")
 local bind = astal.bind
 local Mpris = astal.require("AstalMpris")
 local Battery = astal.require("AstalBattery")
@@ -170,10 +170,12 @@ local function Time(format)
 end
 
 return function(gdkmonitor)
+	local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
+
 	return Widget.Window({
 		class_name = "Bar",
 		gdkmonitor = gdkmonitor,
-		anchor = astal.Astal.WindowAnchor.TOP + astal.Astal.WindowAnchor.LEFT + astal.Astal.WindowAnchor.RIGHT,
+		anchor = WindowAnchor.TOP + WindowAnchor.LEFT + WindowAnchor.RIGHT,
 		exclusivity = "EXCLUSIVE",
 
 		Widget.CenterBox({
