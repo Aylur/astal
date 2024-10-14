@@ -161,42 +161,40 @@ public class Hyprland : Object {
         if (conn != null) {
             conn.output_stream.write(message.data, null);
             stream = new DataInputStream(conn.input_stream);
+        } else {
+            stream = null;
+            critical("could not write to the Hyprland socket");
         }
     }
 
     public string message(string message) {
-        SocketConnection conn;
-        DataInputStream stream;
+        SocketConnection? conn;
+        DataInputStream? stream;
         try {
             write_socket(message, out conn, out stream);
-            return stream.read_upto("\x04", -1, null, null);
+            if (stream != null && conn != null) {
+                var res = stream.read_upto("\x04", -1, null, null);
+                conn.close(null);
+                return res;
+            }
         } catch (Error err) {
             critical(err.message);
-        } finally {
-            try {
-                if (conn != null)
-                    conn.close(null);
-            } catch (Error err) {
-                critical(err.message);
-            }
         }
         return "";
     }
 
     public async string message_async(string message) {
-        SocketConnection conn;
-        DataInputStream stream;
+        SocketConnection? conn;
+        DataInputStream? stream;
         try {
             write_socket(message, out conn, out stream);
-            return yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, null);
+            if (stream != null && conn != null) {
+                var res = yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, null);
+                conn.close(null);
+                return res;
+            }
         } catch (Error err) {
             critical(err.message);
-        } finally {
-            try {
-                conn.close(null);
-            } catch (Error err) {
-                critical(err.message);
-            }
         }
         return "";
     }
