@@ -14,7 +14,7 @@ public interface Application : Object {
     public abstract void request(string msg, SocketConnection conn) throws Error;
 }
 
-public SocketService acquire_socket(Application app) throws Error {
+public SocketService acquire_socket(Application app, out string sock) throws Error {
     var name = app.instance_name;
     foreach (var instance in get_instances()) {
         if (instance == name) {
@@ -23,7 +23,13 @@ public SocketService acquire_socket(Application app) throws Error {
     }
 
     var rundir = Environment.get_user_runtime_dir();
-    var path = @"$rundir/$name.sock";
+    var dir = @"$rundir/astal";
+    var path = @"$dir/$name.sock";
+    sock = path;
+
+    if (!FileUtils.test(dir, FileTest.IS_DIR)) {
+        File.new_for_path(path).make_directory_with_parents(null);
+    }
 
     if (FileUtils.test(path, FileTest.EXISTS)) {
         try {
@@ -123,7 +129,7 @@ public static void toggle_window_by_name(string instance, string window) {
 
 public static string send_message(string instance_name, string msg) {
     var rundir = Environment.get_user_runtime_dir();
-    var socket_path = @"$rundir/$instance_name.sock";
+    var socket_path = @"$rundir/astal/$instance_name.sock";
     var client = new SocketClient();
 
     try {

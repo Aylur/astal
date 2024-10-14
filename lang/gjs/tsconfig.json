@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "target": "ES2023",
+        "outDir": "dist",
+        "strict": true,
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "baseUrl": ".",
+    },
+    "include": [
+        "@girs",
+        "lib/*",
+        // "gtk3/*",
+        // "gtk4/*",
+        "index.ts",
+    ]
+}

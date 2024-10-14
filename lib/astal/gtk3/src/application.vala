@@ -3,8 +3,9 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     private List<Gtk.CssProvider> css_providers = new List<Gtk.CssProvider>();
     private SocketService service;
     private DBusConnection conn;
-    private string socket_path { get; set; }
-    private string _instance_name;
+    private string _instance_name = "astal";
+
+    public string socket_path { get; private set; }
 
     [DBus (visible=false)]
     public signal void monitor_added(Gdk.Monitor monitor);
@@ -34,8 +35,8 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     public string instance_name {
         owned get { return _instance_name; }
         construct set {
-            application_id = "io.Astal." + value;
-            _instance_name = value;
+            _instance_name = value != null ? value : "astal";
+            application_id = @"io.Astal.$_instance_name";
         }
     }
 
@@ -138,54 +139,39 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
         AstalIO.write_sock.begin(conn, @"missing response implementation on $application_id");
     }
 
-    /**
-     * should be called before `run()`
-     * the return value indicates if instance is already running
-     */
     [DBus (visible=false)]
-    public void acquire_socket() {
-        try {
-            service = AstalIO.acquire_socket(this);
+    public void acquire_socket() throws Error {
+        string path;
+        service = AstalIO.acquire_socket(this, out path);
+        socket_path = path;
 
-            Bus.own_name(
-                BusType.SESSION,
-                "io.Astal." + instance_name,
-                BusNameOwnerFlags.NONE,
-                (conn) => {
-                    try {
-                        this.conn = conn;
-                        conn.register_object("/io/Astal/Application", this);
-                    } catch (Error err) {
-                        critical(err.message);
-                    }
-                },
-                () => {},
-                () => {}
-            );
-        } catch (Error err) {
-            critical("could not acquire socket %s\n", application_id);
-            critical(err.message);
-        }
+        Bus.own_name(
+            BusType.SESSION,
+            application_id,
+            BusNameOwnerFlags.NONE,
+            (conn) => {
+                try {
+                    this.conn = conn;
+                    conn.register_object("/io/Astal/Application", this);
+                } catch (Error err) {
+                    critical(err.message);
+                }
+            },
+            () => {},
+            () => {}
+        );
     }
 
     public new void quit() throws DBusError, IOError {
         if (service != null) {
-            if (FileUtils.test(socket_path, GLib.FileTest.EXISTS)){
-                try {
-                    File.new_for_path(socket_path).delete(null);
-                } catch (Error err) {
-                    warning(err.message);
-                }
-            }
+            service.stop();
+            service.close();
         }
 
         base.quit();
     }
 
     construct {
-        if (instance_name == null)
-            instance_name = "astal";
-
         activate.connect(() => {
             var display = Gdk.Display.get_default();
             display.monitor_added.connect((mon) => {
