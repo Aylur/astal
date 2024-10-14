@@ -1,7 +1,7 @@
 project(
   'astal-cava',
   'c',
-  version: '0.1.0',
+  version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
   default_options: ['c_std=gnu11', 'warning_level=3', 'prefix=/usr'],
 )
 

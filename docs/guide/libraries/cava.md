@@ -67,7 +67,7 @@ cava
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Wp from "gi://AstalCava"
+import Cava from "gi://AstalCava"
 
 const cava = Cava.get_default()
 
