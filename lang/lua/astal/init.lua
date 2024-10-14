@@ -2,7 +2,6 @@ if not table.unpack then
     table.unpack = unpack
 end
 
-
 local lgi = require("lgi")
 local Binding = require("astal.binding")
 local File = require("astal.file")
