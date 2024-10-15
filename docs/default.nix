@@ -10,6 +10,7 @@
   genRefForPkg = {
     name,
     pkg,
+    version ? "0.1",
     outPath,
     metaData,
   }: let
@@ -18,13 +19,14 @@
   in ''
     mkdir -p $out/${outPath}
     cat ${urlmap} > urlmap.js
-    gi-docgen generate -C ${data} ${output}/share/gir-1.0/${name}-0.1.gir
-    cp -r ${name}-0.1/* $out/${outPath}
+    gi-docgen generate -C ${data} ${output}/share/gir-1.0/${name}-${version}.gir
+    cp -r ${name}-${version}/* $out/${outPath}
   '';
 
   genLib = name: namespace: {
     description,
     version,
+    api-ver ? "0.1",
     authors ? "Aylur",
     dependencies ? {},
     out ? "libastal/${name}",
@@ -33,6 +35,7 @@
       name = "Astal${namespace}";
       pkg = name;
       outPath = out;
+      version = api-ver;
       metaData = {
         library = {
           inherit description authors;
@@ -106,10 +109,14 @@ in
 
     installPhase = ''
       runHook preInstall
-      ${genLib "astal" "" {
-        out = "libastal";
-        description = "Astal core library";
-        version = ../core/version;
+      ${genLib "io" "IO" {
+        description = "Astal IO library";
+        version = ../lib/astal/io/version;
+      }}
+      ${genLib "astal3" "" {
+        api-ver = "3.0";
+        description = "Astal GTK3 library";
+        version = ../lib/astal/gtk3/version;
         dependencies = {inherit (dependency) "Gtk-3.0";};
       }}
       ${genLib "apps" "Apps" {

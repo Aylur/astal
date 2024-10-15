@@ -132,9 +132,10 @@ function MappedBox() {
 
 ## Example Custom Connectable
 
-This was formerly known as a "Service" in AGS.
-Astal provides [decorator functions](./gobject#example-usage) that make it easy to subclass gobjects, however
-you can read more about GObjects and subclassing on [gjs.guide](https://gjs.guide/guides/gobject/subclassing.html#gobject-subclassing).
+Astal provides [decorator functions](./gobject#example-usage)
+that make it easy to subclass gobjects, however
+you can read more about GObjects and subclassing
+on [gjs.guide](https://gjs.guide/guides/gobject/subclassing.html#gobject-subclassing).
 
 Objects coming from [libraries](../libraries/references#astal-libraries)
 usually have a singleton gobject you can access with `.get_default()`.

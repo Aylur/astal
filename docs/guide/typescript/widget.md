@@ -1,6 +1,8 @@
 # Widget
 
-## Additional widget properties
+## Gtk3
+
+### Additional widget properties
 
 These are properties that Astal additionally adds to Gtk.Widgets
 
@@ -11,12 +13,12 @@ These are properties that Astal additionally adds to Gtk.Widgets
 
 To have a full list of available properties, reference the documentation of the widget.
 
-- [Astal widgets](https://aylur.github.io/libastal/index.html#classes)
+- [Astal3 widgets](https://aylur.github.io/libastal/astal3/index.html#classes)
 - [Gtk widgets](https://docs.gtk.org/gtk3/#classes)
 
-## Additional widget methods
+### Additional widget methods
 
-### setup
+#### setup
 
 `setup` is a convenience prop to remove the need to predefine widgets
 before returning them in cases where a reference is needed.
@@ -43,7 +45,7 @@ function MyWidget() {
 }
 ```
 
-### hook
+#### hook
 
 Shorthand for connection and disconnecting to [Subscribable and Connectable](./binding#subscribable-and-connectable-interface) objects.
 
@@ -76,7 +78,7 @@ function MyWidget() {
 }
 ```
 
-### toggleClassName
+#### toggleClassName
 
 Toggle classNames based on a condition
 
@@ -90,7 +92,7 @@ function MyWidget() {
 }
 ```
 
-## How to use non builtin Gtk widgets
+### How to use non builtin Gtk widgets
 
 Using the `Widget.astalify` mixin you can subclass widgets
 to behave like builtin widgets.
@@ -102,7 +104,7 @@ The `astalify` mixin will apply the following:
 - sets up signal handlers that are passed as props prefixed with `on`
 
 ```tsx
-import { Widget, Gtk, GObject, Gdk } from "astal"
+import { Widget, Gtk, GObject, Gdk } from "astal/gtk3"
 
 // subclass, register, define constructor props
 class ColorButton extends Widget.astalify(Gtk.ColorButton) {
@@ -144,7 +146,7 @@ You can reference [Gtk3](https://gjs-docs.gnome.org/gtk30~3.0/)
 and [Astal](https://aylur.github.io/libastal/index.html#classes) for available signals.
 :::
 
-## TypeScript
+### TypeScript
 
 Type of widgets are available through `Widget`.
 Here is an example Widget that takes in and handles a possibly `Binding` prop.
@@ -183,9 +185,9 @@ export default function ToggleButton(btnprops: ToggleButtonProps) {
 }
 ```
 
-## Builtin Widgets
+### Builtin Widgets
 
-You can check the [source code](https://github.com/aylur/astal/blob/main/core/gjs/src/widgets.ts) to have a full list of builtin widgets.
+You can check the [source code](https://github.com/aylur/astal/blob/main/lang/gjs/src/gtk3/index.ts) to have a full list of builtin widgets.
 
 These widgets are available by default in JSX.
 
@@ -206,3 +208,7 @@ These widgets are available by default in JSX.
 - stack: [Astal.Stack](https://aylur.github.io/libastal/class.Stack.html)
 - switch: [Gtk.Switch](https://docs.gtk.org/gtk3/class.Switch.html)
 - window: [Astal.Window](https://aylur.github.io/libastal/class.Window.html)
+
+## Gtk4
+
+🚧 Work in Progress 🚧

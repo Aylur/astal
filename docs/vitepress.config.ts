@@ -59,8 +59,8 @@ export default defineConfig({
                 ],
             },
             {
-                text: "AGS",
-                base: "/guide/ags",
+                text: "TypeScript",
+                base: "/guide/typescript",
                 collapsed: false,
                 items: [
                     { text: "Installation", link: "/installation" },
@@ -76,11 +76,22 @@ export default defineConfig({
                 ],
             },
             {
+                text: "Lua",
+                base: "/guide/lua",
+                collapsed: false,
+                items: [
+                    { text: "Installation", link: "/installation" },
+                    { text: "First Widgets", link: "/first-widgets" },
+                ],
+            },
+            {
                 text: "Libraries",
                 collapsed: true,
                 items: [
                     { text: "References", link: "/guide/libraries/references" },
-                    { text: "Astal", link: "https://aylur.github.io/libastal" },
+                    { text: "AstalIO", link: "https://aylur.github.io/libastal/astal-io" },
+                    { text: "Astal3", link: "https://aylur.github.io/libastal/astal3" },
+                    { text: "Astal4", link: "https://aylur.github.io/libastal/astal4" },
                     { text: "Apps", link: "/guide/libraries/apps" },
                     { text: "Auth", link: "/guide/libraries/auth" },
                     { text: "Battery", link: "/guide/libraries/battery" },

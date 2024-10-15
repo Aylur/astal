@@ -2,8 +2,6 @@
 
 ## File functions
 
-Import them from `astal` or `astal/file`
-
 ```ts
 import {
     readFile,
@@ -38,8 +36,6 @@ function monitorFile(
 ```
 
 ## Timeouts and Intervals
-
-Import them from `astal` or `astal/time`
 
 ```ts
 import { interval, timeout, idle } from "astal"
@@ -95,8 +91,6 @@ timer.cancel()
 ```
 
 ## Process functions
-
-Import them from `astal` or `astal/proc`
 
 ```ts
 import { subprocess, exec, execAsync } from "astal"

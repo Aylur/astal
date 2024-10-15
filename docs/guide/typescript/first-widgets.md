@@ -1,15 +1,5 @@
 # First Widgets
 
-AGS is the predecessor of Astal, which was written purely in TypeScript and so only supported
-JavaScript/TypeScript. Now it serves as a scaffolding tool for Astal projects in TypeScript.
-While what made AGS what it is, is now part of the Astal project, for simplicity we will
-refer to the Astal TypeScript lib as AGS.
-
-:::tip
-If you are not familiar with the JavaScript syntax [MDN](https://developer.mozilla.org/en-US/)
-and [javascript.info](https://javascript.info/) have great references.
-:::
-
 ## Getting Started
 
 Start by initializing a project
@@ -24,13 +14,29 @@ then run `ags` in the terminal
 ags
 ```
 
-Done! You have now a custom written bar using Gtk.
+:::details Usage without AGS
+🚧 Not yet documented. 🚧
+:::
+
+That's it! You have now a custom written bar using Gtk.
 
 :::tip
-AGS will transpile every `.ts`, `.jsx` and `.tsx` files into regular javascript then
-it will bundle everything into a single javascript file which then GJS can execute.
-The bundler used is [esbuild](https://esbuild.github.io/).
+AGS will transpile every `.ts`, `.jsx` and `.tsx` files into regular JavaScript, then
+it will bundle everything into a single JavaScript file which then GJS can execute.
 :::
+
+The AGS init command will generate the following files
+
+```txt
+.
+├── @girs/              # generated types
+├── widget/
+│   └── Bar.tsx
+├── app.ts              # entry proint
+├── env.d.ts            # additional types
+├── style.css
+└── tsconfig.json       # needed by LSPs
+```
 
 ## Root of every shell component: Window
 
@@ -81,7 +87,7 @@ function MyButton(): JSX.Element {
 ```
 
 ```ts [MyButton.ts]
-import { Widget } from "astal"
+import { Widget } from "astal/gtk3"
 
 function MyButton(): Widget.Button {
     return new Widget.Button(
@@ -369,7 +375,11 @@ When there is a single `Binding` passed as a child, the `child` parameter will
 be a `Binding<JSX.Element>` or a flattened `Binding<Array<JSX.Element>>`.
 
 ```tsx
-function MyContainer({ children }) {
+import { type Binding } from "astal"
+
+function MyContainer({ children }: {
+    children?: Binding<Array<JSX.Element>>
+}) {
     // children is a Binding over an Array of widgets
 }
 

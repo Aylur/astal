@@ -1,6 +1,5 @@
 # Subclassing GObject.Object
 
-These were formerly known as custom services in AGS.
 Astal provides decorator functions that make it easy to subclass gobjects.
 
 ## Example Usage

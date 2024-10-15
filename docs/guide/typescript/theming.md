@@ -23,7 +23,9 @@ You can pass a path to a file or css as a string in `App.start`
 :::code-group
 
 ```ts [app.ts]
-const inlineCss = `
+import style from "inline:./style.css"
+
+const inlineCssInCode = `
 window {
     background-color: transparent;
 }
@@ -31,6 +33,7 @@ window {
 
 App.start({
     css: "./style.css",
+    css: style,
     css: `${SRC}/style.css'`,
     css: inlineCss,
 })
@@ -39,8 +42,9 @@ App.start({
 :::
 
 :::info
-The global `SRC` will point to the directory `app.ts` is in.
+When using AGS the global `SRC` will point to the directory `app.ts` is in.
 AGS will set the current working directory to `--config`, so `./style.css` also works.
+If you are not using AGS you should inline import CSS instead.
 :::
 
 ## Css Property on Widgets
@@ -86,10 +90,19 @@ You can reset stylesheets with `App.resetCss`
 If you are not sure about the widget hierarchy or any CSS selector,
 you can use the [GTK inspector](https://wiki.gnome.org/Projects/GTK/Inspector)
 
-```sh
+::: code-group
+
+```sh [astal]
+# to bring up the inspector run
+astal --inspector
+```
+
+```sh [ags]
 # to bring up the inspector run
 ags --inspector
 ```
+
+:::
 
 ## Using SCSS
 
@@ -126,6 +139,11 @@ App.start({
 })
 ```
 
+:::
+
+:::details Without AGS
+AGS uses a plugin to transpile scss files before importing them.
+If you are not using AGS, you can use a plugin for your chosen bundler.
 :::
 
 :::tip

@@ -10,6 +10,8 @@ Read more about it on the [nix page](./nix#astal)
 
 maintainer: [@kotontrion](https://github.com/kotontrion)
 
+<!--TODO: fix aur package names-->
+
 :::code-group
 
 ```sh [Core Library]
@@ -28,7 +30,6 @@ yay -S libastal-meta
 
 ```sh
 git clone https://github.com/aylur/astal.git
-cd astal/core
 ```
 
 2. Install the following dependencies
@@ -51,7 +52,18 @@ sudo apt install meson valac libgtk-3-dev libgtk-layer-shell-dev gobject-introsp
 
 3. Build and install with `meson`
 
+- astal-io
+
 ```sh
+cd lib/astal/io
+meson setup build
+meson install -C build
+```
+
+- astal3
+
+```sh
+cd lib/astal/gtk3
 meson setup build
 meson install -C build
 ```
