@@ -204,7 +204,7 @@ notifd.get_notifications() // ✅
 
 ## How to create regular floating windows
 
-Use `Gtk.Window` with [Widget.astalify](/guide/ags/widget#how-to-use-non-builtin-gtk-widgets).
+Use `Gtk.Window` with [Widget.astalify](/guide/typescript/widget#how-to-use-non-builtin-gtk-widgets).
 
 By default `Gtk.Window` is destroyed on close. To prevent this add a handler for `delete-event`.
 

@@ -8,7 +8,7 @@ Variable is just a simple object which holds a single value.
 It also has some shortcuts for hooking up subprocesses, intervals and other gobjects.
 
 :::info
-The `Variable` object imported from the `"astal"` package is **not** [Astal.Variable](https://aylur.github.io/libastal/class.Variable.html).
+The `Variable` object imported from the `"astal"` package is **not** [Astal.Variable](https://aylur.github.io/libastal/io/class.Variable.html).
 :::
 
 ## Example Usage
@@ -75,7 +75,7 @@ output. They can poll and watch at the same time, but they
 can only poll/watch once.
 
 :::warning
-The command parameter is passed to [execAsync](/guide/ags/utilities#executing-external-commands-and-scripts)
+The command parameter is passed to [execAsync](/guide/typescript/utilities#executing-external-commands-and-scripts)
 which means they are **not** executed in a shell environment,
 they do **not** expand ENV variables like `$HOME`,
 and they do **not** handle logical operators like `&&` and `||`.

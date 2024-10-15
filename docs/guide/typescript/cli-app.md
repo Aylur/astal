@@ -1,6 +1,6 @@
 # CLI and App
 
-`App` is a singleton **instance** of an [Astal.Application](https://aylur.github.io/libastal/class.Application.html).
+`App` is a singleton **instance** of an [Astal.Application](https://aylur.github.io/libastal/astal3/class.Application.html).
 
 Depending on gtk version import paths will differ
 

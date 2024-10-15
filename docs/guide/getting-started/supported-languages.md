@@ -7,7 +7,7 @@ Gtk by implementing a state management and UI declaring solution.
 ## JavaScript
 
 The main intended usage of Astal is in TypeScript+JSX.
-It is recommended to use [AGS](/guide/ags/first-widgets) to scaffold and run projects in TypeScript.
+It is recommended to use [AGS](/guide/typescript/first-widgets) to scaffold and run projects in TypeScript.
 However, if you are familiar with JavaScript's tooling
 ecosystem you can also setup an environment yourself.
 Only a minimal knowledge of JavaScript's syntax is needed to get started.
