@@ -4,6 +4,10 @@ public errordomain AppError {
     TAKEOVER_FAILED,
 }
 
+/**
+ * This interface is used as a placeholder for the Astal Application class.
+ * It is not meant to be used by consumers.
+ */
 public interface Application : Object {
     public abstract void quit() throws Error;
     public abstract void inspector() throws Error;
@@ -16,6 +20,10 @@ public interface Application : Object {
     }
 }
 
+/**
+ * Starts a [class@GLib.SocketService] and binds `XDG_RUNTIME_DIR/astal/<instance_name>.sock`.
+ * This socket is then used by the astal cli. Not meant for public usage, but for [func@AstalIO.Application.acquire_socket].
+ */
 public SocketService acquire_socket(Application app, out string sock) throws Error {
     var name = app.instance_name;
     foreach (var instance in get_instances()) {
@@ -65,6 +73,10 @@ public SocketService acquire_socket(Application app, out string sock) throws Err
     return service;
 }
 
+/**
+ * Get a list of running Astal.Application instances.
+ * It is the equivalent of `astal --list`.
+ */
 public static List<string> get_instances() {
     var list = new List<string>();
     var prefix = "io.Astal.";
@@ -87,6 +99,10 @@ public static List<string> get_instances() {
     return list;
 }
 
+/**
+ * Quit an an Astal instances.
+ * It is the equivalent of `astal --quit -i instance`.
+ */
 public static void quit_instance(string instance) {
     try {
         IApplication proxy = Bus.get_proxy_sync(
@@ -101,6 +117,10 @@ public static void quit_instance(string instance) {
     }
 }
 
+/**
+ * Open the Gtk debug tool of an an Astal instances.
+ * It is the equivalent of `astal --inspector -i instance`.
+ */
 public static void open_inspector(string instance) {
     try {
         IApplication proxy = Bus.get_proxy_sync(
@@ -115,6 +135,10 @@ public static void open_inspector(string instance) {
     }
 }
 
+/**
+ * Toggle a Window of an Astal instances.
+ * It is the equivalent of `astal -i instance --toggle window`.
+ */
 public static void toggle_window_by_name(string instance, string window) {
     try {
         IApplication proxy = Bus.get_proxy_sync(
@@ -129,7 +153,11 @@ public static void toggle_window_by_name(string instance, string window) {
     }
 }
 
-public static string send_message(string instance_name, string msg) {
+/**
+ * Send a message to an Astal instances.
+ * It is the equivalent of `astal -i instance content of the message`.
+ */
+public static string send_message(string instance, string msg) {
     var rundir = Environment.get_user_runtime_dir();
     var socket_path = @"$rundir/astal/$instance_name.sock";
     var client = new SocketClient();
@@ -146,11 +174,17 @@ public static string send_message(string instance_name, string msg) {
     }
 }
 
+/**
+ * Read the socket of an Astal.Application instance.
+ */
 public async string read_sock(SocketConnection conn) throws IOError {
     var stream = new DataInputStream(conn.input_stream);
     return yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, null);
 }
 
+/**
+ * Write the socket of an Astal.Application instance.
+ */
 public async void write_sock(SocketConnection conn, string response) throws IOError  {
     yield conn.output_stream.write_async(response.concat("\x04").data, Priority.DEFAULT);
 }

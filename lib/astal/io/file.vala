@@ -1,4 +1,7 @@
 namespace AstalIO {
+/**
+ * Read the contents of a file synchronously.
+ */
 public string read_file(string path) {
     var str = "";
     try {
@@ -9,12 +12,18 @@ public string read_file(string path) {
     return str;
 }
 
+/**
+ * Read the contents of a file asynchronously.
+ */
 public async string read_file_async(string path) throws Error {
     uint8[] content;
     yield File.new_for_path(path).load_contents_async(null, out content, null);
     return (string)content;
 }
 
+/**
+ * Write content to a file synchronously.
+ */
 public void write_file(string path, string content) {
     try {
         FileUtils.set_contents(path, content);
@@ -23,6 +32,9 @@ public void write_file(string path, string content) {
     }
 }
 
+/**
+ * Write content to a file asynchronously.
+ */
 public async void write_file_async(string path, string content) throws Error {
     yield File.new_for_path(path).replace_contents_async(
         content.data,
@@ -33,6 +45,11 @@ public async void write_file_async(string path, string content) throws Error {
         null);
 }
 
+/**
+ * Monitor a file for changes. If the path is a directory, monitor it recursively.
+ * The callback will be called passed two parameters: the path of the file
+ * that changed and an [enum@GLib.FileMonitorEvent] indicating the reason.
+ */
 public FileMonitor? monitor_file(string path, Closure callback) {
     try {
         var file = File.new_for_path(path);
