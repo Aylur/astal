@@ -11,7 +11,9 @@ public interface Application : Object {
 
     public abstract string instance_name { owned get; construct set; }
     public abstract void acquire_socket() throws Error;
-    public abstract void request(string msg, SocketConnection conn) throws Error;
+    public virtual void request(string msg, SocketConnection conn) throws Error {
+        write_sock.begin(conn, @"missing response implementation on $instance_name");
+    }
 }
 
 public SocketService acquire_socket(Application app, out string sock) throws Error {

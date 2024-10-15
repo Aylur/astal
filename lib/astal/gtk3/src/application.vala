@@ -4,8 +4,7 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     private SocketService service;
     private DBusConnection conn;
     private string _instance_name = "astal";
-
-    public string socket_path { get; private set; }
+    private string socket_path { get; private set; }
 
     [DBus (visible=false)]
     public signal void monitor_added(Gdk.Monitor monitor);
@@ -45,13 +44,11 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
         get { return get_windows(); }
     }
 
-    [DBus (visible=false)]
-    public Gtk.Settings settings {
+    private Gtk.Settings settings {
         get { return Gtk.Settings.get_default(); }
     }
 
-    [DBus (visible=false)]
-    public Gdk.Screen screen {
+    private Gdk.Screen screen {
         get { return Gdk.Screen.get_default(); }
     }
 
