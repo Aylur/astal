@@ -42,7 +42,7 @@ The AGS init command will generate the following files
 
 Astal apps are composed of widgets. A widget is a piece of UI that has its own logic and style.
 A widget can be as small as a button or an entire bar.
-The top level widget is always a [Window](https://aylur.github.io/libastal/class.Window.html) which will hold all widgets.
+The top level widget is always a [Window](https://aylur.github.io/libastal/astal3/class.Window.html) which will hold all widgets.
 
 ::: code-group
 
@@ -363,7 +363,7 @@ by setting `noImplicityDestroy` property on the container widget.
 :::info
 The above example destroys and recreates every widget in the list **every time**
 the value of the `Variable` changes. There might be cases where you would
-want to [handle child creation and deletion](/guide/ags/faq#avoiding-unnecessary-re-rendering)
+want to [handle child creation and deletion](/guide/typescript/faq#avoiding-unnecessary-re-rendering)
 yourself, because you don't want to lose the
 inner state of widgets that does not need to be recreated. In this case
 you can create a [custom reactive structure](./binding#example-custom-subscribable)

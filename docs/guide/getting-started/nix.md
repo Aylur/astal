@@ -88,7 +88,7 @@ Using Astal on Nix will require you to package your project.
 
 ## AGS
 
-The recommended way to use [AGS](../ags/first-widgets#first-widgets) on NixOS is through the home-manager module.
+The recommended way to use [AGS](../typescript/first-widgets#first-widgets) on NixOS is through the home-manager module.
 
 Example content of a `flake.nix` file that contains your `homeConfigurations`.
 
