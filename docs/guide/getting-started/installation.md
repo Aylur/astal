@@ -56,7 +56,7 @@ sudo apt install meson valac libgtk-3-dev libgtk-layer-shell-dev gobject-introsp
 
 ```sh
 cd lib/astal/io
-meson setup build
+meson setup --prefix /usr build
 meson install -C build
 ```
 
@@ -64,18 +64,6 @@ meson install -C build
 
 ```sh
 cd lib/astal/gtk3
-meson setup build
-meson install -C build
-```
-
-:::tip
-Most distros recommend manual installs in `/usr/local`,
-which is what `meson` defaults to. If you want to install to `/usr`
-instead which most package managers do, set the `prefix` option:
-
-```sh
 meson setup --prefix /usr build
 meson install -C build
 ```
-
-:::

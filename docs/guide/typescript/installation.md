@@ -9,7 +9,7 @@ It lets you
 - generate a tsconfig which is used by LSPs
 - bundle your TypeScript and JavaScript code using [esbuild](https://esbuild.github.io/).
 
-::: details Trivia
+:::details Trivia
 AGS is the predecessor of Astal, which was written purely in TypeScript and so only supported
 JavaScript/TypeScript. Now it serves as a scaffolding tool for Astal+TypeScript+JSX projects.
 :::
@@ -43,7 +43,7 @@ meson install -C build
 :::tip
 You might be wondering why it is recommended to install a JavaScript
 package on the system instead of installing it as a node module.
-It is solely to keep it in **sync** with the core `astal-sh` and `astal3`/`astal4` package.
+It is solely to keep it in **sync** with the core `astal-io` and `astal3`/`astal4` package.
 :::
 
 3. Install the following dependencies
