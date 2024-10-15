@@ -1,3 +1,8 @@
+---
+next:
+  link: '/guide/getting-started/supported-languages'
+  text: 'Supported Languages'
+---
 # Nix
 
 ## Astal
@@ -74,11 +79,16 @@ Using Astal on Nix will require you to package your project.
 }
 ```
 
+```nix [<i class="devicon-typescript-plain"></i> TypeScript]
+# The usage of AGS (read below) is recommended
+# Usage without AGS is not yet documented
+```
+
 :::
 
 ## AGS
 
-The recommended way to use AGS on NixOS is through the home-manager module.
+The recommended way to use [AGS](../ags/first-widgets#first-widgets) on NixOS is through the home-manager module.
 
 Example content of a `flake.nix` file that contains your `homeConfigurations`.
 
@@ -144,7 +154,7 @@ Example content of `home.nix` file
 
 :::
 
-AGS by default only includes the core `libastal` library.
+AGS by default only includes the core `astal3/astal4` and `astal-io` libraries.
 If you want to include any other [library](../libraries/references) you have to add them to `extraPackages`.
 You can also add binaries which will be added to the gjs runtime.
 
@@ -158,7 +168,11 @@ The AGS flake does not expose the `astal` cli to the home environment, you have 
 :::code-group
 
 ```nix [<i class="devicon-nixos-plain"></i> home.nix]
-home.packages = [ inputs.ags.packages.${pkgs.system}.astal ];
+home.packages = [ inputs.ags.packages.${pkgs.system}.default ];
+```
+
+```sh [<i class="devicon-bash-plain"></i> sh]
+astal --help
 ```
 
 :::

@@ -43,9 +43,10 @@
 
     packages.${system} = with pkgs; {
       docs = import ./docs {inherit self pkgs;};
-      default = self.packages.${system}.astal;
+      default = self.packages.${system}.io;
 
-      astal = mkPkg "astal" ./core [gtk3 gtk-layer-shell];
+      io = mkPkg "astal" ./lib/astal/io [];
+      astal3 = mkPkg "astal" ./lib/astal/gtk3 [self.packages.${system}.io gtk3 gtk-layer-shell];
       apps = mkPkg "astal-apps" ./lib/apps [json-glib];
       auth = mkPkg "astal-auth" ./lib/auth [pam];
       battery = mkPkg "astal-battery" ./lib/battery [json-glib];

@@ -32,20 +32,9 @@ cd astal/lib/network
 3. install
 
 ```sh
-meson setup build
+meson setup --prefix /usr build
 meson install -C build
 ```
-
-:::tip
-Most distros recommend manual installs in `/usr/local`,
-which is what `meson` defaults to. If you want to install to `/usr`
-instead which most package managers do, set the `prefix` option:
-
-```sh
-meson setup --prefix /usr build
-```
-
-:::
 
 ## Usage
 
