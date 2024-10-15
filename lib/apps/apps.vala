@@ -1,23 +1,70 @@
-namespace AstalApps {
-public class Apps : Object {
+public class AstalApps.Apps : Object {
     private string cache_directory;
     private string cache_file;
     private List<Application> _list;
     private HashTable<string, int> frequents { get; private set; }
 
+    /**
+     * Indicates wether hidden applications should included in queries.
+     */
     public bool show_hidden { get; set; }
+
+    /**
+     * Full list of available applications.
+     */
     public List<weak Application> list { owned get { return _list.copy(); } }
 
+    /**
+     * The minimum score the application has to meet in order to be included in queries.
+     */
     public int min_score { get; set; default = 0; }
 
+    /**
+     * Extra multiplier to apply when matching the `name` of an application.
+     * Defaults to `2`
+     */
     public double name_multiplier { get; set; default = 2; }
+
+    /**
+     * Extra multiplier to apply when matching the entry of an application.
+     * Defaults to `1`
+     */
     public double entry_multiplier { get; set; default = 1; }
+
+    /**
+     * Extra multiplier to apply when matching the executable of an application.
+     * Defaults to `1`
+     */
     public double executable_multiplier { get; set; default = 1; }
+
+    /**
+     * Extra multiplier to apply when matching the description of an application.
+     * Defaults to `0.5`
+     */
     public double description_multiplier { get; set; default = 0.5; }
 
+    /**
+     * Consider the name of an application during queries.
+     * Defaults to `true`
+     */
     public bool include_name { get; set; default = true; }
+
+    /**
+     * Consider the entry of an application during queries.
+     * Defaults to `false`
+     */
     public bool include_entry { get; set; default = false; }
+
+    /**
+     * Consider the executable of an application during queries.
+     * Defaults to `false`
+     */
     public bool include_executable { get; set; default = false; }
+
+    /**
+     * Consider the description of an application during queries.
+     * Defaults to `false`
+     */
     public bool include_description { get; set; default = false; }
 
     construct {
@@ -65,7 +112,7 @@ public class Apps : Object {
         return r;
     }
 
-    public List<weak Application> query(string? search = "", bool exact = false) {
+    internal List<weak Application> query(string? search = "", bool exact = false) {
         if (search == null)
             search = "";
 
@@ -114,14 +161,23 @@ public class Apps : Object {
         return arr;
     }
 
+    /**
+     * Query the `list` of applications with a fuzzy matching algorithm.
+     */
     public List<weak Application> fuzzy_query(string? search = "") {
         return query(search, false);
     }
 
+    /**
+     * Query the `list` of applications with a simple string matching algorithm.
+     */
     public List<weak Application> exact_query(string? search = "") {
         return query(search, true);
     }
 
+    /**
+     * Reload the `list` of Applications.
+     */
     public void reload() {
         var arr = AppInfo.get_all();
 
@@ -168,5 +224,4 @@ public class Apps : Object {
             critical("cannot cache frequents: %s", err.message);
         }
     }
-}
 }
