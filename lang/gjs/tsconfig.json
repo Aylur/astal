@@ -10,9 +10,7 @@
     },
     "include": [
         "@girs",
-        "lib/*",
-        // "gtk3/*",
-        // "gtk4/*",
+        "src/*.ts",
         "index.ts",
     ]
 }

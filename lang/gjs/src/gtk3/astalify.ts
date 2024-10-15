@@ -2,9 +2,9 @@ import Astal from "gi://Astal?version=3.0"
 import Gtk from "gi://Gtk?version=3.0"
 import Gdk from "gi://Gdk?version=3.0"
 import GObject from "gi://GObject"
-import { execAsync } from "../lib/process.js"
-import Variable from "../lib/variable.js"
-import Binding, { kebabify, snakeify, type Connectable, type Subscribable } from "../lib/binding.js"
+import { execAsync } from "../process.js"
+import Variable from "../variable.js"
+import Binding, { kebabify, snakeify, type Connectable, type Subscribable } from "../binding.js"
 
 export function mergeBindings(array: any[]) {
     function getValues(...args: any[]) {

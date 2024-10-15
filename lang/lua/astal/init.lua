@@ -1,9 +1,9 @@
 local lgi = require("lgi")
-local Binding = require("astal.lib.binding")
-local File = require("astal.lib.file")
-local Process = require("astal.lib.process")
-local Time = require("astal.lib.time")
-local Variable = require("astal.lib.variable")
+local Binding = require("astal.binding")
+local File = require("astal.file")
+local Process = require("astal.proc")
+local Time = require("astal.time")
+local Variable = require("astal.variable")
 
 return {
     Variable = Variable,

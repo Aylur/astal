@@ -1,9 +1,9 @@
 local lgi = require("lgi")
 local Astal = lgi.require("AstalIO", "0.1")
 local GObject = lgi.require("GObject", "2.0")
-local Binding = require("astal.lib.binding")
-local Time = require("astal.lib.time")
-local Process = require("astal.lib.process")
+local Binding = require("astal.binding")
+local Time = require("astal.time")
+local Process = require("astal.process")
 
 ---@class Variable
 ---@field private variable table

@@ -10,12 +10,10 @@ Read more about it on the [nix page](./nix#astal)
 
 maintainer: [@kotontrion](https://github.com/kotontrion)
 
-<!--TODO: fix aur package names-->
-
 :::code-group
 
 ```sh [Core Library]
-yay -S libastal-git
+yay -S libastal-io-git libastal-git
 ```
 
 ```sh [Every Library]

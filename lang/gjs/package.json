@@ -16,14 +16,14 @@
     },
     "exports": {
         ".": "./index.ts",
-        "./gtk3": "./gtk3/index.ts",
-        "./gtk4": "./gtk3/index.ts",
-        "./lib/binding": "./lib/binding.ts",
-        "./lib/file": "./lib/file.ts",
-        "./lib/gobject": "./lib/gobject.ts",
-        "./lib/process": "./lib/process.ts",
-        "./lib/time": "./lib/time.ts",
-        "./lib/variable": "./lib/variable.ts"
+        "./gtk3": "./src/gtk3/index.ts",
+        "./gtk4": "./src/gtk3/index.ts",
+        "./binding": "./src/binding.ts",
+        "./file": "./src/file.ts",
+        "./gobject": "./src/gobject.ts",
+        "./process": "./src/process.ts",
+        "./time": "./src/time.ts",
+        "./variable": "./src/variable.ts"
     },
     "engines": {
         "gjs": ">=1.79.0"
