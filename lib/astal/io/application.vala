@@ -159,7 +159,7 @@ public static void toggle_window_by_name(string instance, string window) {
  */
 public static string send_message(string instance, string msg) {
     var rundir = Environment.get_user_runtime_dir();
-    var socket_path = @"$rundir/astal/$instance_name.sock";
+    var socket_path = @"$rundir/astal/$instance.sock";
     var client = new SocketClient();
 
     try {
