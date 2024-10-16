@@ -104,13 +104,14 @@ The `astalify` mixin will apply the following:
 - sets up signal handlers that are passed as props prefixed with `on`
 
 ```tsx
-import { Widget, Gtk, GObject, Gdk } from "astal/gtk3"
+import GObject from "gi://GObject"
+import { Gtk, Gdk, Widget, astalify, type ConstructProps } from "astal/gtk3"
 
 // subclass, register, define constructor props
-class ColorButton extends Widget.astalify(Gtk.ColorButton) {
+class ColorButton extends astalify(Gtk.ColorButton) {
     static { GObject.registerClass(this) }
 
-    constructor(props: Widget.ConstructProps<
+    constructor(props: ConstructProps<
         ColorButton,
         Gtk.ColorButton.ConstructorProps,
         { onColorSet: [] } // signals of Gtk.ColorButton have to be manually typed
@@ -152,7 +153,8 @@ Type of widgets are available through `Widget`.
 Here is an example Widget that takes in and handles a possibly `Binding` prop.
 
 ```tsx
-import { Binding, Variable, Widget } from "astal"
+import { Binding, Variable } from "astal"
+import { Widget } from "astal/gtk3"
 
 export interface ToggleButtonProps extends Widget.ButtonProps {
     onToggled?: (self: Widget.Button, on: boolean) => void
