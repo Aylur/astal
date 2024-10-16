@@ -1,8 +1,4 @@
 namespace AstalApps {
-private int max(int a, int b) {
-    return a > b ? a : b;
-}
-
 private int fuzzy_match_string(string pattern, string str) {
     const int unmatched_letter_penalty = -1;
     int score = 100;
@@ -10,14 +6,17 @@ private int fuzzy_match_string(string pattern, string str) {
     if (pattern.length == 0) return score;
     if (str.length < pattern.length) return int.MIN;
 
+    bool found = fuzzy_match_recurse(pattern, str, score, true, out score);
     score += unmatched_letter_penalty * (str.length - pattern.length);
-    score = fuzzy_match_recurse(pattern, str, score, true);
+    
+    if(!found) score = -10;
 
     return score;
 }
 
-private int fuzzy_match_recurse(string pattern, string str, int score, bool first_char) {
-    if (pattern.length == 0) return score;
+private bool fuzzy_match_recurse(string pattern, string str, int score, bool first_char, out int result) {
+    result = score;
+    if (pattern.length == 0) return true;
 
     int match_idx = 0;
     int offset = 0;
@@ -26,16 +25,19 @@ private int fuzzy_match_recurse(string pattern, string str, int score, bool firs
 
     while ((match_idx = str.casefold().substring(offset).index_of_char(search)) >= 0) {
         offset += match_idx;
-        int subscore = fuzzy_match_recurse(
+        int subscore;
+        bool found = fuzzy_match_recurse(
             pattern.substring(1),
             str.substring(offset + 1),
-            compute_score(offset, first_char, str, offset), false);
-        best_score = max(best_score, subscore);
+            compute_score(offset, first_char, str, offset), false, out subscore);
+        if(!found) break;
+        best_score = int.max(best_score, subscore);
         offset++;
     }
-
-    if (best_score == int.MIN) return int.MIN;
-    return score + best_score;
+    
+    if (best_score == int.MIN) return false;
+    result += best_score;
+    return true;
 }
 
 private int compute_score(int jump, bool first_char, string match, int idx) {
@@ -63,7 +65,7 @@ private int compute_score(int jump, bool first_char, string match, int idx) {
         score += first_letter_bonus;
     }
     if (first_char) {
-        score += max(leading_letter_penalty * jump, max_leading_letter_penalty);
+        score += int.max(leading_letter_penalty * jump, max_leading_letter_penalty);
     }
 
     return score;
