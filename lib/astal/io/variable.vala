@@ -1,3 +1,7 @@
+/*
+ * Base class for [class@AstalIO.Variable] mainly meant to be used
+ * in higher level language bindings such as Lua and Gjs.
+ */
 public class AstalIO.VariableBase : Object {
     public signal void changed ();
     public signal void dropped ();

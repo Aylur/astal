@@ -1,12 +1,45 @@
-namespace AstalApps {
-public class Application : Object {
+public class AstalApps.Application : Object {
+    /**
+     * The underlying DesktopAppInfo.
+     */
     public DesktopAppInfo app { get; construct set; }
+
+    /**
+     * The number of times [func@AstalApps.Application.launch] was called on this Application.
+     */
     public int frequency { get; set; default = 0; }
+
+    /**
+     * The name of this Application.
+     */
     public string name { get { return app.get_name(); } }
+
+    /**
+     * Name of the .desktop of this Application.
+     */
     public string entry { get { return app.get_id(); } }
+
+    /**
+     * Description of this Application.
+     */
     public string description { get { return app.get_description(); } }
+
+    /**
+     * The StartupWMClass field from the desktop file.
+     * This represents the WM_CLASS property of the main window of the application.
+     */
     public string wm_class { get { return app.get_startup_wm_class(); } }
+
+    /**
+     * `Exec` field from the desktop file.
+     * Note that if you want to launch this Application you should use the [func@AstalApps.Application.launch] method.
+     */
     public string executable { owned get { return app.get_string("Exec"); } }
+
+    /**
+     * `Icon` field from the desktop file.
+     * This is usually a named icon or a path to a file.
+     */
     public string icon_name { owned get { return app.get_string("Icon"); } }
 
     internal Application(string id, int? frequency = 0) {
@@ -14,10 +47,17 @@ public class Application : Object {
         this.frequency = frequency;
     }
 
+    /**
+     * Get a value from the .desktop file by its key.
+     */
     public string get_key(string key) {
         return app.get_string(key);
     }
 
+    /**
+     * Launches this application.
+     * The launched application inherits the environment of the launching process
+     */
     public bool launch() {
         try {
             var s = app.launch(null, null);
@@ -29,7 +69,7 @@ public class Application : Object {
         }
     }
 
-    public Score fuzzy_match(string term) {
+    internal Score fuzzy_match(string term) {
         var score = Score();
         if (name != null)
             score.name = fuzzy_match_string(term, name);
@@ -43,7 +83,7 @@ public class Application : Object {
         return score;
     }
 
-    public Score exact_match(string term) {
+    internal Score exact_match(string term) {
         var score = Score();
         if (name != null)
             score.name = name.down().contains(term.down()) ? 1 : 0;
@@ -71,14 +111,9 @@ public class Application : Object {
     }
 }
 
-int min3(int a, int b, int c) {
-    return (a < b) ? ((a < c) ? a : c) : ((b < c) ? b : c);
-}
-
-public struct Score {
+public struct AstalApps.Score {
     int name;
     int entry;
     int executable;
     int description;
-}
 }

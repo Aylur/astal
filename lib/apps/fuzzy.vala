@@ -1,7 +1,5 @@
-
 namespace AstalApps {
-
-public int fuzzy_match_string(string pattern, string str) {
+private int fuzzy_match_string(string pattern, string str) {
     const int unmatched_letter_penalty = -1;
     int score = 100;
 

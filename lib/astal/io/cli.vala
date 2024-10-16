@@ -1,12 +1,12 @@
-private static bool version;
-private static bool help;
-private static bool list;
-private static bool quit;
-private static bool inspector;
-private static string? toggle_window;
-private static string? instance_name;
+static bool version;
+static bool help;
+static bool list;
+static bool quit;
+static bool inspector;
+static string? toggle_window;
+static string? instance_name;
 
-private const OptionEntry[] options = {
+const OptionEntry[] options = {
     { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref version, null, null },
     { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref help, null, null },
     { "list", 'l', OptionFlags.NONE, OptionArg.NONE, ref list, null, null },
