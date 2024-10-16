@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "target": "ES2023",
+        "outDir": "dist",
+        "strict": true,
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "baseUrl": ".",
+    },
+    "include": [
+        "@girs",
+        "src/*.ts",
+        "index.ts",
+    ]
+}

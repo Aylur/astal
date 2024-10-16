@@ -191,7 +191,7 @@ class Battery : Gtk.Box {
 
 class Time : Astal.Label {
     string format;
-    Astal.Time interval;
+    AstalIO.Time interval;
 
     void sync() {
         label = new DateTime.now_local().format(format);
@@ -199,7 +199,7 @@ class Time : Astal.Label {
 
     public Time(string format = "%H:%M - %A %e.") {
         this.format = format;
-        interval = Astal.Time.interval(1000, null);
+        interval = AstalIO.Time.interval(1000, null);
         interval.now.connect(sync);
         destroy.connect(interval.cancel);
         Astal.widget_set_class_names(this, {"Time"});
