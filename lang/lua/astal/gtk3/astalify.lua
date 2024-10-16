@@ -2,9 +2,9 @@ local lgi = require("lgi")
 local Astal = lgi.require("Astal", "3.0")
 local Gtk = lgi.require("Gtk", "3.0")
 local GObject = lgi.require("GObject", "2.0")
-local Binding = require("astal.lib.binding")
-local Variable = require("astal.lib.variable")
-local exec_async = require("astal.lib.process").exec_async
+local Binding = require("astal.binding")
+local Variable = require("astal.variable")
+local exec_async = require("astal.process").exec_async
 
 local function filter(tbl, fn)
     local copy = {}
@@ -28,8 +28,7 @@ local function map(tbl, fn)
     return copy
 end
 
-local flatten
-flatten = function(tbl)
+local function flatten(tbl)
     local copy = {}
     for _, value in pairs(tbl) do
         if type(value) == "table" and getmetatable(value) == nil then
