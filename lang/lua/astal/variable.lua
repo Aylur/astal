@@ -20,7 +20,7 @@ local Process = require("astal.process")
 local Variable = {}
 Variable.__index = Variable
 
----@param value any
+---@param value? any
 ---@return Variable
 function Variable.new(value)
     local v = Astal.VariableBase()
@@ -30,7 +30,7 @@ function Variable.new(value)
     }, Variable)
     v.on_dropped = function()
         variable:stop_watch()
-        variable:stop_watch()
+        variable:stop_poll()
     end
     v.on_error = function(_, err)
         if variable.err_handler then
@@ -40,16 +40,14 @@ function Variable.new(value)
     return variable
 end
 
----@param transform function
+---@param transform? fun(v: any): any 
 ---@return Binding
 function Variable:__call(transform)
-    if transform == nil then
-        transform = function(v)
-            return v
-        end
+    if type(transform) == "nil" then
         return Binding.new(self)
+    else
+        return Binding.new(self):as(transform)
     end
-    return Binding.new(self):as(transform)
 end
 
 function Variable:__tostring()
@@ -57,7 +55,7 @@ function Variable:__tostring()
 end
 
 function Variable:get()
-    return self._value or nil
+    return self._value
 end
 
 function Variable:set(value)
@@ -67,8 +65,16 @@ function Variable:set(value)
     end
 end
 
+function Variable:is_polling()
+    return self._poll ~= nil
+end
+
+function Variable:is_watching()
+    return self._watch ~= nil
+end
+
 function Variable:start_poll()
-    if self._poll ~= nil then
+    if not self:is_polling() then
         return
     end
 
@@ -81,15 +87,16 @@ function Variable:start_poll()
             Process.exec_async(self.poll_exec, function(out, err)
                 if err ~= nil then
                     return self.variable.emit_error(err)
+                else
+                    self:set(self.poll_transform(out, self:get()))
                 end
-                self:set(self.poll_transform(out, self:get()))
             end)
         end)
     end
 end
 
 function Variable:start_watch()
-    if self._watch then
+    if not self:is_watching() then
         return
     end
 
@@ -100,27 +107,21 @@ function Variable:start_watch()
     end)
 end
 
+
 function Variable:stop_poll()
-    if self._poll then
+    if self:is_polling() then
         self._poll.cancel()
     end
     self._poll = nil
 end
 
 function Variable:stop_watch()
-    if self._watch then
+    if self:is_watching() then
         self._watch.kill()
     end
     self._watch = nil
 end
 
-function Variable:is_polling()
-    return self._poll ~= nil
-end
-
-function Variable:is_watching()
-    return self._watch ~= nil
-end
 
 function Variable:drop()
     self.variable.emit_dropped()
@@ -137,7 +138,7 @@ end
 ---@return Variable
 function Variable:on_error(callback)
     self.err_handler = nil
-    self.variable.on_eror = function(_, err)
+    self.variable.on_error = function(_, err)
         callback(err)
     end
     return self
@@ -158,11 +159,10 @@ end
 ---@param exec string | string[] | function
 ---@param transform? fun(next: any, prev: any): any
 function Variable:poll(interval, exec, transform)
-    if transform == nil then
-        transform = function(next)
-            return next
-        end
+    transform = transform or function(next)
+        return next
     end
+
     self:stop_poll()
     self.poll_interval = interval
     self.poll_transform = transform
@@ -181,12 +181,11 @@ end
 ---@param exec string | string[]
 ---@param transform? fun(next: any, prev: any): any
 function Variable:watch(exec, transform)
-    if transform == nil then
-        transform = function(next)
-            return next
-        end
+    transform = transform or function (next)
+        return next
     end
-    self:stop_poll()
+
+    self:stop_watch()
     self.watch_exec = exec
     self.watch_transform = transform
     self:start_watch()
@@ -208,6 +207,7 @@ function Variable:observe(object, sigOrFn, callback)
             return self:get()
         end
     end
+
     local set = function(...)
         self:set(f(...))
     end
@@ -226,10 +226,8 @@ end
 ---@param transform? fun(...): any
 ---@return Variable
 function Variable.derive(deps, transform)
-    if type(transform) == "nil" then
-        transform = function(...)
-            return { ... }
-        end
+    transform = transform or function(...)
+        return { ... }
     end
 
     if getmetatable(deps) == Variable then
@@ -246,7 +244,7 @@ function Variable.derive(deps, transform)
         end
     end
 
-    local update = function()
+    local function update()
         local params = {}
         for i, binding in ipairs(deps) do
             params[i] = binding:get()
@@ -257,6 +255,7 @@ function Variable.derive(deps, transform)
     local var = Variable.new(update())
 
     local unsubs = {}
+
     for i, b in ipairs(deps) do
         unsubs[i] = b:subscribe(update)
     end
