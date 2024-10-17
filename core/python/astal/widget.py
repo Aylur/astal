@@ -27,14 +27,11 @@ def astalify(klass: type[Gtk.Widget]) -> type:
                     ch.destroy()
 
         # Add children based on the type of container
-        if isinstance(self, Astal.Box):
-            self.set_children(nchildren)
-
-        elif isinstance(self, Astal.Stack):
+        if isinstance(self, (Astal.Box, Astal.Stack)):
             self.set_children(nchildren)
 
         elif isinstance(self, Astal.CenterBox):
-            print("Hello")
+            print("Hello") # hi
             self.start_widget = nchildren[0] if len(nchildren) > 0 else None
             self.center_widget = nchildren[1] if len(nchildren) > 1 else None
             self.end_widget = nchildren[2] if len(nchildren) > 2 else None
@@ -58,16 +55,16 @@ def astalify(klass: type[Gtk.Widget]) -> type:
         args["visible"] = kwargs.get("visible", True)
 
         for key, value in kwargs.items():
-            if key == "setup":
-                setup = value
-            elif isinstance(value, Binding):
+            if isinstance(value, Binding):
                 bindings[key] = value
+            elif key.startswith("on_"):
+                handlers[key] = value
+            elif key == "setup":
+                setup = value
             elif key == "child":
                 children = [value]
             elif key == "children":
                 children = value
-            elif key.startswith("on_"):
-                handlers[key] = value
             else:
                 args[key] = value
 
@@ -77,11 +74,22 @@ def astalify(klass: type[Gtk.Widget]) -> type:
             _set_children(self, children)
 
         for key, value in bindings.items():
-            setter = (
-                lambda v: _set_children(self, v)
-                if key == "child" or key == "children"
-                else getattr(self, f"set_{key}")
-            )
+            def setter(v, key=key):
+                if key == "child" or key == "children":
+                    _set_children(self, v)
+                else:
+                    getattr(self, f"set_{key}")(v)
+
+            
+            # use 'def' to avoid closure issues with lambdas in loops
+            # lambdas capture 'key' by reference, so all would share the last 'key' value
+            # https://realpython.com/python-lambda/#closure
+            
+            # setter = ( 
+            #     lambda v: _set_children(self, v)
+            #     if key == "child" or key == "children"
+            #     else getattr(self, f"set_{key}")
+            # )
 
             setter(value.get())
             unsub = value.subscribe(setter)
@@ -105,28 +113,30 @@ def astalify(klass: type[Gtk.Widget]) -> type:
             setup(self)
 
     def do_get_property(self, prop):
-        if prop.name == "class-name":
-            return " ".join(Astal.widget_get_class_names(self))
-        elif prop.name == "css":
-            return Astal.widget_get_css(self)
-        elif prop.name == "cursor":
-            return Astal.widget_get_cursor(self)
-        elif prop.name == "click-through":
-            return Astal.widget_get_click_through(self)
-        else:
-            return super(Widget, self).do_get_property(prop)
+        match prop.name:
+            case "class-name":
+                return " ".join(Astal.widget_get_class_names(self))
+            case "css":
+                return Astal.widget_get_css(self)
+            case "cursor":
+                return Astal.widget_get_cursor(self)
+            case "click-through":
+                return Astal.widget_get_click_through(self)
+            case _:
+                return super(Widget, self).do_get_property(prop)
 
     def do_set_property(self, prop, value):
-        if prop.name == "class-name":
-            return Astal.widget_set_class_names(self, value.split())
-        elif prop.name == "css":
-            return Astal.widget_set_css(self, value)
-        elif prop.name == "cursor":
-            return Astal.widget_set_cursor(self, value)
-        elif prop.name == "click-through":
-            return Astal.widget_set_click_through(self, value)
-        else:
-            return super(Widget, self).do_set_property(prop, value)
+        match prop.name:
+            case "class-name":
+                return Astal.widget_set_class_names(self, value.split())
+            case "css":
+                return Astal.widget_set_css(self, value)
+            case "cursor":
+                return Astal.widget_set_cursor(self, value)
+            case "click-through":
+                return Astal.widget_set_click_through(self, value)
+            case _:
+                return super(Widget, self).do_set_property(prop, value)
 
     Widget = type(
         f"AstalPy{klass.__name__}",
