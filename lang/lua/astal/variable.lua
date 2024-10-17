@@ -74,7 +74,7 @@ function Variable:is_watching()
 end
 
 function Variable:start_poll()
-    if not self:is_polling() then
+    if self:is_polling() then
         return
     end
 
@@ -96,7 +96,7 @@ function Variable:start_poll()
 end
 
 function Variable:start_watch()
-    if not self:is_watching() then
+    if self:is_watching() then
         return
     end
 
