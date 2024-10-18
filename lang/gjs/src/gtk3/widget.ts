@@ -103,6 +103,11 @@ export class LevelBar extends astalify(Astal.LevelBar) {
 // TODO: ListBox
 
 // Overlay
+Object.defineProperty(Astal.Overlay.prototype, "overlays", {
+    get() { return this.get_overlays() },
+    set(v) { this.set_overlays(v) },
+})
+
 export type OverlayProps = ConstructProps<Overlay, Astal.Overlay.ConstructorProps>
 export class Overlay extends astalify(Astal.Overlay) {
     static { GObject.registerClass({ GTypeName: "Overlay" }, this) }
