@@ -10,30 +10,29 @@ M.Process = Astal.Process
 ---@param on_stderr? fun(err: string): nil
 ---@return { kill: function } | nil proc
 function M.subprocess(commandline, on_stdout, on_stderr)
-    if on_stdout == nil then
-        on_stdout = function(out)
-            io.stdout:write(tostring(out) .. "\n")
-        end
+    on_stdout = on_stdout or function(out)
+        io.stdout:write(tostring(out) .. "\n")
     end
 
-    if on_stderr == nil then
-        on_stderr = function(err)
-            io.stderr:write(tostring(err) .. "\n")
-        end
+    on_stderr = on_stderr or function(err)
+        io.stderr:write(tostring(err) .. "\n")
     end
+
 
     local proc, err
+
     if type(commandline) == "table" then
         proc, err = Astal.Process.subprocessv(commandline)
     else
         proc, err = Astal.Process.subprocess(commandline)
     end
+
     if err ~= nil then
         err(err)
         return nil
     end
-    proc.on_stdout = function(_, stdoud)
-        on_stdout(stdoud)
+    proc.on_stdout = function(_, stdout)
+        on_stdout(stdout)
     end
     proc.on_stderr = function(_, stderr)
         on_stderr(stderr)
@@ -54,13 +53,11 @@ end
 ---@param commandline string | string[]
 ---@param callback? fun(out: string, err: string): nil
 function M.exec_async(commandline, callback)
-    if callback == nil then
-        callback = function(out, err)
-            if err ~= nil then
-                io.stdout:write(tostring(out) .. "\n")
-            else
-                io.stderr:write(tostring(err) .. "\n")
-            end
+    callback = callback or function(out, err)
+        if err ~= nil then
+            io.stdout:write(tostring(out) .. "\n")
+        else
+            io.stderr:write(tostring(err) .. "\n")
         end
     end
 
