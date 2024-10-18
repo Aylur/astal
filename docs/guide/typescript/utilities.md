@@ -2,14 +2,10 @@
 
 ## File functions
 
+Import from `astal` or `astal/file`
+
 ```ts
-import {
-    readFile,
-    readFileAsync,
-    writeFile,
-    writeFileAsync,
-    monitorFile,
-} from "astal"
+import { readFile, readFileAsync, writeFile, writeFileAsync, monitorFile, } from "astal/file"
 ```
 
 ### Reading files
@@ -28,6 +24,8 @@ function writeFileAsync(path: string, content: string): Promise<void>
 
 ### Monitoring files
 
+If `path` is a directory it will be recursively monitored.
+
 ```ts
 function monitorFile(
     path: string,
@@ -37,23 +35,25 @@ function monitorFile(
 
 ## Timeouts and Intervals
 
+Import from `astal` or `astal/time`
+
 ```ts
-import { interval, timeout, idle } from "astal"
+import { interval, timeout, idle } from "astal/time"
 ```
 
 You can use javascript native `setTimeout` or `setInterval`
 they return a [GLib.Source](https://docs.gtk.org/glib/struct.Source.html) instance.
 Alternatively you can use these functions provided by Astal,
-which return an [Astal.Time](https://aylur.github.io/libastal/io/class.Time.html) instance.
+which return an [AstalIO.Time](https://aylur.github.io/libastal/io/class.Time.html) instance.
 
-`Astal.Time` has a `now` signal and a `cancelled` signal.
+`AstalIO.Time` has a `now` signal and a `cancelled` signal.
 
 ### Interval
 
 Will immediately execute the function and every `interval` millisecond.
 
 ```ts
-function interval(interval: number, callback?: () => void): Astal.Time
+function interval(interval: number, callback?: () => void): AstalIO.Time
 ```
 
 ### Timeout
@@ -61,7 +61,7 @@ function interval(interval: number, callback?: () => void): Astal.Time
 Will execute the `callback` after `timeout` millisecond.
 
 ```ts
-function timeout(timeout: number, callback?: () => void): Astal.Time
+function timeout(timeout: number, callback?: () => void): AstalIO.Time
 ```
 
 ### Idle
@@ -69,7 +69,7 @@ function timeout(timeout: number, callback?: () => void): Astal.Time
 Executes `callback` whenever there are no higher priority events pending.
 
 ```ts
-function idle(callback?: () => void): Astal.Time
+function idle(callback?: () => void): AstalIO.Time
 ```
 
 Example:
@@ -92,27 +92,29 @@ timer.cancel()
 
 ## Process functions
 
+Import from `astal` or `astal/process`
+
 ```ts
-import { subprocess, exec, execAsync } from "astal"
+import { subprocess, exec, execAsync } from "astal/process"
 ```
 
 ### Subprocess
 
 You can start a subprocess and run callback functions whenever it outputs to
-stdout or stderr. [Astal.Process](https://aylur.github.io/libastal/io/class.Process.html) has a `stdout` and `stderr` signal.
+stdout or stderr. [AstalIO.Process](https://aylur.github.io/libastal/io/class.Process.html) has a `stdout` and `stderr` signal.
 
 ```ts
 function subprocess(args: {
     cmd: string | string[]
     out?: (stdout: string) => void
     err?: (stderr: string) => void
-}): Astal.Process
+}): AstalIO.Process
 
 function subprocess(
     cmd: string | string[],
     onOut?: (stdout: string) => void,
     onErr?: (stderr: string) => void,
-): Astal.Process
+): AstalIO.Process
 ```
 
 Example:

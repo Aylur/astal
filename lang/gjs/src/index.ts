@@ -1,3 +1,4 @@
+export { default as AstalIO } from "gi://AstalIO?version=0.1"
 export * from "./process.js"
 export * from "./time.js"
 export * from "./file.js"

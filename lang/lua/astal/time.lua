@@ -4,6 +4,8 @@ local GObject = lgi.require("GObject", "2.0")
 
 local M = {}
 
+M.Time = Astal.Time
+
 ---@param interval number
 ---@param fn function
 ---@return { cancel: function, on_now: function }

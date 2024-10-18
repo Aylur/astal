@@ -3,6 +3,8 @@ local Astal = lgi.require("AstalIO", "0.1")
 
 local M = {}
 
+M.Process = Astal.Process
+
 ---@param commandline string | string[]
 ---@param on_stdout? fun(out: string): nil
 ---@param on_stderr? fun(err: string): nil

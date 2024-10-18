@@ -1,8 +1,8 @@
-export { default as GObject, default as default } from "gi://GObject"
-export { default as Gio } from "gi://Gio"
-export { default as GLib } from "gi://GLib"
-
 import GObject from "gi://GObject"
+
+export { default as GLib } from "gi://GLib?version=2.0"
+export { GObject, GObject as default }
+
 const meta = Symbol("meta")
 
 const { ParamSpec, ParamFlags } = GObject

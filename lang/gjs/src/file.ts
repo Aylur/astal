@@ -1,5 +1,7 @@
 import Astal from "gi://AstalIO"
-import Gio from "gi://Gio"
+import Gio from "gi://Gio?version=2.0"
+
+export { Gio }
 
 export function readFile(path: string): string {
     return Astal.read_file(path) || ""
