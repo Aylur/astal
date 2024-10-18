@@ -20,10 +20,11 @@ export default defineConfig({
 
     themeConfig: {
         logo: "/icon.svg",
+        outline: "deep",
 
         footer: {
-            message: 'Released under the LGPL v2.1 License',
-            copyright: 'Logo is created by VDawg'
+            message: "Released under the LGPL v2.1 License",
+            copyright: "Logo is created by VDawg",
         },
 
         nav: [
@@ -43,7 +44,7 @@ export default defineConfig({
                     { text: "Contributing", link: github("/blob/main/CONTRIBUTING.md") },
                     { text: "Changelog", link: github("/blob/main/CHANGELOG.md") },
                 ],
-            }
+            },
         ],
 
         sidebar: [
@@ -58,8 +59,8 @@ export default defineConfig({
                 ],
             },
             {
-                text: "AGS",
-                base: "/guide/ags",
+                text: "TypeScript",
+                base: "/guide/typescript",
                 collapsed: false,
                 items: [
                     { text: "Installation", link: "/installation" },
@@ -67,9 +68,20 @@ export default defineConfig({
                     { text: "Theming", link: "/theming" },
                     { text: "CLI and App", link: "/cli-app" },
                     { text: "Widget", link: "/widget" },
-                    { text: "Utilities", link: "/utilities" },
                     { text: "Variable", link: "/variable" },
+                    { text: "Binding", link: "/binding" },
+                    { text: "GObject", link: "/gobject" },
+                    { text: "Utilities", link: "/utilities" },
                     { text: "FAQ", link: "/faq" },
+                ],
+            },
+            {
+                text: "Lua",
+                base: "/guide/lua",
+                collapsed: false,
+                items: [
+                    { text: "Installation", link: "/installation" },
+                    { text: "First Widgets", link: "/first-widgets" },
                 ],
             },
             {
@@ -77,7 +89,9 @@ export default defineConfig({
                 collapsed: true,
                 items: [
                     { text: "References", link: "/guide/libraries/references" },
-                    { text: "Astal", link: "https://aylur.github.io/libastal" },
+                    { text: "IO", link: "https://aylur.github.io/libastal/io" },
+                    { text: "Astal3", link: "https://aylur.github.io/libastal/astal3" },
+                    // { text: "Astal4", link: "https://aylur.github.io/libastal/astal4" },
                     { text: "Apps", link: "/guide/libraries/apps" },
                     { text: "Auth", link: "/guide/libraries/auth" },
                     { text: "Battery", link: "/guide/libraries/battery" },
@@ -110,6 +124,6 @@ export default defineConfig({
 
         search: {
             provider: "local",
-        }
+        },
     },
 })

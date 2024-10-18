@@ -33,20 +33,9 @@ cd astal/lib/apps
 3. install
 
 ```sh
-meson setup build
+meson setup --prefix /usr build
 meson install -C build
 ```
-
-:::tip
-Most distros recommend manual installs in `/usr/local`,
-which is what `meson` defaults to. If you want to install to `/usr`
-instead which most package managers do, set the `prefix` option:
-
-```sh
-meson setup --prefix /usr build
-```
-
-:::
 
 ## Usage
 
@@ -105,9 +94,4 @@ end
 // Not yet documented, contributions are appreciated
 ```
 
-:::
-
-:::info
-The fuzzy query uses [Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance). I am not a mathematician, but if you know how to reimplement
-the logic of [fzf](https://github.com/junegunn/fzf) to make it better feel free to open PRs.
 :::
