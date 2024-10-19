@@ -88,7 +88,7 @@ local function Bar()
   return Widget.Window({
     name = "Bar",
     application = App,
-      Widget.Box()
+    Widget.Box()
   })
 end
 ```
@@ -117,7 +117,7 @@ the `client` function.
 App:start({
   -- main instance
   main = function(...)
-    local args = {...}
+    local args = { ... }
     print(string.format("{%s}", table.concat(args, ", ")))
   end,
   client = function(message, ...)

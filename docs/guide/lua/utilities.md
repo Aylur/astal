@@ -144,7 +144,6 @@ function proc:on_stderr(_, stderr) end
 ### Executing external commands and scripts
 
 ```lua
-
 ---@param commandline string | string[]
 ---@return string, string
 local function exec(commandline) end

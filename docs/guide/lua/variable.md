@@ -10,28 +10,28 @@ It also has some shortcuts for hooking up subprocesses, intervals and other gobj
 ## Example Usage
 
 ```lua
-local myvar = Variable("initial-value")
+local my_var = Variable("initial-value")
 
 -- whenever its value changes, callback will be executed
-myvar:subscribe(function(value)
+my_var:subscribe(function(value)
   print(value)
 end)
 
 -- settings its value
-myvar:set("new value")
+my_var:set("new value")
 
 -- getting its value
-local value = myvar:get()
+local value = my_var:get()
 
 -- binding them to widgets
 Widget.Label({
-  label = bind(myvar):as(function(value)
+  label = bind(my_var):as(function(value)
     return string.format("transformed %s", value)
   end),
   -- shorthand for the above
-  label = myvar(function(value)
+  label = my_var(function(value)
     return string.format("transformed %s", value)
-  end),
+  end)
 })
 ```
 
@@ -54,8 +54,7 @@ local v2 = bind(obj, "prop")
 -- where the parameters are the values of the dependencies in the order they were passed
 local v3 = Variable.derive({ v1, v2 }, function(v1, v2)
   return v1 * v2
-end
-)
+end)
 ```
 
 ## Subprocess shorthands
@@ -116,7 +115,7 @@ print(my_var:is_polling())
 
 ## Gobject connection shorthands
 
-Using `.observe` you can connect gobject signals and capture their value.
+Using `:observe` you can connect gobject signals and capture their value.
 
 ```lua
 local my_var = Variable(""):observe(obj1, "signal", function()

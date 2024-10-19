@@ -13,7 +13,7 @@ local App = require("astal.gtk3.app")
 App:start({
 	main = function()
 		print("hi")
-	end,
+	end
 })
 ```
 
@@ -39,7 +39,7 @@ return function(gdkmonitor)
 		gdkmonitor = gdkmonitor,
 		anchor = WindowAnchor.TOP + WindowAnchor.LEFT + WindowAnchor.RIGHT,
 		exclusivity = "EXCLUSIVE",
-		Widget.Label({ label = "Example label uwu" }),
+		Widget.Label({ label = "Example label uwu" })
 	})
 end
 ```
@@ -58,7 +58,7 @@ App:start({
 		for _, gdkmonitor in ipairs(App.monitors) do
 			Bar(gdkmonitor)
 		end
-	end,
+	end
 })
 ```
 
@@ -82,7 +82,7 @@ return function(text)
 				print("Right click")
 			end
 		end,
-		Widget.Label({ label = text }),
+		Widget.Label({ label = text })
 	})
 end
 ```
@@ -123,7 +123,7 @@ local function MyButton()
 	return Widget.Button({
 		on_click_release = function(_, event)
 			print(event.button)
-		end,
+		end
 	})
 end
 ```
@@ -201,7 +201,7 @@ local function BatteryPercentage()
 	return Widget.Label({
 		label = bind(bat, "percentage"):as(function(p)
 			return string.format("%.0f%%", p * 100)
-		end),
+		end)
 	})
 end
 ```
@@ -229,7 +229,7 @@ return Widget.Box({
 			table.insert(tb, Widget.Button({ label = tostring(i) }))
 		end
 		return tb
-	end),
+	end)
 })
 ```
 
