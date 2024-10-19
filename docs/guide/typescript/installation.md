@@ -34,8 +34,8 @@ nix run github:aylur/ags/v2#agsFull -- --help
 2. Install the Astal GJS package
 
 ```sh
-git clone https://github.com/aylur/astal
-cd lang/gjs
+git clone https://github.com/aylur/astal /tmp/astal
+cd /tmp/astal/lang/gjs
 meson setup --prefix /usr build
 meson install -C build
 ```
@@ -68,9 +68,10 @@ sudo apt install golang-go npm gjs
 
 <!--TODO: remove v2 after merge-->
 ```sh
-git clone https://github.com/aylur/ags.git
+git clone https://github.com/aylur/ags.git /tmp/ags
+cd /tmp/ags
 git checkout v2 # https://github.com/Aylur/ags/pull/504
-cd ags/src
+cd src
 go install
 ```
 

@@ -24,13 +24,7 @@ yay -S libastal-meta
 
 ## Bulding libastal from source
 
-1. Clone the repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-```
-
-2. Install the following dependencies
+1. Install the following dependencies
 
 :::code-group
 
@@ -48,12 +42,18 @@ sudo apt install meson valac libgtk-3-dev libgtk-layer-shell-dev gobject-introsp
 
 :::
 
+2. Clone the repo
+
+```sh
+git clone https://github.com/aylur/astal.git /tmp/astal
+```
+
 3. Build and install with `meson`
 
 - astal-io
 
 ```sh
-cd lib/astal/io
+cd /tmp/astal/lib/astal/io
 meson setup --prefix /usr build
 meson install -C build
 ```
@@ -61,7 +61,7 @@ meson install -C build
 - astal3
 
 ```sh
-cd lib/astal/gtk3
+cd /tmp/astal/lib/astal/gtk3
 meson setup --prefix /usr build
 meson install -C build
 ```
