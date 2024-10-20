@@ -23,8 +23,8 @@ public enum Astal.Layer {
 
 public enum Astal.Keymode {
     NONE = 0, // GtkLayerShell.KeyboardMode.NONE
-    ON_DEMAND = 1, // GtkLayerShell.KeyboardMode.ON_DEMAND
-    EXCLUSIVE = 2, // GtkLayerShell.KeyboardMode.EXCLUSIVE
+    EXCLUSIVE = 1, // GtkLayerShell.KeyboardMode.EXCLUSIVE
+    ON_DEMAND = 2, // GtkLayerShell.KeyboardMode.ON_DEMAND
 }
 
 public class Astal.Window : Gtk.Window {
