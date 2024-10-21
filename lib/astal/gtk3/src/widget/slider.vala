@@ -1,12 +1,20 @@
+/**
+ * Subclass of [class@Gtk.Scale] which adds a signal and property for the drag state.
+ */
 public class Astal.Slider : Gtk.Scale {
+    /**
+     * Corresponds to [property@Gtk.Orientable :orientation].
+     */
     [CCode (notify = false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
     }
 
-    // emitted when the user drags the slider
-    public signal void dragged ();
+    /**
+     * Emitted when the user drags the slider or uses keyboard arrows and its value changes.
+     */
+    public signal void dragged();
 
     construct {
         draw_value = false;
@@ -45,23 +53,38 @@ public class Astal.Slider : Gtk.Scale {
         });
     }
 
+    /**
+     * `true` when the user drags the slider or uses keyboard arrows.
+     */
     public bool dragging { get; private set; }
 
+    /**
+     * Value of this slider. Defaults to `0`.
+     */
     public double value {
         get { return adjustment.value; }
         set { if (!dragging) adjustment.value = value; }
     }
 
+    /**
+     * Minimum possible value of this slider. Defaults to `0`.
+     */
     public double min {
         get { return adjustment.lower; }
         set { adjustment.lower = value; }
     }
 
+    /**
+     * Maximum possible value of this slider. Defaults to `1`.
+     */
     public double max {
         get { return adjustment.upper; }
         set { adjustment.upper = value; }
     }
 
+    /**
+     * Size of step increments. Defaults to `0.05`.
+     */
     public double step {
         get { return adjustment.step_increment; }
         set { adjustment.step_increment = value; }

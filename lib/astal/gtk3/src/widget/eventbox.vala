@@ -1,3 +1,9 @@
+/**
+ * EventBox is a [class@Gtk.EventBox] subclass which is meant to fix an issue with its
+ * [signal@Gtk.Widget::enter_notify_event] and [signal@Gtk.Widget::leave_notify_event] when nesting EventBoxes
+ *
+ * Its css selector is `eventbox`.
+ */
 public class Astal.EventBox : Gtk.EventBox {
     public signal void hover (HoverEvent event);
     public signal void hover_lost (HoverEvent event);
@@ -49,6 +55,9 @@ public class Astal.EventBox : Gtk.EventBox {
     }
 }
 
+/**
+ * Struct for [struct@Gdk.EventMotion]
+ */
 public struct Astal.MotionEvent {
     uint time;
     double x;

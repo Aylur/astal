@@ -1,3 +1,11 @@
+/**
+ * Subclass of [class@Gtk.ScrolledWindow] which has its policy default to
+ * [enum@Gtk.PolicyType.AUTOMATIC].
+ *
+ * Its css selector is `scrollable`.
+ * Its child getter returns the child of the inner
+ * [class@Gtk.Viewport], instead of the viewport.
+ */
 public class Astal.Scrollable : Gtk.ScrolledWindow {
     private Gtk.PolicyType _hscroll = Gtk.PolicyType.AUTOMATIC;
     private Gtk.PolicyType _vscroll = Gtk.PolicyType.AUTOMATIC;

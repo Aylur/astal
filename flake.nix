@@ -1,6 +1,4 @@
 {
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
   outputs = {
     self,
     nixpkgs,
@@ -22,11 +20,15 @@
           vala
           wayland
           wayland-scanner
+          python3
         ];
         propagatedBuildInputs = [pkgs.glib] ++ inputs;
         pname = name;
         version = readVer "${src}/version";
         src = src;
+        postUnpack = ''
+          cp --remove-destination ${./lib/gir.py} $sourceRoot/gir.py
+        '';
         outputs = ["out" "dev"];
       };
   in {
@@ -59,6 +61,7 @@
       river = mkPkg "astal-river" ./lib/river [json-glib];
       tray = mkPkg "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
       wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
+      # polkit = mkPkg "astal-polkit" ./lib/polkit [polkit];
 
       gjs = pkgs.stdenvNoCC.mkDerivation {
         src = ./lang/gjs;
@@ -72,5 +75,9 @@
         ];
       };
     };
+  };
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 }

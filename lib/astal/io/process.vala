@@ -1,5 +1,5 @@
 /**
- * `Process` provides shortcuts for [class@GLib.Subprocess] with sane defaults.
+ * `Process` provides shortcuts for [class@Gio.Subprocess] with sane defaults.
  */
 public class AstalIO.Process : Object {
     private void read_stream(DataInputStream stream, bool err) {
@@ -92,7 +92,7 @@ public class AstalIO.Process : Object {
 
     /**
      * Start a new subprocess with the given command
-     * which is parsed using [func@Shell.parse_argv].
+     * which is parsed using [func@GLib.shell_parse_argv].
      */
     public static Process subprocess(string cmd) throws Error {
         string[] argv;
@@ -125,7 +125,7 @@ public class AstalIO.Process : Object {
 
     /**
      * Execute a command synchronously.
-     * The command is parsed using [func@Shell.parse_argv].
+     * The command is parsed using [func@GLib.shell_parse_argv].
      *
      * @return stdout of the subprocess
      */
@@ -160,7 +160,7 @@ public class AstalIO.Process : Object {
 
     /**
      * Execute a command asynchronously.
-     * The command is parsed using [func@Shell.parse_argv].
+     * The command is parsed using [func@GLib.shell_parse_argv].
      *
      * @return stdout of the subprocess
      */

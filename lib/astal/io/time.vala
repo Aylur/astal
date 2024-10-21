@@ -38,7 +38,7 @@ public class AstalIO.Time : Object {
     }
 
     /**
-     * Start an interval timer with a [enum@GLib.Priority].
+     * Start an interval timer with default Priority.
      */
     public Time.interval_prio(uint interval, int prio = Priority.DEFAULT, Closure? fn) {
         connect_closure(fn);
@@ -50,7 +50,7 @@ public class AstalIO.Time : Object {
     }
 
     /**
-     * Start a timeout timer with a [enum@GLib.Priority].
+     * Start a timeout timer with default Priority.
      */
     public Time.timeout_prio(uint timeout, int prio = Priority.DEFAULT, Closure? fn) {
         connect_closure(fn);
@@ -62,7 +62,7 @@ public class AstalIO.Time : Object {
     }
 
     /**
-     * Start an idle timer with a [enum@GLib.Priority].
+     * Start an idle timer with default priority.
      */
     public Time.idle_prio(int prio = Priority.DEFAULT_IDLE, Closure? fn) {
         connect_closure(fn);

@@ -1,8 +1,34 @@
+/**
+ * CircularProgress is a subclass of [class@Gtk.Bin] which provides a circular progress bar
+ * with customizable properties such as starting and ending points,
+ * progress value, and visual features like rounded ends and inversion of progress direction.
+ */
 public class Astal.CircularProgress : Gtk.Bin {
+    /**
+     * The starting point of the progress circle,
+     * where 0 represents 3 o'clock position or 0° degrees and 1 represents 360°.
+     */
     public double start_at { get; set; }
+
+    /**
+     * The cutoff point of the background color of the progress circle.
+     */
     public double end_at { get; set; }
+
+    /**
+     * The value which determines the arc of the drawn foreground color.
+     * Should be a value between 0 and 1.
+     */
     public double value { get; set; }
+
+    /**
+     * Inverts the progress direction, making it draw counterclockwise.
+     */
     public bool inverted { get; set; }
+
+    /**
+     *  Renders rounded ends at both the start and the end of the progress bar.
+     */
     public bool rounded { get; set; }
 
     construct {

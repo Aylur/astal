@@ -3,7 +3,7 @@ project(
   'vala',
   'c',
   version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
-  meson_version: '>= 0.62.0',
+  meson_version: '>= 0.63.0',
   default_options: [
     'warning_level=2',
     'werror=false',
@@ -53,84 +53,30 @@ if get_option('lib')
     meson.project_name(),
     sources,
     dependencies: deps,
-    vala_args: ['--vapi-comments', '--ccode'],
+    vala_args: ['--vapi-comments'],
     vala_header: meson.project_name() + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-    vala_gir: gir,
     version: meson.project_version(),
     install: true,
-    install_dir: [true, true, true, true],
+    install_dir: [true, true, true],
   )
 
-  # import('gnome').generate_gir(
-  #   lib,
-  #   sources: [],
-  #   nsversion: api_version,
-  #   namespace: namespace,
-  #   symbol_prefix: meson.project_name().replace('-', '_'),
-  #   identifier_prefix: namespace,
-  #   includes: ['GObject-2.0'],
-  #   header: meson.project_name() + '.h',
-  #   export_packages: meson.project_name() + '-' + api_version,
-  #   install: true,
-  # )
+  pkgs = []
+  foreach dep : deps
+    pkgs += ['--pkg=' + dep.name()]
+  endforeach
 
-  # custom_target(
-  #   gir,
-  #   command: [
-  #     find_program('g-ir-scanner'),
-  #     '--namespace=' + namespace,
-  #     '--nsversion=' + api_version,
-  #     '--library=' + meson.project_name(),
-  #     '--include=GObject-2.0',
-  #     '--output=' + gir,
-  #     '--symbol-prefix=' + meson.project_name().replace('-', '_'),
-  #     '--identifier-prefix=' + namespace,
-  #   ]
-  #   + pkgs
-  #   + ['@INPUT@'],
-  #   output: gir,
-  #   depends: lib,
-  #   input: meson.current_build_dir() / meson.project_name() + '.h',
-  #   install: true,
-  #   install_dir: get_option('datadir') / 'gir-1.0',
-  # )
-
-  # custom_target(
-  #   gir,
-  #   command: [
-  #     find_program('g-ir-scanner'),
-  #     '--namespace=' + namespace,
-  #     '--nsversion=' + api_version,
-  #     '--library=' + meson.project_name(),
-  #     '--include=GObject-2.0',
-  #     '--output=' + gir,
-  #     '--symbol-prefix=' + meson.project_name().replace('-', '_'),
-  #     '--identifier-prefix=' + namespace,
-  #   ]
-  #   + pkgs
-  #   + ['@INPUT@'],
-  #   input: lib.extract_all_objects(),
-  #   output: gir,
-  #   depends: lib,
-  #   install: true,
-  #   install_dir: get_option('datadir') / 'gir-1.0',
-  # )
-
-  # pkgs = []
-  # foreach dep : deps
-  #   pkgs += ['--pkg=' + dep.name()]
-  # endforeach
-  #
-  # gir_tgt = custom_target(
-  #   gir,
-  #   command: [find_program('valadoc'), '-o', 'docs', '--gir', gir] + pkgs + sources,
-  #   input: sources,
-  #   depends: lib,
-  #   output: gir,
-  #   install: true,
-  #   install_dir: get_option('datadir') / 'gir-1.0',
-  # )
+  gir_tgt = custom_target(
+    gir,
+    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
+    + pkgs
+    + sources,
+    input: sources,
+    depends: lib,
+    output: gir,
+    install: true,
+    install_dir: get_option('datadir') / 'gir-1.0',
+  )
 
   custom_target(
     typelib,
@@ -142,7 +88,7 @@ if get_option('lib')
     ],
     input: lib,
     output: typelib,
-    depends: lib,
+    depends: [lib, gir_tgt],
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
   )

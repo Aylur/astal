@@ -13,5 +13,6 @@ project(
 
 libdir = get_option('prefix') / get_option('libdir')
 pkgdatadir = get_option('prefix') / get_option('datadir') / 'astal'
+girpy = files('gir.py')
 
 subdir('src')
