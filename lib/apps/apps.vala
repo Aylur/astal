@@ -44,6 +44,12 @@ public class AstalApps.Apps : Object {
     public double description_multiplier { get; set; default = 0.5; }
 
     /**
+     * Extra multiplier to apply when matching the keywords of an application.
+     * Defaults to `1000`
+     */
+    public double keywords_multiplier { get; set; default = 1000; }
+
+    /**
      * Consider the name of an application during queries.
      * Defaults to `true`
      */
@@ -66,6 +72,12 @@ public class AstalApps.Apps : Object {
      * Defaults to `false`
      */
     public bool include_description { get; set; default = false; }
+
+    /**
+     * Consider the keywords of an application during queries.
+     * Defaults to `false`
+     */
+    public bool include_keywords { get; set; default = false; }
 
     construct {
         cache_directory = Environment.get_user_cache_dir() + "/astal";
@@ -108,6 +120,8 @@ public class AstalApps.Apps : Object {
             r += am.executable * executable_multiplier;
         if (include_description)
             r += am.description * description_multiplier;
+        if (include_keywords)
+            r += am.keywords * keywords_multiplier;
         return r;
     }
 
