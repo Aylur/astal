@@ -42,6 +42,11 @@ public class AstalApps.Application : Object {
      */
     public string icon_name { owned get { return app.get_string("Icon"); } }
 
+    /**
+     * `Keywords` field from the desktop file.
+     */
+    public string[] keywords { owned get { return app.get_keywords(); } }
+
     internal Application(string id, int? frequency = 0) {
         Object(app: new DesktopAppInfo(id));
         this.frequency = frequency;
@@ -82,6 +87,11 @@ public class AstalApps.Application : Object {
             score.executable = fuzzy_match_string(term, executable);
         if (description != null)
             score.description = fuzzy_match_string(term, description);
+        if (keywords != null) {
+            foreach (string keyword in keywords) {
+                score.keywords += keyword.down().contains(term.down()) ? 1 : 0;
+            }
+        }
 
         return score;
     }
@@ -99,21 +109,35 @@ public class AstalApps.Application : Object {
             score.executable = executable.down().contains(term.down()) ? 1 : 0;
         if (description != null)
             score.description = description.down().contains(term.down()) ? 1 : 0;
+        if (keywords != null) {
+            foreach (string keyword in keywords) {
+                score.keywords += keyword.down().contains(term.down()) ? 1 : 0;
+            }
+        }
 
         return score;
     }
 
     internal Json.Node to_json() {
-        return new Json.Builder()
-            .begin_object()
-            .set_member_name("name").add_string_value(name)
-            .set_member_name("entry").add_string_value(entry)
-            .set_member_name("executable").add_string_value(executable)
-            .set_member_name("description").add_string_value(description)
-            .set_member_name("icon_name").add_string_value(icon_name)
-            .set_member_name("frequency").add_int_value(frequency)
-            .end_object()
-            .get_root();
+        Json.Builder builder = new Json.Builder();
+
+        builder.begin_object();
+        builder.set_member_name("name").add_string_value(name);
+        builder.set_member_name("entry").add_string_value(entry);
+        builder.set_member_name("executable").add_string_value(executable);
+        builder.set_member_name("description").add_string_value(description);
+        builder.set_member_name("icon_name").add_string_value(icon_name);
+        builder.set_member_name("frequency").add_int_value(frequency);
+
+        builder.set_member_name("keywords");
+        builder.begin_array();
+        foreach (string keyword in keywords) {
+            builder.add_string_value(keyword);
+        }
+        builder.end_array();
+
+        builder.end_object();
+        return builder.get_root();
     }
 }
 
@@ -122,4 +146,5 @@ public struct AstalApps.Score {
     int entry;
     int executable;
     int description;
+    int keywords;
 }
