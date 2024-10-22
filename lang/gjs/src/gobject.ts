@@ -4,6 +4,7 @@ export { default as GLib } from "gi://GLib?version=2.0"
 export { GObject, GObject as default }
 
 const meta = Symbol("meta")
+const priv = Symbol("priv")
 
 const { ParamSpec, ParamFlags } = GObject
 
@@ -55,28 +56,27 @@ export function property(declaration: PropertyDeclaration = Object) {
         const name = kebabify(prop)
 
         if (!desc) {
-            let value = defaultValue(declaration)
-
             Object.defineProperty(target, prop, {
                 get() {
-                    return value
+                    return this[priv]?.[prop] ?? defaultValue(declaration)
                 },
-                set(v) {
-                    if (v !== value) {
-                        value = v
+                set(v: any) {
+                    if (v !== this[prop]) {
+                        this[priv] ??= {}
+                        this[priv][prop] = v
                         this.notify(name)
                     }
                 },
             })
 
             Object.defineProperty(target, `set_${name.replace("-", "_")}`, {
-                value: function (v: any) {
+                value(v: any) {
                     this[prop] = v
                 },
             })
 
             Object.defineProperty(target, `get_${name.replace("-", "_")}`, {
-                value: function () {
+                value() {
                     return this[prop]
                 },
             })
@@ -95,10 +95,10 @@ export function property(declaration: PropertyDeclaration = Object) {
 }
 
 export function signal(...params: Array<{ $gtype: GObject.GType } | typeof Object>):
-(target: any, signal: any, desc?: PropertyDescriptor) => void
+    (target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(declaration?: SignalDeclaration):
-(target: any, signal: any, desc?: PropertyDescriptor) => void
+    (target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(
     declaration?: SignalDeclaration | { $gtype: GObject.GType } | typeof Object,
