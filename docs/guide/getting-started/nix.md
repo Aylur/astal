@@ -168,7 +168,7 @@ The AGS flake does not expose the `astal` cli to the home environment, you have 
 :::code-group
 
 ```nix [<i class="devicon-nixos-plain"></i> home.nix]
-home.packages = [ inputs.ags.packages.${pkgs.system}.default ];
+home.packages = [ inputs.ags.packages.${pkgs.system}.io ];
 ```
 
 ```sh [<i class="devicon-bash-plain"></i> sh]
