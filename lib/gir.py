@@ -10,7 +10,7 @@ import sys
 import subprocess
 
 
-def fix_gir(gir: str):
+def fix_gir(name: str, gir: str):
     namespaces = {
         "": "http://www.gtk.org/introspection/core/1.0",
         "c": "http://www.gtk.org/introspection/c/1.0",
@@ -28,16 +28,28 @@ def fix_gir(gir: str):
                 html.unescape(doc.text).replace("<para>", "").replace("</para>", "")
             )
 
+    if (inc := root.find("c:include", namespaces)) is not None:
+        inc.set("name", f"{name}.h")
+    else:
+        print("no c:include tag found", file=sys.stderr)
+        exit(1)
+
     tree.write(gir, encoding="utf-8", xml_declaration=True)
 
 
-def valadoc(gir: str, args: list[str]):
-    subprocess.run(["valadoc", "-o", "docs", "--gir", gir, *args])
+def valadoc(name: str, gir: str, args: list[str]):
+    cmd = ["valadoc", "-o", "docs", "--package-name", name, "--gir", gir, *args]
+    try:
+        subprocess.run(cmd, check=True, text=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        print(e.stderr, file=sys.stderr)
+        exit(1)
 
 
 if __name__ == "__main__":
-    gir = sys.argv[1]
-    args = sys.argv[2:]
+    name = sys.argv[1]
+    gir = sys.argv[2]
+    args = sys.argv[3:]
 
-    valadoc(gir, args)
-    fix_gir(gir)
+    valadoc(name, gir, args)
+    fix_gir(name, gir)

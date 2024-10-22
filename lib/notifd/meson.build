@@ -68,7 +68,9 @@ if get_option('lib')
 
   gir_tgt = custom_target(
     gir,
-    command: [find_program('python3'), files('gir.py'), gir] + pkgs + sources,
+    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
+    + pkgs
+    + sources,
     input: sources,
     depends: lib,
     output: gir,

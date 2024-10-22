@@ -5,7 +5,7 @@ public class AstalApps.Application : Object {
     public DesktopAppInfo app { get; construct set; }
 
     /**
-     * The number of times [func@AstalApps.Application.launch] was called on this Application.
+     * The number of times [method@AstalApps.Application.launch] was called on this Application.
      */
     public int frequency { get; set; default = 0; }
 
@@ -32,7 +32,7 @@ public class AstalApps.Application : Object {
 
     /**
      * `Exec` field from the desktop file.
-     * Note that if you want to launch this Application you should use the [func@AstalApps.Application.launch] method.
+     * Note that if you want to launch this Application you should use the [method@AstalApps.Application.launch] method.
      */
     public string executable { owned get { return app.get_string("Exec"); } }
 
