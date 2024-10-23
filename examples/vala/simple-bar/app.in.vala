@@ -3,7 +3,7 @@ class App : Astal.Application {
 
     public override void request (string msg, SocketConnection conn) {
         print(@"$msg\n");
-        Astal.write_sock.begin(conn, "hello");
+        AstalIO.write_sock.begin(conn, "ok");
     }
 
     public override void activate () {
@@ -14,16 +14,17 @@ class App : Astal.Application {
     }
 
     public static void main(string[] args) {
-        var instance_name = "simple-bar";
+        var instance_name = "vala";
 
         App.instance = new App() {
             instance_name = instance_name
         };
 
-        if (App.instance.acquire_socket()) {
+        try {
+            App.instance.acquire_socket();
             App.instance.run(null);
-        } else {
-            print(Astal.Application.send_message(instance_name, string.joinv(" ", args)));
+        } catch (Error err) {
+            print(AstalIO.send_message(instance_name, string.joinv(" ", args)));
         }
     }
 }

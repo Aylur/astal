@@ -12,13 +12,13 @@ Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.git
 | `npm run build`   | Build your production site to `./dist/`     |
 | `npm run preview` | Preview your build locally                  |
 
-## Add your creation to the landing page
+## Add your creation to the showcases page
 
 1. Add your image as a webp to `public/showcase`
-2. Add it to `src/content/showcases.ts`
+2. Add it to `showcases/showcases.ts`
     - `src` should be `/astal/showcase/your-name-optional-title.webp`
-    - `url` should point to the source code of the showcased widget
-    - `author` your name
+    - `url` should point to the source code of the showcased widget/setup
+    - `author` should be your name/nickname
 
 ```
 .

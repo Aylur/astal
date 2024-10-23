@@ -1,3 +1,8 @@
+---
+next:
+  link: '/guide/getting-started/supported-languages'
+  text: 'Supported Languages'
+---
 # Nix
 
 ## Astal
@@ -20,7 +25,7 @@ Using Astal on Nix will require you to package your project.
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
   in {
-    packages.${system}.default = astal.lib.mkLuaPacakge {
+    packages.${system}.default = astal.lib.mkLuaPackage {
       inherit pkgs;
       src = ./path/to/project; # should contain init.lua
 
@@ -74,11 +79,16 @@ Using Astal on Nix will require you to package your project.
 }
 ```
 
+```nix [<i class="devicon-typescript-plain"></i> TypeScript]
+# The usage of AGS (read below) is recommended
+# Usage without AGS is not yet documented
+```
+
 :::
 
 ## AGS
 
-The recommended way to use AGS on NixOS is through the home-manager module.
+The recommended way to use [AGS](../typescript/first-widgets#first-widgets) on NixOS is through the home-manager module.
 
 Example content of a `flake.nix` file that contains your `homeConfigurations`.
 
@@ -144,11 +154,40 @@ Example content of `home.nix` file
 
 :::
 
-AGS by default only includes the core `libastal` library.
+AGS by default only includes the core `astal3/astal4` and `astal-io` libraries.
 If you want to include any other [library](../libraries/references) you have to add them to `extraPackages`.
-You can also add binaries which will be added to `$PATH`.
+You can also add binaries which will be added to the gjs runtime.
 
 :::warning
 The `configDir` option symlinks the given path to `~/.config/ags`.
 If you already have your source code there leave it as `null`.
+:::
+
+The AGS flake does not expose the `astal` cli to the home environment, you have to do that yourself if you want:
+
+:::code-group
+
+```nix [<i class="devicon-nixos-plain"></i> home.nix]
+home.packages = [ inputs.ags.packages.${pkgs.system}.io ];
+```
+
+```sh [<i class="devicon-bash-plain"></i> sh]
+astal --help
+```
+
+:::
+
+Same applies to the `extraPackages` option, it does not expose the passed packages to the home environment.
+To make astal cli tools available to home environments, you have to add them yourself:
+
+:::code-group
+
+```nix [<i class="devicon-nixos-plain"></i> home.nix]
+home.packages = [ inputs.ags.packages.${pkgs.system}.notifd ];
+```
+
+```sh [<i class="devicon-bash-plain"></i> sh]
+astal-notifd --help
+```
+
 :::

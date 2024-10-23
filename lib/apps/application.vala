@@ -1,12 +1,45 @@
-namespace AstalApps {
-public class Application : Object {
+public class AstalApps.Application : Object {
+    /**
+     * The underlying DesktopAppInfo.
+     */
     public DesktopAppInfo app { get; construct set; }
+
+    /**
+     * The number of times [func@AstalApps.Application.launch] was called on this Application.
+     */
     public int frequency { get; set; default = 0; }
+
+    /**
+     * The name of this Application.
+     */
     public string name { get { return app.get_name(); } }
+
+    /**
+     * Name of the .desktop of this Application.
+     */
     public string entry { get { return app.get_id(); } }
+
+    /**
+     * Description of this Application.
+     */
     public string description { get { return app.get_description(); } }
+
+    /**
+     * The StartupWMClass field from the desktop file.
+     * This represents the WM_CLASS property of the main window of the application.
+     */
     public string wm_class { get { return app.get_startup_wm_class(); } }
+
+    /**
+     * `Exec` field from the desktop file.
+     * Note that if you want to launch this Application you should use the [func@AstalApps.Application.launch] method.
+     */
     public string executable { owned get { return app.get_string("Exec"); } }
+
+    /**
+     * `Icon` field from the desktop file.
+     * This is usually a named icon or a path to a file.
+     */
     public string icon_name { owned get { return app.get_string("Icon"); } }
 
     internal Application(string id, int? frequency = 0) {
@@ -14,10 +47,17 @@ public class Application : Object {
         this.frequency = frequency;
     }
 
+    /**
+     * Get a value from the .desktop file by its key.
+     */
     public string get_key(string key) {
         return app.get_string(key);
     }
 
+    /**
+     * Launches this application.
+     * The launched application inherits the environment of the launching process
+     */
     public bool launch() {
         try {
             var s = app.launch(null, null);
@@ -29,21 +69,21 @@ public class Application : Object {
         }
     }
 
-    public Score fuzzy_match(string term) {
+    internal Score fuzzy_match(string term) {
         var score = Score();
         if (name != null)
-            score.name = levenshtein(term, name);
+            score.name = fuzzy_match_string(term, name);
         if (entry != null)
-            score.entry = levenshtein(term, entry);
+            score.entry = fuzzy_match_string(term, entry);
         if (executable != null)
-            score.executable = levenshtein(term, executable);
+            score.executable = fuzzy_match_string(term, executable);
         if (description != null)
-            score.description = levenshtein(term, description);
+            score.description = fuzzy_match_string(term, description);
 
         return score;
     }
 
-    public Score exact_match(string term) {
+    internal Score exact_match(string term) {
         var score = Score();
         if (name != null)
             score.name = name.down().contains(term.down()) ? 1 : 0;
@@ -71,48 +111,9 @@ public class Application : Object {
     }
 }
 
-int min3(int a, int b, int c) {
-    return (a < b) ? ((a < c) ? a : c) : ((b < c) ? b : c);
-}
-
-double levenshtein(string s1, string s2) {
-    int len1 = s1.length;
-    int len2 = s2.length;
-
-    int[, ] d = new int[len1 + 1, len2 + 1];
-
-    for (int i = 0; i <= len1; i++) {
-        d[i, 0] = i;
-    }
-    for (int j = 0; j <= len2; j++) {
-        d[0, j] = j;
-    }
-
-    for (int i = 1; i <= len1; i++) {
-        for (int j = 1; j <= len2; j++) {
-            int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
-            d[i, j] = min3(
-                d[i - 1, j] + 1,       // deletion
-                d[i, j - 1] + 1,       // insertion
-                d[i - 1, j - 1] + cost // substitution
-            );
-        }
-    }
-
-    var distance = d[len1, len2];
-    int max_len = len1 > len2 ? len1 : len2;
-
-    if (max_len == 0) {
-        return 1.0;
-    }
-
-    return 1.0 - ((double)distance / max_len);
-}
-
-public struct Score {
-    double name;
-    double entry;
-    double executable;
-    double description;
-}
+public struct AstalApps.Score {
+    int name;
+    int entry;
+    int executable;
+    int description;
 }

@@ -315,7 +315,7 @@ static void global_registry_remover(void* data, struct wl_registry* registry, ui
         g_hash_table_remove(priv->signal_ids, GUINT_TO_POINTER(id));
         g_signal_handler_disconnect(output, signal_id);
         g_signal_emit(G_OBJECT(self),
-                      astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_OUTPUT_ADDED], 0,
+                      astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_OUTPUT_REMOVED], 0,
                       astal_river_output_get_name(output));
         self->outputs = g_list_remove(self->outputs, output);
         g_object_notify(G_OBJECT(self), "outputs");

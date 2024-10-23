@@ -6,11 +6,11 @@
     ps.lgi
     (ps.luaPackages.toLuaModule (pkgs.stdenv.mkDerivation {
       name = "astal";
-      src = "${self}/core/lua";
+      src = "${self}/lang/lua";
       dontBuild = true;
       installPhase = ''
         mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
-        cp -r astal/* $out/share/lua/${ps.lua.luaversion}/astal
+        cp -r * $out/share/lua/${ps.lua.luaversion}/astal
       '';
     }))
   ]);
@@ -28,7 +28,9 @@
     ninja
     vala
     gtk3
+    gtk4
     gtk-layer-shell
+    gtk4-layer-shell
     json-glib
     pam
     gvfs

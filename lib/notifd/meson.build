@@ -18,8 +18,9 @@ assert(
 
 version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
-gir = 'AstalNotifd-' + api_version + '.gir'
-typelib = 'AstalNotifd-' + api_version + '.typelib'
+namespace = 'AstalNotifd'
+gir = namespace + '-' + api_version + '.gir'
+typelib = namespace + '-' + api_version + '.typelib'
 
 config = configure_file(
   input: 'config.vala.in',
@@ -40,19 +41,19 @@ deps = [
   dependency('gdk-pixbuf-2.0'),
 ]
 
-sources = [
-  config,
+sources = [config] + files(
   'daemon.vala',
   'notifd.vala',
   'notification.vala',
   'proxy.vala',
-]
+)
 
 if get_option('lib')
   lib = library(
     meson.project_name(),
     sources,
     dependencies: deps,
+    vala_args: ['--vapi-comments', '--ccode'],
     vala_header: meson.project_name() + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
     vala_gir: gir,
@@ -61,15 +62,75 @@ if get_option('lib')
     install_dir: [true, true, true, true],
   )
 
-  import('pkgconfig').generate(
-    lib,
-    name: meson.project_name(),
-    filebase: meson.project_name() + '-' + api_version,
-    version: meson.project_version(),
-    subdirs: meson.project_name(),
-    requires: deps,
-    install_dir: get_option('libdir') / 'pkgconfig',
-  )
+  # import('gnome').generate_gir(
+  #   lib,
+  #   sources: [],
+  #   nsversion: api_version,
+  #   namespace: namespace,
+  #   symbol_prefix: meson.project_name().replace('-', '_'),
+  #   identifier_prefix: namespace,
+  #   includes: ['GObject-2.0'],
+  #   header: meson.project_name() + '.h',
+  #   export_packages: meson.project_name() + '-' + api_version,
+  #   install: true,
+  # )
+
+  # custom_target(
+  #   gir,
+  #   command: [
+  #     find_program('g-ir-scanner'),
+  #     '--namespace=' + namespace,
+  #     '--nsversion=' + api_version,
+  #     '--library=' + meson.project_name(),
+  #     '--include=GObject-2.0',
+  #     '--output=' + gir,
+  #     '--symbol-prefix=' + meson.project_name().replace('-', '_'),
+  #     '--identifier-prefix=' + namespace,
+  #   ]
+  #   + pkgs
+  #   + ['@INPUT@'],
+  #   output: gir,
+  #   depends: lib,
+  #   input: meson.current_build_dir() / meson.project_name() + '.h',
+  #   install: true,
+  #   install_dir: get_option('datadir') / 'gir-1.0',
+  # )
+
+  # custom_target(
+  #   gir,
+  #   command: [
+  #     find_program('g-ir-scanner'),
+  #     '--namespace=' + namespace,
+  #     '--nsversion=' + api_version,
+  #     '--library=' + meson.project_name(),
+  #     '--include=GObject-2.0',
+  #     '--output=' + gir,
+  #     '--symbol-prefix=' + meson.project_name().replace('-', '_'),
+  #     '--identifier-prefix=' + namespace,
+  #   ]
+  #   + pkgs
+  #   + ['@INPUT@'],
+  #   input: lib.extract_all_objects(),
+  #   output: gir,
+  #   depends: lib,
+  #   install: true,
+  #   install_dir: get_option('datadir') / 'gir-1.0',
+  # )
+
+  # pkgs = []
+  # foreach dep : deps
+  #   pkgs += ['--pkg=' + dep.name()]
+  # endforeach
+  #
+  # gir_tgt = custom_target(
+  #   gir,
+  #   command: [find_program('valadoc'), '-o', 'docs', '--gir', gir] + pkgs + sources,
+  #   input: sources,
+  #   depends: lib,
+  #   output: gir,
+  #   install: true,
+  #   install_dir: get_option('datadir') / 'gir-1.0',
+  # )
 
   custom_target(
     typelib,
@@ -84,6 +145,16 @@ if get_option('lib')
     depends: lib,
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
+  )
+
+  import('pkgconfig').generate(
+    lib,
+    name: meson.project_name(),
+    filebase: meson.project_name() + '-' + api_version,
+    version: meson.project_version(),
+    subdirs: meson.project_name(),
+    requires: deps,
+    install_dir: get_option('libdir') / 'pkgconfig',
   )
 endif
 

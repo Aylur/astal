@@ -1,11 +1,23 @@
+/**
+ * Get the singleton instance of {@link Notifd}
+ */
 namespace AstalNotifd {
     public Notifd get_default() {
         return Notifd.get_default();
     }
 }
 
+/**
+ * The Notification daemon.
+ *
+ * This class queues up to become the next daemon, while acting as a proxy in the meantime.
+ */
 public class AstalNotifd.Notifd : Object {
     private static Notifd _instance;
+
+    /**
+     * Get the singleton instance
+     */
     public static Notifd get_default() {
         if (_instance == null)
             _instance = new Notifd();
@@ -16,8 +28,14 @@ public class AstalNotifd.Notifd : Object {
     private Daemon daemon;
     private DaemonProxy proxy;
 
-    public signal void active(ActiveType type);
+    internal signal void active(ActiveType type);
 
+    /**
+     * Ignore the timeout specified by incoming notifications.
+     *
+     * By default notifications can specify a timeout in milliseconds
+     * after which the daemon will resolve them even without user input.
+     */
     public bool ignore_timeout {
         get {
             return proxy != null ? proxy.ignore_timeout : daemon.ignore_timeout;
@@ -30,6 +48,12 @@ public class AstalNotifd.Notifd : Object {
         }
     }
 
+    /**
+     * Indicate to frontends to not show popups to the user.
+     *
+     * This property does not have any effect on its own, its merely
+     * a value to use between the daemon process and proxies for frontends to use.
+     */
     public bool dont_disturb {
         get {
             return proxy != null ? proxy.dont_disturb : daemon.dont_disturb;
@@ -42,23 +66,38 @@ public class AstalNotifd.Notifd : Object {
         }
     }
 
+    /**
+     * List of currently unresolved notifications.
+     */
     public List<weak Notification> notifications {
         owned get { return proxy != null ? proxy.notifications : daemon.notifications; }
     }
 
-    public uint[] notification_ids() throws Error {
-        return proxy != null ? proxy.notification_ids() : daemon.notification_ids();
-    }
-
+    /**
+     * Gets the {@link Notification} with id or null if there is no such Notification.
+     */
     public Notification get_notification(uint id) {
         return proxy != null ? proxy.get_notification(id) : daemon.get_notification(id);
     }
 
-    public string get_notification_json(uint id) {
+    internal string get_notification_json(uint id) {
         return get_notification(id).to_json_string();
     }
 
+    /**
+     * Emitted when the daemon receives a {@link Notification}.
+     *
+     * @param id The ID of the Notification.
+     * @param replaced Indicates if an existing Notification was replaced.
+     */
     public signal void notified(uint id, bool replaced);
+
+    /**
+     * Emitted when a {@link Notification} is resolved.
+     *
+     * @param id The ID of the Notification.
+     * @param reason The reason how the Notification was resolved.
+     */
     public signal void resolved(uint id, ClosedReason reason);
 
     construct {
@@ -134,7 +173,7 @@ public class AstalNotifd.Notifd : Object {
     }
 }
 
-public enum AstalNotifd.ActiveType {
+internal enum AstalNotifd.ActiveType {
     DAEMON,
     PROXY,
 }
