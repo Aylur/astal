@@ -115,6 +115,7 @@ in
         flakepkg = "io";
         gir = "IO";
         api-ver = "0.1";
+        browse = "astal/io";
         description = "Astal Core library";
         version = ../lib/astal/io/version;
       }}
@@ -122,6 +123,7 @@ in
         flakepkg = "astal3";
         gir = "";
         api-ver = "3.0";
+        browse = "astal/gtk3";
         description = "Astal GTK3 widget library";
         version = ../lib/astal/gtk3/version;
         dependencies = {inherit (dependency) "AstalIO-0.1" "Gtk-3.0";};

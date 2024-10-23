@@ -21,8 +21,8 @@ public interface Application : Object {
 }
 
 /**
- * Starts a [class@GLib.SocketService] and binds `XDG_RUNTIME_DIR/astal/<instance_name>.sock`.
- * This socket is then used by the astal cli. Not meant for public usage, but for [func@AstalIO.Application.acquire_socket].
+ * Starts a [class@Gio.SocketService] and binds `XDG_RUNTIME_DIR/astal/<instance_name>.sock`.
+ * This socket is then used by the astal cli. Not meant for public usage, but for [method@AstalIO.Application.acquire_socket].
  */
 public SocketService acquire_socket(Application app, out string sock) throws Error {
     var name = app.instance_name;
@@ -186,7 +186,7 @@ public async string read_sock(SocketConnection conn) throws IOError {
  * Write the socket of an Astal.Application instance.
  */
 public async void write_sock(SocketConnection conn, string response) throws IOError  {
-    yield conn.output_stream.write_async(response.concat("\x04").data, Priority.DEFAULT);
+    yield conn.output_stream.write_async(@"$response\x04".data, Priority.DEFAULT);
 }
 
 [DBus (name="io.Astal.Application")]

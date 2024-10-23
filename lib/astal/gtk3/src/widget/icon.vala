@@ -1,10 +1,20 @@
+/**
+ * [class@Gtk.Image] subclass meant to be used only for icons.
+ *
+ * It's size is calculated from `font-size` css property.
+ * Its css selector is `icon`.
+ */
 public class Astal.Icon : Gtk.Image {
     private IconType type = IconType.NAMED;
     private double size { get; set; default = 14; }
 
     public new Gdk.Pixbuf pixbuf { get; set; }
+    public GLib.Icon g_icon { get; set; }
+
+    /**
+     * Either a named icon or a path to a file.
+     */
     public string icon { get; set; default = ""; }
-    public GLib.Icon g_icon {get; set;}
 
     public static Gtk.IconInfo? lookup_icon(string icon) {
         var theme = Gtk.IconTheme.get_default();
