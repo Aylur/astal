@@ -45,9 +45,9 @@ public class AstalApps.Apps : Object {
 
     /**
      * Extra multiplier to apply when matching the keywords of an application.
-     * Defaults to `1000`
+     * Defaults to `0.5`
      */
-    public double keywords_multiplier { get; set; default = 1000; }
+    public double keywords_multiplier { get; set; default = 0.5; }
 
     /**
      * Consider the name of an application during queries.
