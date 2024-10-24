@@ -69,7 +69,10 @@ public class AstalApps.Application : Object {
         }
     }
 
-    internal Score fuzzy_match(string term) {
+    /**
+     * Calculate a score for an application using fuzzy matching algorithm.
+     */
+    public Score fuzzy_match(string term) {
         var score = Score();
         if (name != null)
             score.name = fuzzy_match_string(term, name);
@@ -83,7 +86,10 @@ public class AstalApps.Application : Object {
         return score;
     }
 
-    internal Score exact_match(string term) {
+    /**
+     * Calculate a score using exact string algorithm.
+     */
+    public Score exact_match(string term) {
         var score = Score();
         if (name != null)
             score.name = name.down().contains(term.down()) ? 1 : 0;

@@ -96,22 +96,38 @@ public class AstalApps.Apps : Object {
         reload();
     }
 
-    private double score (string search, Application a, bool exact) {
-        var am = exact ? a.exact_match(search) : a.fuzzy_match(search);
+    private double score(string search, Application a, SearchAlgorithm alg) {
+        var s = Score();
         double r = 0;
 
-        if (include_name)
-            r += am.name * name_multiplier;
-        if (include_entry)
-            r += am.entry * entry_multiplier;
-        if (include_executable)
-            r += am.executable * executable_multiplier;
-        if (include_description)
-            r += am.description * description_multiplier;
+        if (alg == FUZZY) s = a.fuzzy_match(search);
+        if (alg == EXACT) s = a.exact_match(search);
+
+        if (include_name) r += s.name * name_multiplier;
+        if (include_entry) r += s.entry * entry_multiplier;
+        if (include_executable) r += s.executable * executable_multiplier;
+        if (include_description) r += s.description * description_multiplier;
+
         return r;
     }
 
-    internal List<weak Application> query(string? search = "", bool exact = false) {
+    /**
+     * Calculate a score for an application using fuzzy matching algorithm.
+     * Taking this Apps' include settings into consideration .
+     */
+    public double fuzzy_score(string search, Application a) {
+        return score(search, a, FUZZY);
+    }
+
+    /**
+     * Calculate a score for an application using exact string algorithm.
+     * Taking this Apps' include settings into consideration .
+     */
+    public double exact_score(string search, Application a) {
+        return score(search, a, EXACT);
+    }
+
+    internal List<weak Application> query(string? search = "", SearchAlgorithm alg = FUZZY) {
         if (search == null)
             search = "";
 
@@ -129,7 +145,7 @@ public class AstalApps.Apps : Object {
         // single character, sort by frequency and exact match
         if (search.length == 1) {
             foreach (var app in list) {
-                if (score(search, app, true) == 0)
+                if (score(search, app, alg) == 0)
                     arr.remove(app);
             }
 
@@ -142,14 +158,14 @@ public class AstalApps.Apps : Object {
 
         // filter
         foreach (var app in list) {
-            if (score(search, app, exact) < min_score)
+            if (score(search, app, alg) < min_score)
                 arr.remove(app);
         }
 
         // sort by score, frequency
         arr.sort_with_data((a, b) => {
-            var s1 = score(search, a, exact);
-            var s2 = score(search, b, exact);
+            var s1 = score(search, a, alg);
+            var s2 = score(search, b, alg);
 
             if (s1 == s2)
                 return (int)b.frequency - (int)a.frequency;
@@ -164,14 +180,14 @@ public class AstalApps.Apps : Object {
      * Query the `list` of applications with a fuzzy matching algorithm.
      */
     public List<weak Application> fuzzy_query(string? search = "") {
-        return query(search, false);
+        return query(search, FUZZY);
     }
 
     /**
      * Query the `list` of applications with a simple string matching algorithm.
      */
     public List<weak Application> exact_query(string? search = "") {
-        return query(search, true);
+        return query(search, EXACT);
     }
 
     /**
@@ -223,4 +239,9 @@ public class AstalApps.Apps : Object {
             critical("cannot cache frequents: %s", err.message);
         }
     }
+}
+
+private enum AstalApps.SearchAlgorithm {
+    EXACT,
+    FUZZY,
 }
