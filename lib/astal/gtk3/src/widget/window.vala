@@ -1,5 +1,6 @@
 using GtkLayerShell;
 
+[Flags]
 public enum Astal.WindowAnchor {
     NONE = 0,
     TOP = 1,
