@@ -25,8 +25,8 @@ public class AstalApps.Application : Object {
     public string description { get { return app.get_description(); } }
 
     /**
-     * The StartupWMClass field from the desktop file.
-     * This represents the WM_CLASS property of the main window of the application.
+     * `StartupWMClass` field from the desktop file.
+     * This represents the `WM_CLASS` property of the main window of the application.
      */
     public string wm_class { get { return app.get_startup_wm_class(); } }
 

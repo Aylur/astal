@@ -1,12 +1,11 @@
-namespace AstalBattery {
 [DBus (name = "org.freedesktop.UPower")]
-interface IUPower : DBusProxy {
-    public abstract string[] enumerate_devices() throws Error;
-    public abstract string get_display_device() throws Error;
+private interface AstalBattery.IUPower : DBusProxy {
+    public abstract ObjectPath[] enumerate_devices() throws Error;
+    public abstract ObjectPath get_display_device() throws Error;
     public abstract string get_critical_action() throws Error;
 
-    public signal void device_added(string object_path);
-    public signal void device_removed(string object_path);
+    public signal void device_added(ObjectPath object_path);
+    public signal void device_removed(ObjectPath object_path);
 
     public abstract string daemon_version { owned get; }
     public abstract bool on_battery { get; }
@@ -15,10 +14,10 @@ interface IUPower : DBusProxy {
 }
 
 [DBus (name = "org.freedesktop.UPower.Device")]
-public interface IUPowerDevice : DBusProxy {
-    public abstract HistoryDataPoint[] get_history (string type, uint32 timespan, uint32 resolution) throws GLib.Error;
-    public abstract StatisticsDataPoint[] get_statistics (string type) throws GLib.Error;
-    public abstract void refresh () throws GLib.Error;
+private interface AstalBattery.IUPowerDevice : DBusProxy {
+    // public abstract HistoryDataPoint[] get_history (string type, uint32 timespan, uint32 resolution) throws GLib.Error;
+    // public abstract StatisticsDataPoint[] get_statistics (string type) throws GLib.Error;
+    // public abstract void refresh () throws GLib.Error;
 
     public abstract uint Type { get; }
     public abstract string native_path { owned get; }
@@ -52,14 +51,13 @@ public interface IUPowerDevice : DBusProxy {
     public abstract string icon_name { owned get; }
 }
 
-public struct HistoryDataPoint {
-    uint32 time;
-    double value;
-    uint32 state;
-}
-
-public struct StatisticsDataPoint {
-    double value;
-    double accuracy;
-}
-}
+// private struct AstalBattery.HistoryDataPoint {
+//     uint32 time;
+//     double value;
+//     uint32 state;
+// }
+// 
+// private struct AstalBattery.StatisticsDataPoint {
+//     double value;
+//     double accuracy;
+// }

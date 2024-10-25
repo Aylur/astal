@@ -8,6 +8,15 @@ import xml.etree.ElementTree as ET
 import html
 import sys
 import subprocess
+import re
+
+
+# valac fails on gi-docgen compliant markdown
+# gi-docgen removes valac compliant ulink
+# so we use vala notation and turn it into markdown
+def ulink_to_markdown(text: str):
+    pattern = r'<ulink url="(.*?)">(.*?)</ulink>'
+    return re.sub(pattern, r"[\2](\1)", text)
 
 
 def fix_gir(name: str, gir: str, out: str):
@@ -24,7 +33,7 @@ def fix_gir(name: str, gir: str, out: str):
 
     for doc in root.findall(".//doc", namespaces):
         if doc.text:
-            doc.text = (
+            doc.text = ulink_to_markdown(
                 html.unescape(doc.text).replace("<para>", "").replace("</para>", "")
             )
 
