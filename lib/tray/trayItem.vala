@@ -324,7 +324,7 @@ public class TrayItem : Object {
             proxy.Menu);
     }
 
-    public Gdk.Pixbuf? _get_icon_pixbuf() {
+    private Gdk.Pixbuf? _get_icon_pixbuf() {
         Pixmap[] pixmaps = proxy.Status == Status.NEEDS_ATTENTION
             ? proxy.AttentionIconPixmap
             : proxy.IconPixmap;
