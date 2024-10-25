@@ -61,7 +61,7 @@ export default defineConfig({
             {
                 text: "TypeScript",
                 base: "/guide/typescript",
-                collapsed: false,
+                collapsed: true,
                 items: [
                     { text: "Installation", link: "/installation" },
                     { text: "First Widgets", link: "/first-widgets" },
@@ -78,10 +78,18 @@ export default defineConfig({
             {
                 text: "Lua",
                 base: "/guide/lua",
-                collapsed: false,
+                collapsed: true,
                 items: [
                     { text: "Installation", link: "/installation" },
                     { text: "First Widgets", link: "/first-widgets" },
+                    { text: "Theming", link: "/theming" },
+                    { text: "CLI and App", link: "/cli-app" },
+                    { text: "Widget", link: "/widget" },
+                    { text: "Variable", link: "/variable" },
+                    { text: "Binding", link: "/binding" },
+                    // { text: "GObject", link: "/gobject" },
+                    { text: "Utilities", link: "/utilities" },
+                    // { text: "FAQ", link: "/faq" },
                 ],
             },
             {

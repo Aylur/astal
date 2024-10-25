@@ -25,11 +25,11 @@ or an object implementing the `Connectable` interface and one of its properties
 (usually a `GObject.Object` instance).
 
 ```ts
-function bind<T>(obj: Subscribable): Binding<T>
+function bind<T>(obj: Subscribable<T>): Binding<T>
 
 function bind<
-  Obj extends Connectable,
-  Prop extends keyof Obj,
+    Obj extends Connectable,
+    Prop extends keyof Obj,
 >(obj: Obj, prop: Prop): Binding<Obj[Prop]>
 ```
 

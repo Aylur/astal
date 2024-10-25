@@ -35,7 +35,7 @@ Widget.Label({
 ```
 
 :::warning
-Make sure to make the transform functions passed to `.as()` are pure.
+Make sure to the transform functions you pass to `:as()` are pure.
 The `.get()` function can be called anytime by `astal` especially when `deriving`,
 so make sure there are no sideeffects.
 :::
@@ -126,7 +126,7 @@ const myvar = Variable("")
 
 ## Dispose if no longer needed
 
-This will stop the interval and force exit the subprocess and disconnect gobjects.
+This will stop the interval, force exit the subprocess and disconnect gobjects.
 
 ```js
 myVar.drop()
