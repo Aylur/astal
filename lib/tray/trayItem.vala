@@ -57,12 +57,12 @@ public enum Status {
 [DBus (name="org.kde.StatusNotifierItem")]
 internal interface IItem : DBusProxy {
     public abstract string Title { owned get; }
-    public abstract Category Category { owned get; }
-    public abstract Status Status { owned get; }
+    public abstract Category Category { get; }
+    public abstract Status Status { get; }
     public abstract Tooltip? ToolTip { owned get; }
     public abstract string Id { owned get; }
     public abstract string? IconThemePath { owned get; }
-    public abstract bool ItemIsMenu { owned get; }
+    public abstract bool ItemIsMenu { get; }
     public abstract ObjectPath? Menu { owned get; }
     public abstract string IconName { owned get; }
     public abstract Pixmap[] IconPixmap { owned get; }
@@ -88,11 +88,23 @@ public class TrayItem : Object {
     private IItem proxy;
     private List<ulong> connection_ids;
 
+    
+    /** The Title of the TrayItem */
     public string title { owned get { return proxy.Title; } }
+    
+    /** The category this item belongs to */
     public Category category { get { return proxy.Category; } }
+    
+    /** the current status of this item */
     public Status status {  get { return proxy.Status; } }
+    
+    /** the tooltip of this item */
     public Tooltip? tooltip { owned get { return proxy.ToolTip; } }
-
+    
+    /** 
+    * a markup representation of the tooltip. This is basically equvivalent
+    * to `tooltip.title \n tooltip.description`
+    */
     public string tooltip_markup {
         owned get {
             if (proxy.ToolTip == null)
@@ -106,10 +118,30 @@ public class TrayItem : Object {
         }
     }
 
+    /** the id of the item. This id is specified by the tray app.*/
     public string id { owned get { return proxy.Id ;} }
-    public string icon_theme_path { owned get { return proxy.IconThemePath ;} }
+    
+    /** 
+    * If set, this only supports the menu, so showing the menu should be prefered 
+    * over calling [method@AstalTray.TrayItem.activate].
+    */
     public bool is_menu { get { return proxy.ItemIsMenu ;} }
-
+    
+    /** 
+    * the icon theme path, where to look for the [property@AstalTray.TrayItem:icon-name].
+    * 
+    * It is recommended to use the [property@AstalTray.TrayItem:gicon] property, 
+    * which does the icon lookups for you.
+    */
+    public string icon_theme_path { owned get { return proxy.IconThemePath ;} }
+    
+    /** 
+    * the name of the icon. This should be looked up in the [property@AstalTray.TrayItem:icon-theme-path]
+    * if set or in the currently used icon theme otherwise. 
+    *
+    * It is recommended to use the [property@AstalTray.TrayItem:gicon] property, 
+    * which does the icon lookups for you.
+    */
     public string icon_name {
         owned get {
             return proxy.Status == Status.NEEDS_ATTENTION
@@ -117,17 +149,30 @@ public class TrayItem : Object {
                 : proxy.IconName;
         }
     }
-
+    
+    /** 
+    * a pixbuf containing the icon.
+    *
+    * It is recommended to use the [property@AstalTray.TrayItem:gicon] property, 
+    * which does the icon lookups for you.
+    */
     public Gdk.Pixbuf icon_pixbuf { owned get { return _get_icon_pixbuf(); } }
 
+    /**
+    * contains the items icon. This property is intended to be used with the gicon property
+    * of the Icon widget and the recommended way to display the icon.
+    * This property unifies the [property@AstalTray.TrayItem:icon-name], 
+    * [property@AstalTray.TrayItem:icon-theme-path] and [property@AstalTray.TrayItem:icon-pixbuf] properties.
+    */
     public GLib.Icon gicon { get; private set; }
     
+    /** the id of the item used to uniquely identify the TrayItems by this lib.*/
     public string item_id { get; private set; }
 
     public signal void changed();
     public signal void ready();
 
-    public TrayItem(string service, string path) {
+    internal TrayItem(string service, string path) {
         connection_ids = new List<ulong>();
         item_id = service + path;
         setup_proxy.begin(service, path, (_, res) => setup_proxy.end(res));
@@ -229,7 +274,10 @@ public class TrayItem : Object {
             }
         );
     }
-
+    
+    /**
+    * send an activate request to the tray app.
+    */
     public void activate(int x, int y) {
         try {
             proxy.Activate(x, y);
@@ -239,6 +287,9 @@ public class TrayItem : Object {
         }
     }
 
+    /**
+    * send a secondary activate request to the tray app.
+    */
     public void secondary_activate(int x, int y) {
         try {
             proxy.SecondaryActivate(x, y);
@@ -248,6 +299,10 @@ public class TrayItem : Object {
         }
     }
 
+    /**
+    * send a scroll request to the tray app.
+    * valid values for the orientation are "horizontal" and "vertical".
+    */
     public void scroll(int delta, string orientation) {
         try {
             proxy.Scroll(delta, orientation);
@@ -257,7 +312,9 @@ public class TrayItem : Object {
         }
     }
 
-
+    /**
+    * creates a new Gtk Menu for this item.
+    */
     public Gtk.Menu? create_menu() {
         if (proxy.Menu == null)
             return null;
