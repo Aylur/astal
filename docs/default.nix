@@ -7,6 +7,10 @@
 
   toTOML = (pkgs.formats.toml {}).generate;
 
+  docgen = pkgs.gi-docgen.overrideAttrs {
+    patches = [../nix/doc/gi-docgen.patch];
+  };
+
   genLib = {
     flakepkg,
     gir,
@@ -16,6 +20,8 @@
     authors ? "Aylur",
     dependencies ? {},
     out ? "libastal/${flakepkg}",
+    browse ? flakepkg,
+    website ? flakepkg,
   }: let
     name = "Astal${gir}-${api-ver}";
     src = self.packages.${pkgs.system}.${flakepkg}.dev;
@@ -25,9 +31,9 @@
         inherit description authors;
         version = readVer version;
         license = "LGPL-2.1";
-        browse_url = "https://github.com/aylur/astal";
+        browse_url = "https://github.com/Aylur/astal/tree/main/lib/${browse}";
         repository_url = "https://github.com/aylur/aylur.git";
-        website_url = "https://aylur.github.io/astal";
+        website_url = "https://aylur.github.io/astal/guide/libraries/${website}";
         dependencies = ["GObject-2.0"] ++ (builtins.attrNames dependencies);
       };
 
@@ -90,7 +96,7 @@ in
     src = ./.;
 
     nativeBuildInputs = with pkgs; [
-      gi-docgen
+      docgen
       glib
       json-glib
       gobject-introspection
@@ -109,6 +115,7 @@ in
         flakepkg = "io";
         gir = "IO";
         api-ver = "0.1";
+        browse = "astal/io";
         description = "Astal Core library";
         version = ../lib/astal/io/version;
       }}
@@ -116,6 +123,7 @@ in
         flakepkg = "astal3";
         gir = "";
         api-ver = "3.0";
+        browse = "astal/gtk3";
         description = "Astal GTK3 widget library";
         version = ../lib/astal/gtk3/version;
         dependencies = {inherit (dependency) "AstalIO-0.1" "Gtk-3.0";};

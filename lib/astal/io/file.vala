@@ -48,7 +48,7 @@ public async void write_file_async(string path, string content) throws Error {
 /**
  * Monitor a file for changes. If the path is a directory, monitor it recursively.
  * The callback will be called passed two parameters: the path of the file
- * that changed and an [enum@GLib.FileMonitorEvent] indicating the reason.
+ * that changed and an [enum@Gio.FileMonitorEvent] indicating the reason.
  */
 public FileMonitor? monitor_file(string path, Closure callback) {
     try {

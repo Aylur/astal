@@ -60,8 +60,7 @@ foreach protocol : protocols
   client_protocol_srcs += [client_header, code]
 endforeach
 
-sources = [
-  config,
+vala_sources = [config] + files(
   'widget/box.vala',
   'widget/button.vala',
   'widget/centerbox.vala',
@@ -77,31 +76,47 @@ sources = [
   'widget/widget.vala',
   'widget/window.vala',
   'application.vala',
-  'idle-inhibit.h',
   'idle-inhibit.c',
-] + client_protocol_srcs
+)
+
+sources = vala_sources + client_protocol_srcs + files(
+  'idle-inhibit.h',
+)
 
 lib = library(
   meson.project_name(),
   sources,
   dependencies: deps,
-  vala_args: ['--pkg', 'AstalInhibitManager'],
+  vala_args: ['--vapi-comments', '--pkg', 'AstalInhibitManager'],
   vala_header: meson.project_name() + '.h',
   vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-  vala_gir: gir,
   version: meson.project_version(),
   install: true,
-  install_dir: [true, true, true, true],
+  install_dir: [true, true, true],
 )
 
-import('pkgconfig').generate(
-  lib,
-  name: meson.project_name(),
-  filebase: meson.project_name() + '-' + api_version,
-  version: meson.project_version(),
-  subdirs: meson.project_name(),
-  requires: pkgconfig_deps,
-  install_dir: libdir / 'pkgconfig',
+pkgs = []
+foreach dep : pkgconfig_deps
+  pkgs += ['--pkg=' + dep.name()]
+endforeach
+
+gir_tgt = custom_target(
+  gir,
+  command: [
+    find_program('python3'),
+    girpy,
+    meson.project_name(),
+    gir + ':src/' + gir,
+  ]
+  + pkgs
+  + vala_sources
+  + [meson.project_source_root() / 'src' / 'vapi' / 'AstalInhibitManager.vapi'],
+
+  input: sources,
+  depends: lib,
+  output: gir,
+  install: true,
+  install_dir: get_option('datadir') / 'gir-1.0',
 )
 
 custom_target(
@@ -114,7 +129,17 @@ custom_target(
   ],
   input: lib,
   output: typelib,
-  depends: lib,
+  depends: [lib, gir_tgt],
   install: true,
   install_dir: libdir / 'girepository-1.0',
+)
+
+import('pkgconfig').generate(
+  lib,
+  name: meson.project_name(),
+  filebase: meson.project_name() + '-' + api_version,
+  version: meson.project_version(),
+  subdirs: meson.project_name(),
+  requires: pkgconfig_deps,
+  install_dir: libdir / 'pkgconfig',
 )

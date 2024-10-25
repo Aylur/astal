@@ -1,0 +1,17 @@
+diff --git a/gidocgen/gir/parser.py b/gidocgen/gir/parser.py
+index e62835d..7ee60fa 100644
+--- a/gidocgen/gir/parser.py
++++ b/gidocgen/gir/parser.py
+@@ -288,7 +288,11 @@ class GirParser:
+ 
+         content = child.text or ""
+ 
+-        return ast.Doc(content=content, filename=child.attrib['filename'], line=int(child.attrib['line']))
++        return ast.Doc(
++            content=content,
++            filename=child.attrib.get('filename', ''),
++            line=int(child.attrib.get('line', 0)),
++        )
+ 
+     def _maybe_parse_source_position(self, node: ET.Element) -> T.Optional[ast.SourcePosition]:
+         child = node.find('core:source-position', GI_NAMESPACES)

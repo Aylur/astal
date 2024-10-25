@@ -1,4 +1,7 @@
 public class Astal.LevelBar : Gtk.LevelBar {
+    /**
+     * Corresponds to [property@Gtk.Orientable :orientation].
+     */
     [CCode (notify = false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }

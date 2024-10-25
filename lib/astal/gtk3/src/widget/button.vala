@@ -1,3 +1,9 @@
+/**
+ * This button has no extra functionality on top if its base [class@Gtk.Button] class.
+ *
+ * The purpose of this Button subclass is to have a destructable
+ * struct as the argument in GJS event handlers.
+ */
 public class Astal.Button : Gtk.Button {
     public signal void hover (HoverEvent event);
     public signal void hover_lost (HoverEvent event);
@@ -39,9 +45,9 @@ public enum Astal.MouseButton {
     FORWARD = 5,
 }
 
-// these structs are here because gjs converts every event
-// into a union Gdk.Event, which cannot be destructured
-// and are not as convinent to work with as a struct
+/**
+ * Struct for [struct@Gdk.EventButton]
+ */
 public struct Astal.ClickEvent {
     bool release;
     uint time;
@@ -59,6 +65,9 @@ public struct Astal.ClickEvent {
     }
 }
 
+/**
+ * Struct for [struct@Gdk.EventCrossing]
+ */
 public struct Astal.HoverEvent {
     bool lost;
     uint time;
@@ -78,6 +87,9 @@ public struct Astal.HoverEvent {
     }
 }
 
+/**
+ * Struct for [struct@Gdk.EventScroll]
+ */
 public struct Astal.ScrollEvent {
     uint time;
     double x;

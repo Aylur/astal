@@ -38,19 +38,24 @@ public class AstalNotifd.Notification : Object {
     public int expire_timeout { internal set; get; }
 
     /**
-     * List of {@link Action} of the notification.
+     * List of [struct@AstalNotifd.Action] of the notification.
      *
-     * Can be invoked by calling {@link Notification.invoke} with the action's id.
+     * Can be invoked by calling [method@AstalNotifd.Notification.invoke] with the action's id.
      */
     public List<Action?> actions { get { return _actions; } }
 
     /** Path of an image  */
     public string image { get { return get_str_hint("image-path"); } }
 
-    /** Indicates whether {@link Action} identifier should be interpreted as a named icon.  */
+    /**
+     * Indicates whether [struct@AstalNotifd.Action]
+     * identifier should be interpreted as a named icon.
+     */
     public bool action_icons { get { return get_bool_hint("action-icons"); } }
 
-    /** [[https://specifications.freedesktop.org/notification-spec/latest/categories.html|Category of the notification.]] */
+    /**
+     * [[https://specifications.freedesktop.org/notification-spec/latest/categories.html]]
+     */
     public string category { get { return get_str_hint("category"); } }
 
     /** Specifies the name of the desktop filename representing the calling program. */
@@ -71,13 +76,19 @@ public class AstalNotifd.Notification : Object {
     /** Indicates that the notification should be excluded from persistency. */
     public bool transient { get { return get_bool_hint("transient"); } }
 
-    /** Specifies the X location on the screen that the notification should point to. The "y" hint must also be specified.  */
+    /**
+     * Specifies the X location on the screen that the notification should point to.
+     * The "y" hint must also be specified.
+     */
     public int x { get { return get_int_hint("x"); } }
 
-    /** Specifies the Y location on the screen that the notification should point to. The "x" hint must also be specified.  */
+    /**
+     * Specifies the Y location on the screen that the notification should point to.
+     * The "x" hint must also be specified.
+     */
     public int y { get { return get_int_hint("y"); } }
 
-    /** {@link Urgency} level of the notification. */
+    /** [enum@AstalNotifd.Urgency] level of the notification. */
     public Urgency urgency { get { return get_byte_hint("urgency"); } }
 
     internal Notification(
@@ -141,24 +152,23 @@ public class AstalNotifd.Notification : Object {
     }
 
     /**
-     * Emitted when this {@link Notification} is resolved.
+     * Emitted when this this notification is resolved.
      *
      * @param reason The reason how the Notification was resolved.
      */
     public signal void resolved(ClosedReason reason);
 
     /**
-     * Emitted when the user dismisses this {@link Notification}
+     * Emitted when the user dismisses this notification.
      *
      * @see dismiss
      */
     public signal void dismissed();
 
     /**
-     * Emitted when an {@link Action} of this {@link Notification} is invoked.
+     * Emitted when an [struct@AstalNotifd.Action] of this notification is invoked.
      *
      * @param action_id id of the invoked action
-     * @see invoke
      */
     public signal void invoked(string action_id);
 
@@ -171,7 +181,7 @@ public class AstalNotifd.Notification : Object {
     public void dismiss() { dismissed(); }
 
     /**
-     * Invoke an {@link Action} of this {@link Notification}
+     * Invoke an [struct@AstalNotifd.Action] of this notification.
      *
      * Note that this method just notifies the client that this action was invoked
      * by the user. If for example this notification persists through the lifetime
