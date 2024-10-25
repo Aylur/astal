@@ -24,26 +24,31 @@ You can pass a path to a file or css as a string in `App:start`
 
 ```lua [init.lua]
 local inline_css = [[
-window {
-  background-color: transparent;
-}
+    window {
+        background-color: transparent;
+    }
 ]]
 
 App:start({
-  css = "./style.css",
-  -- or
-  css = inline_css
+    css = inline_css,
+    css = "/path/to/style.css",
+    css = "./style.css",
 })
 ```
 
+:::
+
+:::warning
+When using relative paths, so for example `./style.css` keep in mind that they
+will be relative to the current working directory.
 :::
 
 ## Css Property on Widgets
 
 ```lua
 Widget.Label({
-  css = "color: blue; padding: 1em;",
-  label = "hello"
+    css = "color: blue; padding: 1em;",
+    label = "hello"
 })
 ```
 
@@ -61,9 +66,9 @@ App:apply_css("/path/to/file.css")
 
 ```lua
 App:apply_css([[
-window {
-  background-color: transparent;
-}
+    window {
+        background-color: transparent;
+    }
 ]])
 ```
 
@@ -74,6 +79,7 @@ App:reset_css() -- reset if need
 :::warning
 `App:apply_css` will apply on top of other stylesheets applied before.
 You can reset stylesheets with `App:reset_css`
+or by passing `true` as a second parameter to `App:apply_css`.
 :::
 
 ## Inspector
@@ -108,8 +114,6 @@ npm install -g sass # not packaged on Ubuntu
 
 :::
 
-Importing `scss` files will simply return transpiled css.
-
 :::code-group
 
 ```lua [init.lua]
@@ -119,8 +123,7 @@ local css = "/tmp/style.css"
 astal.exec(string.format("sass %s %s", scss, css))
 
 App:start({
-  css = css,
-  main = function() end
+    css = css,
 })
 ```
 

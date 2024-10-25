@@ -2,18 +2,20 @@
 
 ## Getting Started
 
-Start by creating an instance of [Astal.Application](https://aylur.github.io/libastal/astal3/class.Application.html).
+Start by importing the singleton
+[Astal.Application](https://aylur.github.io/libastal/astal3/class.Application.html) instance.
 
 :::code-group
 
 ```lua [init.lua]
-local astal = require("astal")
 local App = require("astal.gtk3.app")
 
 App:start({
-	main = function()
-		print("hi")
-	end
+    main = function()
+        -- you will instantiate Widgets here
+        -- or setup anything else if you need
+        print("hi")
+    end
 })
 ```
 
@@ -26,21 +28,24 @@ Now you have an instance running with Lua.
 
 Astal apps are composed of widgets. A widget is a piece of UI that has its own logic and style.
 A widget can be as small as a button or an entire bar.
-The top level widget is always a [Window](https://aylur.github.io/libastal/astal3/class.Window.html) which will hold all widgets.
+The top level widget is always a [Window](https://aylur.github.io/libastal/astal3/class.Window.html)
+which will hold all widgets.
 
 ::: code-group
 
-```lua [widget/bar.lua]
+```lua [widget/Bar.lua]
 local Widget = require("astal.gtk3.widget")
-local WindowAnchor = astal.require("Astal").WindowAnchor
+local Anchor = require("astal.gtk3").Astal.WindowAnchor
 
-return function(gdkmonitor)
-	return Widget.Window({
-		gdkmonitor = gdkmonitor,
-		anchor = WindowAnchor.TOP + WindowAnchor.LEFT + WindowAnchor.RIGHT,
-		exclusivity = "EXCLUSIVE",
-		Widget.Label({ label = "Example label uwu" })
-	})
+return function(monitor)
+    return Widget.Window({
+        monitor = monitor,
+        anchor = Anchor.TOP + Anchor.LEFT + Anchor.RIGHT,
+        exclusivity = "EXCLUSIVE",
+        Widget.Label({
+            label = "Example label content",
+        }),
+    })
 end
 ```
 
@@ -49,41 +54,42 @@ end
 ::: code-group
 
 ```lua [init.lua]
-local astal = require("astal")
 local App = require("astal.gtk3.app")
-local Bar = require("widget.bar")
+local Bar = require("widget.Bar")
 
-App:start({
-	main = function()
-		for _, gdkmonitor in ipairs(App.monitors) do
-			Bar(gdkmonitor)
-		end
-	end
-})
+App:start {
+    main = function()
+        Bar(0)
+        Bar(1) -- instantiate for each monitor
+    end,
+}
 ```
 
 :::
 
 ## Creating and nesting widgets
 
-Widgets are Lua functions that return Gtk widgets,
-it's as simple as that.
-You can nest widgets by passing them as arguments to the table in the function.
+Widgets are simply Lua functions that return Gtk widgets,
+you can nest widgets by passing them as arguments to the table in the function.
 
 :::code-group
 
-```lua [widget/my_button.lua]
+```lua [widget/MyButton.lua]
+local Widget = require("astal.gtk3.widget")
+
 return function(text)
-	return Widget.Button({
-		on_click_release = function(_, event)
-			if event.button == "PRIMARY" then
-				print("Left click")
-			elseif event.button == "SECONDARY" then
-				print("Right click")
-			end
-		end,
-		Widget.Label({ label = text })
-	})
+    return Widget.Button({
+        on_click_release = function(_, event)
+            if event.button == "PRIMARY" then
+                print("Left click")
+            elseif event.button == "SECONDARY" then
+                print("Right click")
+            end
+        end,
+        Widget.Label({
+            label = text,
+        }),
+    })
 end
 ```
 
@@ -93,22 +99,22 @@ Now, you should be able to nest it into another widgets.
 
 ::: code-group
 
-```lua [widget/bar.lua]
-local MyButton = require("widget.my_button")
-local WindowAnchor = astal.require("Astal").WindowAnchor
+```lua [widget/Bar.lua] {13}
+local MyButton = require("widget.MyButton")
+local Anchor = require("astal.gtk3").Astal.WindowAnchor
 
-return function(gdkmonitor)
-	return Widget.Window({
-		gdkmonitor = gdkmonitor,
-		anchor = WindowAnchor.TOP
-			+ WindowAnchor.LEFT
-			+ WindowAnchor.RIGHT,
-		exclusivity = "EXCLUSIVE",
-		Widget.Box({
-			Widget.Label({ label = "Click the button" }),
-			MyButton("hi, im a button")
-		})
-	})
+return function(monitor)
+    return Widget.Window({
+        monitor = monitor,
+        anchor = Anchor.TOP + Anchor.LEFT + Anchor.RIGHT,
+        exclusivity = "EXCLUSIVE",
+        Widget.Box({
+            Widget.Label({
+                label = "Click the button",
+            }),
+            MyButton("hi, im a button"),
+        }),
+    })
 end
 ```
 
@@ -120,11 +126,11 @@ You can respond to events by declaring event handler functions inside your widge
 
 ```lua
 local function MyButton()
-	return Widget.Button({
-		on_click_release = function(_, event)
-			print(event.button)
-		end
-	})
+    return Widget.Button({
+        on_click_release = function(_, event)
+            print(event.button)
+        end,
+    })
 end
 ```
 
@@ -153,13 +159,15 @@ local Widget = require("astal.gtk3.widget")
 local function Counter()
     local count = Variable(0)
     return Widget.Box({
-        Widget.Label({ label = bind(count):as(tostring) }),
+        Widget.Label({
+            label = bind(count):as(tostring),
+        }),
         Widget.Button({
             label = "Click to increment",
             on_click_release = function()
                 count:set(count:get() + 1)
-            end
-        })
+            end,
+        }),
     })
 end
 ```
@@ -167,7 +175,7 @@ end
 :::info
 Bindings have an `:as()` method which lets you transform the assigned value.
 In the case of a Label, its label property expects a string, so it needs to be
-turned to a string first.
+converted into a string first.
 :::
 
 :::tip
@@ -176,12 +184,12 @@ turned to a string first.
 ```lua
 local v = Variable(0)
 
-return Widget.Box({
+return Widget.Box {
     -- these three are equivalent
     Widget.Label({ label = bind(v):as(tostring) }),
     Widget.Label({ label = v():as(tostring) }),
-    Widget.Label({ label = v(tostring) })
-})
+    Widget.Label({ label = v(tostring) }),
+}
 ```
 
 :::
@@ -196,13 +204,13 @@ local Battery = astal.require("AstalBattery")
 local Widget = require("astal.gtk3.widget")
 
 local function BatteryPercentage()
-	local bat = Battery.get_default()
+    local bat = Battery.get_default()
 
-	return Widget.Label({
-		label = bind(bat, "percentage"):as(function(p)
-			return string.format("%.0f%%", p * 100)
-		end)
-	})
+    return Widget.Label({
+        label = bind(bat, "percentage"):as(function(p)
+            return string.format("%.0f%%", p * 100)
+        end),
+    })
 end
 ```
 
@@ -214,23 +222,28 @@ You can also use a `Binding` for `child` and `children` properties.
 local astal = require("astal")
 local Variable = astal.Variable
 local Widget = require("astal.gtk3.widget")
+
 local child = Variable(Widget.Box())
 
-return Widget.Box({ child() })
+return Widget.Box({
+    child(),
+})
 ```
 
 ```lua
 local num = Variable(3)
 
-return Widget.Box({
-	num():as(function(n)
-		local tb = {}
-		for i = 1, n do
-			table.insert(tb, Widget.Button({ label = tostring(i) }))
-		end
-		return tb
-	end)
-})
+return Widget.Box {
+    num():as(function(n)
+        local tbl = {}
+        for i = 1, n do
+            table.insert(tbl, Widget.Button({
+                label = tostring(i)
+            }))
+        end
+        return tbl
+    end)
+}
 ```
 
 :::tip

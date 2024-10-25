@@ -128,8 +128,8 @@ const proc = subprocess(
 
 // or with signals
 const proc = subprocess("some-command")
-proc.connect("stdout", (out) => console.log(out))
-proc.connect("stderr", (err) => console.error(err))
+proc.connect("stdout", (_, out) => console.log(out))
+proc.connect("stderr", (_, err) => console.error(err))
 ```
 
 ### Executing external commands and scripts

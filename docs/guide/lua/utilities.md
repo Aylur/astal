@@ -87,16 +87,16 @@ Example:
 
 ```lua
 local timer = interval(1000, function()
-  print("optional callback")
+    print("optional callback")
 end)
 
--- connect using signals
-local id_1 = timer.on_now:connect(function() end)
-local id_2 = timer.on_cancelled:connect(function() end)
+timer.on_now = function()
+    print("now")
+end
 
--- or
-function timer:on_now() end
-function timer:on_cancelled() end
+timer.on_cancelled = function()
+    print("cancelled")
+end
 
 timer:cancel()
 ```
@@ -126,19 +126,21 @@ Example:
 
 ```lua
 local proc = subprocess(
-  "some-command",
-  function(out) end,
-  function(err) end,
+    "some-command",
+    function(out) print(out) end,
+    function(err) print(err) end,
 )
 
 -- with signals
 local proc = subprocess("some-command")
-local id_1 = proc.on_stdout:connect(function(_, stdout) end)
-local id_2 = proc.on_stderr:connect(function(_, stderr) end)
 
--- or
-function proc:on_stdout(_, stdout) end
-function proc:on_stderr(_, stderr) end
+proc.on_stdout = function(_, stdout)
+    print(stdout)
+end
+
+proc.on_stderr = function(_, stderr)
+    print(stderr)
+end
 ```
 
 ### Executing external commands and scripts
@@ -159,17 +161,17 @@ Example:
 local out, err = exec("/path/to/script")
 
 if err ~= nil then
-  print(err)
+    print(err)
 else
-  print(out)
+    print(out)
 end
 
 exec_async({ "bash", "-c", "/path/to/script.sh" }, function(out, err)
-	if err ~= nil then
-		print(err)
-	else
-		print(out)
-	end
+    if err ~= nil then
+        print(err)
+    else
+        print(out)
+    end
 end)
 ```
 

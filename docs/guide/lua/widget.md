@@ -27,9 +27,9 @@ without `setup`
 
 ```lua
 local function MyWidget()
-  local button = Widget.Button()
-  -- setup button
-  return button
+    local button = Widget.Button()
+    -- setup button
+    return button
 end
 ```
 
@@ -37,31 +37,31 @@ using `setup`
 
 ```lua
 local function MyWidget()
-  return Widget.Button({
-    setup = function(self)
-      -- setup button
-    end
-  })
+    return Widget.Button({
+        setup = function(self)
+            -- setup button
+        end,
+    })
 end
 ```
 
 #### hook
 
-Shorthand for connection and disconnecting to [Subscribable and Connectable](./binding#subscribable-and-connectable-interface) objects.
+Shorthand for connecting and disconnecting to [Subscribable and Connectable](./binding#subscribable-and-connectable-interface) objects.
 
 without `hook`
 
 ```lua
 local function MyWidget()
-  local id = gobject.on_signal:connect(callback)
-  local unsub = variable:subscribe(callback)
+    local id = gobject.on_signal:connect(callback)
+    local unsub = variable:subscribe(callback)
 
-  return Widget.Box({
-    on_destroy = function()
-      GObject.signal_handler_disconnect(gobject, id)
-      unsub()
-    end
-  })
+    return Widget.Box({
+        on_destroy = function()
+            GObject.signal_handler_disconnect(gobject, id)
+            unsub()
+        end,
+    })
 end
 ```
 
@@ -69,83 +69,89 @@ with `hook`
 
 ```lua
 local function MyWidget()
-  return Widget.Box({
-    setup = function(self)
-      self:hook(gobject, "signal", callback)
-      self:hook(variable, callback)
-    end
-  })
+    return Widget.Box({
+        setup = function(self)
+            self:hook(gobject, "signal", callback)
+            self:hook(variable, callback)
+        end,
+    })
 end
 ```
 
 #### toggle_class_name
 
-Toggle class_names based on a condition
+Toggle class names based on a condition.
 
 ```lua
 local function MyWidget()
-  return Widget.Box({
-    setup = function(self)
-      self:toggle_class_name("classname", some_condition)
-    end
-  })
+    return Widget.Box({
+        setup = function(self)
+            self:toggle_class_name("classname", some_condition)
+        end,
+    })
 end
 ```
 
 ### How to use non builtin Gtk widgets
 
-Using the `Widget.astalify` mixin you can subclass widgets
+Using the `astalify` function you can wrap widgets
 to behave like builtin widgets.
-The `astalify` mixin will apply the following:
+It will apply the following:
 
 - set `visible` to true by default (Gtk3 widgets are invisible by default)
 - make gobject properties accept and consume `Binding` objects
 - add properties and methods listed above
-- sets up signal handlers that are passed as props prefixed with `on`
 
 ```lua
-local astal = require("astal")
-local Widget = require("astal.gtk3.widget")
-local Gtk = astal.require("Gtk", "3.0")
-local Gdk = astal.require("Gdk", "3.0")
+local astal = require("astal.gtk3")
+local astalify = astal.astalify
+local Gtk = astal.Gtk
+local Gdk = astal.Gdk
 
-local ColorButton = Widget.astalify(Gtk.ColorButton)
+local ColorButton = astalify(Gtk.ColorButton)
 
 local function MyWidget()
-  return ColorButton({
-    setup = function(self) end,
-    use_alpha = true,
-    rgba = Gdk.RGBA({ red = 1, green = 0, blue = 0, alpha = 0.5 }),
-    on_color_set = function(self)
-        print(self.rgba:to_string())
-    end
-  })
+    return ColorButton({
+        setup = function(self)
+            -- setup ColorButton instance
+        end,
+        use_alpha = true,
+        rgba = Gdk.RGBA({
+            red = 1,
+            green = 0,
+            blue = 0,
+            alpha = 0.5,
+        }),
+        on_color_set = function(self)
+            print(self.rgba:to_string())
+        end
+    })
 end
 ```
 
 ### Builtin Widgets
 
-You can check the [source code](https://github.com/Aylur/astal/blob/main/lang/lua/astal/gtk3/init.lua) to have a full list of builtin widgets.
+You can check the [source code](https://github.com/Aylur/astal/blob/main/lang/lua/astal/gtk3/widget.lua) to have a full list of builtin widgets.
 
 These widgets are available by default in Lua.
 
-- box: [Astal.Box](https://aylur.github.io/libastal/astal3/class.Box.html)
-- button: [Astal.Button](https://aylur.github.io/libastal/astal3/class.Button.html)
-- centerbox: [Astal.CenterBox](https://aylur.github.io/libastal/astal3/class.CenterBox.html)
-- circularprogress: [Astal.CircularProgress](https://aylur.github.io/libastal/astal3/class.CircularProgress.html)
-- drawingarea: [Gtk.DrawingArea](https://docs.gtk.org/gtk3/astal3/class.DrawingArea.html)
-- entry: [Gtk.Entry](https://docs.gtk.org/gtk3/astal3/class.Entry.html)
-- eventbox: [Astal.EventBox](https://aylur.github.io/libastal/astal3/class.EventBox.html)
-- icon: [Astal.Icon](https://aylur.github.io/libastal/astal3/class.Icon.html)
-- label: [Astal.Label](https://aylur.github.io/libastal/astal3/class.Label.html)
-- levelbar: [Astal.LevelBar](https://aylur.github.io/libastal/astal3/class.LevelBar.html)
-- overlay: [Astal.Overlay](https://aylur.github.io/libastal/astal3/class.Overlay.html)
-- revealer: [Gtk.Revealer](https://docs.gtk.org/gtk3/astal3/class.Revealer.html)
-- scrollable: [Astal.Scrollable](https://aylur.github.io/libastal/astal3/class.Scrollable.html)
-- slider: [Astal.Slider](https://aylur.github.io/libastal/astal3/class.Slider.html)
-- stack: [Astal.Stack](https://aylur.github.io/libastal/astal3/class.Stack.html)
-- switch: [Gtk.Switch](https://docs.gtk.org/gtk3/astal3/class.Switch.html)
-- window: [Astal.Window](https://aylur.github.io/libastal/astal3/class.Window.html)
+- Box: [Astal.Box](https://aylur.github.io/libastal/astal3/class.Box.html)
+- Button: [Astal.Button](https://aylur.github.io/libastal/astal3/class.Button.html)
+- CenterBox: [Astal.CenterBox](https://aylur.github.io/libastal/astal3/class.CenterBox.html)
+- CircularProgress: [Astal.CircularProgress](https://aylur.github.io/libastal/astal3/class.CircularProgress.html)
+- DrawingArea: [Gtk.DrawingArea](https://docs.gtk.org/gtk3/astal3/class.DrawingArea.html)
+- Entry: [Gtk.Entry](https://docs.gtk.org/gtk3/astal3/class.Entry.html)
+- Eventbox: [Astal.EventBox](https://aylur.github.io/libastal/astal3/class.EventBox.html)
+- Icon: [Astal.Icon](https://aylur.github.io/libastal/astal3/class.Icon.html)
+- Label: [Astal.Label](https://aylur.github.io/libastal/astal3/class.Label.html)
+- Levelbar: [Astal.LevelBar](https://aylur.github.io/libastal/astal3/class.LevelBar.html)
+- Overlay: [Astal.Overlay](https://aylur.github.io/libastal/astal3/class.Overlay.html)
+- Revealer: [Gtk.Revealer](https://docs.gtk.org/gtk3/astal3/class.Revealer.html)
+- Scrollable: [Astal.Scrollable](https://aylur.github.io/libastal/astal3/class.Scrollable.html)
+- Slider: [Astal.Slider](https://aylur.github.io/libastal/astal3/class.Slider.html)
+- Stack: [Astal.Stack](https://aylur.github.io/libastal/astal3/class.Stack.html)
+- Switch: [Gtk.Switch](https://docs.gtk.org/gtk3/astal3/class.Switch.html)
+- Window: [Astal.Window](https://aylur.github.io/libastal/astal3/class.Window.html)
 
 ## Gtk4
 

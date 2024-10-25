@@ -61,7 +61,7 @@ export default defineConfig({
             {
                 text: "TypeScript",
                 base: "/guide/typescript",
-                collapsed: false,
+                collapsed: true,
                 items: [
                     { text: "Installation", link: "/installation" },
                     { text: "First Widgets", link: "/first-widgets" },
@@ -78,7 +78,7 @@ export default defineConfig({
             {
                 text: "Lua",
                 base: "/guide/lua",
-                collapsed: false,
+                collapsed: true,
                 items: [
                     { text: "Installation", link: "/installation" },
                     { text: "First Widgets", link: "/first-widgets" },
