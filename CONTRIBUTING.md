@@ -1,6 +1,7 @@
 # Contributing
 
 You can contribute by:
+
 - [Suggesting new features](https://github.com/Aylur/astal/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=)
 - [Reporting bugs](https://github.com/Aylur/astal/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=)
 - Improving docs with additional contexts and examples
@@ -18,9 +19,11 @@ Write libraries preferably in Vala. Only choose C if some dependency is only ava
 ## Todo
 
 Planned features, you could help with:
+
 - [niri ipc library](https://github.com/Aylur/astal/issues/8)
 - sway ipc library
 - greetd ipc library
-- core: http request library, abstraction over libsoup included (mostly to be used in gjs and lua)
-- core: notification sending, libnotify clone [#26](https://github.com/Aylur/astal/issues/26)
+- http request library abstraction over libsoup (mostly to be used in gjs and lua)
+- notification sending libnotify clone [#26](https://github.com/Aylur/astal/issues/26)
 - setting up [uncrustify](https://github.com/uncrustify/uncrustify) for Vala
+- bluetooth custom errordomains, currently every error is simply Error
