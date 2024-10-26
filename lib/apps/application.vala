@@ -47,6 +47,17 @@ public class AstalApps.Application : Object {
      */
     public string[] keywords { owned get { return app.get_keywords(); } }
 
+    /**
+     * `Categories` field from the desktop file.
+     */
+    public string[] categories { owned get {
+        var categories = app.get_categories();
+        if (categories != null)
+            return categories.split(";");
+
+        return new string[0];
+    } }
+
     internal Application(string id, int? frequency = 0) {
         Object(app: new DesktopAppInfo(id));
         this.frequency = frequency;
@@ -94,6 +105,12 @@ public class AstalApps.Application : Object {
                 score.keywords = s;
             }
         }
+        foreach (var category in categories) {
+            var s = fuzzy_match_string(term, category);
+            if (s > score.categories) {
+                score.categories = s;
+            }
+        }
 
         return score;
     }
@@ -117,6 +134,11 @@ public class AstalApps.Application : Object {
                 score.keywords = keyword.down().contains(term.down()) ? 1 : 0;
             }
         }
+        foreach (var category in categories) {
+            if (score.categories == 0) {
+                score.categories = category.down().contains(term.down()) ? 1 : 0;
+            }
+        }
 
         return score;
     }
@@ -129,16 +151,21 @@ public class AstalApps.Application : Object {
             .set_member_name("executable").add_string_value(executable)
             .set_member_name("description").add_string_value(description)
             .set_member_name("icon_name").add_string_value(icon_name)
-            .set_member_name("frequency").add_int_value(frequency)
-            .set_member_name("keywords")
-            .begin_array();
+            .set_member_name("frequency").add_int_value(frequency);
 
+        builder.set_member_name("keywords").begin_array();
         foreach (string keyword in keywords) {
             builder.add_string_value(keyword);
         }
+        builder.end_array();
+
+        builder.set_member_name("categories").begin_array();
+        foreach (string category in categories) {
+            builder.add_string_value(category);
+        }
+        builder.end_array();
 
         return builder
-            .end_array()
             .end_object()
             .get_root();
     }
@@ -150,4 +177,5 @@ public struct AstalApps.Score {
     int executable;
     int description;
     int keywords;
+    int categories;
 }
