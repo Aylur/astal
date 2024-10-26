@@ -12,7 +12,7 @@ defaults: {
       ps.lgi
       (ps.luaPackages.toLuaModule (pkgs.stdenvNoCC.mkDerivation {
         name = "astal";
-        src = "${astal}/lang/lua";
+        src = "${astal}/lang/lua/astal";
         dontBuild = true;
         installPhase = ''
           mkdir -p $out/share/lua/${ps.lua.luaversion}/astal

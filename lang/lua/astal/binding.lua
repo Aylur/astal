@@ -14,7 +14,7 @@ function Binding.new(emitter, property)
     return setmetatable({
         emitter = emitter,
         property = property,
-        transformFn = function(v)
+        transform_fn = function(v)
             return v
         end,
     }, Binding)
