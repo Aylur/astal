@@ -11,12 +11,18 @@ const OptionEntry[] options = {
     { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref help, null, null },
     { "list", 'l', OptionFlags.NONE, OptionArg.NONE, ref list, null, null },
     { "quit", 'q', OptionFlags.NONE, OptionArg.NONE, ref quit, null, null },
-    { "quit", 'q', OptionFlags.NONE, OptionArg.NONE, ref quit, null, null },
     { "inspector", 'I', OptionFlags.NONE, OptionArg.NONE, ref inspector, null, null },
     { "toggle-window", 't', OptionFlags.NONE, OptionArg.STRING, ref toggle_window, null, null },
     { "instance", 'i', OptionFlags.NONE, OptionArg.STRING, ref instance_name, null, null },
     { null },
 };
+
+int err(string msg) {
+    var red = "\x1b[31m";
+    var r = "\x1b[0m";
+    printerr(@"$(red)error: $(r)$msg");
+    return 1;
+}
 
 int main(string[] argv) {
     try {
@@ -25,9 +31,8 @@ int main(string[] argv) {
         opts.set_help_enabled(false);
         opts.set_ignore_unknown_options(false);
         opts.parse(ref argv);
-    } catch (OptionError err) {
-        printerr (err.message);
-        return 1;
+    } catch (OptionError e) {
+        return err(e.message);
     }
 
     if (help) {
@@ -55,24 +60,30 @@ int main(string[] argv) {
 
     if (list) {
         foreach (var name in AstalIO.get_instances())
-            stdout.printf("%s\n", name);
+            print(@"$name\n");
 
         return 0;
     }
 
-    if (quit) {
-        AstalIO.quit_instance(instance_name);
-        return 0;
-    }
+    try {
+        if (quit) {
+            AstalIO.quit_instance(instance_name);
+            return 0;
+        }
 
-    if (inspector) {
-        AstalIO.open_inspector(instance_name);
-        return 0;
-    }
+        if (inspector) {
+            AstalIO.open_inspector(instance_name);
+            return 0;
+        }
 
-    if (toggle_window != null) {
-        AstalIO.toggle_window_by_name(instance_name, toggle_window);
-        return 0;
+        if (toggle_window != null) {
+            AstalIO.toggle_window_by_name(instance_name, toggle_window);
+            return 0;
+        }
+    } catch (DBusError.SERVICE_UNKNOWN e) {
+        return err(@"there is no \"$instance_name\" instance runnning");
+    } catch (Error e) {
+        return err(e.message);
     }
 
     var request = "";
@@ -80,8 +91,14 @@ int main(string[] argv) {
         request = request.concat(" ", argv[i]);
     }
 
-    var reply = AstalIO.send_message(instance_name, request);
-    print("%s\n", reply);
+    try {
+        var reply = AstalIO.send_message(instance_name, request);
+        print("%s\n", reply);
+    } catch (IOError.NOT_FOUND e) {
+        return err(@"there is no \"$instance_name\" instance runnning");
+    } catch (Error e) {
+        return err(e.message);
+    }
 
     return 0;
 }

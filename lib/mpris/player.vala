@@ -101,7 +101,6 @@ public class AstalMpris.Player : Object {
 
     /**
      * Skips to the next track in the tracklist.
-     *
      * If there is no next track (and endless playback and track repeat are both off), stop playback.
      * If [property@AstalMpris.Player:can_go_next] is `false` this method has no effect.
      */
@@ -111,7 +110,6 @@ public class AstalMpris.Player : Object {
 
     /**
      * Skips to the previous track in the tracklist.
-     *
      * If there is no previous track (and endless playback and track repeat are both off), stop playback.
      * If [property@AstalMpris.Player:can_go_previous] is `false` this method has no effect.
      */
@@ -121,7 +119,6 @@ public class AstalMpris.Player : Object {
 
     /**
      * Pauses playback.
-     *
      * If playback is already paused, this has no effect.
      * If [property@AstalMpris.Player:can_pause] is `false` this method has no effect.
      */
@@ -131,7 +128,6 @@ public class AstalMpris.Player : Object {
 
     /**
      * Pauses playback.
-     *
      * If playback is already paused, resumes playback.
      * If playback is stopped, starts playback.
      */
@@ -141,7 +137,6 @@ public class AstalMpris.Player : Object {
 
     /**
      * Stops playback.
-     *
      * If playback is already stopped, this has no effect.
      * If [property@AstalMpris.Player:can_control] is `false` this method has no effect.
      */
@@ -151,7 +146,6 @@ public class AstalMpris.Player : Object {
 
     /**
      * Starts or resumes playback.
-     *
      * If already playing, this has no effect.
      * If paused, playback resumes from the current position.
      * If [property@AstalMpris.Player:can_play] is `false` this method has no effect.
