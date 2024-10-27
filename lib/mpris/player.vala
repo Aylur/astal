@@ -407,8 +407,8 @@ public class AstalMpris.Player : Object {
      * @param name dbus name of the player.
      */
     public Player(string name) {
-        Object(bus_name: name.has_prefix("org.mpris.MediaPlayer2.")
-            ? name : "org.mpris.MediaPlayer2." + name);
+        bus_name = name.has_prefix("org.mpris.MediaPlayer2.")
+            ? name : @"org.mpris.MediaPlayer2.$name";
     }
 
     private void sync() {
