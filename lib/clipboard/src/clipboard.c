@@ -23,13 +23,9 @@ typedef struct {
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalClipboardClipboard, astal_clipboard_clipboard, G_TYPE_OBJECT)
 
-typedef enum {
-    ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES = 1
-} AstalCiplboardClipboardProperties;
+typedef enum { ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES = 1 } AstalCiplboardClipboardProperties;
 
-typedef enum {
-    ASTAL_CLIPBOARD_CLIPBOARD_N_SIGNALS
-} AstalClipboardClipboardSignals;
+typedef enum { ASTAL_CLIPBOARD_CLIPBOARD_N_SIGNALS } AstalClipboardClipboardSignals;
 
 static guint astal_clipboard_clipboard_signals[ASTAL_CLIPBOARD_CLIPBOARD_N_SIGNALS] = {
     0,
@@ -38,8 +34,8 @@ static GParamSpec* astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOAR
     NULL,
 };
 
-static void astal_clipboard_clipboard_get_property(GObject* object, guint property_id, GValue* value,
-                                           GParamSpec* pspec) {
+static void astal_clipboard_clipboard_get_property(GObject* object, guint property_id,
+                                                   GValue* value, GParamSpec* pspec) {
     AstalClipboardClipboard* self = ASTAL_CLIPBOARD_CLIPBOARD(object);
 
     switch (property_id) {
@@ -62,47 +58,46 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
     }
 }
 
-static void global_registry_remover(void* data, struct wl_registry* registry, uint32_t id) {
+static void global_registry_remover(void* data, struct wl_registry* registry, uint32_t id) {}
+
+static void offer_handle_offer(void* data, struct zwlr_data_control_offer_v1* offer,
+                               const char* mime_type) {
+    g_print("offer %s\n", mime_type);
 }
 
-static void offer_handle_offer(void* data, struct zwlr_data_control_offer_v1 *offer, const char *mime_type) {
-  g_print("offer %s\n", mime_type);
+static const struct zwlr_data_control_offer_v1_listener offer_listener = {.offer =
+                                                                              offer_handle_offer};
+
+static void device_handle_data_offer(void* data, struct zwlr_data_control_device_v1* device,
+                                     struct zwlr_data_control_offer_v1* offer) {
+    g_print("data offer\n");
+    if (offer == NULL) return;
+
+    zwlr_data_control_offer_v1_add_listener(offer, &offer_listener, data);
 }
 
-static const struct zwlr_data_control_offer_v1_listener offer_listener = {
-  .offer = offer_handle_offer
-};
-
-static void device_handle_data_offer(void* data, struct zwlr_data_control_device_v1 *device, struct zwlr_data_control_offer_v1 *offer) {
-  g_print("data offer\n");
-  if(offer == NULL) return;
-  
-  zwlr_data_control_offer_v1_add_listener(offer, &offer_listener, data);
-
+static void device_handle_selection(void* data, struct zwlr_data_control_device_v1* device,
+                                    struct zwlr_data_control_offer_v1* offer) {
+    g_print("selection\n");
 }
 
-static void device_handle_selection(void* data, struct zwlr_data_control_device_v1 *device, struct zwlr_data_control_offer_v1 *offer) {
-  g_print("selection\n");
+static void device_handle_primary_selection(void* data, struct zwlr_data_control_device_v1* device,
+                                            struct zwlr_data_control_offer_v1* offer) {
+    g_print("primary selection\n");
 }
 
-static void device_handle_primary_selection(void* data, struct zwlr_data_control_device_v1 *device, struct zwlr_data_control_offer_v1 *offer) {
-  g_print("primary selection\n");
+static void device_handle_finished(void* data, struct zwlr_data_control_device_v1* device) {
+    g_print("finished\n");
 }
-
-static void device_handle_finished(void* data, struct zwlr_data_control_device_v1 *device) {
-  g_print("finished\n");
-}
-
 
 static const struct wl_registry_listener registry_listener = {global_registry_handler,
                                                               global_registry_remover};
 
 static const struct zwlr_data_control_device_v1_listener device_listener = {
-  .finished = device_handle_finished,
-  .selection = device_handle_selection,
-  .primary_selection = device_handle_primary_selection,
-  .data_offer = device_handle_data_offer
-};
+    .finished = device_handle_finished,
+    .selection = device_handle_selection,
+    .primary_selection = device_handle_primary_selection,
+    .data_offer = device_handle_data_offer};
 
 static void astal_clipboard_clipboard_init(AstalClipboardClipboard* self) {
     AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
@@ -134,7 +129,6 @@ static void astal_clipboard_clipboard_init(AstalClipboardClipboard* self) {
     zwlr_data_control_device_v1_add_listener(priv->device, &device_listener, self);
 
     wl_display_roundtrip(priv->display);
-
 }
 
 static void astal_clipboard_clipboard_finalize(GObject* object) {
@@ -144,8 +138,7 @@ static void astal_clipboard_clipboard_finalize(GObject* object) {
     if (priv->display != NULL) wl_display_roundtrip(priv->display);
 
     if (priv->wl_registry != NULL) wl_registry_destroy(priv->wl_registry);
-    if (priv->manager != NULL)
-        zwlr_data_control_manager_v1_destroy(priv->manager);
+    if (priv->manager != NULL) zwlr_data_control_manager_v1_destroy(priv->manager);
     if (priv->device != NULL) zwlr_data_control_device_v1_destroy(priv->device);
     if (priv->seat != NULL) wl_seat_destroy(priv->seat);
     if (priv->display != NULL) wl_display_flush(priv->display);
@@ -159,5 +152,4 @@ static void astal_clipboard_clipboard_class_init(AstalClipboardClipboardClass* c
     GObjectClass* object_class = G_OBJECT_CLASS(class);
     object_class->get_property = astal_clipboard_clipboard_get_property;
     object_class->finalize = astal_clipboard_clipboard_finalize;
-
 }
