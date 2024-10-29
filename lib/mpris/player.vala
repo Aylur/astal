@@ -15,7 +15,7 @@ public class AstalMpris.Player : Object {
     /**
      * Full dbus namae of this player.
      */
-    public string bus_name { owned get; private construct set; }
+    public string bus_name { owned get; private set; }
 
     /**
      * Indicates if [property@AstalMpris.Player:bus_name] is available on dbus.
@@ -42,7 +42,7 @@ public class AstalMpris.Player : Object {
      * The media player may refuse to allow clients to shut it down.
      * In this case, the [property@AstalMpris.Player:can_quit] property is false and this method does nothing.
      */
-    public void quit() throws Error {
+    public void quit() {
         try { proxy.quit(); } catch (Error err) { critical(err.message); }
     }
 
@@ -412,8 +412,8 @@ public class AstalMpris.Player : Object {
      * @param name dbus name of the player.
      */
     public Player(string name) {
-        Object(bus_name: name.has_prefix("org.mpris.MediaPlayer2.")
-            ? name : @"org.mpris.MediaPlayer2.$name");
+        bus_name = name.has_prefix("org.mpris.MediaPlayer2.")
+            ? name : @"org.mpris.MediaPlayer2.$name";
     }
 
     private void sync() {
@@ -564,13 +564,15 @@ public class AstalMpris.Player : Object {
     }
 
     construct {
-        try {
-            setup_proxy();
-            setup_position_poll();
-            sync();
-        } catch (Error error) {
-            critical(error.message);
-        }
+        notify["bus-name"].connect(() => {
+            try {
+                setup_proxy();
+                setup_position_poll();
+                sync();
+            } catch (Error error) {
+                critical(error.message);
+            }
+        });
     }
 
     private void setup_position_poll() {
