@@ -20,10 +20,15 @@ srcs = files(
 
 install_headers('astal-cava.h')
 
+cava = dependency('cava',
+                  version : '>=0.10.3',
+                  required: true,
+                  fallback : ['cava', 'cava_dep'])
+
 deps = [
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
-  dependency('cava')
+  cava
 ]
 
 astal_cava_lib = library(
