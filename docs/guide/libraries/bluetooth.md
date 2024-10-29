@@ -13,7 +13,7 @@ sudo pacman -Syu meson vala gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac gobject-introspection-devel
+sudo dnf install meson gcc vala valadoc gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
