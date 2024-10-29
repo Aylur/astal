@@ -17,7 +17,7 @@ sudo pacman -Syu meson vala gdk-pixbuf2 json-glib gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac gdk-pixbuf2-devel json-glib-devel gobject-introspection-devel
+sudo dnf install meson gcc vala valadoc gdk-pixbuf2-devel json-glib-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
