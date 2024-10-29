@@ -1,7 +1,8 @@
 #include <fcntl.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gio/gio.h>
 #include <glib-unix.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
+
 #include "astal-clipboard-private.h"
 #include "astal-clipboard.h"
 #include "astal-clipboard.h.in"
@@ -11,18 +12,18 @@
 
 struct _AstalClipboardSelection {
     GObject parent_instance;
-    GList *data;
+    GList* data;
 };
 
 typedef struct {
-  struct zwlr_data_control_offer_v1 *offer;
+    struct zwlr_data_control_offer_v1* offer;
 } AstalClipboardSelectionPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalClipboardSelection, astal_clipboard_selection, G_TYPE_OBJECT)
 
-typedef enum { 
-  ASTAL_CLIPBOARD_SELECTION_PROP_DATA = 1,
-  ASTAL_CLIPBOARD_SELECTION_N_PROPERTIES
+typedef enum {
+    ASTAL_CLIPBOARD_SELECTION_PROP_DATA = 1,
+    ASTAL_CLIPBOARD_SELECTION_N_PROPERTIES
 } AstalCiplboardSelectionProperties;
 
 typedef enum { ASTAL_CLIPBOARD_SELECTION_N_SIGNALS } AstalClipboardSelectionSignals;
@@ -34,31 +35,31 @@ static GParamSpec* astal_clipboard_selection_properties[ASTAL_CLIPBOARD_SELECTIO
     NULL,
 };
 
-void astal_clipboard_clipboard_data_free(void *data) {
-  if(data == NULL) return;
-  AstalClipboardClipboardData *self = (AstalClipboardClipboardData*) data;
-  g_free(self->mime_type);
-  g_bytes_unref(self->data);
-  g_free(self);
+void astal_clipboard_clipboard_data_free(void* data) {
+    if (data == NULL) return;
+    AstalClipboardClipboardData* self = (AstalClipboardClipboardData*)data;
+    g_free(self->mime_type);
+    g_bytes_unref(self->data);
+    g_free(self);
 }
 
 /**
-* astal_clipboard_clipboard_data_to_string:
-* 
-* returns a string representation of the data. Note that this method does not check
-* if the data actually contains text using the mime_type field.
-*
-* Returns: (transfer full) (nullable)
-*/
-gchar* astal_clipboard_clipboard_data_to_string(AstalClipboardClipboardData *data) {
+ * astal_clipboard_clipboard_data_to_string:
+ *
+ * returns a string representation of the data. Note that this method does not check
+ * if the data actually contains text using the mime_type field.
+ *
+ * Returns: (transfer full) (nullable)
+ */
+gchar* astal_clipboard_clipboard_data_to_string(AstalClipboardClipboardData* data) {
     if (data == NULL || data->data == NULL) {
         return NULL;
     }
 
     gsize size;
-    const gchar *bytes = g_bytes_get_data(data->data, &size);
+    const gchar* bytes = g_bytes_get_data(data->data, &size);
 
-    gchar *string = g_malloc(size + 1);
+    gchar* string = g_malloc(size + 1);
     memcpy(string, bytes, size);
     string[size] = '\0';
 
@@ -66,23 +67,23 @@ gchar* astal_clipboard_clipboard_data_to_string(AstalClipboardClipboardData *dat
 }
 
 /**
-* astal_clipboard_clipboard_data_to_pixbuf:
-* 
-* converts the data to a pixbuf. Note that this method does not check
-* if the data actually contains an image using the mime_type field.
-*
-* Returns: (transfer full) (nullable)
-*/
-GdkPixbuf* astal_clipboard_clipboard_data_to_pixbuf(AstalClipboardClipboardData *data) {
+ * astal_clipboard_clipboard_data_to_pixbuf:
+ *
+ * converts the data to a pixbuf. Note that this method does not check
+ * if the data actually contains an image using the mime_type field.
+ *
+ * Returns: (transfer full) (nullable)
+ */
+GdkPixbuf* astal_clipboard_clipboard_data_to_pixbuf(AstalClipboardClipboardData* data) {
     if (data == NULL || data->data == NULL) {
         return NULL;
     }
-    GInputStream *stream = g_memory_input_stream_new_from_bytes(data->data);
-    GError *error = NULL;
-    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_stream(stream, NULL, &error);
+    GInputStream* stream = g_memory_input_stream_new_from_bytes(data->data);
+    GError* error = NULL;
+    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_stream(stream, NULL, &error);
 
-    if(error != NULL) {
-      g_warning("could not create Pixbuf: %s", error->message);
+    if (error != NULL) {
+        g_warning("could not create Pixbuf: %s", error->message);
     }
 
     g_object_unref(stream);
@@ -95,9 +96,7 @@ GdkPixbuf* astal_clipboard_clipboard_data_to_pixbuf(AstalClipboardClipboardData 
  *
  * Returns: (transfer none) (element-type AstalClipboardClipboardData):
  */
-GList *astal_clipboard_selection_get_data(AstalClipboardSelection *self) {
-  return self->data;
-}
+GList* astal_clipboard_selection_get_data(AstalClipboardSelection* self) { return self->data; }
 
 static void astal_clipboard_selection_get_property(GObject* object, guint property_id,
                                                    GValue* value, GParamSpec* pspec) {
@@ -106,7 +105,7 @@ static void astal_clipboard_selection_get_property(GObject* object, guint proper
     switch (property_id) {
         case ASTAL_CLIPBOARD_SELECTION_PROP_DATA:
             g_value_set_pointer(value, self->data);
-            break;   
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -116,27 +115,28 @@ static void astal_clipboard_selection_get_property(GObject* object, guint proper
 static void noop() {}
 
 struct read_callback_data {
-  AstalClipboardSelection* self;
-  AstalClipboardClipboardData* data;
-  GByteArray *read_data;
+    AstalClipboardSelection* self;
+    AstalClipboardClipboardData* data;
+    GByteArray* read_data;
 };
 
 static void read_callback_data_free(void* data) {
-  if(data == NULL) return;
-  struct read_callback_data* rcd = data;
-  g_object_unref(rcd->self);
-  if(rcd->read_data != NULL) g_byte_array_free(rcd->read_data, TRUE);
-  g_free(rcd);
+    if (data == NULL) return;
+    struct read_callback_data* rcd = data;
+    g_object_unref(rcd->self);
+    if (rcd->read_data != NULL) g_byte_array_free(rcd->read_data, TRUE);
+    g_free(rcd);
 }
 
-static gboolean read_callback(GIOChannel *source, GIOCondition condition, gpointer data) {
+static gboolean read_callback(GIOChannel* source, GIOCondition condition, gpointer data) {
     gchar buffer[1024];
     gsize bytes_read;
-    GError *error = NULL;
+    GError* error = NULL;
 
-    struct read_callback_data *rcd = data;
+    struct read_callback_data* rcd = data;
 
-    GIOStatus status = g_io_channel_read_chars(source, buffer, sizeof(buffer) - 1, &bytes_read, &error);
+    GIOStatus status =
+        g_io_channel_read_chars(source, buffer, sizeof(buffer) - 1, &bytes_read, &error);
     if (status == G_IO_STATUS_ERROR) {
         g_critical("Error reading: %s", error->message);
         g_clear_error(&error);
@@ -159,13 +159,12 @@ static gboolean read_callback(GIOChannel *source, GIOCondition condition, gpoint
 static void offer_handle_offer(void* data, struct zwlr_data_control_offer_v1* offer,
                                const char* mime_type) {
     AstalClipboardSelection* self = ASTAL_CLIPBOARD_SELECTION(data);
-    AstalClipboardSelectionPrivate *priv = astal_clipboard_selection_get_instance_private(self);
-    
+    AstalClipboardSelectionPrivate* priv = astal_clipboard_selection_get_instance_private(self);
 
     int pipes[2];
     GError* error = NULL;
     gboolean success = g_unix_open_pipe(pipes, O_NONBLOCK, &error);
-    if(!success) {
+    if (!success) {
         g_error("Failed to open pipe: %s\n", error->message);
         zwlr_data_control_offer_v1_destroy(offer);
         g_error_free(error);
@@ -175,29 +174,28 @@ static void offer_handle_offer(void* data, struct zwlr_data_control_offer_v1* of
     AstalClipboardClipboardData* cl_data = g_new0(AstalClipboardClipboardData, 1);
     cl_data->mime_type = g_strdup(mime_type);
 
-    struct read_callback_data *rcd = g_malloc(sizeof(struct read_callback_data));
+    struct read_callback_data* rcd = g_malloc(sizeof(struct read_callback_data));
     rcd->self = g_object_ref(self);
     rcd->data = cl_data;
     rcd->read_data = g_byte_array_new();
 
-    GIOChannel *channel = g_io_channel_unix_new(pipes[0]);
+    GIOChannel* channel = g_io_channel_unix_new(pipes[0]);
     g_io_channel_set_encoding(channel, NULL, NULL);
     g_io_channel_set_flags(channel, G_IO_FLAG_NONBLOCK, NULL);
-    g_io_add_watch_full(channel, 0, G_IO_IN | G_IO_HUP, read_callback, rcd, read_callback_data_free);
+    g_io_add_watch_full(channel, 0, G_IO_IN | G_IO_HUP, read_callback, rcd,
+                        read_callback_data_free);
 
     zwlr_data_control_offer_v1_receive(offer, mime_type, pipes[1]);
     close(pipes[1]);
-
 }
 
 static const struct zwlr_data_control_offer_v1_listener offer_listener = {.offer =
                                                                               offer_handle_offer};
 
-AstalClipboardSelection *astal_clipboard_selection_new(struct zwlr_data_control_offer_v1 *offer) {
-
+AstalClipboardSelection* astal_clipboard_selection_new(struct zwlr_data_control_offer_v1* offer) {
     AstalClipboardSelection* self = g_object_new(ASTAL_CLIPBOARD_TYPE_SELECTION, NULL);
-    AstalClipboardSelectionPrivate *priv = astal_clipboard_selection_get_instance_private(self);
-    
+    AstalClipboardSelectionPrivate* priv = astal_clipboard_selection_get_instance_private(self);
+
     self->data = NULL;
     priv->offer = offer;
 
@@ -207,16 +205,15 @@ AstalClipboardSelection *astal_clipboard_selection_new(struct zwlr_data_control_
 
 static void astal_clipboard_selection_init(AstalClipboardSelection* self) {
     AstalClipboardSelectionPrivate* priv = astal_clipboard_selection_get_instance_private(self);
-
 }
 
 static void astal_clipboard_selection_finalize(GObject* object) {
     AstalClipboardSelection* self = ASTAL_CLIPBOARD_SELECTION(object);
-    AstalClipboardSelectionPrivate *priv = astal_clipboard_selection_get_instance_private(self);
+    AstalClipboardSelectionPrivate* priv = astal_clipboard_selection_get_instance_private(self);
 
     zwlr_data_control_offer_v1_destroy(priv->offer);
     g_clear_list(&self->data, astal_clipboard_clipboard_data_free);
-    
+
     G_OBJECT_CLASS(astal_clipboard_selection_parent_class)->finalize(object);
 }
 
@@ -231,10 +228,9 @@ static void astal_clipboard_selection_class_init(AstalClipboardSelectionClass* c
      * A list of [record@AstalClipboardClipboardData] objects.
      */
     astal_clipboard_selection_properties[ASTAL_CLIPBOARD_SELECTION_PROP_DATA] =
-        g_param_spec_pointer("data", "data", "a list of the mime types of this selection", G_PARAM_READABLE);
+        g_param_spec_pointer("data", "data", "a list of the mime types of this selection",
+                             G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_CLIPBOARD_SELECTION_N_PROPERTIES,
                                       astal_clipboard_selection_properties);
- 
-
 }

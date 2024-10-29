@@ -13,7 +13,7 @@
 struct _AstalClipboardClipboard {
     GObject parent_instance;
 
-    AstalClipboardSelection *selection;
+    AstalClipboardSelection* selection;
 };
 
 typedef struct {
@@ -28,9 +28,9 @@ typedef struct {
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalClipboardClipboard, astal_clipboard_clipboard, G_TYPE_OBJECT)
 
-typedef enum { 
-  ASTAL_CLIPBOARD_CLIPBOARD_PROP_SELECTION = 1,
-  ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES
+typedef enum {
+    ASTAL_CLIPBOARD_CLIPBOARD_PROP_SELECTION = 1,
+    ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES
 } AstalCiplboardClipboardProperties;
 
 typedef enum { ASTAL_CLIPBOARD_CLIPBOARD_N_SIGNALS } AstalClipboardClipboardSignals;
@@ -47,8 +47,8 @@ static GParamSpec* astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOAR
  *
  * Returns: (transfer none):
  */
-AstalClipboardSelection* astal_clipboard_clipboard_get_selection(AstalClipboardClipboard *self) {
-  return self->selection;
+AstalClipboardSelection* astal_clipboard_clipboard_get_selection(AstalClipboardClipboard* self) {
+    return self->selection;
 }
 
 static void astal_clipboard_clipboard_get_property(GObject* object, guint property_id,
@@ -58,7 +58,7 @@ static void astal_clipboard_clipboard_get_property(GObject* object, guint proper
     switch (property_id) {
         case ASTAL_CLIPBOARD_CLIPBOARD_PROP_SELECTION:
             g_value_set_object(value, self->selection);
-            break;    
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -80,14 +80,13 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
 
 static void global_registry_remover(void* data, struct wl_registry* registry, uint32_t id) {}
 
-
 static void device_handle_data_offer(void* data, struct zwlr_data_control_device_v1* device,
                                      struct zwlr_data_control_offer_v1* offer) {
-    AstalClipboardClipboard *self = ASTAL_CLIPBOARD_CLIPBOARD(data);
-    AstalClipboardClipboardPrivate *priv = astal_clipboard_clipboard_get_instance_private(self);
+    AstalClipboardClipboard* self = ASTAL_CLIPBOARD_CLIPBOARD(data);
+    AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
 
     if (offer == NULL) {
-      return;
+        return;
     }
     g_clear_object(&priv->current_offer);
     priv->current_offer = astal_clipboard_selection_new(offer);
@@ -95,21 +94,19 @@ static void device_handle_data_offer(void* data, struct zwlr_data_control_device
 
 static void device_handle_selection(void* data, struct zwlr_data_control_device_v1* device,
                                     struct zwlr_data_control_offer_v1* offer) {
-    AstalClipboardClipboard *self = ASTAL_CLIPBOARD_CLIPBOARD(data);
-    AstalClipboardClipboardPrivate *priv = astal_clipboard_clipboard_get_instance_private(self);
+    AstalClipboardClipboard* self = ASTAL_CLIPBOARD_CLIPBOARD(data);
+    AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
     g_clear_object(&self->selection);
-    if(offer != NULL) {
-      self->selection = g_object_ref(priv->current_offer);
+    if (offer != NULL) {
+        self->selection = g_object_ref(priv->current_offer);
     }
     g_object_notify(G_OBJECT(self), "selection");
 }
 
 static void device_handle_primary_selection(void* data, struct zwlr_data_control_device_v1* device,
-                                            struct zwlr_data_control_offer_v1* offer) {
-}
+                                            struct zwlr_data_control_offer_v1* offer) {}
 
-static void device_handle_finished(void* data, struct zwlr_data_control_device_v1* device) {
-}
+static void device_handle_finished(void* data, struct zwlr_data_control_device_v1* device) {}
 
 static const struct wl_registry_listener registry_listener = {global_registry_handler,
                                                               global_registry_remover};
@@ -120,7 +117,6 @@ static const struct zwlr_data_control_device_v1_listener device_listener = {
     .primary_selection = device_handle_primary_selection,
     .data_offer = device_handle_data_offer};
 
-
 /**
  * astal_clipboard_clipboard_get_default
  *
@@ -128,8 +124,8 @@ static const struct zwlr_data_control_device_v1_listener device_listener = {
  *
  * Returns: (nullable) (transfer none): gets the default clipboard object.
  */
-AstalClipboardClipboard *astal_clipboard_clipboard_get_default() {
-    static AstalClipboardClipboard *self = NULL;
+AstalClipboardClipboard* astal_clipboard_clipboard_get_default() {
+    static AstalClipboardClipboard* self = NULL;
 
     if (self == NULL) self = g_object_new(ASTAL_CLIPBOARD_TYPE_CLIPBOARD, NULL);
 
@@ -143,8 +139,9 @@ AstalClipboardClipboard *astal_clipboard_clipboard_get_default() {
  *
  * Returns: (nullable) (transfer none): gets the default clipboard object.
  */
-AstalClipboardClipboard *astal_clipboard_get_default() { return astal_clipboard_clipboard_get_default(); }
-
+AstalClipboardClipboard* astal_clipboard_get_default() {
+    return astal_clipboard_clipboard_get_default();
+}
 
 static void astal_clipboard_clipboard_init(AstalClipboardClipboard* self) {
     AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
@@ -200,12 +197,10 @@ static void astal_clipboard_clipboard_class_init(AstalClipboardClipboardClass* c
     object_class->get_property = astal_clipboard_clipboard_get_property;
     object_class->finalize = astal_clipboard_clipboard_finalize;
 
-    astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOARD_PROP_SELECTION] = 
-      g_param_spec_object("selection", "selection", "selection", ASTAL_CLIPBOARD_TYPE_SELECTION, G_PARAM_READABLE);
+    astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOARD_PROP_SELECTION] =
+        g_param_spec_object("selection", "selection", "selection", ASTAL_CLIPBOARD_TYPE_SELECTION,
+                            G_PARAM_READABLE);
 
-    g_object_class_install_properties(object_class, ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES, astal_clipboard_clipboard_properties);
-
+    g_object_class_install_properties(object_class, ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES,
+                                      astal_clipboard_clipboard_properties);
 }
-
-
-
