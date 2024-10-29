@@ -13,7 +13,7 @@ maintainer: [@kotontrion](https://github.com/kotontrion)
 :::code-group
 
 ```sh [Core Library]
-yay -S libastal-git
+yay -S libastal-io-git libastal-git
 ```
 
 ```sh [Every Library]
@@ -24,14 +24,7 @@ yay -S libastal-meta
 
 ## Bulding libastal from source
 
-1. Clone the repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/core
-```
-
-2. Install the following dependencies
+1. Install the following dependencies
 
 :::code-group
 
@@ -44,26 +37,31 @@ sudo dnf install meson gcc valac gtk3-devel gtk-layer-shell-devel gobject-intros
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac libgtk3-dev libgtk-layer-shell-dev gobject-introspection
+sudo apt install meson valac libgtk-3-dev libgtk-layer-shell-dev gobject-introspection libgirepository1.0-dev
 ```
 
 :::
 
-3. Build and install with `meson`
+2. Clone the repo
 
 ```sh
-meson setup build
-meson install -C build
+git clone https://github.com/aylur/astal.git /tmp/astal
 ```
 
-:::tip
-Most distros recommend manual installs in `/usr/local`,
-which is what `meson` defaults to. If you want to install to `/usr`
-instead which most package managers do, set the `prefix` option:
+3. Build and install with `meson`
+
+- astal-io
 
 ```sh
+cd /tmp/astal/lib/astal/io
 meson setup --prefix /usr build
 meson install -C build
 ```
 
-:::
+- astal3
+
+```sh
+cd /tmp/astal/lib/astal/gtk3
+meson setup --prefix /usr build
+meson install -C build
+```

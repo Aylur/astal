@@ -1,24 +1,83 @@
-namespace AstalApps {
-public class Apps : Object {
+public class AstalApps.Apps : Object {
     private string cache_directory;
     private string cache_file;
     private List<Application> _list;
     private HashTable<string, int> frequents { get; private set; }
 
+    /**
+     * Indicates wether hidden applications should included in queries.
+     */
     public bool show_hidden { get; set; }
+
+    /**
+     * Full list of available applications.
+     */
     public List<weak Application> list { owned get { return _list.copy(); } }
 
-    public double min_score { get; set; default = 0.5; }
+    /**
+     * The minimum score the application has to meet in order to be included in queries.
+     */
+    public double min_score { get; set; default = 0; }
 
+    /**
+     * Extra multiplier to apply when matching the `name` of an application.
+     * Defaults to `2`
+     */
     public double name_multiplier { get; set; default = 2; }
+
+    /**
+     * Extra multiplier to apply when matching the entry of an application.
+     * Defaults to `1`
+     */
     public double entry_multiplier { get; set; default = 1; }
+
+    /**
+     * Extra multiplier to apply when matching the executable of an application.
+     * Defaults to `1`
+     */
     public double executable_multiplier { get; set; default = 1; }
+
+    /**
+     * Extra multiplier to apply when matching the description of an application.
+     * Defaults to `0.5`
+     */
     public double description_multiplier { get; set; default = 0.5; }
 
+    /**
+     * Extra multiplier to apply when matching the keywords of an application.
+     * Defaults to `0.5`
+     */
+    public double keywords_multiplier { get; set; default = 0.5; }
+
+    /**
+     * Consider the name of an application during queries.
+     * Defaults to `true`
+     */
     public bool include_name { get; set; default = true; }
+
+    /**
+     * Consider the entry of an application during queries.
+     * Defaults to `false`
+     */
     public bool include_entry { get; set; default = false; }
+
+    /**
+     * Consider the executable of an application during queries.
+     * Defaults to `false`
+     */
     public bool include_executable { get; set; default = false; }
+
+    /**
+     * Consider the description of an application during queries.
+     * Defaults to `false`
+     */
     public bool include_description { get; set; default = false; }
+
+    /**
+     * Consider the keywords of an application during queries.
+     * Defaults to `false`
+     */
+    public bool include_keywords { get; set; default = false; }
 
     construct {
         cache_directory = Environment.get_user_cache_dir() + "/astal";
@@ -49,23 +108,39 @@ public class Apps : Object {
         reload();
     }
 
-    private double score (string search, Application a, bool exact) {
-        var am = exact ? a.exact_match(search) : a.fuzzy_match(search);
+    private double score(string search, Application a, SearchAlgorithm alg) {
+        var s = Score();
         double r = 0;
 
-        if (include_name)
-            r += am.name * name_multiplier;
-        if (include_entry)
-            r += am.entry * entry_multiplier;
-        if (include_executable)
-            r += am.executable * executable_multiplier;
-        if (include_description)
-            r += am.description * description_multiplier;
+        if (alg == FUZZY) s = a.fuzzy_match(search);
+        if (alg == EXACT) s = a.exact_match(search);
+
+        if (include_name) r += s.name * name_multiplier;
+        if (include_entry) r += s.entry * entry_multiplier;
+        if (include_executable) r += s.executable * executable_multiplier;
+        if (include_description) r += s.description * description_multiplier;
+        if (include_keywords) r += s.keywords * keywords_multiplier;
 
         return r;
     }
 
-    public List<weak Application> query(string? search = "", bool exact = false) {
+    /**
+     * Calculate a score for an application using fuzzy matching algorithm.
+     * Taking this Apps' include settings into consideration .
+     */
+    public double fuzzy_score(string search, Application a) {
+        return score(search, a, FUZZY);
+    }
+
+    /**
+     * Calculate a score for an application using exact string algorithm.
+     * Taking this Apps' include settings into consideration .
+     */
+    public double exact_score(string search, Application a) {
+        return score(search, a, EXACT);
+    }
+
+    internal List<weak Application> query(string? search = "", SearchAlgorithm alg = FUZZY) {
         if (search == null)
             search = "";
 
@@ -83,7 +158,7 @@ public class Apps : Object {
         // single character, sort by frequency and exact match
         if (search.length == 1) {
             foreach (var app in list) {
-                if (score(search, app, true) == 0)
+                if (score(search, app, alg) == 0)
                     arr.remove(app);
             }
 
@@ -96,14 +171,14 @@ public class Apps : Object {
 
         // filter
         foreach (var app in list) {
-            if (score(search, app, exact) < min_score)
+            if (score(search, app, alg) < min_score)
                 arr.remove(app);
         }
 
         // sort by score, frequency
         arr.sort_with_data((a, b) => {
-            var s1 = score(search, a, exact);
-            var s2 = score(search, b, exact);
+            var s1 = score(search, a, alg);
+            var s2 = score(search, b, alg);
 
             if (s1 == s2)
                 return (int)b.frequency - (int)a.frequency;
@@ -114,14 +189,23 @@ public class Apps : Object {
         return arr;
     }
 
+    /**
+     * Query the `list` of applications with a fuzzy matching algorithm.
+     */
     public List<weak Application> fuzzy_query(string? search = "") {
-        return query(search, false);
+        return query(search, FUZZY);
     }
 
+    /**
+     * Query the `list` of applications with a simple string matching algorithm.
+     */
     public List<weak Application> exact_query(string? search = "") {
-        return query(search, true);
+        return query(search, EXACT);
     }
 
+    /**
+     * Reload the `list` of Applications.
+     */
     public void reload() {
         var arr = AppInfo.get_all();
 
@@ -169,4 +253,8 @@ public class Apps : Object {
         }
     }
 }
+
+private enum AstalApps.SearchAlgorithm {
+    EXACT,
+    FUZZY,
 }

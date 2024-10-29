@@ -1,5 +1,5 @@
 /**
- * Get the singleton instance of {@link Notifd}
+ * Get the singleton instance of [class@AstalNotifd.Notifd]
  */
 namespace AstalNotifd {
     public Notifd get_default() {
@@ -74,7 +74,7 @@ public class AstalNotifd.Notifd : Object {
     }
 
     /**
-     * Gets the {@link Notification} with id or null if there is no such Notification.
+     * Gets the [class@AstalNotifd.Notification] with id or null if there is no such Notification.
      */
     public Notification get_notification(uint id) {
         return proxy != null ? proxy.get_notification(id) : daemon.get_notification(id);
@@ -85,7 +85,7 @@ public class AstalNotifd.Notifd : Object {
     }
 
     /**
-     * Emitted when the daemon receives a {@link Notification}.
+     * Emitted when the daemon receives a [class@AstalNotifd.Notification].
      *
      * @param id The ID of the Notification.
      * @param replaced Indicates if an existing Notification was replaced.
@@ -93,7 +93,7 @@ public class AstalNotifd.Notifd : Object {
     public signal void notified(uint id, bool replaced);
 
     /**
-     * Emitted when a {@link Notification} is resolved.
+     * Emitted when a [class@AstalNotifd.Notification] is resolved.
      *
      * @param id The ID of the Notification.
      * @param reason The reason how the Notification was resolved.

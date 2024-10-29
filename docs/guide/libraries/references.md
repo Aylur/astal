@@ -29,7 +29,6 @@ Reading their documentation will vary depending on the language they are used in
 
 ## Astal Libraries
 
-- [Astal](https://aylur.github.io/libastal): libastal the core library, which has the widgets and utilites
 - [Apps](https://aylur.github.io/libastal/apps): Library and cli tool for querying applications
 - [Auth](https://aylur.github.io/libastal/auth): Authentication library using PAM
 - [Battery](https://aylur.github.io/libastal/battery): DBus proxy library for upower daemon

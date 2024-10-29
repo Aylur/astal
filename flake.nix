@@ -1,6 +1,4 @@
 {
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-
   outputs = {
     self,
     nixpkgs,
@@ -22,11 +20,15 @@
           vala
           wayland
           wayland-scanner
+          python3
         ];
         propagatedBuildInputs = [pkgs.glib] ++ inputs;
         pname = name;
         version = readVer "${src}/version";
         src = src;
+        postUnpack = ''
+          cp --remove-destination ${./lib/gir.py} $sourceRoot/gir.py
+        '';
         outputs = ["out" "dev"];
       };
   in {
@@ -43,9 +45,10 @@
 
     packages.${system} = with pkgs; {
       docs = import ./docs {inherit self pkgs;};
-      default = self.packages.${system}.astal;
+      default = self.packages.${system}.io;
 
-      astal = mkPkg "astal" ./core [gtk3 gtk-layer-shell];
+      io = mkPkg "astal" ./lib/astal/io [];
+      astal3 = mkPkg "astal" ./lib/astal/gtk3 [self.packages.${system}.io gtk3 gtk-layer-shell];
       apps = mkPkg "astal-apps" ./lib/apps [json-glib];
       auth = mkPkg "astal-auth" ./lib/auth [pam];
       battery = mkPkg "astal-battery" ./lib/battery [json-glib];
@@ -59,6 +62,23 @@
       river = mkPkg "astal-river" ./lib/river [json-glib];
       tray = mkPkg "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
       wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
+      # polkit = mkPkg "astal-polkit" ./lib/polkit [polkit];
+
+      gjs = pkgs.stdenvNoCC.mkDerivation {
+        src = ./lang/gjs;
+        name = "astal-gjs";
+        buildInputs = [
+          meson
+          ninja
+          pkg-config
+          self.packages.${system}.io
+          self.packages.${system}.astal3
+        ];
+      };
     };
+  };
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 }

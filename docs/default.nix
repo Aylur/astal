@@ -7,47 +7,45 @@
 
   toTOML = (pkgs.formats.toml {}).generate;
 
-  genRefForPkg = {
-    name,
-    pkg,
-    outPath,
-    metaData,
-  }: let
-    data = toTOML name metaData;
-    output = self.packages.${pkgs.system}.${pkg}.dev;
-  in ''
-    mkdir -p $out/${outPath}
-    cat ${urlmap} > urlmap.js
-    gi-docgen generate -C ${data} ${output}/share/gir-1.0/${name}-0.1.gir
-    cp -r ${name}-0.1/* $out/${outPath}
-  '';
+  docgen = pkgs.gi-docgen.overrideAttrs {
+    patches = [../nix/doc/gi-docgen.patch];
+  };
 
-  genLib = name: namespace: {
-    description,
+  genLib = {
+    flakepkg,
+    gir,
     version,
+    description,
+    api-ver ? "0.1",
     authors ? "Aylur",
     dependencies ? {},
-    out ? "libastal/${name}",
-  }:
-    genRefForPkg {
-      name = "Astal${namespace}";
-      pkg = name;
-      outPath = out;
-      metaData = {
-        library = {
-          inherit description authors;
-          version = readVer version;
-          license = "LGPL-2.1";
-          browse_url = "https://github.com/aylur/astal";
-          repository_url = "https://github.com/aylur/aylur.git";
-          website_url = "https://aylur.github.io/astal";
-          dependencies = ["GObject-2.0"] ++ (builtins.attrNames dependencies);
-        };
+    out ? "libastal/${flakepkg}",
+    browse ? flakepkg,
+    website ? flakepkg,
+  }: let
+    name = "Astal${gir}-${api-ver}";
+    src = self.packages.${pkgs.system}.${flakepkg}.dev;
 
-        extra.urlmap_file = "urlmap.js";
-        dependencies = {inherit (dependency) "GObject-2.0";} // dependencies;
+    data = toTOML gir {
+      library = {
+        inherit description authors;
+        version = readVer version;
+        license = "LGPL-2.1";
+        browse_url = "https://github.com/Aylur/astal/tree/main/lib/${browse}";
+        repository_url = "https://github.com/aylur/aylur.git";
+        website_url = "https://aylur.github.io/astal/guide/libraries/${website}";
+        dependencies = ["GObject-2.0"] ++ (builtins.attrNames dependencies);
       };
+
+      extra.urlmap_file = "urlmap.js";
+      dependencies = {inherit (dependency) "GObject-2.0";} // dependencies;
     };
+  in ''
+    mkdir -p $out/${out}
+    cat ${urlmap} > urlmap.js
+    gi-docgen generate -C ${data} ${src}/share/gir-1.0/${name}.gir
+    cp -r ${name}/* $out/${out}
+  '';
 
   dependency = {
     "GObject-2.0" = {
@@ -59,6 +57,11 @@
       name = "Gtk";
       description = "The GTK toolkit";
       docs_url = "https://docs.gtk.org/gtk3/";
+    };
+    "AstalIO-0.1" = {
+      name = "AstalIO";
+      description = "Astal Core library";
+      docs_url = "https://aylur.github.io/libastal/io";
     };
     "NM-1.0" = {
       name = "NetworkManager";
@@ -80,6 +83,7 @@
       ["Gdk" "https://docs.gtk.org/gdk3/"]
       ["Gtk" "https://docs.gtk.org/gtk3/"]
       ["GdkPixbuf" "https://docs.gtk.org/gdk-pixbuf/"]
+      ["AstalIO" "https://aylur.github.io/libastal/io"]
 
       # FIXME: these are not gi-docgen generated, therefore links are broken
       ["NM" "https://networkmanager.dev/docs/libnm/latest/"]
@@ -88,11 +92,11 @@
   '';
 in
   pkgs.stdenvNoCC.mkDerivation {
-    name = "library-reference";
+    name = "reference";
     src = ./.;
 
     nativeBuildInputs = with pkgs; [
-      gi-docgen
+      docgen
       glib
       json-glib
       gobject-introspection
@@ -102,65 +106,101 @@ in
       libdbusmenu-gtk3
       wireplumber
       networkmanager
+      self.packages.${system}.io
     ];
 
     installPhase = ''
       runHook preInstall
-      ${genLib "astal" "" {
-        out = "libastal";
-        description = "Astal core library";
-        version = ../core/version;
-        dependencies = {inherit (dependency) "Gtk-3.0";};
+      ${genLib {
+        flakepkg = "io";
+        gir = "IO";
+        api-ver = "0.1";
+        browse = "astal/io";
+        description = "Astal Core library";
+        version = ../lib/astal/io/version;
       }}
-      ${genLib "apps" "Apps" {
+      ${genLib {
+        flakepkg = "astal3";
+        gir = "";
+        api-ver = "3.0";
+        browse = "astal/gtk3";
+        description = "Astal GTK3 widget library";
+        version = ../lib/astal/gtk3/version;
+        dependencies = {inherit (dependency) "AstalIO-0.1" "Gtk-3.0";};
+      }}
+      ${genLib {
+        flakepkg = "apps";
+        gir = "Apps";
         description = "Application query library";
         version = ../lib/apps/version;
       }}
-      ${genLib "auth" "Auth" {
+      ${genLib {
+        flakepkg = "auth";
+        gir = "Auth";
         authors = "kotontrion";
         description = "Authentication using pam";
         version = ../lib/auth/version;
       }}
-      ${genLib "battery" "Battery" {
+      ${genLib {
+        flakepkg = "battery";
+        gir = "Battery";
         description = "DBus proxy for upowerd devices";
         version = ../lib/battery/version;
       }}
-      ${genLib "bluetooth" "Bluetooth" {
+      ${genLib {
+        flakepkg = "bluetooth";
+        gir = "Bluetooth";
         description = "DBus proxy for bluez";
         version = ../lib/bluetooth/version;
       }}
-      ${genLib "hyprland" "Hyprland" {
+      ${genLib {
+        flakepkg = "hyprland";
+        gir = "Hyprland";
         description = "IPC client for Hyprland";
         version = ../lib/hyprland/version;
       }}
-      ${genLib "mpris" "Mpris" {
+      ${genLib {
+        flakepkg = "mpris";
+        gir = "Mpris";
         description = "Control mpris players";
         version = ../lib/mpris/version;
       }}
-      ${genLib "network" "Network" {
+      ${genLib {
+        flakepkg = "network";
+        gir = "Network";
         description = "NetworkManager wrapper library";
         version = ../lib/network/version;
         dependencies = {inherit (dependency) "NM-1.0";}; # FIXME: why does this not work?
       }}
-      ${genLib "notifd" "Notifd" {
+      ${genLib {
+        flakepkg = "notifd";
+        gir = "Notifd";
         description = "Notification daemon library";
         version = ../lib/notifd/version;
       }}
-      ${genLib "powerprofiles" "PowerProfiles" {
+      ${genLib {
+        flakepkg = "powerprofiles";
+        gir = "PowerProfiles";
         description = "DBus proxy for upowerd profiles";
         version = ../lib/powerprofiles/version;
       }}
-      ${genLib "river" "River" {
+      ${genLib {
+        flakepkg = "river";
+        gir = "River";
         description = "IPC client for River";
         version = ../lib/river/version;
         authors = "kotontrion";
       }}
-      ${genLib "tray" "Tray" {
+      ${genLib {
+        flakepkg = "tray";
+        gir = "Tray";
         description = "StatusNotifierItem implementation";
         version = ../lib/tray/version;
         authors = "kotontrion";
       }}
-      ${genLib "wireplumber" "Wp" {
+      ${genLib {
+        flakepkg = "wireplumber";
+        gir = "Wp";
         description = "Wrapper library over the wireplumber API";
         version = ../lib/wireplumber/version;
         authors = "kotontrion";

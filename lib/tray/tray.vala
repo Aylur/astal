@@ -2,7 +2,7 @@ namespace AstalTray {
 [DBus (name="org.kde.StatusNotifierWatcher")]
 internal interface IWatcher : Object {
     public abstract string[] RegisteredStatusNotifierItems { owned get; }
-    public abstract int ProtocolVersion { owned get; }
+    public abstract int ProtocolVersion { get; }
 
     public abstract void RegisterStatusNotifierItem(string service, BusName sender) throws DBusError, IOError;
     public abstract void RegisterStatusNotifierHost(string service) throws DBusError, IOError;
@@ -12,13 +12,19 @@ internal interface IWatcher : Object {
     public signal void StatusNotifierHostRegistered();
     public signal void StatusNotifierHostUnregistered();
 }
-
+/**
+ * Get the singleton instance of [class@AstalTray.Tray]
+ */
 public Tray get_default() {
     return Tray.get_default();
 }
 
 public class Tray : Object {
     private static Tray? instance;
+
+    /**
+     * Get the singleton instance of [class@AstalTray.Tray]
+     */
     public static unowned Tray get_default() {
         if (instance == null)
             instance = new Tray();
@@ -32,13 +38,22 @@ public class Tray : Object {
     private HashTable<string, TrayItem> _items =
         new HashTable<string, TrayItem>(str_hash, str_equal);
 
+    /**
+     * List of currently registered tray items
+     */
     public List<weak TrayItem> items { owned get { return _items.get_values(); }}
 
-    public signal void item_added(string service) {
+    /**
+     * emitted when a new tray item was added.
+     */
+    public signal void item_added(string item_id) {
         notify_property("items");
     }
 
-    public signal void item_removed(string service) {
+    /**
+     * emitted when a tray item was removed.
+     */
+    public signal void item_removed(string item_id) {
         notify_property("items");
     }
 
@@ -128,8 +143,11 @@ public class Tray : Object {
         item_removed(service);
     }
 
-    public TrayItem get_item(string service) {
-        return _items.get(service);
+    /**
+     * gets the TrayItem with the given item-id.
+     */
+    public TrayItem get_item(string item_id) {
+        return _items.get(item_id);
     }
 }
 }

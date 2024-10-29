@@ -73,10 +73,11 @@ public class Client : Object {
     }
 }
 
+[Flags]
 public enum Fullscreen {
     CURRENT = -1,
     NONE = 0,
-    FULLSCREEN = 1,
-    MAXIMIZED = 2,
+    MAXIMIZED = 1,
+    FULLSCREEN = 2,
 }
 }

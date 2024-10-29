@@ -5,7 +5,7 @@ pageClass: home-page
 hero:
   name: "Astal"
   text: "Create Beautiful Widgets With Ease"
-  tagline: "The Framework to Craft Desktop Shells and <i>beautiful</i> <i>functional</i> Wayland Widgets with GTK!"
+  tagline: "The Linux Suite and Framework to Craft Desktop Shells and <i>beautiful</i> <i>functional</i> Wayland Widgets with GTK!"
   image: /icon.svg
   actions:
     - theme: brand
@@ -21,10 +21,10 @@ hero:
 features:
   - title: Use Your Preferred Language
     icon: <i style="color:var(--vp-c-brand-3)" class="devicon-typescript-plain"></i>
-    details: The main focus of Astal is TypeScript using JSX. But you can use the libraries in any language that supports <a href="https://en.wikipedia.org/wiki/List_of_language_bindings_for_GTK">Gobject Introspection</a>.
+    details: The main focus of Astal is TypeScript+JSX. But you can use the libraries in any language that supports <a href="https://en.wikipedia.org/wiki/List_of_language_bindings_for_GTK">Gobject Introspection</a>.
   - title: No bash scripts needed
     icon: <i style="color:var(--vp-c-brand-3)" class="devicon-bash-plain"></i>
-    details: Includes modules to work with Network, Bluetooth, Battery, Audio and more.
+    details: Includes modules to work with Network, Bluetooth, Battery, Audio and <a href="/astal/guide/libraries/references#astal-libraries">more</a>.
   - title: Use any Gtk widget
     icon: <i style="color:var(--vp-c-brand-3)" class="fl-gtk"></i>
     details: With Astal you work with Gtk directly. You are not limited to only a set of them.
@@ -56,6 +56,7 @@ features:
 
   .VPFeature a {
     font-weight: bold;
+    color: var(--vp-c-brand-2);
   }
 
   .VPFooter {

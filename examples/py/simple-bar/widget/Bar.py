@@ -1,5 +1,6 @@
 import math
 from gi.repository import (
+    AstalIO,
     Astal,
     Gtk,
     Gdk,
@@ -125,8 +126,8 @@ class SysTray(Gtk.Box):
             app.add_icons(theme)
 
         menu = item.create_menu()
-        btn = Astal.Button()
-        icon = Astal.Icon()
+        btn = Astal.Button(visible=True)
+        icon = Astal.Icon(visible=True)
 
         def on_clicked(btn):
             if menu:
@@ -143,6 +144,7 @@ class SysTray(Gtk.Box):
         item.bind_property("gicon", icon, "gicon", SYNC)
         self.add(btn)
         self.items[id] = btn
+        self.show_all()
 
     def remove_item(self, _: Tray.Tray, id: str):
         if id in self.items:
@@ -203,7 +205,7 @@ class Time(Astal.Label):
     def __init__(self, format="%H:%M - %A %e."):
         super().__init__()
         self.format = format
-        self.interval = Astal.Time.interval(1000, self.sync)
+        self.interval = AstalIO.Time.interval(1000, self.sync)
         self.connect("destroy", self.interval.cancel)
         Astal.widget_set_class_names(self, ["Time"])
 
