@@ -53,6 +53,7 @@
       auth = mkPkg "astal-auth" ./lib/auth [pam];
       battery = mkPkg "astal-battery" ./lib/battery [json-glib];
       bluetooth = mkPkg "astal-bluetooth" ./lib/bluetooth [];
+      cava = mkPkg "astal-cava" ./lib/cava [(pkgs.callPackage ./nix/libcava.nix {})];
       hyprland = mkPkg "astal-hyprland" ./lib/hyprland [json-glib];
       mpris = mkPkg "astal-mpris" ./lib/mpris [gvfs json-glib];
       network = mkPkg "astal-network" ./lib/network [networkmanager];
@@ -61,12 +62,11 @@
       river = mkPkg "astal-river" ./lib/river [json-glib];
       tray = mkPkg "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
       wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
-      # polkit = mkPkg "astal-polkit" ./lib/polkit [polkit];
 
       gjs = pkgs.stdenvNoCC.mkDerivation {
         src = ./lang/gjs;
         name = "astal-gjs";
-        buildInputs = [
+        nativeBuildInputs = [
           meson
           ninja
           pkg-config

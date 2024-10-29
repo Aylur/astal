@@ -154,6 +154,13 @@ in
         version = ../lib/bluetooth/version;
       }}
       ${genLib {
+        flakepkg = "cava";
+        gir = "Cava";
+        description = "Audio visualization library using cava";
+        version = ../lib/cava/version;
+        authors = "kotontrion";
+      }}
+      ${genLib {
         flakepkg = "hyprland";
         gir = "Hyprland";
         description = "IPC client for Hyprland";
