@@ -1,10 +1,12 @@
 srcs = files(
-  'clipboard.c'
+  'clipboard.c',
+  'selection.c'
 )
 
 deps = [
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
+  dependency('gdk-pixbuf-2.0'),
   dependency('wayland-client'),
   wayland_glib_dep
 ]
@@ -28,7 +30,7 @@ if get_option('introspection')
     namespace: 'AstalClipboard',
     symbol_prefix: 'astal_clipboard',
     identifier_prefix: 'AstalClipboard',
-    includes: ['GObject-2.0', 'Gio-2.0'],
+    includes: ['GObject-2.0', 'Gio-2.0', 'GdkPixbuf-2.0'],
     header: 'astal-clipboard.h',
     export_packages: pkg_config_name,
     install: true,
