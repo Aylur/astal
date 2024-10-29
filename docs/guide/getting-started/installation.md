@@ -33,7 +33,7 @@ sudo pacman -Syu meson vala gtk3 gtk-layer-shell gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac gtk3-devel gtk-layer-shell-devel gobject-introspection-devel
+sudo dnf install meson gcc vala valadoc gtk3-devel gtk-layer-shell-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
