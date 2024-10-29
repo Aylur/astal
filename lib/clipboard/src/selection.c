@@ -182,11 +182,13 @@ static void offer_handle_offer(void* data, struct zwlr_data_control_offer_v1* of
     GIOChannel* channel = g_io_channel_unix_new(pipes[0]);
     g_io_channel_set_encoding(channel, NULL, NULL);
     g_io_channel_set_flags(channel, G_IO_FLAG_NONBLOCK, NULL);
+    g_io_channel_set_close_on_unref(channel, TRUE);
     g_io_add_watch_full(channel, 0, G_IO_IN | G_IO_HUP, read_callback, rcd,
                         read_callback_data_free);
 
     zwlr_data_control_offer_v1_receive(offer, mime_type, pipes[1]);
     close(pipes[1]);
+    g_io_channel_unref(channel);
 }
 
 static const struct zwlr_data_control_offer_v1_listener offer_listener = {.offer =
