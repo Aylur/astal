@@ -14,21 +14,23 @@ pkg_config = import('pkgconfig')
 gnome = import('gnome')
 
 srcs = files(
+  'astal-cava.h',
   'cava.c',
-  'astal-cava.h'
 )
 
 install_headers('astal-cava.h')
 
-cava = dependency('cava',
-                  version : '>=0.10.3',
-                  required: true,
-                  fallback : ['cava', 'cava_dep'])
+cava = dependency(
+  'cava',
+  version: '>=0.10.3',
+  required: true,
+  fallback: ['cava', 'cava_dep'],
+)
 
 deps = [
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
-  cava
+  cava,
 ]
 
 astal_cava_lib = library(

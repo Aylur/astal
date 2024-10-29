@@ -153,7 +153,9 @@ in
         description = "DBus proxy for bluez";
         version = ../lib/bluetooth/version;
       }}
-      ${genLib "cava" "Cava" {
+      ${genLib {
+        flakepkg = "cava";
+        gir = "Cava";
         description = "Audio visualization library using cava";
         version = ../lib/cava/version;
         authors = "kotontrion";
