@@ -9,8 +9,13 @@ public class AstalMpris.Player : Object {
     private IPlayer proxy;
     private uint pollid; // periodically notify position
 
-    // identifiers
-    public string bus_name { owned get; private set; }
+    internal signal void appeared() { available = true; }
+    internal signal void closed() { available = false; }
+
+    /**
+     * Full dbus namae of this player.
+     */
+    public string bus_name { owned get; private construct set; }
 
     /**
      * Indicates if [property@AstalMpris.Player:bus_name] is available on dbus.
@@ -407,8 +412,8 @@ public class AstalMpris.Player : Object {
      * @param name dbus name of the player.
      */
     public Player(string name) {
-        bus_name = name.has_prefix("org.mpris.MediaPlayer2.")
-            ? name : @"org.mpris.MediaPlayer2.$name";
+        Object(bus_name: name.has_prefix("org.mpris.MediaPlayer2.")
+            ? name : @"org.mpris.MediaPlayer2.$name");
     }
 
     private void sync() {
@@ -560,14 +565,30 @@ public class AstalMpris.Player : Object {
 
     construct {
         try {
-            try_proxy();
+            setup_proxy();
+            setup_position_poll();
             sync();
         } catch (Error error) {
             critical(error.message);
         }
     }
 
-    private void try_proxy() throws Error {
+    private void setup_position_poll() {
+        var current_position = position;
+
+        pollid = Timeout.add_seconds(1, () => {
+            if (!available)
+                return Source.CONTINUE;
+
+            if (position >= 0 && current_position != position) {
+                current_position = position;
+                notify_property("position");
+            }
+            return Source.CONTINUE;
+        }, Priority.DEFAULT);
+    }
+
+    private void setup_proxy() throws Error {
         if (proxy != null)
             return;
 
@@ -577,28 +598,19 @@ public class AstalMpris.Player : Object {
             "/org/mpris/MediaPlayer2"
         );
 
-        if (proxy.g_name_owner != null)
-            available = false;
+        if (proxy.g_name_owner != null) {
+            appeared();
+        }
 
         proxy.notify["g-name-owner"].connect(() => {
             if (proxy.g_name_owner != null) {
-                available = true;
+                appeared();
             } else {
-                available = false;
+                closed();
             }
         });
 
         proxy.g_properties_changed.connect(sync);
-
-        pollid = Timeout.add_seconds(1, () => {
-            if (!available)
-                return Source.CONTINUE;
-
-            if (position >= 0) {
-                notify_property("position");
-            }
-            return Source.CONTINUE;
-        }, Priority.DEFAULT);
     }
 
     ~Player() {
@@ -620,18 +632,6 @@ public enum AstalMpris.PlaybackStatus {
             case "Stopped":
             default:
                 return STOPPED;
-        }
-    }
-
-    internal string to_string() {
-        switch (this) {
-            case PLAYING:
-                return "Playing";
-            case PAUSED:
-                return "Paused";
-            case STOPPED:
-            default:
-                return "Stopped";
         }
     }
 }

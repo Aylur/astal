@@ -73,12 +73,10 @@ public class AstalMpris.Mpris : Object {
         var p = new Player(busname);
         _players.set(busname, p);
 
-        p.notify["available"].connect(() => {
-            if (!p.available) {
-                player_closed(p);
-                _players.remove(busname);
-                notify_property("players");
-            }
+        p.closed.connect(() => {
+            player_closed(p);
+            _players.remove(busname);
+            notify_property("players");
         });
 
         player_added(p);
