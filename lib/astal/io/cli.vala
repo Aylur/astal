@@ -81,7 +81,7 @@ int main(string[] argv) {
             return 0;
         }
     } catch (DBusError.SERVICE_UNKNOWN e) {
-        return err(@"there is no \"$instance_name\" instance runnning");
+        return err(@"there is no \"$instance_name\" instance runnning\n");
     } catch (Error e) {
         return err(e.message);
     }
@@ -95,7 +95,7 @@ int main(string[] argv) {
         var reply = AstalIO.send_message(instance_name, request);
         print("%s\n", reply);
     } catch (IOError.NOT_FOUND e) {
-        return err(@"there is no \"$instance_name\" instance runnning");
+        return err(@"there is no \"$instance_name\" instance runnning\n");
     } catch (Error e) {
         return err(e.message);
     }
