@@ -19,8 +19,8 @@ struct _AstalClipboardClipboard {
 
     guint max_length;
 
-    GList *selection_history;
-    GList *primary_selection_history;
+    GList* selection_history;
+    GList* primary_selection_history;
 };
 
 typedef struct {
@@ -55,21 +55,19 @@ static GParamSpec* astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOAR
     NULL,
 };
 
-
-static void limit_list_length(AstalClipboardClipboard *self, GList** list) {
-  GList *last;
-  while(g_list_length(*list) > self->max_length) {
-    last = g_list_last(*list);
-    g_object_unref(last->data);
-    *list = g_list_delete_link(*list, last);
-  }
+static void limit_list_length(AstalClipboardClipboard* self, GList** list) {
+    GList* last;
+    while (g_list_length(*list) > self->max_length) {
+        last = g_list_last(*list);
+        g_object_unref(last->data);
+        *list = g_list_delete_link(*list, last);
+    }
 }
 
-static void prepend_list(AstalClipboardClipboard *self, GList** list, gpointer data) {
-  *list = g_list_prepend(*list, data);
-  limit_list_length(self, list);
+static void prepend_list(AstalClipboardClipboard* self, GList** list, gpointer data) {
+    *list = g_list_prepend(*list, data);
+    limit_list_length(self, list);
 }
-
 
 /**
  * astal_clipboard_clipboard_get_selection:
@@ -85,7 +83,8 @@ AstalClipboardSelection* astal_clipboard_clipboard_get_selection(AstalClipboardC
  *
  * Returns: (transfer none):
  */
-AstalClipboardSelection* astal_clipboard_clipboard_get_primary_selection(AstalClipboardClipboard* self) {
+AstalClipboardSelection* astal_clipboard_clipboard_get_primary_selection(
+    AstalClipboardClipboard* self) {
     return self->primary_selection;
 }
 
@@ -190,24 +189,26 @@ static void device_handle_data_offer(void* data, struct zwlr_data_control_device
     if (offer == NULL) {
         return;
     }
-    priv->pending_offers = g_list_append(priv->pending_offers, astal_clipboard_selection_new(offer));
+    priv->pending_offers =
+        g_list_append(priv->pending_offers, astal_clipboard_selection_new(offer));
 }
 
-static void primary_selection_cb(AstalClipboardSelection *selection, AstalClipboardClipboard* self) {
+static void primary_selection_cb(AstalClipboardSelection* selection,
+                                 AstalClipboardClipboard* self) {
     AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
 
     priv->pending_offers = g_list_remove(priv->pending_offers, selection);
 
     g_clear_object(&self->primary_selection);
     self->primary_selection = g_object_ref(selection);
-        
+
     prepend_list(self, &self->primary_selection_history, self->primary_selection);
-    
+
     g_object_notify(G_OBJECT(self), "primary-selection");
     g_object_notify(G_OBJECT(self), "primary-selection-history");
 }
 
-static void selection_cb(AstalClipboardSelection *selection, AstalClipboardClipboard* self) {
+static void selection_cb(AstalClipboardSelection* selection, AstalClipboardClipboard* self) {
     AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
 
     priv->pending_offers = g_list_remove(priv->pending_offers, selection);
@@ -222,9 +223,9 @@ static void selection_cb(AstalClipboardSelection *selection, AstalClipboardClipb
 }
 
 static gint offer_equal(gconstpointer a, gconstpointer b) {
-  const AstalClipboardSelection *offer_a = a;
-  const struct zwlr_data_control_offer_v1 *offer_b = b;
-  return astal_clipboard_selection_get_offer(offer_a) != offer_b;
+    const AstalClipboardSelection* offer_a = a;
+    const struct zwlr_data_control_offer_v1* offer_b = b;
+    return astal_clipboard_selection_get_offer(offer_a) != offer_b;
 }
 
 static void device_handle_selection(void* data, struct zwlr_data_control_device_v1* device,
@@ -232,35 +233,31 @@ static void device_handle_selection(void* data, struct zwlr_data_control_device_
     AstalClipboardClipboard* self = ASTAL_CLIPBOARD_CLIPBOARD(data);
     AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
 
-    if(offer != NULL) {
-      GList* selected_offer = g_list_find_custom(priv->pending_offers, offer, offer_equal);
-      if(selected_offer != NULL) {
-        g_signal_connect(selected_offer->data, "ready", G_CALLBACK(selection_cb), self);
-      }
+    if (offer != NULL) {
+        GList* selected_offer = g_list_find_custom(priv->pending_offers, offer, offer_equal);
+        if (selected_offer != NULL) {
+            g_signal_connect(selected_offer->data, "ready", G_CALLBACK(selection_cb), self);
+        }
+    } else {
+        g_clear_object(&self->selection);
+        g_object_notify(G_OBJECT(self), "selection");
     }
-    else {
-      g_clear_object(&self->selection);
-      g_object_notify(G_OBJECT(self), "selection");
-    }
-
 }
 
 static void device_handle_primary_selection(void* data, struct zwlr_data_control_device_v1* device,
-                                    struct zwlr_data_control_offer_v1* offer) {
+                                            struct zwlr_data_control_offer_v1* offer) {
     AstalClipboardClipboard* self = ASTAL_CLIPBOARD_CLIPBOARD(data);
     AstalClipboardClipboardPrivate* priv = astal_clipboard_clipboard_get_instance_private(self);
 
-    if(offer != NULL) {
-      GList* selected_offer = g_list_find_custom(priv->pending_offers, offer, offer_equal);
-      if(selected_offer != NULL) {
-        g_signal_connect(selected_offer->data, "ready", G_CALLBACK(primary_selection_cb), self);
-      }
+    if (offer != NULL) {
+        GList* selected_offer = g_list_find_custom(priv->pending_offers, offer, offer_equal);
+        if (selected_offer != NULL) {
+            g_signal_connect(selected_offer->data, "ready", G_CALLBACK(primary_selection_cb), self);
+        }
+    } else {
+        g_clear_object(&self->primary_selection);
+        g_object_notify(G_OBJECT(self), "primary_selection");
     }
-    else {
-      g_clear_object(&self->primary_selection);
-      g_object_notify(G_OBJECT(self), "primary_selection");
-    }
-
 }
 
 static void device_handle_finished(void* data, struct zwlr_data_control_device_v1* device) {}
@@ -363,23 +360,23 @@ static void astal_clipboard_clipboard_class_init(AstalClipboardClipboardClass* c
         g_param_spec_object("selection", "selection", "selection", ASTAL_CLIPBOARD_TYPE_SELECTION,
                             G_PARAM_READABLE);
     astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOARD_PROP_PRIMARY_SELECTION] =
-        g_param_spec_object("primary-selection", "primary-selection", "primary-selection", ASTAL_CLIPBOARD_TYPE_SELECTION,
-                            G_PARAM_READABLE);
+        g_param_spec_object("primary-selection", "primary-selection", "primary-selection",
+                            ASTAL_CLIPBOARD_TYPE_SELECTION, G_PARAM_READABLE);
     astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOARD_PROP_MAX_LENGTH] =
         g_param_spec_uint("max-length", "max-length", "max-length", 0, UINT_MAX, 10,
-                            G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+                          G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
     /**
      * AstalClipboardClipboard:selection-history: (type GList(AstalClipboardSelection))
      */
     astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOARD_PROP_SELECTION_HISTORY] =
         g_param_spec_pointer("selection-history", "selection-history", "selection-history",
-                            G_PARAM_READABLE);
+                             G_PARAM_READABLE);
     /**
      * AstalClipboardClipboard:primary-selection-history: (type GList(AstalClipboardSelection))
      */
     astal_clipboard_clipboard_properties[ASTAL_CLIPBOARD_CLIPBOARD_PROP_PRIMARY_SELECTION_HISTORY] =
-        g_param_spec_pointer("primary-selection-history", "primary-selection-history", "primary-selection-history",
-                            G_PARAM_READABLE);
+        g_param_spec_pointer("primary-selection-history", "primary-selection-history",
+                             "primary-selection-history", G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES,
                                       astal_clipboard_clipboard_properties);
