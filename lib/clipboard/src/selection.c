@@ -17,6 +17,7 @@ struct _AstalClipboardSelection {
 
 typedef struct {
     struct zwlr_data_control_offer_v1* offer;
+    gint offer_counter;
 } AstalClipboardSelectionPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalClipboardSelection, astal_clipboard_selection, G_TYPE_OBJECT)
@@ -26,7 +27,10 @@ typedef enum {
     ASTAL_CLIPBOARD_SELECTION_N_PROPERTIES
 } AstalCiplboardSelectionProperties;
 
-typedef enum { ASTAL_CLIPBOARD_SELECTION_N_SIGNALS } AstalClipboardSelectionSignals;
+typedef enum { 
+  ASTAL_CLIPBOARD_SELECTION_SIGNAL_READY,
+  ASTAL_CLIPBOARD_SELECTION_N_SIGNALS
+} AstalClipboardSelectionSignals;
 
 static guint astal_clipboard_selection_signals[ASTAL_CLIPBOARD_SELECTION_N_SIGNALS] = {
     0,
@@ -98,6 +102,11 @@ GdkPixbuf* astal_clipboard_clipboard_data_to_pixbuf(AstalClipboardClipboardData*
  */
 GList* astal_clipboard_selection_get_data(AstalClipboardSelection* self) { return self->data; }
 
+struct zwlr_data_control_offer_v1* astal_clipboard_selection_get_offer(AstalClipboardSelection *self) {
+  AstalClipboardSelectionPrivate *priv = astal_clipboard_selection_get_instance_private(self);
+  return priv->offer;
+}
+
 static void astal_clipboard_selection_get_property(GObject* object, guint property_id,
                                                    GValue* value, GParamSpec* pspec) {
     AstalClipboardSelection* self = ASTAL_CLIPBOARD_SELECTION(object);
@@ -129,11 +138,14 @@ static void read_callback_data_free(void* data) {
 }
 
 static gboolean read_callback(GIOChannel* source, GIOCondition condition, gpointer data) {
+
+
     gchar buffer[1024];
     gsize bytes_read;
     GError* error = NULL;
 
     struct read_callback_data* rcd = data;
+    AstalClipboardSelectionPrivate *priv = astal_clipboard_selection_get_instance_private(rcd->self);
 
     GIOStatus status =
         g_io_channel_read_chars(source, buffer, sizeof(buffer) - 1, &bytes_read, &error);
@@ -150,6 +162,11 @@ static gboolean read_callback(GIOChannel* source, GIOCondition condition, gpoint
         rcd->read_data = NULL;
         rcd->self->data = g_list_append(rcd->self->data, rcd->data);
         g_object_notify(G_OBJECT(rcd->self), "data");
+        if(--priv->offer_counter == 0) {
+          g_signal_emit_by_name(G_OBJECT(rcd->self), "ready");
+          zwlr_data_control_offer_v1_destroy(priv->offer);
+          priv->offer = NULL;
+        }
         return FALSE;
     }
 
@@ -170,6 +187,8 @@ static void offer_handle_offer(void* data, struct zwlr_data_control_offer_v1* of
         g_error_free(error);
         return;
     }
+
+    ++priv->offer_counter;
 
     AstalClipboardClipboardData* cl_data = g_new0(AstalClipboardClipboardData, 1);
     cl_data->mime_type = g_strdup(mime_type);
@@ -207,13 +226,14 @@ AstalClipboardSelection* astal_clipboard_selection_new(struct zwlr_data_control_
 
 static void astal_clipboard_selection_init(AstalClipboardSelection* self) {
     AstalClipboardSelectionPrivate* priv = astal_clipboard_selection_get_instance_private(self);
+    priv->offer_counter = 0;
 }
 
 static void astal_clipboard_selection_finalize(GObject* object) {
     AstalClipboardSelection* self = ASTAL_CLIPBOARD_SELECTION(object);
     AstalClipboardSelectionPrivate* priv = astal_clipboard_selection_get_instance_private(self);
 
-    zwlr_data_control_offer_v1_destroy(priv->offer);
+    if(priv->offer != NULL) zwlr_data_control_offer_v1_destroy(priv->offer);
     g_clear_list(&self->data, astal_clipboard_clipboard_data_free);
 
     G_OBJECT_CLASS(astal_clipboard_selection_parent_class)->finalize(object);
@@ -235,4 +255,12 @@ static void astal_clipboard_selection_class_init(AstalClipboardSelectionClass* c
 
     g_object_class_install_properties(object_class, ASTAL_CLIPBOARD_SELECTION_N_PROPERTIES,
                                       astal_clipboard_selection_properties);
+
+    /**
+    * AstalClipboardSelection::ready: (skip)
+    */
+    astal_clipboard_selection_signals[ASTAL_CLIPBOARD_SELECTION_SIGNAL_READY] =
+        g_signal_new("ready", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL,
+                     G_TYPE_NONE, 0);
+
 }
