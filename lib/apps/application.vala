@@ -1,3 +1,6 @@
+/**
+ * Object representing an applications .desktop file.
+ */
 public class AstalApps.Application : Object {
     /**
      * The underlying DesktopAppInfo.
