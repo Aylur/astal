@@ -50,13 +50,16 @@ public class AstalApps.Application : Object {
     /**
      * `Categories` field from the desktop file.
      */
-    public string[] categories { owned get {
-        var categories = app.get_categories();
-        if (categories != null)
-            return categories.split(";");
+    public string[] categories {
+        owned get {
+            if (app.get_categories() == null)
+                return {};
 
-        return new string[0];
-    } }
+            var categories = app.get_categories();
+            var arr = categories.split(";");
+            return categories.has_suffix(";") ? arr[0:arr.length-1] : arr;
+        }
+    }
 
     internal Application(string id, int? frequency = 0) {
         Object(app: new DesktopAppInfo(id));
@@ -144,28 +147,26 @@ public class AstalApps.Application : Object {
     }
 
     internal Json.Node to_json() {
-        var builder = new Json.Builder()
+        var keyword_arr = new Json.Builder().begin_array();
+        foreach (string keyword in keywords) {
+            keyword_arr.add_string_value(keyword);
+        }
+
+        var category_arr = new Json.Builder().begin_array();
+        foreach (string category in categories) {
+            category_arr.add_string_value(category);
+        }
+
+        return new Json.Builder()
             .begin_object()
             .set_member_name("name").add_string_value(name)
             .set_member_name("entry").add_string_value(entry)
             .set_member_name("executable").add_string_value(executable)
             .set_member_name("description").add_string_value(description)
             .set_member_name("icon_name").add_string_value(icon_name)
-            .set_member_name("frequency").add_int_value(frequency);
-
-        builder.set_member_name("keywords").begin_array();
-        foreach (string keyword in keywords) {
-            builder.add_string_value(keyword);
-        }
-        builder.end_array();
-
-        builder.set_member_name("categories").begin_array();
-        foreach (string category in categories) {
-            builder.add_string_value(category);
-        }
-        builder.end_array();
-
-        return builder
+            .set_member_name("frequency").add_int_value(frequency)
+            .set_member_name("keywords").add_value(keyword_arr.end_array().get_root())
+            .set_member_name("categories").add_value(category_arr.end_array().get_root())
             .end_object()
             .get_root();
     }
