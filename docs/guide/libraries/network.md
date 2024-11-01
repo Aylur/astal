@@ -13,7 +13,7 @@ sudo pacman -Syu meson vala libnm gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc vala valadoc NetworkManager-libnm-devel gobject-introspection-devel
+sudo dnf install meson vala valadoc NetworkManager-libnm-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
