@@ -13,7 +13,7 @@ sudo pacman -Syu meson vala json-glib gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac json-glib-devel gobject-introspection-devel
+sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
