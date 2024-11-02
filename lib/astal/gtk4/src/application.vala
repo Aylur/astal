@@ -162,7 +162,7 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     }
 
     /**
-     * Shortcut for [method@Gtk.IconTheme.prepend_search_path].
+     * Shortcut for [method@Gtk.IconTheme.add_search_path].
      */
     [DBus (visible=false)]
     public void add_icons(string? path) {
