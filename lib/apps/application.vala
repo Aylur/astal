@@ -1,3 +1,6 @@
+/**
+ * Object representing an applications .desktop file.
+ */
 public class AstalApps.Application : Object {
     /**
      * The underlying DesktopAppInfo.
@@ -47,6 +50,20 @@ public class AstalApps.Application : Object {
      */
     public string[] keywords { owned get { return app.get_keywords(); } }
 
+    /**
+     * `Categories` field from the desktop file.
+     */
+    public string[] categories {
+        owned get {
+            if (app.get_categories() == null)
+                return {};
+
+            var categories = app.get_categories();
+            var arr = categories.split(";");
+            return categories.has_suffix(";") ? arr[0:arr.length-1] : arr;
+        }
+    }
+
     internal Application(string id, int? frequency = 0) {
         Object(app: new DesktopAppInfo(id));
         this.frequency = frequency;
@@ -94,6 +111,12 @@ public class AstalApps.Application : Object {
                 score.keywords = s;
             }
         }
+        foreach (var category in categories) {
+            var s = fuzzy_match_string(term, category);
+            if (s > score.categories) {
+                score.categories = s;
+            }
+        }
 
         return score;
     }
@@ -117,12 +140,27 @@ public class AstalApps.Application : Object {
                 score.keywords = keyword.down().contains(term.down()) ? 1 : 0;
             }
         }
+        foreach (var category in categories) {
+            if (score.categories == 0) {
+                score.categories = category.down().contains(term.down()) ? 1 : 0;
+            }
+        }
 
         return score;
     }
 
     internal Json.Node to_json() {
-        var builder = new Json.Builder()
+        var keyword_arr = new Json.Builder().begin_array();
+        foreach (string keyword in keywords) {
+            keyword_arr.add_string_value(keyword);
+        }
+
+        var category_arr = new Json.Builder().begin_array();
+        foreach (string category in categories) {
+            category_arr.add_string_value(category);
+        }
+
+        return new Json.Builder()
             .begin_object()
             .set_member_name("name").add_string_value(name)
             .set_member_name("entry").add_string_value(entry)
@@ -130,15 +168,8 @@ public class AstalApps.Application : Object {
             .set_member_name("description").add_string_value(description)
             .set_member_name("icon_name").add_string_value(icon_name)
             .set_member_name("frequency").add_int_value(frequency)
-            .set_member_name("keywords")
-            .begin_array();
-
-        foreach (string keyword in keywords) {
-            builder.add_string_value(keyword);
-        }
-
-        return builder
-            .end_array()
+            .set_member_name("keywords").add_value(keyword_arr.end_array().get_root())
+            .set_member_name("categories").add_value(category_arr.end_array().get_root())
             .end_object()
             .get_root();
     }
@@ -150,4 +181,5 @@ public struct AstalApps.Score {
     int executable;
     int description;
     int keywords;
+    int categories;
 }

@@ -1,11 +1,12 @@
 using GtkLayerShell;
 
+[Flags]
 public enum Astal.WindowAnchor {
-    NONE = 0,
-    TOP = 1,
-    RIGHT = 2,
-    LEFT = 4,
-    BOTTOM = 8,
+    NONE,
+    TOP,
+    RIGHT,
+    LEFT,
+    BOTTOM,
 }
 
 public enum Astal.Exclusivity {
@@ -112,7 +113,7 @@ public class Astal.Window : Gtk.Window {
      * If two perpendicular edges are anchored, the surface will be anchored to that corner.
      * If two opposite edges are anchored, the window will be stretched across the screen in that direction.
      */
-    public int anchor {
+    public WindowAnchor anchor {
         set {
             if (check("set anchor"))
                 return;

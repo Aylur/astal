@@ -1,12 +1,24 @@
 namespace AstalMpris {
-public Mpris get_default() {
-    return Mpris.get_default();
+    /**
+     * Gets the default singleton Mpris instance.
+     */
+    public Mpris get_default() {
+        return Mpris.get_default();
+    }
 }
 
-public class Mpris : Object {
+/**
+ * Object that monitors dbus for players to appear and disappear.
+ */
+public class AstalMpris.Mpris : Object {
     internal static string PREFIX = "org.mpris.MediaPlayer2.";
 
     private static Mpris instance;
+    private DBusImpl proxy;
+
+    /**
+     * Gets the default singleton Mpris instance.
+     */
     public static Mpris get_default() {
         if (instance == null)
             instance = new Mpris();
@@ -14,15 +26,23 @@ public class Mpris : Object {
         return instance;
     }
 
-    private DBusImpl proxy;
-
     private HashTable<string, Player> _players =
         new HashTable<string, Player> (str_hash, str_equal);
 
+    /**
+     * List of currently available players.
+     */
     public List<weak Player> players { owned get { return _players.get_values(); } }
 
-    public signal void player_added (Player player);
-    public signal void player_closed (Player player);
+    /**
+     * Emitted when a new mpris Player appears.
+     */
+    public signal void player_added(Player player);
+
+    /**
+     * Emitted when a Player disappears.
+     */
+    public signal void player_closed(Player player);
 
     construct {
         try {
@@ -62,5 +82,4 @@ public class Mpris : Object {
         player_added(p);
         notify_property("players");
     }
-}
 }

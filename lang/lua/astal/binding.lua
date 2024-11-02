@@ -4,7 +4,7 @@ local GObject = lgi.require("GObject", "2.0")
 ---@class Binding
 ---@field emitter table|Variable
 ---@field property? string
----@field transformFn function
+---@field transform_fn function
 local Binding = {}
 
 ---@param emitter table
@@ -14,7 +14,7 @@ function Binding.new(emitter, property)
     return setmetatable({
         emitter = emitter,
         property = property,
-        transformFn = function(v)
+        transform_fn = function(v)
             return v
         end,
     }, Binding)
@@ -30,10 +30,10 @@ end
 
 function Binding:get()
     if self.property ~= nil and GObject.Object:is_type_of(self.emitter) then
-        return self.transformFn(self.emitter[self.property])
+        return self.transform_fn(self.emitter[self.property])
     end
     if type(self.emitter.get) == "function" then
-        return self.transformFn(self.emitter:get())
+        return self.transform_fn(self.emitter:get())
     end
     error("can not get: Not a GObject or a Variable " + self)
 end
@@ -42,8 +42,8 @@ end
 ---@return Binding
 function Binding:as(transform)
     local b = Binding.new(self.emitter, self.property)
-    b.transformFn = function(v)
-        return transform(self.transformFn(v))
+    b.transform_fn = function(v)
+        return transform(self.transform_fn(v))
     end
     return b
 end

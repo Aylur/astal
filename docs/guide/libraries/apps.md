@@ -14,7 +14,7 @@ sudo pacman -Syu meson vala json-glib gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac json-glib-devel gobject-introspection-devel
+sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
@@ -55,8 +55,9 @@ astal-apps --help
 import Apps from "gi://AstalApps"
 
 const apps = new Apps.Apps({
-    includeEntry: true,
-    includeExecutable: true,
+    nameMultiplier: 2,
+    entryMultiplier: 0,
+    executableMultiplier: 2,
 })
 
 for (const app of apps.fuzzy_query("spotify")) {
@@ -68,8 +69,9 @@ for (const app of apps.fuzzy_query("spotify")) {
 from gi.repository import AstalApps as Apps
 
 apps = Apps.Apps(
-    include_entry=True,
-    include_executable=True,
+    name_multiplier=2,
+    entry_multiplier=0,
+    executable_multiplier=2,
 )
 
 for app in apps.fuzzy_query("obsidian"):
@@ -81,8 +83,9 @@ for app in apps.fuzzy_query("obsidian"):
 local Apps = require("lgi").require("AstalApps")
 
 local apps = Apps.Apps({
-    include_entry = true,
-    include_executable = true,
+    name_multiplier = 2,
+    entry_multiplier = 0,
+    executable_multiplier = 2,
 })
 
 for _, app in ipairs(apps:fuzzy_query("lutris")) do
@@ -91,7 +94,15 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented, contributions are appreciated
+var apps = new AstalApps.Apps() {
+    name_multiplier = 2,
+    entry_multiplier = 0,
+    executable_multiplier = 2,
+};
+
+foreach (var app in apps.fuzzy_query("firefox")) {
+    print(app.name);
+}
 ```
 
 :::

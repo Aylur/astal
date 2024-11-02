@@ -158,12 +158,6 @@ public class AstalNotifd.Notification : Object {
      */
     public signal void resolved(ClosedReason reason);
 
-    /**
-     * Emitted when the user dismisses this notification.
-     *
-     * @see dismiss
-     */
-    public signal void dismissed();
 
     /**
      * Emitted when an [struct@AstalNotifd.Action] of this notification is invoked.
@@ -173,12 +167,10 @@ public class AstalNotifd.Notification : Object {
     public signal void invoked(string action_id);
 
     /**
-     * Dismiss this notification popup
-     *
-     * This method doesn't have any functionality on its own, but should be handled
-     * by frontend implementation to hide notification popups.
+     * Resolve this notification with [enum@AstalNotifd.ClosedReason.DISMISSED_BY_USER].
      */
     public void dismiss() { dismissed(); }
+    internal signal void dismissed();
 
     /**
      * Invoke an [struct@AstalNotifd.Action] of this notification.

@@ -1,37 +1,14 @@
-namespace AstalBluetooth {
-[DBus (name = "org.bluez.Device1")]
-internal interface IDevice : DBusProxy {
-    public abstract void cancel_pairing() throws Error;
-    public abstract async void connect() throws Error;
-    public abstract void connect_profile(string uuid) throws Error;
-    public abstract async void disconnect() throws Error;
-    public abstract void disconnect_profile(string uuid) throws Error;
-    public abstract void pair() throws Error;
-
-    public abstract string[] uuids { owned get; }
-    public abstract bool blocked { get; set; }
-    public abstract bool connected { get; }
-    public abstract bool legacy_pairing { get; }
-    public abstract bool paired { get; }
-    public abstract bool trusted { get; set; }
-    public abstract int16 rssi { get; }
-    public abstract ObjectPath adapter { owned get; }
-    public abstract string address { owned get; }
-    public abstract string alias { owned get; set; }
-    public abstract string icon { owned get; }
-    public abstract string modalias { owned get; }
-    public abstract string name { owned get; }
-    public abstract uint16 appearance { get; }
-    public abstract uint32 class { get; }
-}
-
-public class Device : Object {
+/**
+ * Object representing a [[https://github.com/luetzel/bluez/blob/master/doc/device-api.txt|device]].
+ */
+public class AstalBluetooth.Device : Object {
     private IDevice proxy;
-    public string object_path { owned get; construct set; }
+
+    internal ObjectPath object_path { owned get; private set; }
 
     internal Device(IDevice proxy) {
         this.proxy = proxy;
-        this.object_path = proxy.g_object_path;
+        this.object_path = (ObjectPath)proxy.g_object_path;
         proxy.g_properties_changed.connect((props) => {
             var map = (HashTable<string, Variant>)props;
             foreach (var key in map.get_keys()) {
@@ -43,64 +20,164 @@ public class Device : Object {
         });
     }
 
+    /**
+     * List of 128-bit UUIDs that represents the available remote services.
+     */
     public string[] uuids { owned get { return proxy.uuids; } }
+
+    /**
+     * Indicates if the remote device is currently connected.
+     */
     public bool connected { get { return proxy.connected; } }
+
+    /**
+     * `true` if the device only supports the pre-2.1 pairing mechanism.
+     */
     public bool legacy_pairing { get { return proxy.legacy_pairing; } }
+
+    /**
+     * Indicates if the remote device is paired.
+     */
     public bool paired { get { return proxy.paired; } }
+
+    /**
+     * Received Signal Strength Indicator of the remote device (inquiry or advertising).
+     */
     public int16 rssi { get { return proxy.rssi; } }
+
+    /**
+     * The object path of the adapter the device belongs to.
+     */
     public ObjectPath adapter { owned get { return proxy.adapter; } }
+
+    /**
+     * The Bluetooth device address of the remote device.
+     */
     public string address { owned get { return proxy.address; } }
+
+    /**
+     * Proposed icon name.
+     */
     public string icon { owned get { return proxy.icon; } }
+
+    /**
+     * Remote Device ID information in modalias format used by the kernel and udev.
+     */
     public string modalias { owned get { return proxy.modalias; } }
+
+    /**
+     * The Bluetooth remote name.
+     *
+     * It is always better to use [property@AstalBluetooth.Device:alias].
+     */
     public string name { owned get { return proxy.name; } }
+
+    /**
+     * External appearance of device, as found on GAP service.
+     */
     public uint16 appearance { get { return proxy.appearance; } }
+
+    /**
+     * The Bluetooth class of device of the remote device.
+     */
     public uint32 class { get { return proxy.class; } }
+
+    /**
+     * Indicates if this device is currently trying to be connected.
+     */
     public bool connecting { get; private set; }
 
+    /**
+     * If set to `true` any incoming connections from the device will be immediately rejected.
+     */
     public bool blocked {
         get { return proxy.blocked; }
         set { proxy.blocked = value; }
     }
 
+    /**
+     * Indicates if the remote is seen as trusted.
+     */
     public bool trusted {
         get { return proxy.trusted; }
         set { proxy.trusted = value; }
     }
 
+    /**
+     * The name alias for the remote device.
+     *
+     * In case no alias is set, it will return the remote device [property@AstalBluetooth.Device:name].
+     */
     public string alias {
         owned get { return proxy.alias; }
         set { proxy.alias = value; }
     }
 
-    public void cancel_pairing() {
-        try { proxy.cancel_pairing(); } catch (Error err) { critical(err.message); }
-    }
-
-    public async void connect_device() {
+    /**
+     * This is a generic method to connect any profiles
+     * the remote device supports that can be connected to.
+     *
+     * Possible errors: `NotReady`, `Failed`, `InProgress`, `AlreadyConnected`.
+     */
+    public async void connect_device() throws Error {
         try {
             connecting = true;
             yield proxy.connect();
-        } catch (Error err) {
-            critical(err.message);
         } finally {
             connecting = false;
         }
     }
 
-    public async void disconnect_device() {
-        try { yield proxy.disconnect(); } catch (Error err) { critical(err.message); }
+    /**
+     * This method gracefully disconnects all connected profiles.
+     *
+     * Possible errors: `NotConnected`.
+     */
+    public async void disconnect_device() throws Error {
+        yield proxy.disconnect();
     }
 
-    public void connect_profile(string uuid) {
-        try { proxy.connect_profile(uuid); } catch (Error err) { critical(err.message); }
+    /**
+     * This method connects a specific profile of this device.
+     * The UUID provided is the remote service UUID for the profile.
+     *
+     * Possible errors: `Failed`, `InProgress`, `InvalidArguments`, `NotAvailable`, `NotReady`.
+     *
+     * @param uuid the remote service UUID.
+     */
+    public void connect_profile(string uuid) throws Error {
+        proxy.connect_profile(uuid);
     }
 
-    public void disconnect_profile(string uuid) {
-        try { proxy.disconnect_profile(uuid); } catch (Error err) { critical(err.message); }
+    /**
+     * This method disconnects a specific profile of this device.
+     *
+     * Possible errors: `Failed`, `InProgress`, `InvalidArguments`, `NotSupported`.
+     *
+     * @param uuid the remote service UUID.
+     */
+    public void disconnect_profile(string uuid) throws Error {
+        proxy.disconnect_profile(uuid);
     }
 
-    public void pair() {
-        try { proxy.pair(); } catch (Error err) { critical(err.message); }
+    /**
+     * This method will connect to the remote device and initiate pairing.
+     *
+     * Possible errors: `InvalidArguments`, `Failed`, `AlreadyExists`,
+     * `AuthenticationCanceled`, `AuthenticationFailed`, `AuthenticationRejected`,
+     * `AuthenticationTimeout`, `ConnectionAttemptFailed`.
+     */
+    public void pair() throws Error {
+        proxy.pair();
     }
-}
+
+    /**
+     * This method can be used to cancel a pairing operation
+     * initiated by [method@AstalBluetooth.Device.pair].
+     *
+     * Possible errors: `DoesNotExist`, `Failed`.
+     */
+    public void cancel_pairing() throws Error {
+        proxy.cancel_pairing();
+    }
 }
