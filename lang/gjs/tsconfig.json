@@ -11,8 +11,8 @@
     "include": [
         "@girs",
         "src/*.ts",
-        "src/gtk3/*",
-        "src/gtk4/*",
+        // "src/gtk3/*",
+        // "src/gtk4/*",
         "index.ts",
     ]
 }

@@ -14,9 +14,10 @@ install_data(
     'src/process.ts',
     'src/time.ts',
     'src/variable.ts',
+    'src/_app.ts',
   ],
   install_dir: dest,
 )
 
 install_subdir('src/gtk3', install_dir: dest)
-# install_subdir('src/gtk4', install_dir: dest)
+install_subdir('src/gtk4', install_dir: dest)

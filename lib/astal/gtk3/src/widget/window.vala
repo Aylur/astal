@@ -47,28 +47,27 @@ public enum Astal.Keymode {
  * Subclass of [class@Gtk.Window] which integrates GtkLayerShell as class fields.
  */
 public class Astal.Window : Gtk.Window {
-    private static bool check(string action) {
+    private InhibitManager? inhibit_manager;
+    private Inhibitor? inhibitor;
+
+    private bool check(string action) {
         if (!is_supported()) {
             critical(@"can not $action on window: layer shell not supported");
             print("tip: running from an xwayland terminal can cause this, for example VsCode");
             return true;
         }
+        if (!is_layer_window(this)) {
+            init_for_window(this);
+        }
         return false;
     }
 
-    private InhibitManager? inhibit_manager;
-    private Inhibitor? inhibitor;
-
     construct {
-        if (check("initialize layer shell"))
-            return;
-
         // If the window has no size allocatoted when it gets mapped.
         // It won't show up later either when it size changes by adding children.
         height_request = 1;
         width_request = 1;
-
-        init_for_window(this);
+        check("initialize layer shell");
         inhibit_manager = InhibitManager.get_default();
     }
 

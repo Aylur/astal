@@ -39,6 +39,7 @@
     wireplumber
     libdbusmenu-gtk3
     wayland
+    blueprint-compiler
 
     dart-sass
     lua

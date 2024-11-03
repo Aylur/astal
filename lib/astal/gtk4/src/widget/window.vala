@@ -1,11 +1,12 @@
 using GtkLayerShell;
 
+[Flags]
 public enum Astal.WindowAnchor {
-    NONE = 0,
-    TOP = 1,
-    RIGHT = 2,
-    LEFT = 4,
-    BOTTOM = 8,
+    NONE,
+    TOP,
+    RIGHT,
+    LEFT,
+    BOTTOM,
 }
 
 public enum Astal.Exclusivity {
@@ -46,25 +47,24 @@ public enum Astal.Keymode {
  * Subclass of [class@Gtk.Window] which integrates GtkLayerShell as class fields.
  */
 public class Astal.Window : Gtk.Window {
-    private static bool check(string action) {
+    private bool check(string action) {
         if (!is_supported()) {
             critical(@"can not $action on window: layer shell not supported");
             print("tip: running from an xwayland terminal can cause this, for example VsCode");
             return true;
         }
+        if (!is_layer_window(this)) {
+            init_for_window(this);
+        }
         return false;
     }
 
     construct {
-        if (check("initialize layer shell"))
-            return;
-
         // If the window has no size allocatoted when it gets mapped.
         // It won't show up later either when it size changes by adding children.
         height_request = 1;
         width_request = 1;
-
-        init_for_window(this);
+        check("initialize layer shell");
     }
 
     /**
@@ -81,7 +81,7 @@ public class Astal.Window : Gtk.Window {
      * If two perpendicular edges are anchored, the surface will be anchored to that corner.
      * If two opposite edges are anchored, the window will be stretched across the screen in that direction.
      */
-    public int anchor {
+    public WindowAnchor anchor {
         set {
             if (check("set anchor"))
                 return;
