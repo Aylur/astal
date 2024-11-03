@@ -115,6 +115,10 @@ export default function astalify<
                 for (const ch of children)
                     this.add(ch)
             }
+
+            else {
+                throw Error(`can not add children to ${this.constructor.name}, it is not a container widget`)
+            }
         }
 
         toggleClassName(cn: string, cond = true) {
