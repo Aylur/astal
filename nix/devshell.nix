@@ -6,7 +6,7 @@
     ps.lgi
     (ps.luaPackages.toLuaModule (pkgs.stdenv.mkDerivation {
       name = "astal";
-      src = "${self}/lang/lua";
+      src = "${self}/lang/lua/astal";
       dontBuild = true;
       installPhase = ''
         mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
