@@ -1,5 +1,5 @@
 project(
-  'astal',
+  'astal-4',
   'vala',
   'c',
   version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
