@@ -58,6 +58,11 @@
       description = "The GTK toolkit";
       docs_url = "https://docs.gtk.org/gtk3/";
     };
+    "Gtk-4.0" = {
+      name = "Gtk";
+      description = "The GTK toolkit";
+      docs_url = "https://docs.gtk.org/gtk4/";
+    };
     "AstalIO-0.1" = {
       name = "AstalIO";
       description = "Astal Core library";
@@ -101,7 +106,9 @@ in
       json-glib
       gobject-introspection
       gtk3
+      gtk4
       gtk-layer-shell
+      gtk4-layer-shell
       gdk-pixbuf
       libdbusmenu-gtk3
       wireplumber
@@ -127,6 +134,15 @@ in
         description = "Astal GTK3 widget library";
         version = ../lib/astal/gtk3/version;
         dependencies = {inherit (dependency) "AstalIO-0.1" "Gtk-3.0";};
+      }}
+      ${genLib {
+        flakepkg = "astal4";
+        gir = "";
+        api-ver = "4.0";
+        browse = "astal/gtk4";
+        description = "Astal GTK4 widget library";
+        version = ../lib/astal/gtk4/version;
+        dependencies = {inherit (dependency) "AstalIO-0.1" "Gtk-4.0";};
       }}
       ${genLib {
         flakepkg = "apps";

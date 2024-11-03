@@ -47,9 +47,6 @@ public enum Astal.Keymode {
  * Subclass of [class@Gtk.Window] which integrates GtkLayerShell as class fields.
  */
 public class Astal.Window : Gtk.Window {
-    private InhibitManager? inhibit_manager;
-    private Inhibitor? inhibitor;
-
     private bool check(string action) {
         if (!is_supported()) {
             critical(@"can not $action on window: layer shell not supported");
@@ -68,34 +65,6 @@ public class Astal.Window : Gtk.Window {
         height_request = 1;
         width_request = 1;
         check("initialize layer shell");
-        inhibit_manager = InhibitManager.get_default();
-    }
-
-    /**
-     * When `true` it will permit inhibiting the idle behavior such as screen blanking, locking, and screensaving.
-     */
-    public bool inhibit {
-        set {
-            if (inhibit_manager == null) {
-                return;
-            }
-            if (value && inhibitor == null) {
-                inhibitor = inhibit_manager.inhibit(this);
-            }
-            else if (!value && inhibitor != null) {
-                inhibitor = null;
-            }
-        }
-        get {
-            return inhibitor != null;
-        }
-    }
-
-    public override void show() {
-        base.show();
-        if(inhibit) {
-            inhibitor = inhibit_manager.inhibit(this);
-        }
     }
 
     /**
@@ -275,14 +244,14 @@ public class Astal.Window : Gtk.Window {
             if (value < 0)
                 set_monitor(this, (Gdk.Monitor)null);
 
-            var m = Gdk.Display.get_default().get_monitor(value);
+            var m = (Gdk.Monitor)Gdk.Display.get_default().get_monitors().get_item(value);
             set_monitor(this, m);
         }
         get {
             var m = get_monitor(this);
-            var d = Gdk.Display.get_default();
-            for (var i = 0; i < d.get_n_monitors(); ++i) {
-                if (m == d.get_monitor(i))
+            var mons = Gdk.Display.get_default().get_monitors();
+            for (var i = 0; i < mons.get_n_items(); ++i) {
+                if (m == mons.get_item(i))
                     return i;
             }
 

@@ -40,6 +40,12 @@ type MetaInfo = GObject.MetaInfo<never, Array<{ $gtype: GObject.GType }>, never>
 
 export function register(options: MetaInfo = {}) {
     return function (cls: GObjectConstructor) {
+        const t = options.Template
+        if (typeof t === "string" && !t.startsWith("resource://") && !t.startsWith("file://")) {
+            // assume xml template
+            options.Template = new TextEncoder().encode(t)
+        }
+
         GObject.registerClass({
             Signals: { ...cls[meta]?.Signals },
             Properties: { ...cls[meta]?.Properties },
@@ -95,10 +101,10 @@ export function property(declaration: PropertyDeclaration = Object) {
 }
 
 export function signal(...params: Array<{ $gtype: GObject.GType } | typeof Object>):
-    (target: any, signal: any, desc?: PropertyDescriptor) => void
+(target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(declaration?: SignalDeclaration):
-    (target: any, signal: any, desc?: PropertyDescriptor) => void
+(target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(
     declaration?: SignalDeclaration | { $gtype: GObject.GType } | typeof Object,
