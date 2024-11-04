@@ -34,8 +34,9 @@ function Binding:get()
         return self.transform_fn(self.emitter[self.property])
     elseif type(self.emitter.get) == "function" then
         return self.transform_fn(self.emitter:get())
+    else
+        error("can not get: Not a GObject or a Variable " + self)
     end
-    error("can not get: Not a GObject or a Variable " + self)
 end
 
 ---@param transform fun(value: any): any
@@ -62,8 +63,9 @@ function Binding:subscribe(callback)
         return self.emitter:subscribe(function()
             callback(self:get())
         end)
+    else
+        error("can not subscribe: Not a GObject or a Variable " + self)
     end
-    error("can not subscribe: Not a GObject or a Variable " + self)
 end
 
 Binding.__index = Binding
