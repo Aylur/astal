@@ -7,7 +7,7 @@ local GObject = lgi.require("GObject", "2.0")
 ---@field transform_fn function
 local Binding = {}
 
----@param emitter table
+---@param emitter table | userdata
 ---@param property? string
 ---@return Binding
 function Binding.new(emitter, property)
@@ -28,11 +28,11 @@ function Binding:__tostring()
     return str .. ">"
 end
 
+---@return any
 function Binding:get()
     if self.property ~= nil and GObject.Object:is_type_of(self.emitter) then
         return self.transform_fn(self.emitter[self.property])
-    end
-    if type(self.emitter.get) == "function" then
+    elseif type(self.emitter.get) == "function" then
         return self.transform_fn(self.emitter:get())
     end
     error("can not get: Not a GObject or a Variable " + self)
@@ -58,8 +58,7 @@ function Binding:subscribe(callback)
         return function()
             GObject.signal_handler_disconnect(self.emitter, id)
         end
-    end
-    if type(self.emitter.subscribe) == "function" then
+    elseif type(self.emitter.subscribe) == "function" then
         return self.emitter:subscribe(function()
             callback(self:get())
         end)

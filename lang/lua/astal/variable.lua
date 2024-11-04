@@ -40,7 +40,7 @@ function Variable.new(value)
     return variable
 end
 
----@param transform? fun(v: any): any 
+---@param transform? fun(v: any): any
 ---@return Binding
 function Variable:__call(transform)
     if type(transform) == "nil" then
@@ -54,10 +54,13 @@ function Variable:__tostring()
     return "Variable<" .. tostring(self:get()) .. ">"
 end
 
+---@return any
 function Variable:get()
     return self._value
 end
 
+---@param value any
+---@return nil
 function Variable:set(value)
     if value ~= self:get() then
         self._value = value
@@ -107,7 +110,6 @@ function Variable:start_watch()
     end)
 end
 
-
 function Variable:stop_poll()
     if self:is_polling() then
         self._poll.cancel()
@@ -121,7 +123,6 @@ function Variable:stop_watch()
     end
     self._watch = nil
 end
-
 
 function Variable:drop()
     self.variable.emit_dropped()
@@ -180,8 +181,9 @@ end
 
 ---@param exec string | string[]
 ---@param transform? fun(next: any, prev: any): any
+---@return Variable
 function Variable:watch(exec, transform)
-    transform = transform or function (next)
+    transform = transform or function(next)
         return next
     end
 
