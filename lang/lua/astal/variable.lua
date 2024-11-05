@@ -17,7 +17,7 @@ local Process = require("astal.process")
 ---@field private poll_fn? function
 ---@field private watch_transform? fun(next: any, prev: any): any
 ---@field private watch_exec? string[] | string
----@overload fun(value?: any): Variable
+---@overload fun(transform?: fun(v: any): any): Binding
 local Variable = {}
 Variable.__index = Variable
 

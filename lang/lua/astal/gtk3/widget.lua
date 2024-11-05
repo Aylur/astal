@@ -5,7 +5,6 @@ local astalify = require("astal.gtk3.astalify")
 
 ---@overload fun(ctor: any): function
 local Widget = {
-    ---@overload fun(ctor: any): function
     astalify = astalify,
     Box = astalify(Astal.Box),
     Button = astalify(Astal.Button),

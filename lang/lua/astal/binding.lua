@@ -2,14 +2,14 @@ local lgi = require("lgi")
 local GObject = lgi.require("GObject", "2.0")
 
 ---@class Binding
----@field emitter table|Variable
+---@field emitter table | Variable | userdata
 ---@field property? string
 ---@field transform_fn function
 ---@overload fun(emitter: table | userdata, property?: string): Binding
 local Binding = {}
 Binding.__index = Binding
 
----@param emitter table | userdata
+---@param emitter table | Variable | userdata
 ---@param property? string
 ---@return Binding
 function Binding.new(emitter, property)
