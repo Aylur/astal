@@ -55,6 +55,7 @@
       battery = mkPkg "astal-battery" ./lib/battery [json-glib];
       bluetooth = mkPkg "astal-bluetooth" ./lib/bluetooth [];
       cava = mkPkg "astal-cava" ./lib/cava [(pkgs.callPackage ./nix/libcava.nix {})];
+      greet = mkPkg "astal-greet" ./lib/greet [json-glib];
       hyprland = mkPkg "astal-hyprland" ./lib/hyprland [json-glib];
       mpris = mkPkg "astal-mpris" ./lib/mpris [gvfs json-glib];
       network = mkPkg "astal-network" ./lib/network [networkmanager];
