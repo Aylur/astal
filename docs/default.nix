@@ -177,6 +177,12 @@ in
         authors = "kotontrion";
       }}
       ${genLib {
+        flakepkg = "greet";
+        gir = "Greet";
+        description = "IPC client for greetd";
+        version = ../lib/greet/version;
+      }}
+      ${genLib {
         flakepkg = "hyprland";
         gir = "Hyprland";
         description = "IPC client for Hyprland";
