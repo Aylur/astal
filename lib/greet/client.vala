@@ -104,8 +104,6 @@ public abstract class Request : Object {
         var obj = parser.get_root().get_object();
         var type = obj.get_string_member("type");
 
-        print(@"$type: $response\n");
-
         switch (type) {
             case Success.TYPE: return new Success(obj);
             case Error.TYPE: return new Error(obj);
