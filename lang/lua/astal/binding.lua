@@ -5,7 +5,9 @@ local GObject = lgi.require("GObject", "2.0")
 ---@field emitter table|Variable
 ---@field property? string
 ---@field transform_fn function
+---@overload fun(emitter: table | userdata, property?: string): Binding
 local Binding = {}
+Binding.__index = Binding
 
 ---@param emitter table | userdata
 ---@param property? string
@@ -68,5 +70,8 @@ function Binding:subscribe(callback)
     end
 end
 
-Binding.__index = Binding
-return Binding
+return setmetatable(Binding, {
+    __call = function(_, emitter, prop)
+        return Binding.new(emitter, prop)
+    end,
+})

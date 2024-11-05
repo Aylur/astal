@@ -17,6 +17,7 @@ local Process = require("astal.process")
 ---@field private poll_fn? function
 ---@field private watch_transform? fun(next: any, prev: any): any
 ---@field private watch_exec? string[] | string
+---@overload fun(value?: any): Variable
 local Variable = {}
 Variable.__index = Variable
 
@@ -24,19 +25,19 @@ Variable.__index = Variable
 ---@return Variable
 function Variable.new(value)
     local v = Astal.VariableBase()
-    local variable = setmetatable({
-        variable = v,
-        _value = value,
-    }, Variable)
+    local variable = setmetatable({ variable = v, _value = value }, Variable)
+
     v.on_dropped = function()
         variable:stop_watch()
         variable:stop_poll()
     end
+
     v.on_error = function(_, err)
         if variable.err_handler then
             variable.err_handler(err)
         end
     end
+
     return variable
 end
 
