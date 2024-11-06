@@ -5,13 +5,13 @@
 Start by initializing a project
 
 ```sh
-ags --init
+ags init
 ```
 
-then run `ags` in the terminal
+then run `ags run` in the terminal
 
 ```sh
-ags
+ags run
 ```
 
 :::details Usage without AGS
@@ -363,7 +363,7 @@ by setting `noImplicityDestroy` property on the container widget.
 :::info
 The above example destroys and recreates every widget in the list **every time**
 the value of the `Variable` changes. There might be cases where you would
-want to [handle child creation and deletion](/guide/typescript/faq#avoiding-unnecessary-re-rendering)
+want to handle child creation and deletion
 yourself, because you don't want to lose the
 inner state of widgets that does not need to be recreated. In this case
 you can create a [custom reactive structure](./binding#example-custom-subscribable)
