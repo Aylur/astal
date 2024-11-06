@@ -5,13 +5,13 @@
 Start by initializing a project
 
 ```sh
-ags --init
+ags init
 ```
 
-then run `ags` in the terminal
+then run `ags run` in the terminal
 
 ```sh
-ags
+ags run
 ```
 
 :::details Usage without AGS

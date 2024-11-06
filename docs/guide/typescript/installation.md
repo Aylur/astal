@@ -71,7 +71,6 @@ sudo apt install golang-go npm gjs
 git clone https://github.com/aylur/ags.git /tmp/ags
 cd /tmp/ags
 git checkout v2 # https://github.com/Aylur/ags/pull/504
-cd src
 go install
 ```
 

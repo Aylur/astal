@@ -61,7 +61,7 @@ astal say hi
 ```
 
 ```sh [ags]
-ags -m "say hi"
+ags request "say hi"
 # hi cli
 ```
 
@@ -135,7 +135,7 @@ astal -t Bar
 ```
 
 ```sh [ags]
-ags -t Bar
+ags toggle Bar
 ```
 
 :::
