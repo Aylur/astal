@@ -65,7 +65,7 @@ export default function astalify<
         get_click_through(): boolean { return this.clickThrough }
         set_click_through(clickThrough: boolean) { this.clickThrough = clickThrough }
 
-        declare __no_implicit_destroy: boolean
+        declare private __no_implicit_destroy: boolean
         get noImplicitDestroy(): boolean { return this.__no_implicit_destroy }
         set noImplicitDestroy(value: boolean) { this.__no_implicit_destroy = value }
 
