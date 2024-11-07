@@ -11,16 +11,6 @@ const TIMEOUT_DELAY = 5000
 // with a Map<number, Widget> type in order to track notification widgets
 // by their id, while making it conviniently bindable as an array
 class NotifiationMap implements Subscribable {
-    // it makes sense to share a single instance across all monitors
-    static get_default() {
-        if (!this.instance)
-            this.instance = new NotifiationMap()
-
-        return this.instance
-    }
-
-    private static instance: NotifiationMap
-
     // the underlying map to keep track of id widget pairs
     private map: Map<number, Gtk.Widget> = new Map()
 
@@ -101,7 +91,7 @@ class NotifiationMap implements Subscribable {
 
 export default function NotificationPopups(gdkmonitor: Gdk.Monitor) {
     const { TOP, RIGHT } = Astal.WindowAnchor
-    const notifs = NotifiationMap.get_default()
+    const notifs = new NotifiationMap()
 
     return <window
         className="NotificationPopups"
