@@ -44,7 +44,7 @@ typedef enum {
     ASTAL_CLIPBOARD_CLIPBOARD_PROP_SELECTION_HISTORY,
     ASTAL_CLIPBOARD_CLIPBOARD_PROP_PRIMARY_SELECTION_HISTORY,
     ASTAL_CLIPBOARD_CLIPBOARD_N_PROPERTIES
-} AstalCiplboardClipboardProperties;
+} AstalClipboardClipboardProperties;
 
 typedef enum { ASTAL_CLIPBOARD_CLIPBOARD_N_SIGNALS } AstalClipboardClipboardSignals;
 
