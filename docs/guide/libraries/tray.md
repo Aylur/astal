@@ -2,40 +2,6 @@
 
 Library for managing the systemtray by implementing the [StatusNotifierItem](https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/) protocol.
 
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson gtk3 gobject-introspection libdbusmenu-gtk3
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc gtk3-devel libdbusmenu-gtk3 gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson libgtk-3-dev libdbusmenu-gtk3-dev gobject-introspection
-```
-
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/tray
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
-
 ## Usage
 
 You can browse the [Tray reference](https://aylur.github.io/libastal/tray).
@@ -84,3 +50,37 @@ end
 ```
 
 :::
+
+## Installation
+
+1. install dependencies
+
+:::code-group
+
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
+sudo pacman -Syu meson gtk3 gobject-introspection libdbusmenu-gtk3
+```
+
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
+sudo dnf install meson gcc gtk3-devel libdbusmenu-gtk3 gobject-introspection-devel
+```
+
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+sudo apt install meson libgtk-3-dev libdbusmenu-gtk3-dev gobject-introspection
+```
+
+:::
+
+2. clone repo
+
+```sh
+git clone https://github.com/aylur/astal.git
+cd astal/lib/tray
+```
+
+3. install
+
+```sh
+meson setup --prefix /usr build
+meson install -C build
+```
