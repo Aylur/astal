@@ -239,19 +239,9 @@ public class TrayItem : Object {
 
     private void update_gicon() {
         if(icon_name != null && icon_name != "") {
-            if(icon_theme_path != null && icon_theme_path != "") {
-                //TODO: icon loopkup
-
-                // Gtk.IconTheme icon_theme = new Gtk.IconTheme();
-                // string[] paths = {icon_theme_path};
-                // icon_theme.set_search_path(paths);
-                //
-                // int size = icon_theme.get_icon_sizes(icon_name)[0];
-                // Gtk.IconInfo icon_info = icon_theme.lookup_icon(
-                //     icon_name, size, Gtk.IconLookupFlags.FORCE_SIZE);
-                //
-                // if (icon_info != null)
-                    // gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_info.get_filename()));
+            if(icon_theme_path != null && icon_theme_path != "") {            
+                gicon = new GLib.FileIcon(GLib.File.new_for_path(
+                    find_icon_in_theme(icon_name, icon_theme_path)));
             } else {
                 gicon = new GLib.ThemedIcon(icon_name);
             }
@@ -336,46 +326,41 @@ public class TrayItem : Object {
         }
     }
 
+    private string? find_icon_in_theme(string icon_name, string theme_path){
+      if(icon_name == null || theme_path == null || icon_name == "" || theme_path == "") return null;
+ 
+      try {
+          Dir dir = Dir.open (theme_path, 0);
+          string? name = null;
+
+          while ((name = dir.read_name ()) != null) {
+            string path = Path.build_filename (theme_path, name);
+            
+            if (FileUtils.test (path, FileTest.IS_DIR)) {
+              string? icon = find_icon_in_theme(icon_name, path);
+              if(icon != null) return icon;
+              else continue;
+            }
+
+            int dot_index = name.last_index_of(".");
+            if (dot_index != -1)
+                name = name.substring(0, dot_index);
+            if (name == icon_name) return path;
+
+          }
+      } catch (FileError err) {
+          return null;
+      }
+      return null;
+
+    }
+
     private Gdk.Pixbuf? _get_icon_pixbuf() {
         Pixmap[] pixmaps = proxy.Status == Status.NEEDS_ATTENTION
             ? proxy.AttentionIconPixmap
             : proxy.IconPixmap;
 
-
-        string icon_name = proxy.Status == Status.NEEDS_ATTENTION
-            ? proxy.AttentionIconName
-            : proxy.IconName;
-
-        Gdk.Pixbuf pixbuf = null;
-
-        if (icon_name != null && proxy.IconThemePath != null)
-            pixbuf = load_from_theme(icon_name, proxy.IconThemePath);
-
-        if (pixbuf == null)
-            pixbuf = pixmap_to_pixbuf(pixmaps);
-
-        return pixbuf;
-    }
-
-    private Gdk.Pixbuf? load_from_theme(string icon_name, string theme_path) {
-        if (theme_path == "" || theme_path == null)
-            return null;
-
-        if (icon_name == "" || icon_name == null)
-            return null;
-        //
-        // Gtk.IconTheme icon_theme = new Gtk.IconTheme();
-        // string[] paths = {theme_path};
-        // icon_theme.set_search_path(paths);
-        //
-        // int size = icon_theme.get_icon_sizes(icon_name)[0];
-        // Gtk.IconInfo icon_info = icon_theme.lookup_icon(
-        //     icon_name, size, Gtk.IconLookupFlags.FORCE_SIZE);
-        //
-        // if (icon_info != null)
-        //     return icon_info.load_icon();
-        //
-        return null;
+        return pixmap_to_pixbuf(pixmaps);
     }
 
     private Gdk.Pixbuf? pixmap_to_pixbuf(Pixmap[] pixmaps) {
