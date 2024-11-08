@@ -4,8 +4,14 @@ import { Variable } from "astal"
 
 const MAX_ITEMS = 8
 
+function hide() {
+    App.get_window("launcher")!.hide()
+}
+
 function AppButton({ app }: { app: Apps.Application }) {
-    return <button className="AppButton" onClicked={() => app.launch()}>
+    return <button
+        className="AppButton"
+        onClicked={() => { hide(); app.launch() }}>
         <box>
             <icon icon={app.iconName} />
             <box valign={Gtk.Align.CENTER} vertical>
@@ -32,7 +38,10 @@ export default function Applauncher() {
 
     const text = Variable("")
     const list = text(text => apps.fuzzy_query(text).slice(0, MAX_ITEMS))
-    const hide = () => App.get_window("launcher")!.hide()
+    const onEnter = () => {
+        apps.fuzzy_query(text.get())?.[0].launch()
+        hide()
+    }
 
     return <window
         name="launcher"
@@ -54,6 +63,7 @@ export default function Applauncher() {
                         placeholderText="Search"
                         text={text()}
                         onChanged={self => text.set(self.text)}
+                        onActivate={onEnter}
                     />
                     <box spacing={6} vertical>
                         {list.as(list => list.map(app => (
