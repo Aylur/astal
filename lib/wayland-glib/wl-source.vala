@@ -12,7 +12,7 @@ public class WlSource : Source {
             if(callback != null) return callback();
             return Source.REMOVE;
         }
-        if (this.display.dispatch_pending() < 0) {
+        if (((revents & IOCondition.IN) != 0) && this.display.dispatch() < 0) {
             if(callback != null) return callback();
             return Source.REMOVE;
         }
@@ -20,26 +20,13 @@ public class WlSource : Source {
     }
 
     public override bool check() {
-        if (this.error > 0) return true;
         IOCondition revents = this.query_unix_fd(this.fd);
-        if ((revents & IOCondition.IN) != 0) {
-            if(this.display.read_events() < 0) {
-                this.error = errno;
-            }
-        }
-        else {
-            this.display.cancel_read();
-        }
         return revents > 0;
     }
 
     public override bool prepare(out int timeout) {
-        timeout = 0;
-        if (this.display.prepare_read() != 0) return true;
-        else if (this.display.flush() < 0) {
-            this.error = errno;
-            return true;
-        }
+        if(this.display.flush() < 0) 
+          this.error = errno;
         timeout = -1;
         return false;
     }
