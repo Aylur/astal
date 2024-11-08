@@ -24,18 +24,17 @@ end
 
 local app = AstalLua()
 
---- @alias StartConfig {
---- icons?: string,
---- instance_name?: string,
---- gtk_theme?: string,
---- icon_theme?: string,
---- cursor_theme?: string,
---- css?: string,
---- hold?: boolean,
---- request_handler?: fun(msg: string, response: fun(res: any)),
---- main?: fun(...),
---- client?: fun(message: fun(msg: string): string, ...),
----}
+---@class StartConfig
+---@field icons string?
+---@field instance_name string?
+---@field gtk_theme string?
+---@field icon_theme string?
+---@field cursor_theme string?
+---@field css string?
+---@field hold boolean?
+---@field request_handler fun(msg: string, response: fun(res: any)): nil
+---@field main fun(...): nil
+---@field client fun(message: fun(msg: string): string, ...): nil
 
 ---@param config? StartConfig
 function Astal.Application:start(config)
