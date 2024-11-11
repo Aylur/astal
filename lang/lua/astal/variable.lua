@@ -243,7 +243,7 @@ function Variable.derive(deps, transform)
 
     for i, var in ipairs(deps) do
         if getmetatable(var) == Variable then
-            deps[i] = Binding.new(var)
+            deps[i] = var()
         end
     end
 
@@ -252,7 +252,7 @@ function Variable.derive(deps, transform)
         for i, binding in ipairs(deps) do
             params[i] = binding:get()
         end
-        return transform(table.unpack(params), 1, #deps)
+        return transform(table.unpack(params, 1, #deps))
     end
 
     local var = Variable.new(update())
