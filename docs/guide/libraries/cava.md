@@ -2,6 +2,46 @@
 
 Audio visualizer using [cava](https://github.com/karlstav/cava).
 
+## Usage
+
+You can browse the [Cava reference](https://aylur.github.io/libastal/cava).
+
+### CLI
+
+There is no CLI for this library, use the one provided by cava.
+
+```sh
+cava
+```
+
+### Library
+
+:::code-group
+
+```js [<i class="devicon-javascript-plain"></i> JavaScript]
+import Cava from "gi://AstalCava"
+
+const cava = Cava.get_default()
+
+cava.connect("notify::values", () => {
+    print(cava.get_values())
+})
+```
+
+```py [<i class="devicon-python-plain"></i> Python]
+# Not yet documented
+```
+
+```lua [<i class="devicon-lua-plain"></i> Lua]
+-- Not yet documented
+```
+
+```vala [<i class="devicon-vala-plain"></i> Vala]
+// Not yet documented
+```
+
+:::
+
 ## Installation
 
 1. install dependencies
@@ -46,46 +86,6 @@ instead which most package managers do, set the `prefix` option:
 
 ```sh
 meson setup --prefix /usr build
-```
-
-:::
-
-## Usage
-
-You can browse the [Cava reference](https://aylur.github.io/libastal/cava).
-
-### CLI
-
-There is no CLI for this library, use the one provided by cava.
-
-```sh
-cava
-```
-
-### Library
-
-:::code-group
-
-```js [<i class="devicon-javascript-plain"></i> JavaScript]
-import Cava from "gi://AstalCava"
-
-const cava = Cava.get_default()
-
-cava.connect("notify::values", () => {
-    print(cava.get_values())
-})
-```
-
-```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
-```
-
-```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
-```
-
-```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
 ```
 
 :::

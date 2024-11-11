@@ -149,19 +149,19 @@ public enum AstalNetwork.Connectivity {
 
 // alias for NM.DeviceState
 public enum AstalNetwork.DeviceState {
-    UNKNOWN,
-    UNMANAGED,
-    UNAVAILABLE,
-    DISCONNECTED,
-    PREPARE,
-    CONFIG,
-    NEED_AUTH,
-    IP_CONFIG,
-    IP_CHECK,
-    SECONDARIES,
-    ACTIVATED,
-    DEACTIVATING,
-    FAILED;
+    UNKNOWN = 0,
+    UNMANAGED = 10,
+    UNAVAILABLE = 20,
+    DISCONNECTED = 30,
+    PREPARE = 40,
+    CONFIG = 50,
+    NEED_AUTH = 60,
+    IP_CONFIG = 70,
+    IP_CHECK = 80,
+    SECONDARIES = 90,
+    ACTIVATED = 100,
+    DEACTIVATING = 110,
+    FAILED = 120;
 
     public string to_string() {
         switch (this) {
