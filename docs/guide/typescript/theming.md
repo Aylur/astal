@@ -23,28 +23,24 @@ You can pass a path to a file or css as a string in `App.start`
 :::code-group
 
 ```ts [app.ts]
-import style from "inline:./style.css"
-
-const inlineCssInCode = `
-window {
-    background-color: transparent;
-}
+const inlineCss = `
+    window {
+        background-color: transparent;
+    }
 `
 
 App.start({
-    css: "./style.css",
-    css: style,
-    css: `${SRC}/style.css'`,
     css: inlineCss,
+    css: "./style.css",
+    css: "/path/to/style.css",
 })
 ```
 
 :::
 
-:::info
-When using AGS the global `SRC` will point to the directory `app.ts` is in.
-AGS will set the current working directory to `--config`, so `./style.css` also works.
-If you are not using AGS you should inline import CSS instead.
+:::warning
+When using relative paths, for example `./style.css` keep in mind that they
+will be relative to the current working directory.
 :::
 
 ## Css Property on Widgets
@@ -90,19 +86,10 @@ You can reset stylesheets with `App.resetCss`
 If you are not sure about the widget hierarchy or any CSS selector,
 you can use the [GTK inspector](https://wiki.gnome.org/Projects/GTK/Inspector)
 
-::: code-group
-
-```sh [astal]
+```sh
 # to bring up the inspector run
 astal --inspector
 ```
-
-```sh [ags]
-# to bring up the inspector run
-ags --inspector
-```
-
-:::
 
 ## Using SCSS
 
@@ -126,54 +113,22 @@ npm install -g sass # not packaged on Ubuntu
 
 :::
 
-Importing `scss` files will simply return transpiled css.
-
 :::code-group
 
 ```ts [app.ts]
-import style from "./style.scss"
+import { exec } from "astal/process"
+
+exec("sass", "./style.scss", "/tmp/style.css")
 
 App.start({
-    css: style,
+    css: "/tmp/style.css",
     main() {},
 })
 ```
 
 :::
 
-:::details Without AGS
-AGS uses a plugin to transpile scss files before importing them.
-If you are not using AGS, you can use a plugin for your chosen bundler.
-:::
-
 :::tip
-If you for example want to set scss varibles from JS,
-You can inline import, compose, and transpile yourself.
-
-```ts [app.ts]
-import style1 from "inline:./style1.scss"
-import style2 from "inline:./style2.scss"
-
-const tmpscss = "/tmp/style.scss"
-const target = "/tmp/style.css"
-
-writeFile(tmpscss, `
-  $var1: red;
-  $var1: blue;
-  ${style1}
-  ${style1}
-`)
-
-exec(`sass ${tmpscss} ${target}`)
-
-App.start({
-    css: target,
-})
-
-```
-
-:::
-
-:::info
-If you want other preprocessors support builtin open an Issue.
+You could also transpile scss into css using a bundler
+and simply passing the path of the resulting css file to `css`.
 :::

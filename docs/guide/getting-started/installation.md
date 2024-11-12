@@ -1,11 +1,5 @@
 # Installation
 
-## Nix
-
-maintainer: [@Aylur](https://github.com/Aylur)
-
-Read more about it on the [nix page](./nix#astal)
-
 ## Arch
 
 maintainer: [@kotontrion](https://github.com/kotontrion)
@@ -22,7 +16,13 @@ yay -S libastal-meta
 
 :::
 
-## Bulding libastal from source
+## Nix
+
+maintainer: [@Aylur](https://github.com/Aylur)
+
+Read more about it on the [nix page](./nix#astal)
+
+## Bulding From Source
 
 1. Install the following dependencies
 

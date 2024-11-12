@@ -6,7 +6,6 @@ Depending on gtk version import paths will differ
 
 ```ts
 import { App } from "astal/gtk3"
-
 import { App } from "astal/gtk4"
 ```
 
@@ -53,19 +52,10 @@ App.start({
 })
 ```
 
-:::code-group
-
-```sh [astal]
+```sh
 astal say hi
 # hi cli
 ```
-
-```sh [ags]
-ags request "say hi"
-# hi cli
-```
-
-:::
 
 If you want to run arbitrary JavaScript from CLI, you can use `App.eval`
 which will evaluate the passed string as the body of an `async` function.
@@ -128,17 +118,9 @@ When assigning the `application` prop make sure `name` comes before.
 Props are set sequentially and if name is applied after application it won't work.
 :::
 
-:::code-group
-
 ```sh [astal]
 astal -t Bar
 ```
-
-```sh [ags]
-ags toggle Bar
-```
-
-:::
 
 ## Bundled scripts
 
