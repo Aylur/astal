@@ -62,7 +62,7 @@ sudo pacman -Syu meson gtk3 gobject-introspection libdbusmenu-gtk3
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc gtk3-devel libdbusmenu-gtk3 gobject-introspection-devel
+sudo dnf install meson gcc gtk3-devel libdbusmenu-gtk3-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
