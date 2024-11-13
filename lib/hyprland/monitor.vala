@@ -1,5 +1,4 @@
-namespace AstalHyprland {
-public class Monitor : Object {
+public class AstalHyprland.Monitor : Object {
     public signal void removed ();
 
     public int id { get; private set; }
@@ -20,6 +19,7 @@ public class Monitor : Object {
     public int reserved_left { get; private set; }
     public int reserved_right { get; private set; }
     public double scale { get; private set; }
+    public Transform transform { get; private set; }
     public bool focused { get; private set; }
     public bool dpms_status { get; private set; }
     public bool vrr { get; private set; }
@@ -43,6 +43,7 @@ public class Monitor : Object {
         x = (int)obj.get_int_member("x");
         y = (int)obj.get_int_member("y");
         scale = obj.get_double_member("scale");
+        transform = (Transform)obj.get_int_member("transform");
         focused = obj.get_boolean_member("focused");
         dpms_status = obj.get_boolean_member("dpmsStatus");
         vrr = obj.get_boolean_member("vrr");
@@ -67,5 +68,22 @@ public class Monitor : Object {
     public void focus() {
         Hyprland.get_default().dispatch("focusmonitor", id.to_string());
     }
-}
+
+    public enum Transform {
+        NORMAL = 0,
+        /** rotate by 90° counter clockwise */
+        ROTATE_90_DEG = 1,
+        /** rotate by 180° */
+        ROTATE_180_DEG = 2,
+        /** rotate by 270° counter clockwise  */
+        ROTATE_270_DEG = 3,
+        /** mirror both axis  */
+        FLIPPED = 4,
+        /** flip and rotate by 90° */
+        FLIPPED_ROTATE_90_DEG = 5,
+        /** flip and rotate by 180° */
+        FLIPPED_ROTATE_180_DEG = 6,
+        /** flip and rotate by 270° */
+        FLIPPED_ROTATE_270_DEG = 7,
+    }
 }
