@@ -16,11 +16,17 @@ private interface IPowerProfiles : DBusProxy {
 }
 
 public PowerProfiles get_default() {
+    /** Gets the default singleton PowerProfiles instance. */
     return PowerProfiles.get_default();
 }
 
+/**
+ * Client for  [[https://freedesktop-team.pages.debian.net/power-profiles-daemon/gdbus-org.freedesktop.UPower.PowerProfiles.html|PowerProfiles]].
+ */
 public class PowerProfiles : Object {
     private static PowerProfiles instance;
+
+    /** Gets the default singleton PowerProfiles instance. */
     public static PowerProfiles get_default() {
         if (instance == null)
             instance = new PowerProfiles();
@@ -52,19 +58,34 @@ public class PowerProfiles : Object {
         }
     }
 
+    /**
+     * The type of the currently active profile.
+     * It might change automatically if a profile is held,
+     * using the [method@AstalPowerProfiles.PowerProfiles.hold_profile] method.
+     */
     public string active_profile {
         owned get { return proxy.active_profile; }
         set { proxy.active_profile = value; }
     }
 
+    /**
+     * Return a named icon based [property@AstalPowerProfiles.PowerProfiles:active_profile].
+     */
     public string icon_name {
         owned get { return @"power-profile-$active_profile-symbolic"; }
     }
 
+    /**
+     * List of the "actions" implemented in the running daemon.
+     * This can used to figure out whether particular functionality is available in the daemon.
+     */
     public string[] actions {
         owned get { return proxy.actions.copy(); }
     }
 
+    /**
+     * List of dictionaries representing the current profile holds.
+     */
     public Hold[] active_profile_holds {
         owned get {
             Hold[] holds = new Hold[proxy.active_profile_holds.length];
@@ -80,14 +101,21 @@ public class PowerProfiles : Object {
         }
     }
 
+    /**
+     * This will be set if the performance power profile is running in degraded mode,
+     * with the value being used to identify the reason for that degradation.
+     * Possible values are:
+     * - "lap-detected" (the computer is sitting on the user's lap)
+     * - "high-operating-temperature" (the computer is close to overheating)
+     * - "" (the empty string, if not performance is not degraded)
+     */
     public string performance_degraded {
         owned get { return proxy.performance_degraded; }
     }
 
-    public string performance_inhibited {
-        owned get { return proxy.performance_degraded; }
-    }
-
+    /**
+     * List of each profile.
+     */
     public Profile[] profiles {
         owned get {
             Profile[] profs = new Profile[proxy.profiles.length];
@@ -104,12 +132,31 @@ public class PowerProfiles : Object {
         }
     }
 
+    /**
+     * The version of the power-profiles-daemon software.
+     */
     public string version {
         owned get { return proxy.version; }
     }
 
+    /**
+     * Emitted when the profile is released because
+     * [property@AstalPowerProfiles.PowerProfiles:active_profile] was manually changed.
+     * This will only be emitted to the process that originally called
+     * [method@AstalPowerProfiles.PowerProfiles.hold_profile].
+     */
     public signal void profile_released (uint cookie);
 
+    /**
+     * This forces the passed profile (either 'power-saver' or 'performance')
+     * to be activated until either the caller quits,
+     * [method@AstalPowerProfiles.PowerProfiles.release_profile] is called,
+     * or the [property@AstalPowerProfiles.PowerProfiles:active_profile] is changed by the user.
+     * When conflicting profiles are requested to be held,
+     * the 'power-saver' profile will be activated in preference to the 'performance' profile.
+     * Those holds will be automatically cancelled if the user manually switches to another profile,
+     * and the [signal@AstalPowerProfiles.PowerProfiles::profile_released] signal will be emitted.
+     */
     public int hold_profile(string profile, string reason, string application_id) {
         try {
             return (int)proxy.hold_profile(profile, reason, application_id);
@@ -119,6 +166,9 @@ public class PowerProfiles : Object {
         }
     }
 
+    /**
+     * This removes the hold that was set on a profile.
+     */
     public void release_profile(uint cookie) {
         try {
             proxy.release_profile(cookie);
@@ -126,54 +176,21 @@ public class PowerProfiles : Object {
             critical(error.message);
         }
     }
-
-    public string to_json_string() {
-        var acts = new Json.Builder().begin_array();
-        foreach (var action in actions) {
-            acts.add_string_value(action);
-        }
-
-        var active_holds = new Json.Builder().begin_array();
-        foreach (var action in active_profile_holds) {
-            active_holds.add_value(new Json.Builder()
-                .begin_object()
-                .set_member_name("application_id").add_string_value(action.application_id)
-                .set_member_name("profile").add_string_value(action.profile)
-                .set_member_name("reason").add_string_value(action.reason)
-                .end_object()
-                .get_root());
-        }
-
-        var profs = new Json.Builder().begin_array();
-        foreach (var prof in profiles) {
-            profs.add_value(new Json.Builder()
-                .begin_object()
-                .set_member_name("profie").add_string_value(prof.profile)
-                .set_member_name("driver").add_string_value(prof.driver)
-                .set_member_name("cpu_driver").add_string_value(prof.cpu_driver)
-                .set_member_name("platform_driver").add_string_value(prof.platform_driver)
-                .end_object()
-                .get_root());
-        }
-
-        return Json.to_string(new Json.Builder()
-            .begin_object()
-            .set_member_name("active_profile").add_string_value(active_profile)
-            .set_member_name("icon_name").add_string_value(icon_name)
-            .set_member_name("performance_degraded").add_string_value(performance_degraded)
-            .set_member_name("performance_inhibited").add_string_value(performance_inhibited)
-            .set_member_name("actions").add_value(acts.end_array().get_root())
-            .set_member_name("active_profile_holds").add_value(active_holds.end_array().get_root())
-            .set_member_name("profiles").add_value(profs.end_array().get_root())
-            .end_object()
-            .get_root(), false);
-    }
 }
 
 public struct Profile {
+    /**
+     * Will be one of:
+     * - "power-saver" (battery saving profile)
+     * - "balanced" (the default profile)
+     * - "performance" (a profile that does not care about noise or battery consumption)
+     */
     public string profile;
     public string cpu_driver;
     public string platform_driver;
+    /**
+     * Identifies the power-profiles-daemon backend code used to implement the profile.
+     */
     public string driver;
 }
 
