@@ -92,7 +92,7 @@ In order for Astal to know about your windows, you have to register them.
 You can do this by specifying a **unique** `name` and calling `App.add_window`
 
 ```tsx {4}
-import { App } from "astal"
+import { App } from "astal/gtk3"
 
 function Bar() {
     return <window name="Bar" setup={self => App.add_window(self)}>
@@ -104,7 +104,7 @@ function Bar() {
 You can also invoke `App.add_window` by simply passing the `App` to the `application` prop.
 
 ```tsx {4}
-import { App } from "astal"
+import { App } from "astal/gtk3"
 
 function Bar() {
     return <window name="Bar" application={App}>

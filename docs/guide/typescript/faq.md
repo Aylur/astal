@@ -7,7 +7,7 @@ the same as the compositor. Instead use the `gdkmonitor` property which expects
 a `Gdk.Monitor` object.
 
 ```tsx
-import { App } from "astal"
+import { App } from "astal/gtk3"
 
 function Bar(gdkmonitor) {
     return <window gdkmonitor={gdkmonitor} />
@@ -162,7 +162,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
 :::code-group
 
 ```ts [app.ts]
-import { Gdk, Gtk } from "astal"
+import { Gdk, Gtk } from "astal/gtk3"
 import Bar from "./Bar"
 
 function main() {
