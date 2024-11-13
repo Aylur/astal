@@ -163,9 +163,7 @@ return function(ctor)
     end
 
     return function(tbl)
-        if tbl == nil then
-            tbl = {}
-        end
+        tbl = tbl or {}
 
         local bindings = {}
         local setup = tbl.setup

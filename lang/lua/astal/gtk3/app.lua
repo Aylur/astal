@@ -25,29 +25,26 @@ end
 local app = AstalLua()
 
 ---@class StartConfig
----@field icons? string
----@field instance_name? string
----@field gtk_theme? string
----@field icon_theme? string
----@field cursor_theme? string
----@field css? string
----@field hold? boolean
----@field request_handler? fun(msg: string, response: fun(res: any))
----@field main? fun(...): unknown
----@field client? fun(message: fun(msg: string): string, ...): unknown
+---@field icons string?
+---@field instance_name string?
+---@field gtk_theme string?
+---@field icon_theme string?
+---@field cursor_theme string?
+---@field css string?
+---@field hold boolean?
+---@field request_handler fun(msg: string, response: fun(res: any)): nil
+---@field main fun(...): nil
+---@field client fun(message: fun(msg: string): string, ...): nil
 
----@param config StartConfig | nil
+---@param config? StartConfig
 function Astal.Application:start(config)
-    if config == nil then
-        config = {}
-    end
+    config = config or {}
 
-    if config.client == nil then
-        config.client = function()
+    config.client = config.client
+        or function()
             print('Astal instance "' .. app.instance_name .. '" is already running')
             os.exit(1)
         end
-    end
 
     if config.hold == nil then
         config.hold = true
@@ -61,17 +58,11 @@ function Astal.Application:start(config)
     if config.icons then
         self:add_icons(config.icons)
     end
-    if config.instance_name then
-        self.instance_name = config.instance_name
-    end
-    if config.gtk_theme then
-        self.gtk_theme = config.gtk_theme
-    end
-    if config.icon_theme then
-        self.icon_theme = config.icon_theme
-    end
-    if config.cursor_theme then
-        self.cursor_theme = config.cursor_theme
+
+    for _, key in ipairs({ "instance_name", "gtk_theme", "icon_theme", "cursor_theme" }) do
+        if config[key] then
+            self[key] = config[key]
+        end
     end
 
     app.on_activate = function()

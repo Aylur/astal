@@ -17,6 +17,7 @@ local Process = require("astal.process")
 ---@field private poll_fn? function
 ---@field private watch_transform? fun(next: any, prev: any): any
 ---@field private watch_exec? string[] | string
+---@overload fun(transform?: fun(v: any): any): Binding
 local Variable = {}
 Variable.__index = Variable
 
@@ -24,23 +25,23 @@ Variable.__index = Variable
 ---@return Variable
 function Variable.new(value)
     local v = Astal.VariableBase()
-    local variable = setmetatable({
-        variable = v,
-        _value = value,
-    }, Variable)
+    local variable = setmetatable({ variable = v, _value = value }, Variable)
+
     v.on_dropped = function()
         variable:stop_watch()
         variable:stop_poll()
     end
+
     v.on_error = function(_, err)
         if variable.err_handler then
             variable.err_handler(err)
         end
     end
+
     return variable
 end
 
----@param transform? fun(v: any): any 
+---@param transform? fun(v: any): any
 ---@return Binding
 function Variable:__call(transform)
     if type(transform) == "nil" then
@@ -54,10 +55,13 @@ function Variable:__tostring()
     return "Variable<" .. tostring(self:get()) .. ">"
 end
 
+---@return any
 function Variable:get()
     return self._value
 end
 
+---@param value any
+---@return nil
 function Variable:set(value)
     if value ~= self:get() then
         self._value = value
@@ -107,7 +111,6 @@ function Variable:start_watch()
     end)
 end
 
-
 function Variable:stop_poll()
     if self:is_polling() then
         self._poll.cancel()
@@ -121,7 +124,6 @@ function Variable:stop_watch()
     end
     self._watch = nil
 end
-
 
 function Variable:drop()
     self.variable.emit_dropped()
@@ -180,8 +182,9 @@ end
 
 ---@param exec string | string[]
 ---@param transform? fun(next: any, prev: any): any
+---@return Variable
 function Variable:watch(exec, transform)
-    transform = transform or function (next)
+    transform = transform or function(next)
         return next
     end
 
@@ -240,7 +243,7 @@ function Variable.derive(deps, transform)
 
     for i, var in ipairs(deps) do
         if getmetatable(var) == Variable then
-            deps[i] = Binding.new(var)
+            deps[i] = var()
         end
     end
 
@@ -249,7 +252,7 @@ function Variable.derive(deps, transform)
         for i, binding in ipairs(deps) do
             params[i] = binding:get()
         end
-        return transform(table.unpack(params), 1, #deps)
+        return transform(table.unpack(params, 1, #deps))
     end
 
     local var = Variable.new(update())
