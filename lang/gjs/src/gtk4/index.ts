@@ -6,4 +6,4 @@ import astalify, { type ConstructProps } from "./astalify.js"
 export { Astal, Gtk, Gdk }
 export { default as App } from "./app.js"
 export { astalify, ConstructProps }
-// export * as Widget from "./widget.js"
+export * as Widget from "./widget.js"

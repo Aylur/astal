@@ -1,4 +1,4 @@
-import { Astal, ConstructProps } from "../gtk3"
+import { Astal, ConstructProps } from "../gtk4"
 import astalify, { BindableChild } from "./astalify"
 import GObject from "gi://GObject"
 
