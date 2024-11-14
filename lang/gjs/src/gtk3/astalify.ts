@@ -43,7 +43,7 @@ function setProp(obj: any, prop: string, value: any) {
 
 export default function astalify<
     C extends { new(...args: any[]): Gtk.Widget },
->(cls: C) {
+>(cls: C, childrenSetter: ((children: Gtk.Widget[], self: InstanceType<C>) => void) | null = null) {
     class Widget extends cls {
         get css(): string { return Astal.widget_get_css(this) }
         set css(css: string) { Astal.widget_set_css(this, css) }
@@ -73,6 +73,11 @@ export default function astalify<
             children = children.flat(Infinity).map(ch => ch instanceof Gtk.Widget
                 ? ch
                 : new Gtk.Label({ visible: true, label: String(ch) }))
+
+            if (childrenSetter != null) {
+                childrenSetter(children, this)
+                return
+            }
 
             // remove
             if (this instanceof Gtk.Bin) {

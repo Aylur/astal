@@ -86,7 +86,8 @@ export default function astalify<
                 children.forEach(c => this.append(c))
             }
             else {
-                throw Error(`can not add children to ${this.constructor.name}, it is not a container widget`)
+                throw Error(`can not add children to ${this.constructor.name}, it is not a container widget.`
+                    + "If declared with astalify, provide childrenSetter function")
             }
         }
 
