@@ -83,30 +83,12 @@ public void widget_toggle_class_name(
         widget.remove_css_class(class_name);
 }
 
-private class Cursor {
-    private static HashTable<Gtk.Widget, string> _cursors;
-    public static HashTable<Gtk.Widget, string> cursors {
-        get {
-            if (_cursors == null) {
-                _cursors = new HashTable<Gtk.Widget, string>(
-                    (w) => (uint)w,
-                    (a, b) => a == b);
-            }
-            return _cursors;
-        }
-    }
-}
-
-private void widget_setup_cursor(Gtk.Widget widget) {
-    //tbd
-}
-
 public void widget_set_cursor(Gtk.Widget widget, string cursor) {
-    //tbd
+    widget.set_cursor_from_name(cursor);
 }
 
 public string widget_get_cursor(Gtk.Widget widget) {
-    return Cursor.cursors.get(widget);
+    return widget.cursor.name;
 }
 
 private class ClickThrough {
@@ -125,7 +107,6 @@ private class ClickThrough {
 
 public void widget_set_click_through(Gtk.Widget widget, bool click_through) {
     ClickThrough.click_through.set(widget, click_through);
-    widget.set_can_target(!click_through);
 }
 
 public bool widget_get_click_through(Gtk.Widget widget) {
