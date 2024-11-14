@@ -43,7 +43,7 @@ function setProp(obj: any, prop: string, value: any) {
 
 export default function astalify<
     C extends { new(...args: any[]): Gtk.Widget },
->(cls: C) {
+>(cls: C, childrenSetter: ((w: Gtk.Widget[], self: InstanceType<C>) => void) | null = null) {
     class Widget extends cls {
         get css(): string { return Astal.widget_get_css(this) }
         set css(css: string) { Astal.widget_set_css(this, css) }
@@ -74,6 +74,11 @@ export default function astalify<
                 ? ch
                 : new Gtk.Label({ visible: true, label: String(ch) }))
 
+            if (childrenSetter != null) {
+                childrenSetter(children, this)
+                return
+            }
+
             if (this instanceof Gtk.Window) {
                 this.set_child(children[0])
             }
@@ -81,7 +86,8 @@ export default function astalify<
                 children.forEach(c => this.append(c))
             }
             else {
-                throw Error(`can not add children to ${this.constructor.name}, it is not a container widget`)
+                throw Error(`can not add children to ${this.constructor.name}, it is not a container widget.`
+                    + "If declared with astalify, provide childrenSetter function")
             }
         }
 
