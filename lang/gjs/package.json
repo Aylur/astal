@@ -4,7 +4,7 @@
     "description": "Building blocks for building linux desktop shell",
     "type": "module",
     "author": "Aylur",
-    "license": "GPL",
+    "license": "LGPL-2.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/aylur/astal.git",
