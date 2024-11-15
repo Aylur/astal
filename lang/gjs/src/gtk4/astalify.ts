@@ -83,6 +83,11 @@ export default function astalify<
                 this.set_child(children[0])
             }
             else if (this instanceof Gtk.Box) {
+                let child = this.get_last_child()
+                while (child != null) {
+                    this.remove(child)
+                    child = this.get_last_child()
+                }
                 children.forEach(c => this.append(c))
             }
             else {
