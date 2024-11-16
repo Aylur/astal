@@ -1,7 +1,8 @@
 local astal = require("astal")
 local App = require("astal.gtk3.app")
+local Widget = require("astal.gtk3.widget")
 
-local AppLauncher = require("widget.Applauncher")
+local MprisPlayers = require("widget.MediaPlayer")
 local src = require("lib").src
 
 local scss = src("style.scss")
@@ -10,7 +11,9 @@ local css = "/tmp/style.css"
 astal.exec("sass " .. scss .. " " .. css)
 
 App:start({
-	instance_name = "launcher",
+	instance_name = "lua",
 	css = css,
-	main = AppLauncher,
+	main = function()
+		Widget.Window({ MprisPlayers() })
+	end,
 })
