@@ -6,7 +6,6 @@ Depending on gtk version import paths will differ
 
 ```ts
 import { App } from "astal/gtk3"
-
 import { App } from "astal/gtk4"
 ```
 
@@ -53,19 +52,10 @@ App.start({
 })
 ```
 
-:::code-group
-
-```sh [astal]
+```sh
 astal say hi
 # hi cli
 ```
-
-```sh [ags]
-ags request "say hi"
-# hi cli
-```
-
-:::
 
 If you want to run arbitrary JavaScript from CLI, you can use `App.eval`
 which will evaluate the passed string as the body of an `async` function.
@@ -102,7 +92,7 @@ In order for Astal to know about your windows, you have to register them.
 You can do this by specifying a **unique** `name` and calling `App.add_window`
 
 ```tsx {4}
-import { App } from "astal"
+import { App } from "astal/gtk3"
 
 function Bar() {
     return <window name="Bar" setup={self => App.add_window(self)}>
@@ -114,7 +104,7 @@ function Bar() {
 You can also invoke `App.add_window` by simply passing the `App` to the `application` prop.
 
 ```tsx {4}
-import { App } from "astal"
+import { App } from "astal/gtk3"
 
 function Bar() {
     return <window name="Bar" application={App}>
@@ -128,24 +118,13 @@ When assigning the `application` prop make sure `name` comes before.
 Props are set sequentially and if name is applied after application it won't work.
 :::
 
-:::code-group
-
 ```sh [astal]
 astal -t Bar
 ```
 
-```sh [ags]
-ags toggle Bar
-```
+## Client
 
-:::
-
-## Bundled scripts
-
-The produced scripts when bundling can run as the main instance
-and a "client" instance.
-
-The first time you execute your bundled script the `main` function gets called.
+The first time you execute your script the `main` function gets called.
 While that instance is running any subsequent execution of the script will call
 the `client` function.
 

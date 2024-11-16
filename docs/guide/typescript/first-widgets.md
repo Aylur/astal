@@ -2,41 +2,26 @@
 
 ## Getting Started
 
-Start by initializing a project
+Start by importing the singleton
+[Astal.Application](https://aylur.github.io/libastal/astal3/class.Application.html) instance.
 
-```sh
-ags init
+:::code-group
+
+```ts [app.ts]
+import { App } from "astal/gtk3"
+
+App.start({
+    main() {
+        // you will instantiate Widgets here
+        // and setup anything else if you need
+    }
+})
 ```
 
-then run `ags run` in the terminal
-
-```sh
-ags run
-```
-
-:::details Usage without AGS
-🚧 Not yet documented. 🚧
 :::
 
-That's it! You have now a custom written bar using Gtk.
-
-:::tip
-AGS will transpile every `.ts`, `.jsx` and `.tsx` files into regular JavaScript, then
-it will bundle everything into a single JavaScript file which then GJS can execute.
-:::
-
-The AGS init command will generate the following files
-
-```txt
-.
-├── @girs/              # generated types
-├── widget/
-│   └── Bar.tsx
-├── app.ts              # entry proint
-├── env.d.ts            # additional types
-├── style.css
-└── tsconfig.json       # needed by LSPs
-```
+After your [bundle step](./installation.md) run `gjs -m app.js`, and that's it!
+Now you have an Astal instance running written in TypeScript.
 
 ## Root of every shell component: Window
 

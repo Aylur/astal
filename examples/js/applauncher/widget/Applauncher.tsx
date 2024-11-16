@@ -4,8 +4,14 @@ import { Variable } from "astal"
 
 const MAX_ITEMS = 8
 
+function hide() {
+    App.get_window("launcher")!.hide()
+}
+
 function AppButton({ app }: { app: Apps.Application }) {
-    return <button className="AppButton" onClicked={() => app.launch()}>
+    return <button
+        className="AppButton"
+        onClicked={() => { hide(); app.launch() }}>
         <box>
             <icon icon={app.iconName} />
             <box valign={Gtk.Align.CENTER} vertical>
@@ -27,12 +33,14 @@ function AppButton({ app }: { app: Apps.Application }) {
 }
 
 export default function Applauncher() {
+    const { CENTER } = Gtk.Align
     const apps = new Apps.Apps()
-    const list = Variable(apps.get_list().slice(0, MAX_ITEMS))
-    const hide = () => App.get_window("launcher")!.hide()
 
-    function search(text: string) {
-        list.set(apps.fuzzy_query(text).slice(0, MAX_ITEMS))
+    const text = Variable("")
+    const list = text(text => apps.fuzzy_query(text).slice(0, MAX_ITEMS))
+    const onEnter = () => {
+        apps.fuzzy_query(text.get())?.[0].launch()
+        hide()
     }
 
     return <window
@@ -41,7 +49,7 @@ export default function Applauncher() {
         exclusivity={Astal.Exclusivity.IGNORE}
         keymode={Astal.Keymode.ON_DEMAND}
         application={App}
-        onShow={() => list.set(apps.get_list().slice(0, MAX_ITEMS))}
+        onShow={() => text.set("")}
         onKeyPressEvent={function (self, event: Gdk.Event) {
             if (event.get_keyval()[1] === Gdk.KEY_Escape)
                 self.hide()
@@ -53,16 +61,22 @@ export default function Applauncher() {
                 <box widthRequest={500} className="Applauncher" vertical>
                     <entry
                         placeholderText="Search"
-                        onChanged={({ text }) => search(text)}
+                        text={text()}
+                        onChanged={self => text.set(self.text)}
+                        onActivate={onEnter}
                     />
                     <box spacing={6} vertical>
-                        {list(list => list.map(app => (
+                        {list.as(list => list.map(app => (
                             <AppButton app={app} />
                         )))}
                     </box>
-                    <box visible={list(l => l.length === 0)}>
+                    <box
+                        halign={CENTER}
+                        className="not-found"
+                        vertical
+                        visible={list.as(l => l.length === 0)}>
                         <icon icon="system-search-symbolic" />
-                        No match found
+                        <label label="No match found" />
                     </box>
                 </box>
                 <eventbox expand onClick={hide} />

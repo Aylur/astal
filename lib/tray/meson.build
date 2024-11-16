@@ -54,7 +54,7 @@ if get_option('lib')
     vala_args: ['--vapi-comments'],
     version: meson.project_version(),
     install: true,
-    install_dir: [true, true, true],
+    install_dir: [true, true, true]
   )
 
   pkgs = []

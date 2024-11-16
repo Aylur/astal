@@ -9,6 +9,7 @@ import html
 import sys
 import subprocess
 import re
+import os
 
 
 # valac fails on gi-docgen compliant markdown
@@ -47,7 +48,7 @@ def fix_gir(name: str, gir: str, out: str):
 
 
 def valadoc(name: str, gir: str, args: list[str]):
-    cmd = ["valadoc", "-o", "docs", "--package-name", name, "--gir", gir, *args]
+    cmd = [os.getenv("VALADOC", "valadoc"), "-o", "docs", "--package-name", name, "--gir", gir, *args]
     try:
         subprocess.run(cmd, check=True, text=True, capture_output=True)
     except subprocess.CalledProcessError as e:

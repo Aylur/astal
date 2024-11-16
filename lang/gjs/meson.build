@@ -21,3 +21,12 @@ install_data(
 
 install_subdir('src/gtk3', install_dir: dest)
 install_subdir('src/gtk4', install_dir: dest)
+
+import('pkgconfig').generate(
+  description: 'Astal GJS pacakge',
+  name: meson.project_name(),
+  install_dir: get_option('libdir') / 'pkgconfig',
+  variables: {
+    'srcdir': dest,
+  },
+)

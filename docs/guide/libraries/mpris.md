@@ -6,52 +6,6 @@ exposing an mpris interface through dbus.
 An alternative for [playerctl](https://github.com/altdesktop/playerctl) that better integrates
 with astal.
 
-:::warning
-In order for network cover art urls to be cached (spotify for example)
-make sure `gvfs` is enabled.
-
-:::code-group
-
-```nix [<i class="devicon-nixos-plain"></i> configuration.nix]
-services.gvfs.enable = true;
-```
-
-:::
-
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala gvfs json-glib gobject-introspection
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson vala valadoc gvfs json-glib-devel gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac gvfs libjson-glib-dev gobject-introspection
-```
-
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/mpris
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
-
 ## Usage
 
 You can browse the [Mpris reference](https://aylur.github.io/libastal/mpris).
@@ -96,6 +50,52 @@ end
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
 // Not yet documented
+```
+
+:::
+
+## Installation
+
+1. install dependencies
+
+:::code-group
+
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
+sudo pacman -Syu meson vala gvfs json-glib gobject-introspection
+```
+
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
+sudo dnf install meson vala valadoc gvfs json-glib-devel gobject-introspection-devel
+```
+
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+sudo apt install meson valac gvfs libjson-glib-dev gobject-introspection
+```
+
+:::
+
+2. clone repo
+
+```sh
+git clone https://github.com/aylur/astal.git
+cd astal/lib/mpris
+```
+
+3. install
+
+```sh
+meson setup --prefix /usr build
+meson install -C build
+```
+
+:::warning
+In order for network cover art urls to be cached (spotify for example)
+make sure `gvfs` is enabled.
+
+:::code-group
+
+```nix [<i class="devicon-nixos-plain"></i> configuration.nix]
+services.gvfs.enable = true;
 ```
 
 :::

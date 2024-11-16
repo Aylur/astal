@@ -33,6 +33,8 @@ Reading their documentation will vary depending on the language they are used in
 - [Auth](https://aylur.github.io/libastal/auth): Authentication library using PAM
 - [Battery](https://aylur.github.io/libastal/battery): DBus proxy library for upower daemon
 - [Bluetooth](https://aylur.github.io/libastal/bluetooth): Library to control bluez over dbus
+- [Cava](https://aylur.github.io/libastal/cava): Audio visualizer library using cava
+- [Greet](https://aylur.github.io/libastal/greet): Library and CLI tool for sending requests to greetd
 - [Hyprland](https://aylur.github.io/libastal/hyprland): Library and cli tool for Hyprland IPC socket
 - [Mpris](https://aylur.github.io/libastal/mpris): Library and cli tool for controlling media players
 - [Network](https://aylur.github.io/libastal/network): NetworkManager wrapper library

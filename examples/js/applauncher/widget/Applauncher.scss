@@ -41,5 +41,19 @@ window#launcher {
                 color: gtkalpha($fg-color, .8);
             }
         }
+
+        box.not-found {
+            padding: 1rem;
+
+            icon {
+                font-size: 6em;
+                color: gtkalpha($fg-color, .7);
+            }
+
+            label {
+                color: gtkalpha($fg-color, .9);
+                font-size: 1.2em;
+            }
+        }
     }
 }
