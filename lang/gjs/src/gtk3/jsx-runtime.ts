@@ -54,6 +54,7 @@ const ctors = {
     label: Widget.Label,
     levelbar: Widget.LevelBar,
     // TODO: listbox
+    menubutton: Widget.MenuButton,
     overlay: Widget.Overlay,
     revealer: Widget.Revealer,
     scrollable: Widget.Scrollable,
@@ -82,6 +83,7 @@ declare global {
             label: Widget.LabelProps
             levelbar: Widget.LevelBarProps
             // TODO: listbox
+            menubutton: Widget.MenuButton,
             overlay: Widget.OverlayProps
             revealer: Widget.RevealerProps
             scrollable: Widget.ScrollableProps
