@@ -39,7 +39,7 @@ App:start({
 :::
 
 :::warning
-When using relative paths, so for example `./style.css` keep in mind that they
+When using relative paths, for example `./style.css` keep in mind that they
 will be relative to the current working directory.
 :::
 

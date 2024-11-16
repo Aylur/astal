@@ -76,7 +76,7 @@ if get_option('lib')
     c_args: dbusmenu_cflags.split(' '),
     link_args: dbusmenu_libs.split(' '),
     install: true,
-    install_dir: true,
+    install_dir: [true, true, true]
   )
 
   pkgs = ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4']
