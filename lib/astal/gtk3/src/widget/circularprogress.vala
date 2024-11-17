@@ -72,7 +72,6 @@ public class Astal.CircularProgress : Gtk.Bin {
     }
 
     public override void get_preferred_width(out int minw, out int natw) {
-        // if(get_child() != null) get_child().get_preferred_width(out minw, out natw);
         if(get_child() != null)  {
           int minh, nath;
           get_child().get_preferred_height(out minh, out nath);
