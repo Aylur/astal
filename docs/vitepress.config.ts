@@ -73,6 +73,7 @@ export default defineConfig({
                     { text: "GObject", link: "/gobject" },
                     { text: "Utilities", link: "/utilities" },
                     { text: "FAQ", link: "/faq" },
+                    { text: "Examples", link: "/examples" },
                 ],
             },
             {
@@ -90,6 +91,7 @@ export default defineConfig({
                     // { text: "GObject", link: "/gobject" },
                     { text: "Utilities", link: "/utilities" },
                     // { text: "FAQ", link: "/faq" },
+                    { text: "Examples", link: "/examples" },
                 ],
             },
             {
