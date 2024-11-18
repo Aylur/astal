@@ -354,42 +354,75 @@ inner state of widgets that does not need to be recreated. In this case
 you can create a [custom reactive structure](./binding#example-custom-subscribable)
 :::
 
-When there is at least one `Binding` passed as a child, the `children`
-parameter will always be a flattened `Binding<Array<JSX.Element>>`.
-When there is a single `Binding` passed as a child, the `child` parameter will
-be a `Binding<JSX.Element>` or a flattened `Binding<Array<JSX.Element>>`.
+# How children are passed
+
+Here is full list of how children and bound children can be passed to custom widgets.
 
 ```tsx
-import { type Binding } from "astal"
+import Binding from "astal/binding"
 
-function MyContainer({ children }: {
-    children?: Binding<Array<JSX.Element>>
-}) {
-    // children is a Binding over an Array of widgets
-}
+function Parent(props: {
+    child?: JSX.Element | Binding<JSX.Element> | Binding<Array<JSX.Element>>
+    children?: Array<JSX.Element> | Binding<Array<JSX.Element>>
+})
 
-return <MyContainer>
-    <box />
-    {num(n => range(n).map(i => (
-        <button>
-            {i.toString()}
-        <button/>
-    )))}
-    [
-        [
-            <button />
-        ]
-        <button />
-    ]
-</MyContainer>
+// { child: JSX.Element }
+<Parent>
+    <child />
+</Parent>
+
+// { children: Array<JSX.Element> }
+<Parent>
+    <child />
+    <child />
+</Parent>
+
+// { child: Binding<JSX.Element> }
+<Parent>
+    {variable(c => (
+        <child />
+    ))}
+</Parent>
+
+// { child: Binding<Array<JSX.Element>> }
+<Parent>
+    {variable(c => (
+        <child />
+        <child />
+    ))}
+</Parent>
+
+// { children: Binding<Array<JSX.Element>> }
+<Parent>
+    <child />
+    {variable(c => (
+        <child />
+    ))}
+</Parent>
+
+
+// { children: Binding<Array<JSX.Element>> }
+<Parent>
+    <child />
+    {variable(c => (
+        <child />
+        <child />
+    ))}
+</Parent>
 ```
+
+:::tip
+If you have a widget where you pass widgets in various ways, you can
+wrap `child` in `children` in a [`Subscribable`](./faq#custom-widgets-with-bindable-properties) and handle all cases
+as if they were bindings.
+:::
 
 :::info
 You can pass the followings as children:
 
 - widgets
 - deeply nested arrays of widgets
-- bindings of widgets,
+- bindings of widgets
 - bindings of deeply nested arrays of widgets
 
 [falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) values are not rendered and anything not from this list
