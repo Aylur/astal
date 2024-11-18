@@ -14,6 +14,7 @@ install_data(
     'src/process.ts',
     'src/time.ts',
     'src/variable.ts',
+    'src/overrides.ts',
     'src/_app.ts',
   ],
   install_dir: dest,
