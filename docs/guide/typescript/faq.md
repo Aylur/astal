@@ -197,10 +197,13 @@ These happen when accessing list type properties. Gjs fails to correctly bind
 import Notifd from "gi://AstalNotifd"
 const notifd = Notifd.get_default()
 
-notifd.notifications // ❌ // [!code error]
-
-notifd.get_notifications() // ✅
+notifd.notifications // [!code --]
+notifd.get_notifications() // [!code ++]
 ```
+
+:::tip
+Open up an issue/PR to add a [workaround](https://github.com/Aylur/astal/blob/main/lang/gjs/src/overrides.ts).
+:::
 
 ## How to create regular floating windows
 
