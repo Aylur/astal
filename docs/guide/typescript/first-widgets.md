@@ -275,7 +275,7 @@ function Counter() {
         <label label={bind(count).as(num => num.toString())} />
         <button onClicked={increment}>
             Click to increment
-        <button>
+        </button>
     </box>
 }
 ```
