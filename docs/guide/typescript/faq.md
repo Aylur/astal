@@ -92,7 +92,7 @@ printerr("print this line to stderr")
 
 ## Populate the global scope with frequently accessed variables
 
-It might be annoying to always import Gtk only for `Gtk.Align` enums.
+It might be annoying to always import Gtk only for the `Gtk.Align` enum.
 
 :::code-group
 
@@ -118,7 +118,7 @@ Object.assign(globalThis, {
 
 :::code-group
 
-```tsx [Bar.tsx]
+```tsx [Bar.tsx] {3}
 export default function Bar() {
     return <window>
         <box halign={START} />
@@ -131,11 +131,13 @@ export default function Bar() {
 :::code-group
 
 ```ts [app.ts]
-import "./globals"
+import "./globals" // don't forget to import it first // [!code ++]
 import Bar from "./Bar"
 
 App.start({
-    main: Bar
+    main() {
+        Bar()
+    }
 })
 ```
 
