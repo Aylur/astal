@@ -13,8 +13,7 @@ local App = require("astal.gtk3.app")
 App:start({
     main = function()
         -- you will instantiate Widgets here
-        -- or setup anything else if you need
-        print("hi")
+        -- and setup anything else if you need
     end
 })
 ```
@@ -22,7 +21,7 @@ App:start({
 :::
 
 Then run `lua init.lua` in the terminal, and that's it!
-Now you have an instance running with Lua.
+Now you have an Astal instance running written in Lua.
 
 ## Root of every shell component: Window
 
