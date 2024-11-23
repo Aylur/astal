@@ -122,12 +122,9 @@ Props are set sequentially and if name is applied after application it won't wor
 astal -t Bar
 ```
 
-## Bundled scripts
+## Client
 
-The produced scripts when bundling can run as the main instance
-and a "client" instance.
-
-The first time you execute your bundled script the `main` function gets called.
+The first time you execute your script the `main` function gets called.
 While that instance is running any subsequent execution of the script will call
 the `client` function.
 

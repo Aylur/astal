@@ -1,3 +1,4 @@
+import "./overrides.js"
 import { setConsoleLogDomain } from "console"
 import { exit, programArgs } from "system"
 import IO from "gi://AstalIO"

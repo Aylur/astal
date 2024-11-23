@@ -113,9 +113,6 @@ class SysTray : Gtk.Box {
 
         var item = tray.get_item(id);
 
-        if (item.icon_theme_path != null)
-            App.instance.add_icons(item.icon_theme_path);
-
         var menu = item.create_menu();
         var btn = new Astal.Button();
         var icon = new Astal.Icon();
@@ -131,8 +128,10 @@ class SysTray : Gtk.Box {
         });
 
         item.bind_property("tooltip-markup", btn, "tooltip-markup", BindingFlags.SYNC_CREATE);
-        item.bind_property("gicon", icon, "gicon", BindingFlags.SYNC_CREATE);
+        item.bind_property("gicon", icon, "g-icon", BindingFlags.SYNC_CREATE);
+        btn.add(icon);
         add(btn);
+        btn.show_all();
         items.set(id, btn);
     }
 

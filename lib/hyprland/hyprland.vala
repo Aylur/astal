@@ -381,20 +381,15 @@ public class Hyprland : Object {
                 break;
 
             case "openwindow":
-                var addr = args[1].split(",")[0];
-                var client = new Client();
-                _clients.insert(addr, client);
                 yield sync_clients();
                 yield sync_workspaces();
-                client_added(client);
-                notify_property("clients");
                 break;
 
             case "closewindow":
                 _clients.get(args[1]).removed();
                 _clients.remove(args[1]);
-                client_removed(args[1]);
                 yield sync_workspaces();
+                client_removed(args[1]);
                 notify_property("clients");
                 break;
 
@@ -424,6 +419,17 @@ public class Hyprland : Object {
                 var argv = args[1].split(",");
                 yield sync_clients();
                 minimize(get_client(argv[0]), argv[1] == "0");
+                break;
+
+            // first event that signals a new window not openwindow
+            case "windowtitlev2":
+                var addr = args[1].split(",")[0];
+                var client = new Client();
+                _clients.insert(addr, client);
+                yield sync_clients();
+                yield sync_workspaces();
+                client_added(client);
+                notify_property("clients");
                 break;
 
             case "windowtitle":

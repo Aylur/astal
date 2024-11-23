@@ -87,7 +87,7 @@ public class AstalMpris.Player : Object {
      * Almost every media player will include support for the "file" scheme.
      * Other common schemes are "http" and "rtsp".
      */
-    public string[] supported_uri_schemas { owned get; private set; }
+    public string[] supported_uri_schemes { owned get; private set; }
 
     /**
      * The mime-types supported by the player.
@@ -160,7 +160,7 @@ public class AstalMpris.Player : Object {
     }
 
     /**
-     * uri scheme should be an element of [property@AstalMpris.Player:supported_uri_schemas]
+     * uri scheme should be an element of [property@AstalMpris.Player:supported_uri_schemes]
      * and the mime-type should match one of the elements of [property@AstalMpris.Player:supported_mime_types].
      *
      * @param uri Uri of the track to load.
@@ -425,7 +425,7 @@ public class AstalMpris.Player : Object {
         // has_track_list = proxy.has_track_list;
         identity = proxy.identity;
         entry = proxy.desktop_entry;
-        supported_uri_schemas = proxy.supported_uri_schemas;
+        supported_uri_schemes = proxy.supported_uri_schemes;
         supported_mime_types = proxy.supported_mime_types;
 
         if (position >= 0)

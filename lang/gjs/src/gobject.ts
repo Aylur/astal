@@ -51,6 +51,8 @@ export function register(options: MetaInfo = {}) {
             Properties: { ...cls[meta]?.Properties },
             ...options,
         }, cls)
+
+        delete cls[meta]
     }
 }
 
@@ -124,7 +126,9 @@ export function signal(
             }
         }
         else {
-            target.constructor[meta].Signals[name] = declaration
+            target.constructor[meta].Signals[name] = declaration || {
+                param_types: [],
+            }
         }
 
         if (!desc) {

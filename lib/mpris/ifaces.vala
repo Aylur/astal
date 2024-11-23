@@ -21,7 +21,7 @@ private interface AstalMpris.IMpris : PropsIface {
     public abstract bool has_track_list { get; }
     public abstract string identity { owned get; }
     public abstract string desktop_entry { owned get; }
-    public abstract string[] supported_uri_schemas { owned get; }
+    public abstract string[] supported_uri_schemes { owned get; }
     public abstract string[] supported_mime_types { owned get; }
 }
 
