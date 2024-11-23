@@ -20,9 +20,110 @@ export interface Connectable {
     [key: string]: any
 }
 
-export default class Binding<Value> {
-    private transformFn = (v: any) => v
+type UnwrapBinding<T> = T extends Binding<infer Value> ? Value : T
 
+class BindingTransform<Input, Output>
+implements Subscribable<UnwrapBinding<Output>> {
+    #source: Subscribable<Input>
+    /** `this.#source`'s `subscribe()` return value. Called when `this.#subscribers` becomes empty. */
+    #outerCleanup: (() => void) | null
+    /** `this.#value`'s `subscribe()` return value. Called when `this.#value` is replaced. */
+    #innerCleanup: (() => void) | null
+    #transformFn: (v: Input) => Output
+    /** To track the bound value's reactivity, this object only has one subscription to `this.#source`.
+     * This means that tracking its subscribers can't be delegated to the source object, like in a regular `Binding`.
+     */
+    #subscribers: Set<(value: UnwrapBinding<Output>) => void>
+    #value!: Output
+
+    constructor(source: Subscribable<Input>, fn: (v: Input) => Output) {
+        this.#source = source
+        this.#outerCleanup = null
+        this.#innerCleanup = null
+        this.#transformFn = fn
+        this.#subscribers = new Set()
+        this.#recomputeValue()
+    }
+
+    toString() {
+        return `BindingTransform<${this.#source}, ${this.#transformFn}>`
+    }
+
+    as<T>(
+        fn: (v: UnwrapBinding<Output>) => T,
+    ): BindingTransform<UnwrapBinding<Output>, T> {
+        return new BindingTransform(this, fn)
+    }
+
+    get(): UnwrapBinding<Output> {
+        return this.#value instanceof Binding ? this.#value.get() : this.#value
+    }
+
+    subscribe(callback: (value: UnwrapBinding<Output>) => void) {
+        // Set up the source subscription if someone's subscribing for the first time.
+        if (this.#subscribers.size === 0) {
+            this.#outerCleanup = this.#source.subscribe(() => {
+                this.#invalidateOuter()
+            })
+        }
+
+        this.#subscribers.add(callback)
+
+        return () => {
+            this.#subscribers.delete(callback)
+            // After deleting the last subscription, clean up the source's subscription
+            if (this.#subscribers.size === 0) {
+                this.#cleanup()
+            }
+        }
+    }
+
+    #notify() {
+        const value = this.get()
+        for (const sub of this.#subscribers) {
+            sub(value)
+        }
+    }
+
+    #recomputeValue() {
+        this.#value = this.#transformFn(this.#source.get())
+        if (this.#value instanceof Binding) {
+            this.#innerCleanup = this.#value.subscribe(() =>
+                this.#invalidateInner(),
+            )
+        }
+    }
+
+    #invalidateOuter() {
+        // this.#value has been replaced with a new one.
+        // Remove it and clean up the inner value's reactivity if there is any.
+        if (this.#innerCleanup) {
+            this.#innerCleanup()
+            this.#innerCleanup = null
+        }
+        this.#recomputeValue()
+        this.#notify()
+    }
+
+    #invalidateInner() {
+        // this.#value is a binding and has changed its value. Notify all the subscribers.
+        console.assert(
+            this.#value instanceof Binding,
+            "Inner value invalidated when it's not a Binding",
+        )
+        this.#notify()
+    }
+
+    #cleanup() {
+        if (!this.#outerCleanup) {
+            throw new Error("Can't cleanup reactivity")
+        }
+        this.#outerCleanup()
+        this.#outerCleanup = null
+    }
+}
+
+export default class Binding<Value> {
     #emitter: Subscribable<Value> | Connectable
     #prop?: string
 
@@ -46,22 +147,20 @@ export default class Binding<Value> {
         return `Binding<${this.#emitter}${this.#prop ? `, "${this.#prop}"` : ""}>`
     }
 
-    as<T>(fn: (v: Value) => T): Binding<T> {
-        const bind = new Binding(this.#emitter, this.#prop)
-        bind.transformFn = (v: Value) => fn(this.transformFn(v))
-        return bind as unknown as Binding<T>
+    as<T>(fn: (v: Value) => T): BindingTransform<Value, T> {
+        return new BindingTransform(this, fn)
     }
 
     get(): Value {
-        if (typeof this.#emitter.get === "function")
-            return this.transformFn(this.#emitter.get())
+        if (typeof this.#emitter.get === "function") return this.#emitter.get()
 
         if (typeof this.#prop === "string") {
             const getter = `get_${snakeify(this.#prop)}`
-            if (typeof this.#emitter[getter] === "function")
-                return this.transformFn(this.#emitter[getter]())
+            if (typeof this.#emitter[getter] === "function") {
+                this.#emitter[getter]()
+            }
 
-            return this.transformFn(this.#emitter[this.#prop])
+            return this.#emitter[this.#prop]
         }
 
         throw Error("can not get value of binding")
