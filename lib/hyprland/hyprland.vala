@@ -309,6 +309,7 @@ public class Hyprland : Object {
         switch (args[0]) {
             case "workspacev2":
                 yield sync_workspaces();
+                yield sync_monitors();
                 focused_workspace = get_workspace(int.parse(args[1]));
                 break;
 
