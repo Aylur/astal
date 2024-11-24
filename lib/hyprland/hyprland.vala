@@ -318,8 +318,19 @@ public class Hyprland : Object {
                 focused_workspace = get_workspace_by_name(argv[1]);
                 break;
 
+            // first event that signals a new client
             case "activewindowv2":
-                focused_client = get_client(args[1]);
+                if (args[1] != "" && get_client(args[1]) == null) {
+                    var client = new Client();
+                    _clients.insert(args[1], client);
+                    yield sync_clients();
+                    yield sync_workspaces();
+                    client_added(client);
+                    notify_property("clients");
+                    focused_client = client;
+                } else {
+                    focused_client = get_client(args[1]);
+                }
                 break;
 
             // TODO: nag vaxry for fullscreenv2 that passes address
@@ -421,19 +432,9 @@ public class Hyprland : Object {
                 minimize(get_client(argv[0]), argv[1] == "0");
                 break;
 
-            // first event that signals a new window not openwindow
-            case "windowtitlev2":
-                var addr = args[1].split(",")[0];
-                var client = new Client();
-                _clients.insert(addr, client);
-                yield sync_clients();
-                yield sync_workspaces();
-                client_added(client);
-                notify_property("clients");
-                break;
-
+            // nothing to update
             case "windowtitle":
-                yield sync_clients();
+            case "windowtitlev2":
                 break;
 
             // TODO:
