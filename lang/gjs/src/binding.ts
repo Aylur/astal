@@ -25,6 +25,15 @@ type UnwrapBinding<T> = T extends Binding<infer Value> ? Value : T
 export default abstract class Binding<T> implements Subscribable<T> {
     abstract toString(): string
     abstract as<R>(fn: (v: T) => R): TransformBinding<T, R>
+    // This wizardry is simultaneously the least and most cursed bit of TypeScript I've ever written.
+    prop<T extends Connectable, K extends keyof T>(this: Binding<T>, key: K): Binding<T[K]> {
+        return this.as((obj) => {
+            if (typeof obj.connect !== "function") {
+                throw new Error("Binding.prop only works on bindings containing Connectables")
+            }
+            return bind(obj, key)
+        });
+    }
     abstract get(): T
     abstract subscribe(callback: (value: T) => void): () => void
 }
