@@ -22,8 +22,14 @@ export interface Connectable {
 
 type UnwrapBinding<T> = T extends Binding<infer Value> ? Value : T
 
-class BindingTransform<Input, Output>
-implements Subscribable<UnwrapBinding<Output>> {
+export default abstract class Binding<T> implements Subscribable<T> {
+    abstract toString(): string
+    abstract as<R>(fn: (v: T) => R): TransformBinding<T, R>
+    abstract get(): T
+    abstract subscribe(callback: (value: T) => void): () => void
+}
+
+export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Output>> {
     #source: Subscribable<Input>
     /** `this.#source`'s `subscribe()` return value. Called when `this.#subscribers` becomes empty. */
     #outerCleanup: (() => void) | null
@@ -37,6 +43,7 @@ implements Subscribable<UnwrapBinding<Output>> {
     #value!: Output
 
     constructor(source: Subscribable<Input>, fn: (v: Input) => Output) {
+        super()
         this.#source = source
         this.#outerCleanup = null
         this.#innerCleanup = null
@@ -46,13 +53,13 @@ implements Subscribable<UnwrapBinding<Output>> {
     }
 
     toString() {
-        return `BindingTransform<${this.#source}, ${this.#transformFn}>`
+        return `TransformBinding<${this.#source}, ${this.#transformFn}>`
     }
 
     as<T>(
         fn: (v: UnwrapBinding<Output>) => T,
-    ): BindingTransform<UnwrapBinding<Output>, T> {
-        return new BindingTransform(this, fn)
+    ): TransformBinding<UnwrapBinding<Output>, T> {
+        return new TransformBinding(this, fn)
     }
 
     get(): UnwrapBinding<Output> {
@@ -123,32 +130,33 @@ implements Subscribable<UnwrapBinding<Output>> {
     }
 }
 
-export default class Binding<Value> {
+export class DataBinding<Value> extends Binding<Value> {
     #emitter: Subscribable<Value> | Connectable
     #prop?: string
 
     static bind<
         T extends Connectable,
         P extends keyof T,
-    >(object: T, property: P): Binding<T[P]>
+    >(object: T, property: P): DataBinding<T[P]>
 
-    static bind<T>(object: Subscribable<T>): Binding<T>
+    static bind<T>(object: Subscribable<T>): DataBinding<T>
 
     static bind(emitter: Connectable | Subscribable, prop?: string) {
-        return new Binding(emitter, prop)
+        return new DataBinding(emitter, prop)
     }
 
     private constructor(emitter: Connectable | Subscribable<Value>, prop?: string) {
+        super()
         this.#emitter = emitter
         this.#prop = prop && kebabify(prop)
     }
 
     toString() {
-        return `Binding<${this.#emitter}${this.#prop ? `, "${this.#prop}"` : ""}>`
+        return `DataBinding<${this.#emitter}${this.#prop ? `, "${this.#prop}"` : ""}>`
     }
 
-    as<T>(fn: (v: Value) => T): BindingTransform<Value, T> {
-        return new BindingTransform(this, fn)
+    as<T>(fn: (v: Value) => T): TransformBinding<Value, T> {
+        return new TransformBinding(this, fn)
     }
 
     get(): Value {
@@ -185,4 +193,4 @@ export default class Binding<Value> {
     }
 }
 
-export const { bind } = Binding
+export const { bind } = DataBinding

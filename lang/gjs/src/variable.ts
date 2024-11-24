@@ -1,7 +1,7 @@
 import Astal from "gi://AstalIO"
-import Binding, { type Connectable, type Subscribable } from "./binding.js"
-import { interval } from "./time.js"
+import Binding, { bind, type Connectable, type DataBinding, type Subscribable, type TransformBinding } from "./binding.js"
 import { execAsync, subprocess } from "./process.js"
+import { interval } from "./time.js"
 
 class VariableWrapper<T> extends Function {
     private variable!: Astal.VariableBase
@@ -33,9 +33,11 @@ class VariableWrapper<T> extends Function {
         })
     }
 
-    private _call<R = T>(transform?: (value: T) => R): Binding<R> {
-        const b = Binding.bind(this)
-        return transform ? b.as(transform) : b as unknown as Binding<R>
+    private _call(): DataBinding<T>
+    private _call<R>(transform: (value: T) => R): TransformBinding<T, R>
+    private _call<R>(transform?: (value: T) => R): DataBinding<T> | TransformBinding<T, R> {
+        const b = bind(this)
+        return transform ? b.as(transform) : b
     }
 
     toString() {
@@ -215,7 +217,7 @@ class VariableWrapper<T> extends Function {
 }
 
 export interface Variable<T> extends Omit<VariableWrapper<T>, "bind"> {
-    <R>(transform: (value: T) => R): Binding<R>
+    <R>(transform: (value: T) => R): TransformBinding<T, R>
     (): Binding<T>
 }
 
