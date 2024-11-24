@@ -9,7 +9,7 @@ Read more about it on the [nix page](../getting-started/nix)
 ## Arch
 
 ```sh
-yay -S lua-libastal-git
+yay -S libastal-lua-git
 ```
 
 ## From Source
