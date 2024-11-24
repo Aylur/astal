@@ -133,15 +133,13 @@ function Time({ format = "%H:%M - %A %e." }) {
 }
 
 export default function Bar(monitor: Gdk.Monitor) {
-    const anchor = Astal.WindowAnchor.TOP
-        | Astal.WindowAnchor.LEFT
-        | Astal.WindowAnchor.RIGHT
+    const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
 
     return <window
         className="Bar"
         gdkmonitor={monitor}
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
-        anchor={anchor}>
+        anchor={TOP | LEFT | RIGHT}>
         <centerbox>
             <box hexpand halign={Gtk.Align.START}>
                 <Workspaces />
