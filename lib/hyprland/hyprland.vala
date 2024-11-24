@@ -433,9 +433,8 @@ public class Hyprland : Object {
                 minimize(get_client(argv[0]), argv[1] == "0");
                 break;
 
-            // nothing to update
-            case "windowtitle":
             case "windowtitlev2":
+                yield sync_clients();
                 break;
 
             // TODO:
