@@ -5,6 +5,7 @@ import GObject from "gi://GObject"
 export type WindowProps = ConstructProps<Window, Astal.Window.ConstructorProps>
 export class Window extends astalify(
     Astal.Window,
+    Astal.Window.name,
     (children, self) => {
         if (children.length != 1) {
             console.error(`Window can have only 1 child, attempted to set ${children.length}`)
