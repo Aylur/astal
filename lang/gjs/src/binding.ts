@@ -24,7 +24,15 @@ type UnwrapBinding<T> = T extends Binding<infer Value> ? Value : T
 
 export default abstract class Binding<T> implements Subscribable<T> {
     abstract toString(): string
-    abstract as<R>(fn: (v: T) => R): TransformBinding<T, R>
+    abstract get(): T
+    abstract subscribe(callback: (value: T) => void): () => void
+
+    as<R>(
+        fn: (v: T) => R,
+    ): TransformBinding<T, R> {
+        return new TransformBinding(this, fn)
+    }
+
     // This wizardry is simultaneously the least and most cursed bit of TypeScript I've ever written.
     prop<T extends Connectable, K extends keyof T>(this: Binding<T>, key: K): Binding<T[K]> {
         return this.as((obj) => {
@@ -32,10 +40,8 @@ export default abstract class Binding<T> implements Subscribable<T> {
                 throw new Error("Binding.prop only works on bindings containing Connectables")
             }
             return bind(obj, key)
-        });
+        })
     }
-    abstract get(): T
-    abstract subscribe(callback: (value: T) => void): () => void
 }
 
 export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Output>> {
@@ -63,12 +69,6 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
 
     toString() {
         return `TransformBinding<${this.#source}, ${this.#transformFn}>`
-    }
-
-    as<T>(
-        fn: (v: UnwrapBinding<Output>) => T,
-    ): TransformBinding<UnwrapBinding<Output>, T> {
-        return new TransformBinding(this, fn)
     }
 
     get(): UnwrapBinding<Output> {
@@ -162,10 +162,6 @@ export class DataBinding<Value> extends Binding<Value> {
 
     toString() {
         return `DataBinding<${this.#emitter}${this.#prop ? `, "${this.#prop}"` : ""}>`
-    }
-
-    as<T>(fn: (v: Value) => T): TransformBinding<Value, T> {
-        return new TransformBinding(this, fn)
     }
 
     get(): Value {
