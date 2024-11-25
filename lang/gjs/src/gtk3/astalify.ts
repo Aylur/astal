@@ -6,7 +6,8 @@ import { execAsync } from "../process.js"
 import Variable from "../variable.js"
 import Binding, { kebabify, snakeify, type Connectable, type Subscribable } from "../binding.js"
 
-export function mergeBindings(array: any[]) {
+export function mergeBindings(array: [Binding<any>, Binding<any>, ...Binding<any>[]]) : Binding<any[]> {
+
     function getValues(...args: any[]) {
         let i = 0
         return array.map(value => value instanceof Binding
@@ -14,16 +15,8 @@ export function mergeBindings(array: any[]) {
             : value,
         )
     }
-
-    const bindings = array.filter(i => i instanceof Binding)
-
-    if (bindings.length === 0)
-        return array
-
-    if (bindings.length === 1)
-        return bindings[0].as(getValues)
-
-    return Variable.derive(bindings, getValues)()
+    
+    return Variable.derive(array, getValues)()
 }
 
 function setProp(obj: any, prop: string, value: any) {
