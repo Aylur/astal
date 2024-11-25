@@ -44,6 +44,8 @@ sources = [
   'niri.vala',
   'window.vala',
   'workspace.vala',
+  'output.vala',
+  'structs.vala',
 ]
 
 if get_option('lib')
