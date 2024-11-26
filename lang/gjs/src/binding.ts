@@ -170,7 +170,7 @@ export class DataBinding<Value> extends Binding<Value> {
         if (typeof this.#prop === "string") {
             const getter = `get_${snakeify(this.#prop)}`
             if (typeof this.#emitter[getter] === "function") {
-                this.#emitter[getter]()
+                return this.#emitter[getter]()
             }
 
             return this.#emitter[this.#prop]
