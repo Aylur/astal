@@ -239,7 +239,10 @@ public class TrayItem : Object {
 
     private void update_gicon() {
         if(icon_name != null && icon_name != "") {
-            if(icon_theme_path != null && icon_theme_path != "") {            
+            if(GLib.FileUtils.test(icon_name, GLib.FileTest.EXISTS)) {
+                gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_name));
+            }
+            else if(icon_theme_path != null && icon_theme_path != "") {
                 gicon = new GLib.FileIcon(GLib.File.new_for_path(
                     find_icon_in_theme(icon_name, icon_theme_path)));
             } else {
