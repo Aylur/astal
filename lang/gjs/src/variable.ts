@@ -218,7 +218,7 @@ class VariableWrapper<T> extends Function {
 
 export interface Variable<T> extends Omit<VariableWrapper<T>, "bind"> {
     <R>(transform: (value: T) => R): TransformBinding<T, R>
-    (): Binding<T>
+    (): DataBinding<T>
 }
 
 export const Variable = new Proxy(VariableWrapper as any, {
