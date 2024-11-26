@@ -3,6 +3,7 @@
  */
 public class AstalBluetooth.Device : Object {
     private IDevice proxy;
+    public Battery battery;
 
     internal ObjectPath object_path { owned get; private set; }
 
@@ -102,6 +103,12 @@ public class AstalBluetooth.Device : Object {
         get { return proxy.trusted; }
         set { proxy.trusted = value; }
     }
+
+    /**
+     * The percentage of battery left as an unsigned 8-bit integer.
+     */
+    public uint battery_percentage { get { return battery.percentage; } }
+
 
     /**
      * The name alias for the remote device.
