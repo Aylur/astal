@@ -142,9 +142,11 @@ public class AstalNotifd.Notification : Object {
             return 0;
 
         var v = hints.get(hint);
-        if (v.get_type_string() == "b")
+        // daemon uses byte as per spec
+        if (v.get_type_string() == "y")
             return v.get_byte();
 
+        // proxy uses int64 from json
         if (v.get_type_string() == "x")
             return (uint8)v.get_int64();
 

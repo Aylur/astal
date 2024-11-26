@@ -10,7 +10,8 @@ export function Fragment({ children = [], child }: {
     child?: BindableChild
     children?: Array<BindableChild>
 }) {
-    return mergeBindings([...children, child])
+    if (child) children.push(child)
+    return mergeBindings(children)
 }
 
 export function jsx(

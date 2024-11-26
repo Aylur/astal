@@ -74,7 +74,7 @@ class MyObj extends GObject.Object {
     declare myProp: string
 
     constructor() {
-        super({ myProp: "default-value" })
+        super({ myProp: "default-value" } as any)
     }
 }
 ```

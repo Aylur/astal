@@ -2,7 +2,7 @@ import { Astal, Gtk, Gdk } from "astal/gtk3"
 import Notifd from "gi://AstalNotifd"
 import Notification from "./Notification"
 import { type Subscribable } from "astal/binding"
-import { GLib, Variable, bind, timeout } from "astal"
+import { Variable, bind, timeout } from "astal"
 
 // see comment below in constructor
 const TIMEOUT_DELAY = 5000
@@ -23,7 +23,7 @@ class NotifiationMap implements Subscribable {
         this.var.set([...this.map.values()].reverse())
     }
 
-    private constructor() {
+    constructor() {
         const notifd = Notifd.get_default()
 
         /**

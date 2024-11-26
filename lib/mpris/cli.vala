@@ -179,7 +179,7 @@ int main(string[] argv) {
 
 Json.Node to_json(Player p) {
     var uris = new Json.Builder().begin_array();
-    foreach (var uri in p.supported_uri_schemas)
+    foreach (var uri in p.supported_uri_schemes)
         uris.add_string_value(uri);
 
     uris.end_array();
@@ -189,7 +189,7 @@ Json.Node to_json(Player p) {
         .set_member_name("available").add_boolean_value(p.available)
         .set_member_name("identity").add_string_value(p.identity)
         .set_member_name("entry").add_string_value(p.entry)
-        .set_member_name("supported_uri_schemas").add_value(uris.get_root())
+        .set_member_name("supported_uri_schemes").add_value(uris.get_root())
         .set_member_name("loop_status").add_string_value(p.loop_status.to_string())
         .set_member_name("shuffle_status").add_string_value(p.shuffle_status.to_string())
         .set_member_name("rate").add_double_value(p.rate)

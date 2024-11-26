@@ -309,6 +309,7 @@ public class Hyprland : Object {
         switch (args[0]) {
             case "workspacev2":
                 yield sync_workspaces();
+                yield sync_monitors();
                 focused_workspace = get_workspace(int.parse(args[1]));
                 break;
 
@@ -318,8 +319,19 @@ public class Hyprland : Object {
                 focused_workspace = get_workspace_by_name(argv[1]);
                 break;
 
+            // first event that signals a new client
             case "activewindowv2":
-                focused_client = get_client(args[1]);
+                if (args[1] != "" && get_client(args[1]) == null) {
+                    var client = new Client();
+                    _clients.insert(args[1], client);
+                    yield sync_clients();
+                    yield sync_workspaces();
+                    client_added(client);
+                    notify_property("clients");
+                    focused_client = client;
+                } else {
+                    focused_client = get_client(args[1]);
+                }
                 break;
 
             // TODO: nag vaxry for fullscreenv2 that passes address
@@ -381,20 +393,15 @@ public class Hyprland : Object {
                 break;
 
             case "openwindow":
-                var addr = args[1].split(",")[0];
-                var client = new Client();
-                _clients.insert(addr, client);
                 yield sync_clients();
                 yield sync_workspaces();
-                client_added(client);
-                notify_property("clients");
                 break;
 
             case "closewindow":
                 _clients.get(args[1]).removed();
                 _clients.remove(args[1]);
-                client_removed(args[1]);
                 yield sync_workspaces();
+                client_removed(args[1]);
                 notify_property("clients");
                 break;
 
@@ -426,7 +433,7 @@ public class Hyprland : Object {
                 minimize(get_client(argv[0]), argv[1] == "0");
                 break;
 
-            case "windowtitle":
+            case "windowtitlev2":
                 yield sync_clients();
                 break;
 

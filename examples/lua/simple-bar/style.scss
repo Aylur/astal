@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $bg: #212223;
 $fg: #f1f1f1;
 $accent: #378DF7;
@@ -16,12 +18,12 @@ window.Bar {
         background-color: transparent;
 
         &:hover label {
-            background-color: transparentize($fg, 0.84);
-            border-color: transparentize($accent, 0.8);
+            background-color: color.adjust($fg, $alpha: -0.84);
+            border-color: color.adjust($accent, $alpha: -0.8);
         }
 
         &:active label {
-            background-color: transparentize($fg, 0.8)
+            background-color: color.adjust($fg, $alpha: -0.8)
         }
     }
 
@@ -64,10 +66,12 @@ window.Bar {
             margin-right: .6em;
         }
 
-        margin: 0 1em;
+        & {
+            margin: 0 1em;
+        }
 
         trough {
-            background-color: transparentize($fg, 0.8);
+            background-color: color.adjust($fg, $alpha: -0.8);
             border-radius: $radius;
         }
 

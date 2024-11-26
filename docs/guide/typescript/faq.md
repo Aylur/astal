@@ -92,7 +92,7 @@ printerr("print this line to stderr")
 
 ## Populate the global scope with frequently accessed variables
 
-It might be annoying to always import Gtk only for `Gtk.Align` enums.
+It might be annoying to always import Gtk only for the `Gtk.Align` enum.
 
 :::code-group
 
@@ -118,7 +118,7 @@ Object.assign(globalThis, {
 
 :::code-group
 
-```tsx [Bar.tsx]
+```tsx [Bar.tsx] {3}
 export default function Bar() {
     return <window>
         <box halign={START} />
@@ -131,11 +131,13 @@ export default function Bar() {
 :::code-group
 
 ```ts [app.ts]
-import "./globals"
+import "./globals" // don't forget to import it first // [!code ++]
 import Bar from "./Bar"
 
 App.start({
-    main: Bar
+    main() {
+        Bar()
+    }
 })
 ```
 
@@ -197,10 +199,13 @@ These happen when accessing list type properties. Gjs fails to correctly bind
 import Notifd from "gi://AstalNotifd"
 const notifd = Notifd.get_default()
 
-notifd.notifications // ❌ // [!code error]
-
-notifd.get_notifications() // ✅
+notifd.notifications // [!code --]
+notifd.get_notifications() // [!code ++]
 ```
+
+:::tip
+Open up an issue/PR to add a [workaround](https://github.com/Aylur/astal/blob/main/lang/gjs/src/overrides.ts).
+:::
 
 ## How to create regular floating windows
 
