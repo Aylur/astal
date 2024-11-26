@@ -67,3 +67,18 @@ await suppress(import("gi://AstalNotifd"), ({ Notifd, Notification }) => {
 await suppress(import("gi://AstalPowerProfiles"), ({ PowerProfiles }) => {
     patch(PowerProfiles.prototype, "actions")
 })
+
+await suppress(import("gi://AstalWp"), ({ Wp, Audio, Video }) => {
+    patch(Wp.prototype, "endpoints")
+    patch(Wp.prototype, "devices")
+    patch(Audio.prototype, "streams")
+    patch(Audio.prototype, "recorders")
+    patch(Audio.prototype, "microphones")
+    patch(Audio.prototype, "speakers")
+    patch(Audio.prototype, "devices")
+    patch(Video.prototype, "streams")
+    patch(Video.prototype, "recorders")
+    patch(Video.prototype, "sinks")
+    patch(Video.prototype, "sources")
+    patch(Video.prototype, "devices")
+})
