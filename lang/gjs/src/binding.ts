@@ -50,7 +50,11 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
     #outerCleanup: (() => void) | null
     /** `this.#value`'s `subscribe()` return value. Called when `this.#value` is replaced. */
     #innerCleanup: (() => void) | null
-    #transformFn: (v: Input) => Output
+    // This function is largely untyped so that TransformBinding<?, T> can be assigned to Binding<T | undefined>.
+    // Otherwise, TypeScript complains because it can't guarantee that this function won't later be called with an undefined.
+    // But bindings don't work like that (the parameters to this function are only obtained internally),
+    // so it's safe (I think) to bypass TS here.
+    #transformFn: (v: any) => any
     /** To track the bound value's reactivity, this object only has one subscription to `this.#source`.
      * This means that tracking its subscribers can't be delegated to the source object, like in a regular `Binding`.
      */
