@@ -170,7 +170,7 @@ public class AstalBluetooth.Bluetooth : Object {
             var battery = new Battery((IBattery)iface);
             var device = _devices.lookup(iface.g_object_path);
             if (device != null) {
-                device.battery = battery;
+                device.set_battery(battery);
             } 
             sync();
         }

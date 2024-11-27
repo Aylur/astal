@@ -3,7 +3,7 @@
  */
 public class AstalBluetooth.Device : Object {
     private IDevice proxy;
-    public Battery battery;
+    private Battery battery;
 
     internal ObjectPath object_path { owned get; private set; }
 
@@ -18,6 +18,15 @@ public class AstalBluetooth.Device : Object {
                     notify_property(prop);
                 }
             }
+        });
+    }
+
+    internal void set_battery(Battery battery) {
+        this.battery = battery;
+
+        notify_property("battery_percentage");
+        battery.notify["percentage"].connect((obj, pspec) => {
+            notify_property("battery_percentage");
         });
     }
 
@@ -105,10 +114,14 @@ public class AstalBluetooth.Device : Object {
     }
 
     /**
-     * The percentage of battery left as an unsigned 8-bit integer.
+     * The percentage of battery left on the device if it has one, else 0.
      */
-    public uint battery_percentage { get { return battery.percentage; } }
-
+    public uint battery_percentage { 
+        get { 
+            if (battery != null) return battery.percentage;
+            else return 0;
+        } 
+    }
 
     /**
      * The name alias for the remote device.
@@ -143,6 +156,7 @@ public class AstalBluetooth.Device : Object {
     public async void disconnect_device() throws Error {
         yield proxy.disconnect();
     }
+
 
     /**
      * This method connects a specific profile of this device.
