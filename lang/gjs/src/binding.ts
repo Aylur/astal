@@ -80,11 +80,16 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
     }
 
     subscribe(callback: (value: UnwrapBinding<Output>) => void) {
-        // Set up the source subscription if someone's subscribing for the first time.
+        // Set up the source and value subscriptions if someone's subscribing for the first time
         if (this.#subscribers.size === 0) {
+            console.assert(this.#outerCleanup === null, "Outer cleanup function is about to be lost!")
             this.#outerCleanup = this.#source.subscribe(() => {
                 this.#invalidateOuter()
             })
+            if (this.#value instanceof Binding) {
+                console.assert(this.#innerCleanup === null, "Inner cleanup function is about to be lost!")
+                this.#innerCleanup = this.#value.subscribe(() => this.#invalidateInner())
+            }
         }
 
         this.#subscribers.add(callback)
@@ -107,7 +112,9 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
 
     #recomputeValue() {
         this.#value = this.#transformFn(this.#source.get())
-        if (this.#value instanceof Binding) {
+        // Do not track reactivity when there are no subscribers
+        if (this.#value instanceof Binding && this.#subscribers.size > 0) {
+            console.assert(this.#innerCleanup === null, "Inner cleanup function is about to be lost!")
             this.#innerCleanup = this.#value.subscribe(() =>
                 this.#invalidateInner(),
             )
@@ -140,6 +147,11 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
         }
         this.#outerCleanup()
         this.#outerCleanup = null
+
+        if (this.#innerCleanup) {
+            this.#innerCleanup()
+            this.#innerCleanup = null
+        }
     }
 }
 
