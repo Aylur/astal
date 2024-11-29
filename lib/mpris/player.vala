@@ -498,8 +498,10 @@ public class AstalMpris.Player : Object {
     }
 
     private async void cache_cover() {
-        if (art_url == null || art_url == "")
+        if (art_url == null || art_url == "") {
+            cover_art = null;
             return;
+        }
 
         var file = File.new_for_uri(art_url);
         if (file.get_path() != null) {
