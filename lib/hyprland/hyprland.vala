@@ -315,6 +315,7 @@ public class Hyprland : Object {
 
             case "focusedmon":
                 var argv = args[1].split(",", 2);
+                yield sync_monitors();
                 focused_monitor = get_monitor_by_name(argv[0]);
                 focused_workspace = get_workspace_by_name(argv[1]);
                 break;
