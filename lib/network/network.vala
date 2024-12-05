@@ -104,14 +104,14 @@ public enum AstalNetwork.Primary {
 
 // alias for NM.State
 public enum AstalNetwork.State {
-    UNKNOWN,
-    ASLEEP,
-    DISCONNECTED,
-    DISCONNECTING,
-    CONNECTING,
-    CONNECTED_LOCAL,
-    CONNECTED_SITE,
-    CONNECTED_GLOBAL;
+    UNKNOWN = 0,
+    ASLEEP = 10,
+    DISCONNECTED = 20,
+    DISCONNECTING = 30,
+    CONNECTING = 40,
+    CONNECTED_LOCAL = 50,
+    CONNECTED_SITE = 60,
+    CONNECTED_GLOBAL = 70;
 
     public string to_string() {
         switch (this) {
