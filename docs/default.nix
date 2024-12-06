@@ -15,7 +15,6 @@
     flakepkg,
     gir,
     version,
-    description,
     api-ver ? "0.1",
     authors ? "Aylur",
     dependencies ? {},
@@ -24,11 +23,13 @@
     website ? flakepkg,
   }: let
     name = "Astal${gir}-${api-ver}";
-    src = self.packages.${pkgs.system}.${flakepkg}.dev;
+    pkg = self.packages.${pkgs.system}.${flakepkg};
+    src = pkg.dev;
 
     data = toTOML gir {
       library = {
-        inherit description authors;
+        inherit authors;
+        inherit (pkg.meta) description;
         version = readVer version;
         license = "LGPL-2.1";
         browse_url = "https://github.com/Aylur/astal/tree/main/lib/${browse}";
@@ -123,7 +124,6 @@ in
         gir = "IO";
         api-ver = "0.1";
         browse = "astal/io";
-        description = "Astal Core library";
         version = ../lib/astal/io/version;
       }}
       ${genLib {
@@ -131,7 +131,6 @@ in
         gir = "";
         api-ver = "3.0";
         browse = "astal/gtk3";
-        description = "Astal GTK3 widget library";
         version = ../lib/astal/gtk3/version;
         dependencies = {inherit (dependency) "AstalIO-0.1" "Gtk-3.0";};
       }}
@@ -140,97 +139,82 @@ in
         gir = "";
         api-ver = "4.0";
         browse = "astal/gtk4";
-        description = "Astal GTK4 widget library";
         version = ../lib/astal/gtk4/version;
         dependencies = {inherit (dependency) "AstalIO-0.1" "Gtk-4.0";};
       }}
       ${genLib {
         flakepkg = "apps";
         gir = "Apps";
-        description = "Application query library";
         version = ../lib/apps/version;
       }}
       ${genLib {
         flakepkg = "auth";
         gir = "Auth";
         authors = "kotontrion";
-        description = "Authentication using pam";
         version = ../lib/auth/version;
       }}
       ${genLib {
         flakepkg = "battery";
         gir = "Battery";
-        description = "DBus proxy for upowerd devices";
         version = ../lib/battery/version;
       }}
       ${genLib {
         flakepkg = "bluetooth";
         gir = "Bluetooth";
-        description = "DBus proxy for bluez";
         version = ../lib/bluetooth/version;
       }}
       ${genLib {
         flakepkg = "cava";
         gir = "Cava";
-        description = "Audio visualization library using cava";
         version = ../lib/cava/version;
         authors = "kotontrion";
       }}
       ${genLib {
         flakepkg = "greet";
         gir = "Greet";
-        description = "IPC client for greetd";
         version = ../lib/greet/version;
       }}
       ${genLib {
         flakepkg = "hyprland";
         gir = "Hyprland";
-        description = "IPC client for Hyprland";
         version = ../lib/hyprland/version;
       }}
       ${genLib {
         flakepkg = "mpris";
         gir = "Mpris";
-        description = "Control mpris players";
         version = ../lib/mpris/version;
       }}
       ${genLib {
         flakepkg = "network";
         gir = "Network";
-        description = "NetworkManager wrapper library";
         version = ../lib/network/version;
         dependencies = {inherit (dependency) "NM-1.0";}; # FIXME: why does this not work?
       }}
       ${genLib {
         flakepkg = "notifd";
         gir = "Notifd";
-        description = "Notification daemon library";
         version = ../lib/notifd/version;
       }}
       ${genLib {
         flakepkg = "powerprofiles";
         gir = "PowerProfiles";
-        description = "DBus proxy for upowerd profiles";
         version = ../lib/powerprofiles/version;
       }}
       ${genLib {
         flakepkg = "river";
         gir = "River";
-        description = "IPC client for River";
         version = ../lib/river/version;
         authors = "kotontrion";
       }}
       ${genLib {
         flakepkg = "tray";
         gir = "Tray";
-        description = "StatusNotifierItem implementation";
         version = ../lib/tray/version;
         authors = "kotontrion";
       }}
       ${genLib {
         flakepkg = "wireplumber";
         gir = "Wp";
-        description = "Wrapper library over the wireplumber API";
         version = ../lib/wireplumber/version;
         authors = "kotontrion";
         dependencies = {inherit (dependency) "WP-0.5";}; # FIXME: why does this not work?
