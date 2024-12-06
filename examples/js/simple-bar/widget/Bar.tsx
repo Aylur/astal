@@ -13,19 +13,14 @@ function SysTray() {
 
     return <box>
         {bind(tray, "items").as(items => items.map(item => {
-            if (item.iconThemePath)
-                App.add_icons(item.iconThemePath)
-
-            const menu = item.create_menu()
-
-            return <button
+            
+            return <menubutton
                 tooltipMarkup={bind(item, "tooltipMarkup")}
-                onDestroy={() => menu?.destroy()}
-                onClickRelease={self => {
-                    menu?.popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, null)
-                }}>
+                usePopover={false}
+                actionGroup={bind(item, "action-group").as(ag => { return { prefix: "dbusmenu", actionGroup: ag}})}
+                menuModel={bind(item, "menu-model")} >
                 <icon gIcon={bind(item, "gicon")} />
-            </button>
+            </menubutton>
         }))}
     </box>
 }
