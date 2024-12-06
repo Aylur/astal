@@ -77,6 +77,8 @@
           self.packages.${system}.io
           self.packages.${system}.astal3
         ];
+
+        meta.description = "gjs bindings for AstalIO, Astal3, and Astal4";
       };
     };
   };
