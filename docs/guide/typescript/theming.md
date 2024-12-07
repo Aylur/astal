@@ -132,3 +132,53 @@ App.start({
 You could also transpile scss into css using a bundler
 and simply passing the path of the resulting css file to `css`.
 :::
+
+## Autoreloading SCSS for Improved Developer Experience
+
+To enhance the development workflow, you can add the following
+code to your `app.ts` file. This will automatically recompile
+your `style.scss` file and reload it in the app whenever
+changes are saved. With this setup, the SCSS will be recompiled
+and the app will be updated instantly on each save.
+
+Use the following code to get started:
+
+:::code-group
+
+```ts [app.ts]
+import { App } from "astal/gtk3"
+import { exec, monitorFile } from "astal"  
+
+const scss = "./style.scss" // Path to you style file
+const css = "/tmp/style.css" // Could be anywhere else
+compileScss() // Have to pre-compile the SCSS when starting up
+
+// Monitor your SCSS file for changes
+monitorFile(
+    scss,
+
+    // reload function
+    () => {
+        console.log("CSS RELOADED") // For debug purpose only
+        compileScss()
+        App.reset_css() // Have to reset the whole CSS before applying new one
+        App.apply_css(css) // Apply newly compiled CSS to the running App
+    }
+)
+
+App.start({
+    css: css,
+    main() {
+        App.get_monitors().map(Bar)
+    },
+})
+
+function compileScss() {
+    const error = exec(`sass ${scss} ${css}`) // Command to compile the SCSS file into the CSS file
+    if (error) {
+        console.error(`There went something wrong compiling the SCSS: ${error}`)
+    }
+}
+```
+
+:::
