@@ -1,7 +1,6 @@
 srcs = files(
   'river-output.c',
-  'river.c',
-  'wayland-source.c',
+  'river.c'
 )
 
 deps = [
@@ -9,6 +8,7 @@ deps = [
   dependency('gio-2.0'),
   dependency('wayland-client'),
   dependency('json-glib-1.0'),
+  wayland_glib_dep
 ]
 
 astal_river_lib = library(
