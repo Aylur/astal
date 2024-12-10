@@ -371,6 +371,12 @@ public class TrayItem : Object {
             return null;
 
         Pixmap pixmap = pixmaps[0];
+        
+        for(int i = 0; i < pixmaps.length; i++){
+            if(pixmap.width < pixmaps[i].width)
+              pixmap = pixmaps[i];
+        };
+
         uint8[] image_data = pixmap.bytes.copy();
 
         for (int i = 0; i < pixmap.width * pixmap.height * 4; i += 4) {
