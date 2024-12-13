@@ -1,4 +1,3 @@
-using DbusmenuGtk;
 
 namespace AstalTray {
 public struct Pixmap {
@@ -169,6 +168,22 @@ public class TrayItem : Object {
     /** the id of the item used to uniquely identify the TrayItems by this lib.*/
     public string item_id { get; private set; }
 
+    private DBusMenu.Importer menu_importer;
+     
+    public MenuModel menu_model {
+      owned get {
+        if (menu_importer == null) return null;
+        return menu_importer.model;
+      }
+    }
+
+    public ActionGroup action_group {
+      owned get {
+        if (menu_importer == null) return null;
+        return menu_importer.action_group;
+      }
+    }
+
     public signal void changed();
     public signal void ready();
 
@@ -197,6 +212,14 @@ public class TrayItem : Object {
                 }
             });
            
+            if(proxy.Menu != null) {
+              this.menu_importer = new DBusMenu.Importer(proxy.get_name_owner(), proxy.Menu);
+              this.menu_importer.notify["model"].connect(() => {
+                notify_property("menu-model");
+                notify_property("action-group");
+              });
+            }
+
             update_gicon();
 
             ready();
@@ -216,18 +239,12 @@ public class TrayItem : Object {
 
     private void update_gicon() {
         if(icon_name != null && icon_name != "") {
-            if(icon_theme_path != null && icon_theme_path != "") {
-
-                Gtk.IconTheme icon_theme = new Gtk.IconTheme();
-                string[] paths = {icon_theme_path};
-                icon_theme.set_search_path(paths);
-
-                int size = icon_theme.get_icon_sizes(icon_name)[0];
-                Gtk.IconInfo icon_info = icon_theme.lookup_icon(
-                    icon_name, size, Gtk.IconLookupFlags.FORCE_SIZE);
-
-                if (icon_info != null)
-                    gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_info.get_filename()));
+            if(GLib.FileUtils.test(icon_name, GLib.FileTest.EXISTS)) {
+                gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_name));
+            }
+            else if(icon_theme_path != null && icon_theme_path != "") {
+                gicon = new GLib.FileIcon(GLib.File.new_for_path(
+                    find_icon_in_theme(icon_name, icon_theme_path)));
             } else {
                 gicon = new GLib.ThemedIcon(icon_name);
             }
@@ -312,16 +329,33 @@ public class TrayItem : Object {
         }
     }
 
-    /**
-    * creates a new Gtk Menu for this item.
-    */
-    public Gtk.Menu? create_menu() {
-        if (proxy.Menu == null)
-            return null;
+    private string? find_icon_in_theme(string icon_name, string theme_path){
+      if(icon_name == null || theme_path == null || icon_name == "" || theme_path == "") return null;
+ 
+      try {
+          Dir dir = Dir.open (theme_path, 0);
+          string? name = null;
 
-        return new DbusmenuGtk.Menu(
-            proxy.get_name_owner(),
-            proxy.Menu);
+          while ((name = dir.read_name ()) != null) {
+            string path = Path.build_filename (theme_path, name);
+            
+            if (FileUtils.test (path, FileTest.IS_DIR)) {
+              string? icon = find_icon_in_theme(icon_name, path);
+              if(icon != null) return icon;
+              else continue;
+            }
+
+            int dot_index = name.last_index_of(".");
+            if (dot_index != -1)
+                name = name.substring(0, dot_index);
+            if (name == icon_name) return path;
+
+          }
+      } catch (FileError err) {
+          return null;
+      }
+      return null;
+
     }
 
     private Gdk.Pixbuf? _get_icon_pixbuf() {
@@ -329,41 +363,7 @@ public class TrayItem : Object {
             ? proxy.AttentionIconPixmap
             : proxy.IconPixmap;
 
-
-        string icon_name = proxy.Status == Status.NEEDS_ATTENTION
-            ? proxy.AttentionIconName
-            : proxy.IconName;
-
-        Gdk.Pixbuf pixbuf = null;
-
-        if (icon_name != null && proxy.IconThemePath != null)
-            pixbuf = load_from_theme(icon_name, proxy.IconThemePath);
-
-        if (pixbuf == null)
-            pixbuf = pixmap_to_pixbuf(pixmaps);
-
-        return pixbuf;
-    }
-
-    private Gdk.Pixbuf? load_from_theme(string icon_name, string theme_path) {
-        if (theme_path == "" || theme_path == null)
-            return null;
-
-        if (icon_name == "" || icon_name == null)
-            return null;
-
-        Gtk.IconTheme icon_theme = new Gtk.IconTheme();
-        string[] paths = {theme_path};
-        icon_theme.set_search_path(paths);
-
-        int size = icon_theme.get_icon_sizes(icon_name)[0];
-        Gtk.IconInfo icon_info = icon_theme.lookup_icon(
-            icon_name, size, Gtk.IconLookupFlags.FORCE_SIZE);
-
-        if (icon_info != null)
-            return icon_info.load_icon();
-
-        return null;
+        return pixmap_to_pixbuf(pixmaps);
     }
 
     private Gdk.Pixbuf? pixmap_to_pixbuf(Pixmap[] pixmaps) {
@@ -371,6 +371,12 @@ public class TrayItem : Object {
             return null;
 
         Pixmap pixmap = pixmaps[0];
+        
+        for(int i = 0; i < pixmaps.length; i++){
+            if(pixmap.width < pixmaps[i].width)
+              pixmap = pixmaps[i];
+        };
+
         uint8[] image_data = pixmap.bytes.copy();
 
         for (int i = 0; i < pixmap.width * pixmap.height * 4; i += 4) {
