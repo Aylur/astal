@@ -3,8 +3,16 @@ namespace AstalBspc {
         return Bspc.get_default();
     }
 
-    private uint8[] fmt_msg(string s) {
-        return (s.replace(" ", "\x00") + "\x00").data;
+    private uint8[] fmt_msg(string s) { // "query -T -n" -> {'q', 'u', 'e', 'r', 'y', 0, '-', 'T', 0, '-', 'n', 0}
+        uint8[] result = new uint8[s.length + 1]; 
+
+        for (int i = 0; i < s.length; i++) {
+            result[i] = (s[i] == ' ') ? (uint8) 0x00 : (uint8) s[i];
+        }
+
+        result[s.length] = (uint8) 0x00;
+
+        return result;
     }
 
 
@@ -38,18 +46,10 @@ namespace AstalBspc {
             var i = new Bspc();
 
             _instance = i;
-
             i.socket = i.new_socket();
+            i.socket.output_stream.write(fmt_msg("subscribe all"), null);
 
-            i.socket.output_stream.write_async.begin(fmt_msg("subscribe all"), GLib.Priority.DEFAULT, null, (_, task) => {
-                i.socket.output_stream.write_async.end(task);
-                i.watch_socket(new DataInputStream(i.socket.input_stream));
-            });
-
-            print(
-                i.message("query -T -n")
-            );
-
+            i.watch_socket(new DataInputStream(i.socket.input_stream));
 
             return i;
         }
@@ -68,27 +68,36 @@ namespace AstalBspc {
             return _desktops.get(id);
         }
 
-        private SocketConnection? new_socket() throws Error {
-            return new SocketClient().connect(new UnixSocketAddress(SOCKET_PATH), null);
+        private SocketConnection? new_socket() {
+            try {
+                return new SocketClient().connect(new UnixSocketAddress(SOCKET_PATH), null);
+            } catch (Error e) {
+                critical(e.message);
+                return null;
+            }
         }
 
-        private async SocketConnection? new_socket_async() throws Error {
-            return yield new SocketClient().connect_async(new UnixSocketAddress(SOCKET_PATH), null);
+        private async SocketConnection? new_socket_async() {
+            try {
+                return yield new SocketClient().connect_async(new UnixSocketAddress(SOCKET_PATH), null);
+            } catch (Error e) {
+                critical(e.message);
+                return null;
+            }
         }
 
 
         private void watch_socket(DataInputStream stream) {
             stream.read_line_async.begin(GLib.Priority.DEFAULT, null, (_, res) => {
-                    try {
-                        var line = stream.read_line_async.end(res);
-
-                        handle_event.begin(line, (_, res) => handle_event.end(res) );
-
-                        watch_socket(stream);
-                    } catch (Error e) {
-                        critical(e.message);
-                    }
+                try {
+                    var line = stream.read_line_async.end(res);
+                    print(line +"\n");
+                    watch_socket(stream);
+                } catch (Error e) {
+                    critical(e.message);
+                }
             });
+
         }
 
 
