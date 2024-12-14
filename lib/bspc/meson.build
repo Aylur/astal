@@ -40,6 +40,7 @@ sources = [
   'node.vala',
   'bspc.vala',
   'desktop.vala',
+  'structs.vala',
 ]
 
 lib = library(
