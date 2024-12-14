@@ -100,7 +100,7 @@ string to_json_string(AstalPowerProfiles.PowerProfiles profiles) {
     foreach (var prof in profiles.profiles) {
         profs.add_value(new Json.Builder()
             .begin_object()
-            .set_member_name("profie").add_string_value(prof.profile)
+            .set_member_name("profile").add_string_value(prof.profile)
             .set_member_name("driver").add_string_value(prof.driver)
             .set_member_name("cpu_driver").add_string_value(prof.cpu_driver)
             .set_member_name("platform_driver").add_string_value(prof.platform_driver)
