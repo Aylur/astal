@@ -91,8 +91,12 @@ namespace AstalBspc {
             stream.read_line_async.begin(GLib.Priority.DEFAULT, null, (_, res) => {
                 try {
                     var line = stream.read_line_async.end(res);
-                    print(line +"\n");
-                    watch_socket(stream);
+
+                    handle_event.begin(line, (_, task) => {
+                        handle_event.end(task);
+                        watch_socket(stream);
+                    });
+
                 } catch (Error e) {
                     critical(e.message);
                 }
@@ -146,12 +150,10 @@ namespace AstalBspc {
             DataInputStream? data_stream;
 
             try {
-                //yield write_socket_async(message, out conn, out data_stream);
-                write_socket(message, out conn, out data_stream);
+                yield write_socket_async(message, out conn, out data_stream);
 
                 if (data_stream != null && conn != null) {
-                    //string res = yield data_stream.read_upto_async("\x04", -1, GLib.Priority.DEFAULT, null, null);
-                    string res = data_stream.read_upto("\x04", -1, null, null);
+                    string res = yield data_stream.read_upto_async("\x04", -1, GLib.Priority.DEFAULT, null, null);
                     conn.close();
 
                     return res;
@@ -177,7 +179,6 @@ namespace AstalBspc {
 
         private async void handle_event(string line) {
             var args = line.split(" ");
-            print(line);
 
             switch (args[0]) {
                 case "node_add":
