@@ -1,6 +1,6 @@
-namespace AstalBspc     {
+namespace AstalBspc {
     public class Node : Object {
-        public signal void removed ();
+        public signal void removed();
         public signal void moved_to (Desktop desktop);
 
         public string id { get; internal set; }
@@ -25,15 +25,16 @@ namespace AstalBspc     {
         }
 
         internal void sync(Json.Object obj) {
-            //id = "0x%X".printf((uint)obj.get_int_member("id"));
-            //class_name = obj.get_object_member("client").get_string_member("className");
-            //instance_name = obj.get_object_member("client").get_string_member("instanceName");
-            //x = (int)obj.get_array_member("at").get_int_element(0);
-            //y = (int)obj.get_array_member("at").get_int_element(1);
-            //width = (int)obj.get_array_member("size").get_int_element(0);
-            //height = (int)obj.get_array_member("size").get_int_element(1);
+            var client = obj.get_object_member("client");
+            var geom = client.get_object_member(client.get_string_member("state") == "floating" ? "floatingRectangle" : "tiledRectangle");
+
+            class_name = client.get_string_member("className");
+            instance_name = client.get_string_member("instanceName");
+            floating = client.get_string_member("state") == "floating";
+            x = (int)geom.get_int_member("x");
+            y = (int)geom.get_int_member("y");
+            width = (int)geom.get_int_member("width");
+            height = (int)geom.get_int_member("height");
         }
-
     }
-
 }

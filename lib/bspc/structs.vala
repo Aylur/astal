@@ -30,4 +30,18 @@ namespace AstalBspc {
             }
         }
     }
+
+    public class Padding : Object {
+        public int top { get; internal set; }
+        public int bottom { get; internal set; }
+        public int left { get; internal set; }
+        public int right { get; internal set; }
+
+        public Padding(Json.Object obj) {
+            top = (int)obj.get_int_member("top");
+            bottom = (int)obj.get_int_member("bottom");
+            left = (int)obj.get_int_member("left");
+            right = (int)obj.get_int_member("right");
+        }
+    }
 }

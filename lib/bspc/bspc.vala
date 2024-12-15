@@ -20,8 +20,8 @@ namespace AstalBspc {
         private static Bspc _instance;
         private SocketConnection socket;
 
-        public Desktop? active_desktop { get; private set; }
-        public Node? active_node { get; private set; }
+        public Desktop? focused_desktop { get; private set; }
+        public Node? focused_node { get; private set; }
 
         private HashTable<string, Desktop> _desktops = new HashTable<string, Desktop>(str_hash, str_equal);
         private HashTable<string, Node> _nodes   = new HashTable<string, Node>(str_hash, str_equal);
@@ -80,8 +80,8 @@ namespace AstalBspc {
         public signal void node_swapped(Node node1, Node node2);
 
         // ToDo
-        //public signal void desktop_added(Desktop desktop);
-        //public signal void desktop_removed(string id);
+        public signal void desktop_added(Desktop desktop);
+        public signal void desktop_removed(string id);
 
         //public signal void monitor_added(Desktop desktop);
         //public signal void monitor_removed(string id);
@@ -170,7 +170,7 @@ namespace AstalBspc {
                     string res = data_stream.read_upto("\x04", -1, null, null);
                     conn.close(null);
 
-                    return res;
+                    return res.slice(0, res.length - 1);
                 }
             } catch (GLib.Error e) {
                 critical(e.message);
@@ -191,7 +191,8 @@ namespace AstalBspc {
                     string res = yield data_stream.read_upto_async("\x04", -1, GLib.Priority.DEFAULT, null, null);
                     conn.close();
 
-                    return res;
+                    return res.slice(0, res.length - 1); // remove last \n
+
                 }
 
             } catch (Error e) {
@@ -203,33 +204,40 @@ namespace AstalBspc {
 
         private void init() throws Error {
             foreach (var desktop_id in message("query -D").split("\n")) {
-                if (desktop_id.length > 1) {
-                    var str = message("query -T -d " + desktop_id);
-                    var desktop_data = Json.from_string(str);
-                    if (desktop_data != null) {
-                        Desktop desktop = new Desktop();
-                        desktop.id = desktop_id;
-                        _desktops.insert(desktop.id, desktop);
-                   }
-                }
+                Desktop desktop = new Desktop();
+                desktop.id = desktop_id;
+                _desktops.insert(desktop.id, desktop);
             }
 
             foreach (var desktop in desktops) {
-                foreach (var node_id in message("query -N -d " + desktop.id).split("\n")) {
-                    if (node_id.length > 1) {
-                        var node_data = Json.from_string(message("query -T -n " + node_id));
-                        if (node_data != null && node_data.get_object().get_member("client") != null) {
-                            var node = new Node();
-                            node.id = node_id;
-                            node.desktop = desktop;
-                            _nodes.insert(node.id, node);
-                        }
-                    }
+                foreach (var node_id in message("query -N -d " + desktop.id + " -n .leaf").split("\n")) {
+                    var node = new Node();
+                    node.id = node_id;
+                    node.desktop = desktop;
+                    desktop._nodes.set(node.id, node);
+                    _nodes.insert(node.id, node);
                 }
             }
+            
+
+            foreach (var desktop in desktops) {
+                var str = message("query -T -d " + desktop.id);
+                desktop.sync(Json.from_string(str).get_object());
+            }
+
+            foreach (var node in nodes) {
+                var str = message("query -T -n " + node.id);
+                node.sync(Json.from_string(str).get_object());
+            }
+
+
+            focused_desktop = get_desktop(message("query -D -d focused"));
+            focused_node = get_node(message("query -N -n focused"));
+
+            /*
 
             sync_nodes.begin((_, task) => {
-                try {
+                    try {
                     sync_nodes.end(task);
                 } catch (Error e) {
                     critical(e.message);
@@ -243,7 +251,7 @@ namespace AstalBspc {
                     critical(e.message);
                 }
             });
-
+            */
         }
 
 
@@ -273,53 +281,93 @@ namespace AstalBspc {
                 var str = yield message_async("query -T -d " + desk.id);
                 desk.sync(Json.from_string(str).get_object());
             }
-            notify_property("desktops");
         }
-
-
 
         private async void handle_event(string line) throws Error  {
             var args = line.split(" ");
 
             switch (args[0]) {
+                // node events
                 case "node_add":
                     var n = new Node();
                     n.id = args[4];
                     n.desktop = get_desktop(args[2]);
+                    n.desktop._nodes.insert(n.id, n);
 
                     _nodes.insert(n.id, n);
                     node_added(n);
                     yield sync_nodes();
                     yield sync_desktops();
-
-
                     break;
 
                 case "node_remove":
+                    _desktops.get(args[2])._nodes.remove(args[3]);
+                    _nodes.get(args[3]).removed();
                     _nodes.remove(args[3]);
                     node_removed(args[3]);
                     yield sync_desktops();
                     yield sync_nodes();
                     break;
 
+                case "node_swap":
+                    var origin = get_desktop(args[2]);
+                    var target = get_desktop(args[5]);
+                    var n1 = get_node(args[3]);
+                    var n2 = get_node(args[6]);
+
+                    if ( n1 != null && origin != null && origin != null ) {
+                        n1.desktop = target;
+                        n1.moved_to(n1.desktop);
+                        n2.desktop = origin;
+                        n2.moved_to(n2.desktop);
+
+                        origin._nodes.remove(n1.id);
+                        origin._nodes.insert(n2.id, n2);
+                        origin.notify_property("nodes");
+
+                        target._nodes.insert(n1.id, n1);
+                        target._nodes.remove(n2.id);
+                        target.notify_property("nodes");
+                    }
+                    break;
+
+                case "node_transfer":
+                    var origin = get_desktop(args[2]);
+                    var target = get_desktop(args[5]);
+                    var n = get_node(args[3]);
+
+                    if ( n != null && origin != null && origin != null ) {
+                        n.desktop = target;
+
+                        origin._nodes.remove(n.id);
+                        origin.notify_property("nodes");
+
+                        target._nodes.insert(n.id, n);
+                        target.notify_property("nodes");
+                    }
+                    break;
+
                 case "node_focus":
-                    if (active_node != null) {
-                        active_node.focused = false;
-                        active_node.notify_property("focused");
+                    if (focused_node != null) {
+                        focused_node.focused = false;
                     }
 
-                    active_node = get_node(args[3]);
-                    active_node.focused = true;
-                    active_node.notify_property("focused");
+                    focused_node = get_node(args[3]);
+                    focused_node.focused = true;
+                    break;
 
-                    notify_property("active-node");
+                case "node_activate":
+                    break;
+
+                case "node_presel":
+                    break;
+
+                case "node_stack":
                     break;
 
                 case "node_geometry":
                     Node n = get_node(args[3]);
                     string? input = args[4];
-
-
 
                     MatchInfo? match_info;
                     Regex regex = new Regex("^(\\d+)x(\\d+)\\+(\\d+)\\+(\\d+)$");
@@ -334,10 +382,6 @@ namespace AstalBspc {
                         n.height = height;
                         n.x = x;
                         n.y = y;
-                        n.notify_property("width");
-                        n.notify_property("height");
-                        n.notify_property("x");
-                        n.notify_property("y");
                     }
                     break;
 
@@ -347,68 +391,64 @@ namespace AstalBspc {
                     if (n != null) {
                         n.floating = (args[4] == "floating" && args[5] == "on") 
                             || (args[4] == "tiled" && args[5] == "off");
-                        n.notify_property("floating");
                     }
                     break;
 
-                case "node_stack":
+                case "node_flag":
                     break;
 
-                case "node_transfer":
-                    var origin = get_desktop(args[2]);
-                    var target = get_desktop(args[5]);
-                    var n = get_node(args[3]);
-
-                    if ( n != null && origin != null && origin != null ) {
-                        n.desktop = target;
-                        n.notify_property("desktop");
-
-                        origin._nodes.remove(n.id);
-                        origin.notify_property("nodes");
-
-                        target._nodes.insert(n.id, n);
-                        target.notify_property("nodes");
-                    }
-
+                case "node_layer":
                     break;
 
-                case "node_swap":
-                    var origin = get_desktop(args[2]);
-                    var target = get_desktop(args[5]);
-                    var n1 = get_node(args[3]);
-                    var n2 = get_node(args[6]);
-
-                    if ( n1 != null && origin != null && origin != null ) {
-                        n1.desktop = target;
-                        n1.notify_property("desktop");
-                        n2.desktop = origin;
-                        n2.notify_property("desktop");
-
-                        origin._nodes.remove(n1.id);
-                        origin._nodes.insert(n2.id, n2);
-                        origin.notify_property("nodes");
-
-                        target._nodes.insert(n1.id, n1);
-                        target._nodes.remove(n2.id);
-                        target.notify_property("nodes");
-                    }
+                // desktop events
+                case "desktop_add":
+                    Desktop d = new Desktop();
+                    d.id = args[2];
+                    d.name = args[3];
+                    _desktops.insert(d.id, d);
+                    desktop_added(d);
                     break;
+
+                case "desktop_rename":
+                    var d = get_desktop(args[2]);
+                    d.name = args[4];
+                    break;
+
+                case "desktop_remove":
+                    _desktops.get(args[2]).removed();
+                    _desktops.remove(args[2]);
+                    desktop_removed(args[2]);
+                    break;
+
+                case "desktop_swap":
+                    break;
+
+                case "desktop_transfer":
+                    break;
+
+                case "desktop_focus":
+                    focused_desktop = get_desktop(args[2]);
+                    break;
+
+                case "desktop_activate":
+                    break;
+
+                case "desktop_layout":
+                    break;
+
+                // other
                 case "pointer_action":
                     break;
-                case "desktop_focus":
-                    active_desktop = get_desktop(args[2]);
-                    break;
+
                 default:
                     ReportFormat data = new ReportFormat(line.split(":"));
 
                     if (data.T == null) {
-                        if (active_node != null) {
-                            active_node.focused = false;
-                            active_node.notify_property("focused");
+                        if (focused_node != null) {
+                            focused_node.focused = false;
                         }
 
-                        active_node = null;
-                        notify_property("active-node");
+                        focused_node = null;
                     }
                     break;
             }
