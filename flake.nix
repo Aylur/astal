@@ -5,7 +5,7 @@
   }: let
     inherit (builtins) replaceStrings readFile;
     readVer = file: replaceStrings ["\n"] [""] (readFile file);
-    supportedSystems = ["x86_64-linux"];
+    supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
     forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: (forSystem system f));
     forSystem = system: f: f rec {
       inherit system;
