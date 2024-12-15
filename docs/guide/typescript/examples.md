@@ -7,6 +7,7 @@
 
 ### [Notification Popups](https://github.com/Aylur/astal/tree/main/examples/js/notifications)
 ![notification-popups](https://github.com/user-attachments/assets/0df0eddc-5c74-4af0-a694-48dc8ec6bb44)
+
 ### [Applauncher](https://github.com/Aylur/astal/tree/main/examples/js/applauncher)
 ![launcher](https://github.com/user-attachments/assets/2695e3bb-dff4-478a-b392-279fe638bfd3)
 
