@@ -5,45 +5,48 @@
   }: let
     inherit (builtins) replaceStrings readFile;
     readVer = file: replaceStrings ["\n"] [""] (readFile file);
-
-    system = "x86_64-linux"; # TODO: other architectures
-    pkgs = nixpkgs.legacyPackages.${system};
-
-    mkPkg = name: src: inputs:
-      pkgs.stdenv.mkDerivation {
-        nativeBuildInputs = with pkgs; [
-          wrapGAppsHook
-          gobject-introspection
-          meson
-          pkg-config
-          ninja
-          vala
-          wayland
-          wayland-scanner
-          python3
-        ];
-        propagatedBuildInputs = [pkgs.glib] ++ inputs;
-        pname = name;
-        version = readVer "${src}/version";
-        src = src;
-        postUnpack = ''
-          cp --remove-destination ${./lib/gir.py} $sourceRoot/gir.py
-        '';
-        outputs = ["out" "dev"];
-      };
-  in {
-    devShells.${system} = import ./nix/devshell.nix {
-      inherit self pkgs;
+    supportedSystems = ["x86_64-linux"];
+    forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: (forSystem system f));
+    forSystem = system: f: f rec {
+      inherit system;
+      pkgs = nixpkgs.legacyPackages.${system};
+      mkPkg = name: src: inputs:
+	pkgs.stdenv.mkDerivation {
+	  nativeBuildInputs = with pkgs; [
+	    wrapGAppsHook
+	    gobject-introspection
+	    meson
+	    pkg-config
+	    ninja
+	    vala
+	    wayland
+	    wayland-scanner
+	    python3
+	  ];
+	  propagatedBuildInputs = [pkgs.glib] ++ inputs;
+	  pname = name;
+	  version = readVer "${src}/version";
+	  src = src;
+	  postUnpack = ''
+	    cp --remove-destination ${./lib/gir.py} $sourceRoot/gir.py
+	  '';
+	  outputs = ["out" "dev"];
+	};
     };
+  in {
 
-    lib = {
+    devShells = forAllSystems({system, pkgs, ...}: import ./nix/devshell.nix {
+        inherit self pkgs;
+    });
+
+    lib = forAllSystems({system, pkgs, ...}: {
       mkLuaPackage = import ./nix/lua.nix {
         inherit pkgs;
         astal = self;
       };
-    };
+    });
 
-    packages.${system} = with pkgs; {
+    packages = forAllSystems({system, pkgs, mkPkg, ...}: with pkgs;{
       docs = import ./docs {inherit self pkgs;};
       default = self.packages.${system}.io;
 
@@ -66,17 +69,17 @@
       wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
 
       gjs = pkgs.stdenvNoCC.mkDerivation {
-        src = ./lang/gjs;
-        name = "astal-gjs";
-        nativeBuildInputs = [
-          meson
-          ninja
-          pkg-config
-          self.packages.${system}.io
-          self.packages.${system}.astal3
-        ];
+	src = ./lang/gjs;
+	name = "astal-gjs";
+	nativeBuildInputs = [
+	  meson
+	  ninja
+	  pkg-config
+	  self.packages.${system}.io
+	  self.packages.${system}.astal3
+	];
       };
-    };
+    });
   };
 
   inputs = {
