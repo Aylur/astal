@@ -5,24 +5,31 @@ public Niri get_default() {
 public class Niri : Object {
     [CCode(has_target = false)]
     private delegate void EventHandler(Niri self, Json.Object object);
+    private static HashTable<string, EventHandler> event_handlers =
+        new HashTable<string, EventHandler>(str_hash, str_equal);
 
     private HashTable<int64?, Workspace> _workspaces =
         new HashTable<int64?, Workspace>(int64_hash, int64_equal);
-
     private HashTable<int64?, Window> _windows =
         new HashTable<int64?, Window>(int64_hash, int64_equal);
-
-    private static HashTable<string, EventHandler> event_handlers =
-        new HashTable<string, EventHandler>(str_hash, str_equal);
+    private HashTable<string?, Output> _outputs =
+        new HashTable<string?, Output>(str_hash, str_equal);
 
     string[] keyboard_layouts { get; private set; }
 
     public uint8 keyboard_layout_idx { get; private set; }
     // representing Optional uint64 as -1 due to: `warning: Type `uint64?' can not be used for a GLib.Object property`. 
-    // Will overflow if niri ever uses full uint64 values or... someone opens over 9 quintillion windows
+    // Will overflow if niri ever uses full uint64 values or someone opens 9 quintillion windows
     public int64 focused_workspace_id { get; private set; }
     public int64 focused_window_id { get; private set; }
+    public string focused_output_name { get; private set; }
+
+    public Workspace? focused_workspace { get; private set; }
+    public Window? focused_window { get; private set; }
+    public Output? focused_output { get; private set; }
+
     public List<weak Window> windows { owned get { return _windows.get_values().copy(); } }
+    public List<weak Output> outputs { owned get { return _outputs.get_values().copy(); } }
     public List<weak Workspace> workspaces { owned get {
         var res = _workspaces.get_values().copy();
         res.sort(sort_workspaces);
@@ -174,10 +181,15 @@ public class Niri : Object {
     private void on_workspaces_changed(Json.Object event) {
         var workspaces_arr = event.get_array_member("workspaces");
 
+        _outputs.remove_all();
         _workspaces.remove_all();
         foreach (var element in workspaces_arr.get_elements()) {
             var workspace = new Workspace.from_json(element.get_object());
             _workspaces.insert(workspace.id, workspace);
+            // if (_outputs.get(workspace.output) == null) {
+                // requeres additional message to retrieve output data
+                // _outputs.insert(workspace.output, )
+            // }
             if(workspace.is_focused) {
                 update_focused_workspace(workspace.id);
             }
@@ -282,7 +294,6 @@ public class Niri : Object {
         if (!_id.is_null())  id = _id.get_int();
         
         update_focused_window(id);
-        window_focus_changed(focused_window_id);
     }
 
     private void on_keyboard_layouts_changed(Json.Object event) {
@@ -325,27 +336,28 @@ public class Niri : Object {
 
         focused_workspace_id = id;
         var new_focused = _workspaces.get(focused_workspace_id);
-        if(new_focused != null) {
-            new_focused.is_focused = true;
-            // update_focused_window(new_focused.active_window_id);
-        }
+        new_focused.is_focused = true;
+        focused_workspace = new_focused;
     }
     private void update_focused_window(int64? _id) {
         int64 id = -1;
         if(_id != null) id = _id;
         if (focused_window_id == -1) {
             focused_window_id = id;
+            window_focus_changed(focused_window_id);
             return;
         }
 
+        // remove focused state from previous window
         var prev = _windows.get(focused_window_id);
         if (prev != null) prev.is_focused = focused_window_id == id;
 
         focused_window_id = id;
         var new_focused = _windows.get(focused_window_id);
-        if(new_focused != null) {
-            new_focused.is_focused = true;
-        }
+        new_focused.is_focused = true;
+        focused_window = new_focused;
+
+        window_focus_changed(focused_window_id);
     }
 }
 }
