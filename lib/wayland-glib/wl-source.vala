@@ -33,7 +33,7 @@ public class WlSource : Source {
 
     public WlSource() {
         base();
-        this.display = Wl.Display.connect(null);
+        this.display = new Wl.Display.connect(null);
         if(this.display == null) return;
         this.fd = this.add_unix_fd(this.display.get_fd(),
             IOCondition.IN | IOCondition.ERR | IOCondition.HUP);
