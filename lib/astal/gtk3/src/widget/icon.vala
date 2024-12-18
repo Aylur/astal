@@ -9,7 +9,16 @@ public class Astal.Icon : Gtk.Image {
     private double size { get; set; default = 14; }
 
     public new Gdk.Pixbuf pixbuf { get; set; }
-    public GLib.Icon g_icon { get; set; }
+  
+    [Version (deprecated = true, deprecated_since = "0.1.0", replacement = "gicon")]
+    public GLib.Icon g_icon { 
+        owned get {
+            return this.gicon;
+        } 
+        set {
+            this.gicon = value;
+        }
+    }
 
     /**
      * Either a named icon or a path to a file.
@@ -57,7 +66,6 @@ public class Astal.Icon : Gtk.Image {
             break;
         case IconType.GICON:
             pixel_size = (int)size;
-            gicon = g_icon;
             break;
 
         }
@@ -86,7 +94,7 @@ public class Astal.Icon : Gtk.Image {
             display_icon.begin();
         });
 
-        notify["g-icon"].connect(() => {
+        notify["gicon"].connect(() => {
             type = IconType.GICON;
             display_icon.begin();
         });
