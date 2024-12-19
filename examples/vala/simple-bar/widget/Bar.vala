@@ -10,11 +10,12 @@ class Workspaces : Gtk.Box {
         foreach (var child in get_children())
             child.destroy();
 
-        foreach (var ws in hypr.workspaces)
+        foreach (var ws in hypr.workspaces) {
             // filter out special workspaces
-            if !(ws.id >= -99 && ws.id <= -2) {
+            if (!(ws.id >= -99 && ws.id <= -2)) {
                 add(button(ws));
             }
+        }
     }
 
     Gtk.Button button(AstalHyprland.Workspace ws) {
