@@ -69,15 +69,15 @@
       wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
 
       gjs = pkgs.stdenvNoCC.mkDerivation {
-	src = ./lang/gjs;
-	name = "astal-gjs";
-	nativeBuildInputs = [
-	  meson
-	  ninja
-	  pkg-config
-	  self.packages.${system}.io
-	  self.packages.${system}.astal3
-	];
+        src = ./lang/gjs;
+        name = "astal-gjs";
+        nativeBuildInputs = [
+          meson
+          ninja
+          pkg-config
+          self.packages.${system}.io
+          self.packages.${system}.astal3
+        ];
       };
     });
   };
