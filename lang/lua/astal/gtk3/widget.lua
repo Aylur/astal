@@ -67,7 +67,7 @@ Gtk.Widget._attribute.click_through = {
 
 Gtk.Widget._attribute.action_group = {
   set = function (self, v)
-    self:insert_action_group(v.prefix, v.action_group)
+    self:insert_action_group(v[1], v[2])
   end
 }
 

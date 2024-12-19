@@ -108,6 +108,7 @@ class Media(Gtk.Box):
 class SysTray(Gtk.Box):
     def __init__(self) -> None:
         super().__init__()
+        Astal.widget_set_class_names(self, ["SysTray"])
         self.items = {}
         tray = Tray.get_default()
         tray.connect("item_added", self.add_item)
@@ -118,33 +119,22 @@ class SysTray(Gtk.Box):
             return
 
         item = Tray.get_default().get_item(id)
-        theme = item.get_icon_theme_path()
-
-        if theme is not None:
-            from app import app
-
-            app.add_icons(theme)
-
-        menu = item.create_menu()
-        btn = Astal.Button(visible=True)
+        btn = Gtk.MenuButton(use_popover=False, visible=True)
         icon = Astal.Icon(visible=True)
 
-        def on_clicked(btn):
-            if menu:
-                menu.popup_at_widget(btn, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, None)
-
-        def on_destroy(btn):
-            if menu:
-                menu.destroy()
-
-        btn.connect("clicked", on_clicked)
-        btn.connect("destroy", on_destroy)
-
         item.bind_property("tooltip-markup", btn, "tooltip-markup", SYNC)
-        item.bind_property("gicon", icon, "gicon", SYNC)
+        item.bind_property("gicon", icon, "g-icon", SYNC)
+        item.bind_property("menu-model", btn, "menu-model", SYNC)
+        btn.insert_action_group("dbusmenu", item.get_action_group())
+
+        def on_action_group(*args):
+            btn.insert_action_group("dbusmenu", item.get_action_group())
+
+        item.connect("notify::action-group", on_action_group)
+
+        btn.add(icon)
         self.add(btn)
         self.items[id] = btn
-        self.show_all()
 
     def remove_item(self, _: Tray.Tray, id: str):
         if id in self.items:

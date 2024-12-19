@@ -1,8 +1,6 @@
 local astal = require("astal")
-local App = require("astal.gtk3.app")
 local Widget = require("astal.gtk3.widget")
 local Variable = astal.Variable
-local Gdk = astal.require("Gdk", "3.0")
 local GLib = astal.require("GLib")
 local bind = astal.bind
 local Mpris = astal.require("AstalMpris")
@@ -17,18 +15,16 @@ local function SysTray()
 	local tray = Tray.get_default()
 
 	return Widget.Box({
+        class_name = "SysTray",
 		bind(tray, "items"):as(function(items)
 			return map(items, function(item)
 				return Widget.MenuButton({
 					tooltip_markup = bind(item, "tooltip_markup"),
-          use_popover = false,
+					use_popover = false,
 					menu_model = bind(item, "menu-model"),
-          action_group = bind(item, "action-group"):as(function(ag)
-            return {
-              prefix = "dbusmenu",
-              action_group = ag
-            }
-          end),
+					action_group = bind(item, "action-group"):as(function(ag)
+						return { "dbusmenu", ag }
+					end),
 					Widget.Icon({
 						g_icon = bind(item, "gicon"),
 					}),
@@ -181,10 +177,10 @@ return function(gdkmonitor)
 			}),
 			Widget.Box({
 				halign = "END",
+                SysTray(),
 				Wifi(),
 				AudioSlider(),
 				BatteryLevel(),
-				SysTray(),
 				Time("%H:%M - %A %e."),
 			}),
 		}),

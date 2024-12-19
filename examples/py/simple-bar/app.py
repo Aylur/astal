@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import versions
+import subprocess
 from gi.repository import AstalIO, Astal, Gio
 from widget.Bar import Bar
 from pathlib import Path
@@ -18,9 +19,8 @@ class App(Astal.Application):
 
     def do_activate(self) -> None:
         self.hold()
-        AstalIO.Process.execv(["sass", scss, css])
+        subprocess.run(["sass", scss, css])
         self.apply_css(css, True)
-        print("hello")
         for mon in self.get_monitors():
             self.add_window(Bar(mon))
 
@@ -30,7 +30,7 @@ app = App(instance_name=instance_name)
 
 if __name__ == "__main__":
     try:
-        print(app.acquire_socket())
+        app.acquire_socket()
         app.run(None)
     except Exception as e:
         print(AstalIO.send_message(instance_name, "".join(sys.argv[1:])))

@@ -11,17 +11,16 @@ import Tray from "gi://AstalTray"
 function SysTray() {
     const tray = Tray.get_default()
 
-    return <box>
-        {bind(tray, "items").as(items => items.map(item => {
-            
-            return <menubutton
+    return <box className="SysTray">
+        {bind(tray, "items").as(items => items.map(item => (
+            <menubutton
                 tooltipMarkup={bind(item, "tooltipMarkup")}
                 usePopover={false}
-                actionGroup={bind(item, "action-group").as(ag => { return { prefix: "dbusmenu", actionGroup: ag}})}
-                menuModel={bind(item, "menu-model")} >
+                actionGroup={bind(item, "action-group").as(ag => ["dbusmenu", ag])}
+                menuModel={bind(item, "menu-model")}>
                 <icon gIcon={bind(item, "gicon")} />
             </menubutton>
-        }))}
+        ))}
     </box>
 }
 
