@@ -87,7 +87,7 @@ public class AstalMpris.Player : Object {
      * Almost every media player will include support for the "file" scheme.
      * Other common schemes are "http" and "rtsp".
      */
-    public string[] supported_uri_schemas { owned get; private set; }
+    public string[] supported_uri_schemes { owned get; private set; }
 
     /**
      * The mime-types supported by the player.
@@ -160,7 +160,7 @@ public class AstalMpris.Player : Object {
     }
 
     /**
-     * uri scheme should be an element of [property@AstalMpris.Player:supported_uri_schemas]
+     * uri scheme should be an element of [property@AstalMpris.Player:supported_uri_schemes]
      * and the mime-type should match one of the elements of [property@AstalMpris.Player:supported_mime_types].
      *
      * @param uri Uri of the track to load.
@@ -425,7 +425,7 @@ public class AstalMpris.Player : Object {
         // has_track_list = proxy.has_track_list;
         identity = proxy.identity;
         entry = proxy.desktop_entry;
-        supported_uri_schemas = proxy.supported_uri_schemas;
+        supported_uri_schemes = proxy.supported_uri_schemes;
         supported_mime_types = proxy.supported_mime_types;
 
         if (position >= 0)
@@ -440,6 +440,9 @@ public class AstalMpris.Player : Object {
                 _loop_status = Loop.from_string(proxy.loop_status);
                 notify_property("loop-status");
             }
+        } else {
+            _loop_status = Loop.UNSUPPORTED;
+            notify_property("loop-status");
         }
 
         if (rate != proxy.rate) {
@@ -452,6 +455,9 @@ public class AstalMpris.Player : Object {
                 _shuffle_status = Shuffle.from_bool(proxy.shuffle);
                 notify_property("shuffle-status");
             }
+        } else {
+            _shuffle_status = Shuffle.UNSUPPORTED;
+            notify_property("shuffle-status");
         }
 
         if (volume != proxy.volume) {
@@ -498,8 +504,10 @@ public class AstalMpris.Player : Object {
     }
 
     private async void cache_cover() {
-        if (art_url == null || art_url == "")
+        if (art_url == null || art_url == "") {
+            cover_art = null;
             return;
+        }
 
         var file = File.new_for_uri(art_url);
         if (file.get_path() != null) {
