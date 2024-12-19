@@ -103,6 +103,7 @@ class SysTray : Gtk.Box {
     AstalTray.Tray tray = AstalTray.get_default();
 
     public SysTray() {
+        Astal.widget_set_class_names(this, { "SysTray" });
         tray.item_added.connect(add_item);
         tray.item_removed.connect(remove_item);
     }
@@ -112,26 +113,19 @@ class SysTray : Gtk.Box {
             return;
 
         var item = tray.get_item(id);
-
-        var menu = item.create_menu();
-        var btn = new Astal.Button();
-        var icon = new Astal.Icon();
-
-        btn.clicked.connect(() => {
-            if (menu != null)
-                menu.popup_at_widget(this, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, null);
-        });
-
-        btn.destroy.connect(() => {
-            if (menu != null)
-                menu.destroy();
-        });
+        var btn = new Gtk.MenuButton() { use_popover = false, visible = true };
+        var icon = new Astal.Icon() { visible = true };
 
         item.bind_property("tooltip-markup", btn, "tooltip-markup", BindingFlags.SYNC_CREATE);
         item.bind_property("gicon", icon, "g-icon", BindingFlags.SYNC_CREATE);
+        item.bind_property("menu-model", btn, "menu-model", BindingFlags.SYNC_CREATE);
+        btn.insert_action_group("dbusmenu", item.action_group);
+        item.notify["action-group"].connect(() => {
+            btn.insert_action_group("dbusmenu", item.action_group);
+        });
+
         btn.add(icon);
         add(btn);
-        btn.show_all();
         items.set(id, btn);
     }
 

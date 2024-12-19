@@ -69,6 +69,9 @@ export default function astalify<
         get noImplicitDestroy(): boolean { return this.__no_implicit_destroy }
         set noImplicitDestroy(value: boolean) { this.__no_implicit_destroy = value }
 
+        set actionGroup([prefix, group]: ActionGroup) { this.insert_action_group(prefix, group) }
+        set_action_group(actionGroup: ActionGroup) { this.actionGroup = actionGroup }
+
         _setChildren(children: Gtk.Widget[]) {
             children = children.flat(Infinity).map(ch => ch instanceof Gtk.Widget
                 ? ch
@@ -327,3 +330,5 @@ type Cursor =
     | "nwse-resize"
     | "zoom-in"
     | "zoom-out"
+
+type ActionGroup = [prefix: string, actionGroup: Gtk.ActionGroup]
