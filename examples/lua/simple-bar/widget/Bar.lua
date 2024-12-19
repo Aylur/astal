@@ -127,17 +127,19 @@ local function Workspaces()
 			end)
 
 			return map(wss, function(ws)
-				return Widget.Button({
-					class_name = bind(hypr, "focused-workspace"):as(function(fw)
-						return fw == ws and "focused" or ""
-					end),
-					on_clicked = function()
-						ws:focus()
-					end,
-					label = bind(ws, "id"):as(function(v)
-						return type(v) == "number" and string.format("%.0f", v) or v
-					end),
-				})
+				if !(ws.id >= -99 and ws.id <= -2) then -- filter out special workspaces
+					return Widget.Button({
+						class_name = bind(hypr, "focused-workspace"):as(function(fw)
+							return fw == ws and "focused" or ""
+						end),
+						on_clicked = function()
+							ws:focus()
+						end,
+						label = bind(ws, "id"):as(function(v)
+							return type(v) == "number" and string.format("%.0f", v) or v
+						end),
+					})
+				end
 			end)
 		end),
 	})
