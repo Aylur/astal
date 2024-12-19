@@ -168,6 +168,13 @@ export default function astalify<
             const { setup, child, children = [], ...props } = config
             props.visible ??= true
 
+            // remove undefined values
+            for (const [key, value] of Object.entries(props)) {
+                if (value === undefined) {
+                    delete props[key]
+                }
+            }
+
             if (child)
                 children.unshift(child)
 
