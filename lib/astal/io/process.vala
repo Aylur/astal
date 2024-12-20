@@ -76,7 +76,7 @@ public class AstalIO.Process : Object {
      *
      * The first element of the vector is executed with the remaining elements as the argument list.
      */
-    public Process.subprocessv(string[] cmd) throws Error {
+    public Process(string[] cmd) throws Error {
         Object(argv: cmd);
         process = new Subprocess.newv(cmd,
             SubprocessFlags.STDIN_PIPE |
@@ -91,13 +91,22 @@ public class AstalIO.Process : Object {
     }
 
     /**
+     * Start a new subprocess with the given command.
+     *
+     * The first element of the vector is executed with the remaining elements as the argument list.
+     */
+    public static Process subprocessv(string[] cmd) throws Error {
+        return new Process(cmd);
+    }
+
+    /**
      * Start a new subprocess with the given command
      * which is parsed using [func@GLib.shell_parse_argv].
      */
     public static Process subprocess(string cmd) throws Error {
         string[] argv;
         Shell.parse_argv(cmd, out argv);
-        return new Process.subprocessv(argv);
+        return Process.subprocessv(argv);
     }
 
     /**

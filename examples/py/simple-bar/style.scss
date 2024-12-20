@@ -13,31 +13,45 @@ window.Bar {
     font-size: 1.1em;
     font-weight: bold;
 
-    button {
-        all: unset;
-        background-color: transparent;
-
-        &:hover label {
-            background-color: color.adjust($fg, $alpha: -0.84);
-            border-color: color.adjust($accent, $alpha: -0.8);
-        }
-
-        &:active label {
-            background-color: color.adjust($fg, $alpha: -0.8)
-        }
-    }
-
     label {
-        transition: 200ms;
-        padding: 0 8px;
-        margin: 2px;
-        border-radius: $radius;
-        border: 1pt solid transparent;
+        margin: 0 8px;
     }
 
-    .Workspaces .focused label {
-        color: $accent;
-        border-color: $accent;
+    .Workspaces  {
+        button {
+            all: unset;
+            background-color: transparent;
+
+            &:hover label {
+                background-color: color.adjust($fg, $alpha: -0.84);
+                border-color: color.adjust($accent, $alpha: -0.8);
+            }
+
+            &:active label {
+                background-color: color.adjust($fg, $alpha: -0.8)
+            }
+        }
+
+        label {
+            transition: 200ms;
+            padding: 0 8px;
+            margin: 2px;
+            border-radius: $radius;
+            border: 1pt solid transparent;
+        }
+
+        .focused label {
+            color: $accent;
+            border-color: $accent;
+        }
+    }
+
+    .SysTray {
+        margin-right: 8px;
+
+        button {
+            padding: 0 4px;
+        }
     }
 
     .FocusedClient {

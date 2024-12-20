@@ -22,7 +22,7 @@ maintainer: [@Aylur](https://github.com/Aylur)
 
 Read more about it on the [nix page](./nix#astal)
 
-## Bulding From Source
+## Building From Source
 
 1. Install the following dependencies
 
