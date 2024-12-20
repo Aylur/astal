@@ -21,22 +21,15 @@ pkgconfig_deps = [
 # needed for GLib.Math
 deps = pkgconfig_deps + meson.get_compiler('c').find_library('m')
 
-custom_target(
-  'style.css',
-  command: [
-    find_program('sass'),
-    meson.project_source_root() / 'style.scss',
-    '@OUTPUT@',
-  ],
-  output: 'style.css',
-  install: true,
-  install_dir: libdir,
-)
-
 main = configure_file(
   input: 'app.in.vala',
   output: 'app.vala',
-  configuration: {'STYLE': libdir / 'style.css'},
+  configuration: {
+    'STYLE': run_command(
+      find_program('sass'),
+      meson.project_source_root() / 'style.scss',
+    ).stdout(),
+  },
 )
 
 sources = files(
