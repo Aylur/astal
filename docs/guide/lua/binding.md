@@ -68,6 +68,7 @@ local Gtk = require("astal.gtk3").Gtk
 local Variable = require("astal.variable")
 
 ---@param initial table
+---@return varmap
 return function(initial)
     local map = initial
     local var = Variable.new({})
@@ -90,6 +91,12 @@ return function(initial)
 
     notify() -- init
 
+    ---@class varmap
+    ---@field set fun(key: any, value: any): nil
+    ---@field delete fun(key: any): nil
+    ---@field get fun(): any
+    ---@field subscribe fun(callback: function): function
+    ---@overload fun(): Binding
     return setmetatable({
         set = function(key, value)
             delete(key)
