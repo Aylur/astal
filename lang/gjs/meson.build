@@ -7,15 +7,17 @@ dependency('astal-3.0')
 
 install_data(
   [
+    'src/_app.ts',
+    'src/_astal.ts',
     'src/binding.ts',
     'src/file.ts',
     'src/gobject.ts',
     'src/index.ts',
+    'src/overrides.ts',
     'src/process.ts',
     'src/time.ts',
     'src/variable.ts',
-    'src/overrides.ts',
-    'src/_app.ts',
+    'src/package.json',
   ],
   install_dir: dest,
 )

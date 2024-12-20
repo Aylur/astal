@@ -12,8 +12,7 @@ export function readFileAsync(path: string): Promise<string> {
         Astal.read_file_async(path, (_, res) => {
             try {
                 resolve(Astal.read_file_finish(res) || "")
-            }
-            catch (error) {
+            } catch (error) {
                 reject(error)
             }
         })
@@ -29,8 +28,7 @@ export function writeFileAsync(path: string, content: string): Promise<void> {
         Astal.write_file_async(path, content, (_, res) => {
             try {
                 resolve(Astal.write_file_finish(res))
-            }
-            catch (error) {
+            } catch (error) {
                 reject(error)
             }
         })

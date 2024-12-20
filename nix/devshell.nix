@@ -40,21 +40,34 @@
     libdbusmenu-gtk3
     wayland
     blueprint-compiler
+    libadwaita
 
     dart-sass
     lua
     python
     gjs
   ];
+
+  lsp = with pkgs; [
+    nodejs
+    mesonlsp
+    vala-language-server
+    vtsls
+    vscode-langservers-extracted
+  ];
 in {
   default = pkgs.mkShell {
-    inherit buildInputs;
+    packages = buildInputs ++ lsp;
   };
   astal = pkgs.mkShell {
-    buildInputs =
+    packages =
       buildInputs
+      ++ lsp
       ++ builtins.attrValues (
-        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
+        builtins.removeAttrs self.packages.${pkgs.system} [
+          "docs"
+          "cava" # FIXME: temporary autoreconf
+        ]
       );
   };
 }
