@@ -21,10 +21,12 @@ export const Box = astalify<Astal.Box, Astal.Box.ConstructorProps>(Astal.Box, {
 })
 
 // Button
-export type ButtonProps = ConstructProps<Gtk.Button, Gtk.Button.ConstructorProps, {
+type ButtonSignals = {
     onClicked: []
-}>
-export const Button = astalify<Gtk.Button, Gtk.Button.ConstructorProps>(Gtk.Button)
+}
+
+export type ButtonProps = ConstructProps<Gtk.Button, Gtk.Button.ConstructorProps, ButtonSignals>
+export const Button = astalify<Gtk.Button, Gtk.Button.ConstructorProps, ButtonSignals>(Gtk.Button)
 
 // CenterBox
 export type CenterBoxProps = ConstructProps<Gtk.CenterBox, Gtk.CenterBox.ConstructorProps>
