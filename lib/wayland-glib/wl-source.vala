@@ -1,4 +1,4 @@
-namespace WlSource {
+namespace WlGlib {
 public class WlSource : Source {
 
     public Wl.Display display;

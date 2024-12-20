@@ -23,8 +23,7 @@ typedef struct {
     struct wl_registry* wl_registry;
     struct wl_seat* seat;
     struct wl_display* display;
-    // WLSource* wl_source;
-    WlSourceWlSource* wl_source;
+    WlGlibWlSource* wl_source;
     struct zriver_status_manager_v1* river_status_manager;
     struct zriver_control_v1* river_control;
     struct zriver_seat_status_v1* river_seat_status;
@@ -342,8 +341,7 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
 
     if (priv->init) return TRUE;
 
-    // priv->wl_source = wl_source_new(NULL, NULL);
-    priv->wl_source = wl_source_wl_source_new();
+    priv->wl_source = wl_glib_wl_source_new();
 
     if (priv->wl_source == NULL) {
         g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_FAILED,
@@ -351,7 +349,6 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
         return FALSE;
     }
 
-    // priv->display = wl_source_get_display(priv->wl_source);
     priv->display = priv->wl_source->display;
 
     priv->wl_registry = wl_display_get_registry(priv->display);
