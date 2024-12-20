@@ -3,8 +3,6 @@ public class Astal.Slider : Gtk.Scale {
     private bool dragging;
 
     construct {
-        draw_value = false;
-
         if (adjustment == null)
             adjustment = new Gtk.Adjustment(0,0,0,0,0,0);
 
@@ -16,6 +14,7 @@ public class Astal.Slider : Gtk.Scale {
             step = 0.05;
         }
 
+        controller = new Gtk.EventControllerLegacy();
         add_controller(controller);
         controller.event.connect((event) => {
             var type = event.get_event_type();
@@ -31,7 +30,6 @@ public class Astal.Slider : Gtk.Scale {
             }
         });
     }
-
 
     /**
      * Value of this slider. Defaults to `0`.
