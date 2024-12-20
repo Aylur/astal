@@ -113,6 +113,11 @@ public class PowerProfiles : Object {
         owned get { return proxy.performance_degraded; }
     }
 
+    private string? get_hashtable_string(HashTable<string, Variant> table, string key) {
+        var v = table.get(key);
+        return v == null ? null : v.get_string();
+    }
+
     /**
      * List of each profile.
      */
@@ -122,10 +127,10 @@ public class PowerProfiles : Object {
             for (var i = 0; i < proxy.profiles.length; ++i) {
                 var prof = proxy.profiles[i];
                 profs[i] = Profile() {
-                    profile = prof.get("Profile").get_string(),
-                    cpu_driver = prof.get("CpuDriver").get_string(),
-                    platform_driver = prof.get("PlatformDriver").get_string(),
-                    driver = prof.get("Driver").get_string()
+                    profile = get_hashtable_string(prof, "Profile"),
+                    cpu_driver = get_hashtable_string(prof, "CpuDriver"),
+                    platform_driver = get_hashtable_string(prof, "PlatformDriver"),
+                    driver = get_hashtable_string(prof, "Driver"),
                 };
             }
             return profs;

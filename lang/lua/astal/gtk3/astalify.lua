@@ -174,7 +174,7 @@ return function(ctor)
         end)))
 
         -- default visible to true
-        if type(tbl.visible) ~= "boolean" then
+        if tbl.visible == nil then
             tbl.visible = true
         end
 

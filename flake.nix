@@ -62,7 +62,7 @@
       notifd = mkPkg "astal-notifd" ./lib/notifd [json-glib gdk-pixbuf];
       powerprofiles = mkPkg "astal-power-profiles" ./lib/powerprofiles [json-glib];
       river = mkPkg "astal-river" ./lib/river [json-glib];
-      tray = mkPkg "astal-tray" ./lib/tray [gtk3 gdk-pixbuf libdbusmenu-gtk3 json-glib];
+      tray = mkPkg "astal-tray" ./lib/tray [json-glib (pkgs.callPackage ./nix/appmenu-glib.nix {})];
       wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
 
       gjs = pkgs.stdenvNoCC.mkDerivation {

@@ -174,7 +174,7 @@ function defaultValue(declaration: PropertyDeclaration) {
 
     switch (declaration) {
         case String:
-            return "default-string"
+            return ""
         case Number:
             return 0
         case Boolean:

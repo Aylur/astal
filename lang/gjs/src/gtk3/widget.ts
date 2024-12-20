@@ -116,6 +116,15 @@ export class LevelBar extends astalify(Astal.LevelBar) {
 
 // TODO: ListBox
 
+
+// MenuButton
+export type MenuButtonProps = ConstructProps<MenuButton, Gtk.MenuButton.ConstructorProps>
+export class MenuButton extends astalify(Gtk.MenuButton) {
+    static { GObject.registerClass({ GTypeName: "MenuButton" }, this) }
+    constructor(props?: MenuButtonProps, child?: BindableChild) { super({ child, ...props } as any) }
+}
+
+
 // Overlay
 Object.defineProperty(Astal.Overlay.prototype, "overlays", {
     get() { return this.get_overlays() },

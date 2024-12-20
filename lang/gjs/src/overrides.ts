@@ -47,8 +47,8 @@ await suppress(import("gi://AstalHyprland"), ({ Hyprland, Monitor, Workspace }) 
 
 await suppress(import("gi://AstalMpris"), ({ Mpris, Player }) => {
     patch(Mpris.prototype, "players")
-    patch(Player.prototype, "supported_uri_schemas")
-    patch(Player.prototype, "supportedUriSchemas")
+    patch(Player.prototype, "supported_uri_schemes")
+    patch(Player.prototype, "supportedUriSchemes")
     patch(Player.prototype, "supported_mime_types")
     patch(Player.prototype, "supportedMimeTypes")
     patch(Player.prototype, "comments")
