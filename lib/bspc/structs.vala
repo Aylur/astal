@@ -1,33 +1,29 @@
 namespace AstalBspc {
-    public class ReportFormat  {
-        public string M;
-        public string m;
-        public string O;
-        public string o;
-        public string F;
-        public string f;
-        public string U;
-        public string u;
-        public string L;
-        public string T;
-        public string G;
+    public class ReportFormat {
+        public string? M;
+        public string? m;
+        public string? O;
+        public string? o;
+        public string? F;
+        public string? f;
+        public string? U;
+        public string? u;
+        public string? L;
+        public string? T;
+        public string? G;
 
         public ReportFormat(string[] parts) {
-            if (parts.length >= 11) {
-                M = parts[0];
-                m = parts[1];
-                O = parts[2];
-                o = parts[3];
-                F = parts[4];
-                f = parts[5];
-                U = parts[6];
-                u = parts[7];
-                L = parts[8];
-                T = parts[9];
-                G = parts[10];
-            } else {
-                M = m = O = o = F = f = U = u = L = T = G = "Error";
-            }
+            M = (parts.length > 0) ? parts[0] : null;
+            m = (parts.length > 1) ? parts[1] : null;
+            O = (parts.length > 2) ? parts[2] : null;
+            o = (parts.length > 3) ? parts[3] : null;
+            F = (parts.length > 4) ? parts[4] : null;
+            f = (parts.length > 5) ? parts[5] : null;
+            U = (parts.length > 6) ? parts[6] : null;
+            u = (parts.length > 7) ? parts[7] : null;
+            L = (parts.length > 8) ? parts[8] : null;
+            T = (parts.length > 9) ? parts[9] : null;
+            G = (parts.length > 10) ? parts[10] : null;
         }
     }
 

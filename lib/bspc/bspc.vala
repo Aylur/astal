@@ -70,9 +70,7 @@ namespace AstalBspc {
         
         // define signals uwu
 
-       public signal void event(string event, string args);
-
-
+        public signal void event(string event, string args);
 
         public signal void node_added(Node node);
         public signal void node_removed(string id);
@@ -155,7 +153,6 @@ namespace AstalBspc {
         public async void write_socket_async(string message, out SocketConnection conn, out DataInputStream data_stream) throws Error {
             conn = yield new_socket_async();
             yield conn.output_stream.write_async(fmt_msg(message), GLib.Priority.DEFAULT, null);
-        
             data_stream = new DataInputStream(conn.input_stream);
         }
 
@@ -167,10 +164,13 @@ namespace AstalBspc {
                 write_socket(message, out conn, out data_stream);
 
                 if (data_stream != null && conn != null) {
-                    string res = data_stream.read_upto("\x04", -1, null, null);
+                    var res = data_stream.read_upto("\x04", -1, null, null);
                     conn.close(null);
 
-                    return res.slice(0, res.length - 1);
+                    if (res != null && res.length > 1)
+                        res = res.substring(0, res.length - 1); // remove last \n
+                    return res;
+
                 }
             } catch (GLib.Error e) {
                 critical(e.message);
@@ -178,7 +178,6 @@ namespace AstalBspc {
 
             return "";
         }
-
 
         public async string message_async(string message) {
             SocketConnection? conn;
@@ -188,11 +187,13 @@ namespace AstalBspc {
                 yield write_socket_async(message, out conn, out data_stream);
 
                 if (data_stream != null && conn != null) {
-                    string res = yield data_stream.read_upto_async("\x04", -1, GLib.Priority.DEFAULT, null, null);
+                    var res = yield data_stream.read_upto_async("\x04", -1, GLib.Priority.DEFAULT, null, null);
                     conn.close();
 
-                    return res.slice(0, res.length - 1); // remove last \n
+                    if (res != null && res.length > 1) 
+                        res = res.substring(0, res.length - 1);
 
+                    return res;
                 }
 
             } catch (Error e) {
@@ -210,15 +211,18 @@ namespace AstalBspc {
             }
 
             foreach (var desktop in desktops) {
-                foreach (var node_id in message("query -N -d " + desktop.id + " -n .leaf").split("\n")) {
-                    var node = new Node();
-                    node.id = node_id;
-                    node.desktop = desktop;
-                    desktop._nodes.set(node.id, node);
-                    _nodes.insert(node.id, node);
+                var nodes = message("query -N -d " + desktop.id + " -n .leaf").split("\n");
+
+                foreach (var node_id in nodes) {
+                    if (node_id.length > 1) {
+                        var node = new Node();
+                        node.id = node_id;
+                        node.desktop = desktop;
+                        desktop._nodes.set(node.id, node);
+                        _nodes.insert(node.id, node);
+                    }
                 }
             }
-            
 
             foreach (var desktop in desktops) {
                 var str = message("query -T -d " + desktop.id);
@@ -230,30 +234,9 @@ namespace AstalBspc {
                 node.sync(Json.from_string(str).get_object());
             }
 
-
             focused_desktop = get_desktop(message("query -D -d focused"));
             focused_node = get_node(message("query -N -n focused"));
-
-            /*
-
-            sync_nodes.begin((_, task) => {
-                    try {
-                    sync_nodes.end(task);
-                } catch (Error e) {
-                    critical(e.message);
-                }
-            });
-
-            sync_desktops.begin((_, task) => {
-                try {
-                    sync_desktops.end(task);
-                } catch (Error e) {
-                    critical(e.message);
-                }
-            });
-            */
         }
-
 
         ~Bspc() {
             if (socket != null) {
@@ -266,7 +249,6 @@ namespace AstalBspc {
                 }
             }
         }
-
 
         private async void sync_nodes() throws Error {
             foreach (var node in nodes) {
@@ -293,6 +275,7 @@ namespace AstalBspc {
                     n.id = args[4];
                     n.desktop = get_desktop(args[2]);
                     n.desktop._nodes.insert(n.id, n);
+                    n.desktop.notify_property("nodes");
 
                     _nodes.insert(n.id, n);
                     node_added(n);
@@ -302,6 +285,7 @@ namespace AstalBspc {
 
                 case "node_remove":
                     _desktops.get(args[2])._nodes.remove(args[3]);
+                    _desktops.get(args[2]).notify_property("nodes");
                     _nodes.get(args[3]).removed();
                     _nodes.remove(args[3]);
                     node_removed(args[3]);
@@ -348,12 +332,7 @@ namespace AstalBspc {
                     break;
 
                 case "node_focus":
-                    if (focused_node != null) {
-                        focused_node.focused = false;
-                    }
-
                     focused_node = get_node(args[3]);
-                    focused_node.focused = true;
                     break;
 
                 case "node_activate":
@@ -444,10 +423,6 @@ namespace AstalBspc {
                     ReportFormat data = new ReportFormat(line.split(":"));
 
                     if (data.T == null) {
-                        if (focused_node != null) {
-                            focused_node.focused = false;
-                        }
-
                         focused_node = null;
                     }
                     break;

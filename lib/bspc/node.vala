@@ -4,7 +4,6 @@ namespace AstalBspc {
         public signal void moved_to (Desktop desktop);
 
         public string id { get; internal set; }
-        public bool focused { get; internal set;}
         public bool floating { get; internal set; }
         public Desktop desktop { get; internal set; }
         public int x { get; internal set; }
@@ -14,19 +13,19 @@ namespace AstalBspc {
         public string class_name { get; private set; }
         public string instance_name { get; private set; }
 
-        public void focus() {
+        public async void focus() {
             Bspc.get_default().message_async.begin(@"node $id -f", (_, task) =>
                 Bspc.get_default().message_async.end(task));
         }
 
-        public void kill() {
+        public async void kill() {
             Bspc.get_default().message_async.begin(@"node $id -c", (_, task) =>
                 Bspc.get_default().message_async.end(task));
         }
 
         internal void sync(Json.Object obj) {
             var client = obj.get_object_member("client");
-            var geom = client.get_object_member(client.get_string_member("state") == "floating" ? "floatingRectangle" : "tiledRectangle");
+            var geom = client.get_object_member(client.get_string_member("state") + "Rectangle");
 
             class_name = client.get_string_member("className");
             instance_name = client.get_string_member("instanceName");
