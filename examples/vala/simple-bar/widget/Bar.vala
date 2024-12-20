@@ -121,7 +121,7 @@ class SysTray : Gtk.Box {
         var icon = new Astal.Icon() { visible = true };
 
         item.bind_property("tooltip-markup", btn, "tooltip-markup", BindingFlags.SYNC_CREATE);
-        item.bind_property("gicon", icon, "g-icon", BindingFlags.SYNC_CREATE);
+        item.bind_property("gicon", icon, "gicon", BindingFlags.SYNC_CREATE);
         item.bind_property("menu-model", btn, "menu-model", BindingFlags.SYNC_CREATE);
         btn.insert_action_group("dbusmenu", item.action_group);
         item.notify["action-group"].connect(() => {
