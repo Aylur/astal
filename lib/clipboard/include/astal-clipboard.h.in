@@ -1,0 +1,56 @@
+#ifndef ASTAL_CLIPBOARD_H
+#define ASTAL_CLIPBOARD_H
+
+#include "glib.h"
+#include <glib-object.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
+
+#define ASTAL_CLIPBOARD_MAJOR_VERSION @MAJOR_VERSION@
+#define ASTAL_CLIPBOARD_MINOR_VERSION @MINOR_VERSION@
+#define ASTAL_CLIPBOARD_MICRO_VERSION @MICRO_VERSION@
+#define ASTAL_CLIPBOARD_VERSION "@VERSION@"
+
+
+G_BEGIN_DECLS
+
+/**
+ * ClipboardData:
+ * @mime_type: the mimetype of the data
+ * @data: the byte representation of the data 
+ *
+ * This is an example struct.
+ */
+typedef struct clipboard_data {
+  gchar* mime_type;
+  GBytes *data;
+} AstalClipboardClipboardData;
+
+gchar* astal_clipboard_clipboard_data_to_string(AstalClipboardClipboardData *data);
+GdkPixbuf* astal_clipboard_clipboard_data_to_pixbuf(AstalClipboardClipboardData *data);
+
+#define ASTAL_CLIPBOARD_TYPE_SELECTION (astal_clipboard_selection_get_type())
+
+G_DECLARE_FINAL_TYPE(AstalClipboardSelection, astal_clipboard_selection, ASTAL_CLIPBOARD, SELECTION, GObject)
+
+
+GList *astal_clipboard_selection_get_data(AstalClipboardSelection *self);
+
+#define ASTAL_CLIPBOARD_TYPE_CLIPBOARD (astal_clipboard_clipboard_get_type())
+
+G_DECLARE_FINAL_TYPE(AstalClipboardClipboard, astal_clipboard_clipboard, ASTAL_CLIPBOARD, CLIPBOARD, GObject)
+
+
+AstalClipboardClipboard *astal_clipboard_clipboard_get_default();
+AstalClipboardClipboard *astal_clipboard_get_default();
+
+AstalClipboardSelection* astal_clipboard_clipboard_get_selection(AstalClipboardClipboard *self);
+
+guint astal_clipboard_clipboard_get_max_length(AstalClipboardClipboard* self);
+void astal_clipboard_clipboard_set_max_length(AstalClipboardClipboard* self, guint max_length);
+
+GList* astal_clipboard_clipboard_get_selection_history(AstalClipboardClipboard* self);
+GList* astal_clipboard_clipboard_get_primary_selection_history(AstalClipboardClipboard* self);
+
+G_END_DECLS
+
+#endif  // !ASTAL_CLIPBOARD_H
