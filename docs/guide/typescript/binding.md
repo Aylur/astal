@@ -8,12 +8,13 @@ is done through the `bind` function which returns a `Binding` object.
 which Widget constructors can use to setup a connection between themselves and the source.
 
 ```ts
+// This is a simplified definition (see "Bindings in depth" section).
 class Binding<Value> {
-    private transformFn: (v: any) => unknown
     private emitter: Subscribable<Value> | Connectable
     private prop?: string
 
     as<T>(fn: (v: Value) => T): Binding<T>
+    prop<Key extends keyof Value>(key: Key): Binding<Value[Key]>
     get(): Value
     subscribe(callback: (value: Value) => void): () => void
 }
@@ -32,6 +33,12 @@ function bind<
     Prop extends keyof Obj,
 >(obj: Obj, prop: Prop): Binding<Obj[Prop]>
 ```
+
+`Binding` objects can also be created from other bindings in two ways:
+- using the `.as()` function, to create derived state via a transform function,
+- using the `.prop()` function, to access deeply nested properties while preserving reactivity.
+> [!NOTE]
+> The `.prop()` function is only available on bindings to `Connectable`s.
 
 ## Subscribable and Connectable interface
 
@@ -59,13 +66,13 @@ the widget which represents the element.
 
 ```ts :line-numbers [varmap.ts]
 import { type Subscribable } from "astal/binding"
-import { Gtk } from "astal"
+import { Gtk } from "astal/gtk3"
 
 export class VarMap<K, T = Gtk.Widget> implements Subscribable {
     #subs = new Set<(v: Array<[K, T]>) => void>()
     #map: Map<K, T>
 
-    #notifiy() {
+    #notify() {
         const value = this.get()
         for (const sub of this.#subs) {
             sub(value)
@@ -89,12 +96,12 @@ export class VarMap<K, T = Gtk.Widget> implements Subscribable {
     set(key: K, value: T) {
         this.#delete(key)
         this.#map.set(key, value)
-        this.#notifiy()
+        this.#notify()
     }
 
     delete(key: K) {
         this.#delete(key)
-        this.#notifiy()
+        this.#notify()
     }
 
     get() {
@@ -233,3 +240,19 @@ function BrightnessSlider() {
     />
 }
 ```
+
+## Bindings in depth
+
+There are actually two types of bindings: `DataBinding` and `TransformBinding`.
+The first kind is created by the `bind` function, and works with both Subscribables and Connectables.
+
+The second kind is created by the `.as()` and the `.prop()` functions, and it's responsible for applying a transformation
+on the data from a source binding. It can also reactively unwrap one level of binding (any kind) returned from the transform function.
+This is useful for preserving reactivity in weird situations, usually involving deep access.
+> [!TIP]
+> The `.prop(key)` function is equivalent to `.as((obj) => bind(obj, key))`.
+>
+
+However, most of the time you don't need to care about what kind of binding you have - they both work in widgets,
+and have the same functions defined on them. The `Binding` type is a supertype of both kinds,
+and so is useful when you don't care about the kind you're dealing with.
