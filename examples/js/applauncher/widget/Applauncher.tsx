@@ -55,7 +55,7 @@ export default function Applauncher() {
                 self.hide()
         }}>
         <box>
-            <eventbox widthRequest={4000} expand onClick={hide} />
+            <eventbox widthRequest={400} expand onClick={hide} />
             <box hexpand={false} vertical>
                 <eventbox heightRequest={100} onClick={hide} />
                 <box widthRequest={500} className="Applauncher" vertical>
@@ -81,7 +81,7 @@ export default function Applauncher() {
                 </box>
                 <eventbox expand onClick={hide} />
             </box>
-            <eventbox widthRequest={4000} expand onClick={hide} />
+            <eventbox widthRequest={400} expand onClick={hide} />
         </box>
     </window>
 }
