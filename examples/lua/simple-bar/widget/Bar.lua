@@ -26,7 +26,7 @@ local function SysTray()
 						return { "dbusmenu", ag }
 					end),
 					Widget.Icon({
-						g_icon = bind(item, "gicon"),
+						gicon = bind(item, "gicon"),
 					}),
 				})
 			end)
@@ -127,7 +127,7 @@ local function Workspaces()
 			end)
 
 			return map(wss, function(ws)
-				if !(ws.id >= -99 and ws.id <= -2) then -- filter out special workspaces
+				if not (ws.id >= -99 and ws.id <= -2) then -- filter out special workspaces
 					return Widget.Button({
 						class_name = bind(hypr, "focused-workspace"):as(function(fw)
 							return fw == ws and "focused" or ""

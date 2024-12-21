@@ -124,7 +124,7 @@ class SysTray(Gtk.Box):
         icon = Astal.Icon(visible=True)
 
         item.bind_property("tooltip-markup", btn, "tooltip-markup", SYNC)
-        item.bind_property("gicon", icon, "g-icon", SYNC)
+        item.bind_property("gicon", icon, "gicon", SYNC)
         item.bind_property("menu-model", btn, "menu-model", SYNC)
         btn.insert_action_group("dbusmenu", item.get_action_group())
 
