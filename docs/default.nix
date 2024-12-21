@@ -202,6 +202,12 @@ in
         dependencies = {inherit (dependency) "NM-1.0";}; # FIXME: why does this not work?
       }}
       ${genLib {
+        flakepkg = "niri";
+        gir = "Niri";
+        description = "IPC client for niri";
+        version = ../lib/niri/version;
+      }}
+      ${genLib {
         flakepkg = "notifd";
         gir = "Notifd";
         description = "Notification daemon library";
