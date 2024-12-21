@@ -1,6 +1,6 @@
-defaults: {
-  pkgs ? defaults.pkgs,
-  astal ? defaults.astal,
+self: {
+  pkgs,
+  astal ? self,
   name ? "astal-lua",
   src,
   extraLuaPackages ? (ps: []),
