@@ -1,4 +1,8 @@
 {
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  };
+
   outputs = {
     self,
     nixpkgs,
@@ -46,9 +50,5 @@
         inherit self;
         pkgs = nixpkgs.legacyPackages.${system};
       });
-  };
-
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 }
