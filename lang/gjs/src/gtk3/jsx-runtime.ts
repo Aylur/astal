@@ -84,7 +84,7 @@ declare global {
             label: Widget.LabelProps
             levelbar: Widget.LevelBarProps
             // TODO: listbox
-            menubutton: Widget.MenuButton,
+            menubutton: Widget.MenuButtonProps
             overlay: Widget.OverlayProps
             revealer: Widget.RevealerProps
             scrollable: Widget.ScrollableProps
