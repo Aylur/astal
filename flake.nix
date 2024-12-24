@@ -3,80 +3,49 @@
     self,
     nixpkgs,
   }: let
-    inherit (builtins) replaceStrings readFile;
-    readVer = file: replaceStrings ["\n"] [""] (readFile file);
-
-    system = "x86_64-linux"; # TODO: other architectures
-    pkgs = nixpkgs.legacyPackages.${system};
-
-    mkPkg = name: src: inputs:
-      pkgs.stdenv.mkDerivation {
-        nativeBuildInputs = with pkgs; [
-          wrapGAppsHook
-          gobject-introspection
-          meson
-          pkg-config
-          ninja
-          vala
-          wayland
-          wayland-scanner
-          python3
-        ];
-        propagatedBuildInputs = [pkgs.glib] ++ inputs;
-        pname = name;
-        version = readVer "${src}/version";
-        src = src;
-        postUnpack = ''
-          cp --remove-destination ${./lib/gir.py} $sourceRoot/gir.py
-        '';
-        outputs = ["out" "dev"];
-      };
+    forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux"];
   in {
-    devShells.${system} = import ./nix/devshell.nix {
-      inherit self pkgs;
-    };
-
     lib = {
-      mkLuaPackage = import ./nix/lua.nix {
-        inherit pkgs;
-        astal = self;
-      };
+      mkLuaPackage = import ./nix/lua.nix self;
     };
 
-    packages.${system} = with pkgs; {
-      docs = import ./docs {inherit self pkgs;};
+    packages = forAllSystems (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+      mkPkg = src:
+        import src {
+          inherit self pkgs;
+          mkAstalPkg = import ./nix/mkAstalPkg.nix pkgs;
+        };
+    in {
       default = self.packages.${system}.io;
+      docs = import ./docs {inherit self pkgs;};
 
-      io = mkPkg "astal" ./lib/astal/io [];
-      astal3 = mkPkg "astal" ./lib/astal/gtk3 [self.packages.${system}.io gtk3 gtk-layer-shell];
-      astal4 = mkPkg "astal" ./lib/astal/gtk4 [self.packages.${system}.io gtk4 gtk4-layer-shell];
-      apps = mkPkg "astal-apps" ./lib/apps [json-glib];
-      auth = mkPkg "astal-auth" ./lib/auth [pam];
-      battery = mkPkg "astal-battery" ./lib/battery [json-glib];
-      bluetooth = mkPkg "astal-bluetooth" ./lib/bluetooth [];
-      cava = mkPkg "astal-cava" ./lib/cava [(pkgs.callPackage ./nix/libcava.nix {})];
-      greet = mkPkg "astal-greet" ./lib/greet [json-glib];
-      hyprland = mkPkg "astal-hyprland" ./lib/hyprland [json-glib];
-      mpris = mkPkg "astal-mpris" ./lib/mpris [gvfs json-glib];
-      network = mkPkg "astal-network" ./lib/network [networkmanager];
-      notifd = mkPkg "astal-notifd" ./lib/notifd [json-glib gdk-pixbuf];
-      powerprofiles = mkPkg "astal-power-profiles" ./lib/powerprofiles [json-glib];
-      river = mkPkg "astal-river" ./lib/river [json-glib];
-      tray = mkPkg "astal-tray" ./lib/tray [json-glib (pkgs.callPackage ./nix/appmenu-glib.nix {})];
-      wireplumber = mkPkg "astal-wireplumber" ./lib/wireplumber [wireplumber];
+      io = mkPkg ./lib/astal/io;
+      astal3 = mkPkg ./lib/astal/gtk3;
+      astal4 = mkPkg ./lib/astal/gtk4;
+      apps = mkPkg ./lib/apps;
+      auth = mkPkg ./lib/auth;
+      battery = mkPkg ./lib/battery;
+      bluetooth = mkPkg ./lib/bluetooth;
+      cava = mkPkg ./lib/cava;
+      greet = mkPkg ./lib/greet;
+      hyprland = mkPkg ./lib/hyprland;
+      mpris = mkPkg ./lib/mpris;
+      network = mkPkg ./lib/network;
+      notifd = mkPkg ./lib/notifd;
+      powerprofiles = mkPkg ./lib/powerprofiles;
+      river = mkPkg ./lib/river;
+      tray = mkPkg ./lib/tray;
+      wireplumber = mkPkg ./lib/wireplumber;
 
-      gjs = pkgs.stdenvNoCC.mkDerivation {
-        src = ./lang/gjs;
-        name = "astal-gjs";
-        nativeBuildInputs = [
-          meson
-          ninja
-          pkg-config
-          self.packages.${system}.io
-          self.packages.${system}.astal3
-        ];
-      };
-    };
+      gjs = import ./lang/gjs {inherit self pkgs;};
+    });
+
+    devShells = forAllSystems (system:
+      import ./nix/devshell.nix {
+        inherit self;
+        pkgs = nixpkgs.legacyPackages.${system};
+      });
   };
 
   inputs = {
