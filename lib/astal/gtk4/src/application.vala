@@ -146,13 +146,10 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
         if (reset)
             reset_css();
 
-        try {
-            if (FileUtils.test(style, FileTest.EXISTS))
-                provider.load_from_path(style);
-            else
-                provider.load_from_string(style);
-        } catch (Error err) {
-            critical(err.message);
+        if (FileUtils.test(style, FileTest.EXISTS)) {
+            provider.load_from_path(style);
+        } else {
+            provider.load_from_string(style);
         }
 
         Gtk.StyleContext.add_provider_for_display(

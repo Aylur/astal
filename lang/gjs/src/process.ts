@@ -50,18 +50,15 @@ export function execAsync(cmd: string | string[]): Promise<string> {
             Astal.Process.exec_asyncv(cmd, (_, res) => {
                 try {
                     resolve(Astal.Process.exec_asyncv_finish(res))
-                }
-                catch (error) {
+                } catch (error) {
                     reject(error)
                 }
             })
-        }
-        else {
+        } else {
             Astal.Process.exec_async(cmd, (_, res) => {
                 try {
                     resolve(Astal.Process.exec_finish(res))
-                }
-                catch (error) {
+                } catch (error) {
                     reject(error)
                 }
             })
