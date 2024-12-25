@@ -405,6 +405,8 @@ function MyWidget() {
 }
 
 // with `hook`
+import { hook } from "astal/gtk4"
+
 function MyWidget() {
     return <box
         setup={(self) => {
