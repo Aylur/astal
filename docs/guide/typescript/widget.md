@@ -557,7 +557,7 @@ These widgets are available by default in JSX.
 - window: [Astal.Window](https://aylur.github.io/libastal/astal4/class.Window.html)
   ```tsx
   <window
-      className="Bar"
+      cssClasses={["Bar"]}
       name="bar"
       namespace="bar"
       application={App}
