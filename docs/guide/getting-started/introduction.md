@@ -2,13 +2,15 @@
 
 ## What is Astal?
 
-Astal (_meaning "desk"_) is a suite of libraries in Vala and C.
+Astal (_meaning "desk"_) is a suite of libraries written in Vala and C.
 The core library [astal3](https://aylur.github.io/libastal/astal3) and
-[astal4](https://aylur.github.io/libastal/astal4) (not yet available)
-has some Gtk widgets that come packaged,
+[astal4](https://aylur.github.io/libastal/astal4)
+have some Gtk widgets that come packaged,
 the most important one being the [Window](https://aylur.github.io/libastal/astal3/class.Window.html) which is the main toplevel component using [gtk-layer-shell](https://github.com/wmww/gtk-layer-shell).
 This is what allows us to use Gtk as shell components on Wayland.
-The other part of the core library [astal-io](https://aylur.github.io/libastal/astal-io)
+The other component is [Application](https://aylur.github.io/libastal/astal3/class.Application.html)
+which provides a way to send messages from the cli to running Astal instances.
+The other part of the core library is [astal-io](https://aylur.github.io/libastal/astal-io)
 which contains some utility GLib shortcut for running external processes,
 reading, writing and monitoring files, timeout and interval functions.
 
@@ -23,4 +25,4 @@ or an applauncher, but gave up because writing a workspace widget,
 implementing the notification daemon or handling a search filter was too much of a hassle?
 
 Astal libraries have you [covered](../libraries/references#astal-libraries), you don't have to worry about these,
-you just define the layout, style it with CSS and that's it.
+you just define the layout, style with CSS hook up the state from libraries you want and that's it.

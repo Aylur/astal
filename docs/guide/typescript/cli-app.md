@@ -26,7 +26,7 @@ App.start({
 
 ## Instance identifier
 
-You can run multiple instance by defining a unique instance name.
+You can run multiple instances by defining a unique instance name.
 
 ```ts
 App.start({
@@ -44,7 +44,7 @@ you can do so by sending a message.
 App.start({
     requestHandler(request: string, res: (response: any) => void) {
         if (request == "say hi") {
-            res("hi cli")
+            return res("hi cli")
         }
         res("unknown command")
     },
@@ -140,7 +140,7 @@ App.start({
     // every subsequent calls
     client(message: (msg: string) => string, ...args: Array<string>) {
         const res = message("you can message the main instance")
-        console.log(res)
+        print(res)
     },
 
     // this runs in the main instance
