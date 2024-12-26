@@ -65,6 +65,10 @@ export function hook<Widget extends Connectable>(
 export function construct<Widget extends Connectable & { [setChildren]: (children: any[]) => void }>(widget: Widget, config: any) {
     const { setup, child, children = [], ...props } = config
 
+    if (children instanceof Binding) {
+        children = [children]
+    }
+
     if (child) {
         children.unshift(child)
     }
