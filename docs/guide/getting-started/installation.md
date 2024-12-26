@@ -29,7 +29,7 @@ Read more about it on the [nix page](./nix#astal)
 :::code-group
 
 ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala gtk3 gtk-layer-shell gobject-introspection
+sudo pacman -Syu meson vala valadoc gtk3 gtk-layer-shell gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
@@ -37,7 +37,7 @@ sudo dnf install meson vala valadoc gtk3-devel gtk-layer-shell-devel gobject-int
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac libgtk-3-dev libgtk-layer-shell-dev gobject-introspection libgirepository1.0-dev
+sudo apt install meson valac valadoc libgtk-3-dev libgtk-layer-shell-dev gobject-introspection libgirepository1.0-dev
 ```
 
 :::
