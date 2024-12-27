@@ -150,6 +150,7 @@ export type ConstructProps<
     css?: string
     cursor?: string
     clickThrough?: boolean
+    actionGroup?: ActionGroup
 }>> & Partial<{
     onDestroy: (self: Self) => unknown
     onDraw: (self: Self) => unknown
