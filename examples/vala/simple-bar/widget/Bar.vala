@@ -143,9 +143,11 @@ class SysTray : Gtk.Box {
 class Wifi : Astal.Icon {
     public Wifi() {
         Astal.widget_set_class_names(this, {"Wifi"});
-        var wifi = AstalNetwork.get_default().wifi;
-        wifi.bind_property("ssid", this, "tooltip-text", BindingFlags.SYNC_CREATE);
-        wifi.bind_property("icon-name", this, "icon", BindingFlags.SYNC_CREATE);
+        var wifi = AstalNetwork.get_default().get_wifi();
+        if (wifi != null) {
+            wifi.bind_property("ssid", this, "tooltip-text", BindingFlags.SYNC_CREATE);
+            wifi.bind_property("icon-name", this, "icon", BindingFlags.SYNC_CREATE);
+        }
     }
 }
 

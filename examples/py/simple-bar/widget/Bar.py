@@ -147,8 +147,9 @@ class Wifi(Astal.Icon):
         super().__init__()
         Astal.widget_set_class_names(self, ["Wifi"])
         wifi = Network.get_default().get_wifi()
-        wifi.bind_property("ssid", self, "tooltip-text", SYNC)
-        wifi.bind_property("icon-name", self, "icon", SYNC)
+        if wifi:
+            wifi.bind_property("ssid", self, "tooltip-text", SYNC)
+            wifi.bind_property("icon-name", self, "icon", SYNC)
 
 
 class AudioSlider(Gtk.Box):

@@ -15,7 +15,7 @@ local function SysTray()
 	local tray = Tray.get_default()
 
 	return Widget.Box({
-        class_name = "SysTray",
+		class_name = "SysTray",
 		bind(tray, "items"):as(function(items)
 			return map(items, function(item)
 				return Widget.MenuButton({
@@ -50,12 +50,20 @@ local function FocusedClient()
 end
 
 local function Wifi()
-	local wifi = Network.get_default().wifi
+	local network = Network.get_default()
+	local wifi = bind(network, "wifi")
 
-	return Widget.Icon({
-		tooltip_text = bind(wifi, "ssid"):as(tostring),
-		class_name = "Wifi",
-		icon = bind(wifi, "icon-name"),
+	return Widget.Box({
+		visible = wifi:as(function(v)
+			return v ~= nil
+		end),
+		wifi:as(function(w)
+			return Widget.Icon({
+				tooltip_text = bind(w, "ssid"):as(tostring),
+				class_name = "Wifi",
+				icon = bind(w, "icon-name"),
+			})
+		end),
 	})
 end
 
@@ -179,7 +187,7 @@ return function(gdkmonitor)
 			}),
 			Widget.Box({
 				halign = "END",
-                SysTray(),
+				SysTray(),
 				Wifi(),
 				AudioSlider(),
 				BatteryLevel(),
