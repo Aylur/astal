@@ -3,6 +3,7 @@ import Astal from "gi://Astal?version=3.0"
 import Gtk from "gi://Gtk?version=3.0"
 import Gdk from "gi://Gdk?version=3.0"
 import GObject from "gi://GObject"
+import Gio from 'gi://Gio?version=2.0';
 import Binding, { type Connectable, type Subscribable } from "../binding.js"
 
 export { BindableProps, mergeBindings }
@@ -149,6 +150,7 @@ export type ConstructProps<
     css?: string
     cursor?: string
     clickThrough?: boolean
+    actionGroup?: ActionGroup
 }>> & Partial<{
     onDestroy: (self: Self) => unknown
     onDraw: (self: Self) => unknown
@@ -196,4 +198,4 @@ type Cursor =
     | "zoom-in"
     | "zoom-out"
 
-type ActionGroup = [prefix: string, actionGroup: Gtk.ActionGroup]
+type ActionGroup = [prefix: string, actionGroup: Gio.ActionGroup]
