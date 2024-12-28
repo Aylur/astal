@@ -46,7 +46,7 @@ export class Binding<Value> {
         return `Binding<${this.#emitter}${this.#prop ? `, "${this.#prop}"` : ""}>`
     }
 
-    as<T>(fn: (v: Value) => T | Binding<T>): Binding<T> {
+    as<T>(fn: (v: Value) => T): Binding<T> {
         const bind = new Binding(this.#emitter, this.#prop)
         bind.transformFn = (v: Value) => fn(this.transformFn(v))
         return bind as unknown as Binding<T>
