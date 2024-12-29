@@ -55,14 +55,14 @@ const HOME = GLib.getenv("HOME")
 
 ## Custom SVG symbolic icons
 
-Put the svgs in a directory, named `<icon-name>-symbolic.svg`
+Put the svgs in a directory, name them `<icon-name>-symbolic.svg`
 and use `App.add_icons` or `icons` parameter in `App.start`
 
 :::code-group
 
 ```ts [app.ts]
 App.start({
-    icons: `${SRC}/icons`,
+    icons: `/path/to/icons`, // this dir should include custom-symbolic.svg
     main() {
         Widget.Icon({
             icon: "custom-symbolic", // custom-symbolic.svg
