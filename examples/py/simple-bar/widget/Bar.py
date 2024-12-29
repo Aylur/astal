@@ -32,7 +32,7 @@ class Workspaces(Gtk.Box):
             child.destroy()
 
         for ws in hypr.get_workspaces():
-            if not (ws.id >= -99 and ws.id <= -2): # filter out special workspaces
+            if not (ws.get_id() >= -99 and ws.get_id() <= -2): # filter out special workspaces
                 self.add(self.button(ws))
 
     def button(self, ws):
