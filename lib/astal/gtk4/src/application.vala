@@ -143,6 +143,15 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     public void apply_css(string style, bool reset = false) {
         var provider = new Gtk.CssProvider();
 
+        provider.parsing_error.connect((section, error) => {
+          critical("CSS Error %s:%zu:%zu: %s\n",
+            section.get_file()?.get_basename() ?? "",
+            section.get_start_location().lines + 1,
+            section.get_start_location().line_chars + 1,
+            error.message
+          );
+        });
+
         if (reset)
             reset_css();
 
