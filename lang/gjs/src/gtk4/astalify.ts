@@ -34,10 +34,15 @@ function _setChildren(widget: Gtk.Widget, children: any[]) {
     }
 }
 
-type Config<T extends Gtk.Widget> = {
+export type Config<T extends Gtk.Widget> = {
     setChildren(widget: T, children: any[]): void
     getChildren(widget: T): Array<Gtk.Widget>
 }
+
+export type ExtraPropsFunc<
+    Widget extends Gtk.Widget,
+    ExtraProps extends Record<string, unknown>,
+> = { [Key in keyof ExtraProps]: (self: Widget) => PropertyDescriptor }
 
 export default function astalify<
     Widget extends Gtk.Widget,
@@ -47,7 +52,7 @@ export default function astalify<
 >(
     cls: { new(...args: any[]): Widget },
     config: Partial<Config<Widget>> = {},
-    extraProps = {} as { [Key in keyof ExtraProps]: (self: Widget, values: ExtraProps) => PropertyDescriptor },
+    extraProps = {} as ExtraPropsFunc<Widget, ExtraProps>,
 ) {
     Object.assign(cls.prototype, {
         [setChildren](children: any[]) {
@@ -93,10 +98,8 @@ export default function astalify<
                 Object.assign(props, { children })
             }
 
-            const extraPropsValues = {} as ExtraProps
-
             Object.entries(extraProps).forEach(([key, value]) => {
-                Object.defineProperty(widget, key, value(widget, extraPropsValues))
+                Object.defineProperty(widget, key, value(widget))
             })
 
             return construct(widget as any, setupControllers(widget, props as any))
