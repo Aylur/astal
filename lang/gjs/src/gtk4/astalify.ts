@@ -43,7 +43,12 @@ export default function astalify<
     Widget extends Gtk.Widget,
     Props extends Gtk.Widget.ConstructorProps = Gtk.Widget.ConstructorProps,
     Signals extends Record<`on${string}`, Array<unknown>> = Record<`on${string}`, any[]>,
->(cls: { new(...args: any[]): Widget }, config: Partial<Config<Widget>> = {}) {
+    ExtraProps extends Record<string, unknown> = Record<string, undefined>,
+>(
+    cls: { new(...args: any[]): Widget },
+    config: Partial<Config<Widget>> = {},
+    extraProps = {} as { [Key in keyof ExtraProps]: (self: Widget, values: ExtraProps) => PropertyDescriptor },
+) {
     Object.assign(cls.prototype, {
         [setChildren](children: any[]) {
             const w = this as unknown as Widget
@@ -65,7 +70,7 @@ export default function astalify<
 
     return {
         [cls.name]: (
-            props: ConstructProps<Widget, Props, Signals> = {},
+            props: ConstructProps<Widget, Props & ExtraProps, Signals> = {},
             ...children: any[]
         ): Widget => {
             const widget = new cls("cssName" in props ? { cssName: props.cssName } : {})
@@ -87,6 +92,12 @@ export default function astalify<
             if (children.length > 0) {
                 Object.assign(props, { children })
             }
+
+            const extraPropsValues = {} as ExtraProps
+
+            Object.entries(extraProps).forEach(([key, value]) => {
+                Object.defineProperty(widget, key, value(widget, extraPropsValues))
+            })
 
             return construct(widget as any, setupControllers(widget, props as any))
         },
