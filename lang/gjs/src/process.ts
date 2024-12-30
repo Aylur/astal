@@ -6,7 +6,8 @@ type Args = {
     err?: (stderr: string) => void
 }
 
-export const { Process } = Astal
+export type Process = Astal.Process
+export const Process = Astal.Process
 
 export function subprocess(args: Args): Astal.Process
 
