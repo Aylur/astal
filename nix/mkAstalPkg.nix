@@ -77,19 +77,25 @@ in
       inherit pname src version;
       outputs = ["out" "dev" "doc"];
 
-      nativeBuildInputs = with pkgs; [
-        wrapGAppsHook
-        gobject-introspection
-        meson
-        pkg-config
-        ninja
-        vala
-        wayland
-        wayland-scanner
-        python3
-      ];
+      nativeBuildInputs = with pkgs;
+        [
+          wrapGAppsHook
+          gobject-introspection
+          meson
+          pkg-config
+          ninja
+          vala
+          wayland
+          wayland-scanner
+          python3
+        ]
+        ++ nativeBuildInputs;
 
-      propagatedBuildInputs = [pkgs.glib] ++ packages;
+      propagatedBuildInputs = with pkgs;
+        [
+          glib
+        ]
+        ++ packages;
 
       postUnpack = ''
         cp --remove-destination ${../lib/gir.py} $sourceRoot/gir.py
