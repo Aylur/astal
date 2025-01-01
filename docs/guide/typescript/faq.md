@@ -269,3 +269,33 @@ class MyWidget extends Widget.Box {
     }
 }
 ```
+
+## How do I register keybindings?
+
+If you want global keybindings use your compositor.
+Only **focused** windows can capture events. To make a window
+focusable set its keymode.
+
+::: code-group
+```tsx [gtk3]
+<window
+    keymode={Astal.Keymode.ON_DEMAND}
+    onKeyPressEvent={(self, event: Gdk.Event) => {
+        if (event.get_keyval()[1] === Gdk.KEY_Escape) {
+            self.hide()
+        }
+    }}
+/>
+```
+
+```tsx [gtk4]
+<window
+    keymode={Astal.Keymode.ON_DEMAND}
+    onKeyPressed={(self, keyval) => {
+        if (keyval === Gdk.KEY_Escape) {
+            self.hide()
+        }
+    }}
+/>
+```
+:::
