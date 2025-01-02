@@ -1,5 +1,7 @@
 pkgs: let
-  inherit (builtins) replaceStrings readFile;
+  inherit (builtins) elem elemAt readFile replaceStrings splitVersion toJSON;
+  inherit (pkgs.lib) filterAttrs;
+
   readVer = file: replaceStrings ["\n"] [""] (readFile file);
 
   toTOML = (pkgs.formats.toml {}).generate;
@@ -42,7 +44,7 @@ pkgs: let
   };
 
   urlmap = pkgs.writeText "urlmap" ''
-    baseURLs = ${builtins.toJSON [
+    baseURLs = ${toJSON [
       ["GLib" "https://docs.gtk.org/glib/"]
       ["GObject" "https://docs.gtk.org/gobject/"]
       ["Gio" "https://docs.gtk.org/gio/"]
@@ -72,24 +74,34 @@ in
     postUnpack ? "",
   }: let
     version = readVer "${src}/version";
+
+    ver = splitVersion version;
+    api-ver = "${elemAt ver 0}.${elemAt ver 1}";
+    girName = "Astal${gir-suffix}-${api-ver}";
   in
     pkgs.stdenv.mkDerivation {
       inherit pname src version;
       outputs = ["out" "dev" "doc"];
 
-      nativeBuildInputs = with pkgs; [
-        wrapGAppsHook
-        gobject-introspection
-        meson
-        pkg-config
-        ninja
-        vala
-        wayland
-        wayland-scanner
-        python3
-      ];
+      nativeBuildInputs = with pkgs;
+        [
+          wrapGAppsHook
+          gobject-introspection
+          meson
+          pkg-config
+          ninja
+          vala
+          wayland
+          wayland-scanner
+          python3
+        ]
+        ++ nativeBuildInputs;
 
-      propagatedBuildInputs = [pkgs.glib] ++ packages;
+      propagatedBuildInputs = with pkgs;
+        [
+          glib
+        ]
+        ++ packages;
 
       postUnpack = ''
         cp --remove-destination ${../lib/gir.py} $sourceRoot/gir.py
@@ -97,13 +109,6 @@ in
       '';
 
       postInstall = let
-        inherit (builtins) splitVersion elemAt elem;
-        inherit (pkgs.lib.attrsets) filterAttrs;
-
-        ver = splitVersion version;
-        api-ver = "${elemAt ver 0}.${elemAt ver 1}";
-        girName = "Astal${gir-suffix}-${api-ver}";
-
         data = toTOML libname {
           library = {
             inherit description authors version;
@@ -132,6 +137,10 @@ in
         ${docgen}/bin/gi-docgen generate --config ${data} $gir
         mv ${girName}/* $out/share/doc/${website-path}
       '';
+
+      passthru = {
+        inherit girName;
+      };
 
       meta = {
         inherit description;
