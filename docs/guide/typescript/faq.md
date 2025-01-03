@@ -55,14 +55,14 @@ const HOME = GLib.getenv("HOME")
 
 ## Custom SVG symbolic icons
 
-Put the svgs in a directory, named `<icon-name>-symbolic.svg`
+Put the svgs in a directory, name them `<icon-name>-symbolic.svg`
 and use `App.add_icons` or `icons` parameter in `App.start`
 
 :::code-group
 
 ```ts [app.ts]
 App.start({
-    icons: `${SRC}/icons`,
+    icons: `/path/to/icons`, // this dir should include custom-symbolic.svg
     main() {
         Widget.Icon({
             icon: "custom-symbolic", // custom-symbolic.svg
@@ -269,3 +269,33 @@ class MyWidget extends Widget.Box {
     }
 }
 ```
+
+## How do I register keybindings?
+
+If you want global keybindings use your compositor.
+Only **focused** windows can capture events. To make a window
+focusable set its keymode.
+
+::: code-group
+```tsx [gtk3]
+<window
+    keymode={Astal.Keymode.ON_DEMAND}
+    onKeyPressEvent={(self, event: Gdk.Event) => {
+        if (event.get_keyval()[1] === Gdk.KEY_Escape) {
+            self.hide()
+        }
+    }}
+/>
+```
+
+```tsx [gtk4]
+<window
+    keymode={Astal.Keymode.ON_DEMAND}
+    onKeyPressed={(self, keyval) => {
+        if (keyval === Gdk.KEY_Escape) {
+            self.hide()
+        }
+    }}
+/>
+```
+:::

@@ -55,7 +55,7 @@ print(audio.default_speaker.volume)
 :::code-group
 
 ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala wireplumber gobject-introspection
+sudo pacman -Syu meson vala valadoc wireplumber gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]

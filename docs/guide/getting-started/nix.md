@@ -5,7 +5,19 @@ next:
 ---
 # Nix
 
-Using Astal on Nix will require you to package your project.
+Using Astal on Nix will require you to write a derivation for your project.
+You can either copy and build off of these example flakes or you can
+incorporate the derivations into your existing flake/configuration.
+
+## Q: "How do I install Astal on Nix?"
+
+:::details See answer
+A: <span style="font-size: 1.2em; font-weight: bold;">You don't.</span>
+
+You can't install libraries globally on Nix as you would with regular
+package managers like `pacman`, `dnf` or `apt`. You have to write a
+derivation for your projects like you would for any other program.
+:::
 
 ## TypeScript
 

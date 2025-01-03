@@ -58,27 +58,36 @@ end
 :::code-group
 
 ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson gtk3 gobject-introspection libdbusmenu-gtk3
+sudo pacman -Syu meson json-glib gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc gtk3-devel libdbusmenu-gtk3-devel gobject-introspection-devel
+sudo dnf install meson json-glib-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson libgtk-3-dev libdbusmenu-gtk3-dev gobject-introspection
+sudo apt install meson libjson-glib-dev gobject-introspection
 ```
 
 :::
 
-2. clone repo
+2. install `appmenu-glib-translator`
+
+```sh
+git clone https://github.com/rilian-la-te/vala-panel-appmenu.git
+cd vala-panel-appmenu/subprojects/appmenu-glib-translator
+meson setup --prefix /usr build
+meson install -C build
+```
+
+3. clone repo
 
 ```sh
 git clone https://github.com/aylur/astal.git
 cd astal/lib/tray
 ```
 
-3. install
+4. install
 
 ```sh
 meson setup --prefix /usr build

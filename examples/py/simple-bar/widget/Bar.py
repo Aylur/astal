@@ -32,7 +32,7 @@ class Workspaces(Gtk.Box):
             child.destroy()
 
         for ws in hypr.get_workspaces():
-            if not (ws.id >= -99 and ws.id <= -2): # filter out special workspaces
+            if not (ws.get_id() >= -99 and ws.get_id() <= -2): # filter out special workspaces
                 self.add(self.button(ws))
 
     def button(self, ws):
@@ -124,7 +124,7 @@ class SysTray(Gtk.Box):
         icon = Astal.Icon(visible=True)
 
         item.bind_property("tooltip-markup", btn, "tooltip-markup", SYNC)
-        item.bind_property("gicon", icon, "g-icon", SYNC)
+        item.bind_property("gicon", icon, "gicon", SYNC)
         item.bind_property("menu-model", btn, "menu-model", SYNC)
         btn.insert_action_group("dbusmenu", item.get_action_group())
 
@@ -147,8 +147,9 @@ class Wifi(Astal.Icon):
         super().__init__()
         Astal.widget_set_class_names(self, ["Wifi"])
         wifi = Network.get_default().get_wifi()
-        wifi.bind_property("ssid", self, "tooltip-text", SYNC)
-        wifi.bind_property("icon-name", self, "icon", SYNC)
+        if wifi:
+            wifi.bind_property("ssid", self, "tooltip-text", SYNC)
+            wifi.bind_property("icon-name", self, "icon", SYNC)
 
 
 class AudioSlider(Gtk.Box):

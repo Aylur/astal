@@ -26,6 +26,11 @@ public async string read_file_async(string path) throws Error {
  */
 public void write_file(string path, string content) {
     try {
+        var dir = Path.get_dirname(path);
+        if (!FileUtils.test(dir, FileTest.IS_DIR)) {
+            File.new_for_path(dir).make_directory_with_parents(null);
+        }
+
         FileUtils.set_contents(path, content);
     } catch (Error error) {
         critical(error.message);
@@ -36,6 +41,11 @@ public void write_file(string path, string content) {
  * Write content to a file asynchronously.
  */
 public async void write_file_async(string path, string content) throws Error {
+    var dir = Path.get_dirname(path);
+    if (!FileUtils.test(dir, FileTest.IS_DIR)) {
+        File.new_for_path(dir).make_directory_with_parents(null);
+    }
+
     yield File.new_for_path(path).replace_contents_async(
         content.data,
         null,

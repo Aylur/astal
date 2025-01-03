@@ -41,7 +41,7 @@ public class Astal.CircularProgress : Gtk.Bin {
     }
 
     static construct {
-        set_css_name("circular-progress");
+        set_css_name("circularprogress");
     }
 
     public override Gtk.SizeRequestMode get_request_mode() {
