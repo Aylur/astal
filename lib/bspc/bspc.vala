@@ -352,24 +352,18 @@ namespace AstalBspc {
                     Regex regex = new Regex("^(\\d+)x(\\d+)\\+(\\d+)\\+(\\d+)$");
 
                     if (regex.match(input, 0, out match_info)) {
-                        int width = int.parse(match_info.fetch(1));
-                        int height = int.parse(match_info.fetch(2));
-                        int x = int.parse(match_info.fetch(3));
-                        int y = int.parse(match_info.fetch(4));
-
-                        n.width = width;
-                        n.height = height;
-                        n.x = x;
-                        n.y = y;
+                        n.width = int.parse(match_info.fetch(1));
+                        n.height = int.parse(match_info.fetch(2));
+                        n.x = int.parse(match_info.fetch(3));
+                        n.y = int.parse(match_info.fetch(4));
                     }
                     break;
 
                 case "node_state":
                     var n = get_node(args[3]);
 
-                    if (n != null) {
-                        n.floating = (args[4] == "floating" && args[5] == "on") 
-                            || (args[4] == "tiled" && args[5] == "off");
+                    if (n != null && args[5] == "on") {
+                        n.state = NodeState.parse(args[4]);
                     }
                     break;
 

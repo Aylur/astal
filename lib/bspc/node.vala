@@ -10,6 +10,7 @@ namespace AstalBspc {
         public int y { get; internal set; }
         public int width { get; internal set; }
         public int height { get; internal set; }
+        public NodeState state { get; internal set; }
         public string class_name { get; private set; }
         public string instance_name { get; private set; }
 
@@ -29,11 +30,33 @@ namespace AstalBspc {
 
             class_name = client.get_string_member("className");
             instance_name = client.get_string_member("instanceName");
-            floating = client.get_string_member("state") == "floating";
             x = (int)geom.get_int_member("x");
             y = (int)geom.get_int_member("y");
             width = (int)geom.get_int_member("width");
             height = (int)geom.get_int_member("height");
+            state = NodeState.parse(client.get_string_member("state"));
+        }
+    }
+
+    public enum NodeState {
+        TILED = 0,
+        PSEUDO_TILED = 1,
+        FLOATING = 2,
+        FULLSCREEN = 3; 
+
+        public static NodeState parse(string value) {
+            switch (value) {
+                case "tiled":
+                    return NodeState.TILED;
+                case "pseudo_tiled":
+                    return NodeState.PSEUDO_TILED;
+                case "floating":
+                    return NodeState.FLOATING;
+                case "fullscreen":
+                    return NodeState.FULLSCREEN;
+                default:
+                    return NodeState.TILED;
+            }
         }
     }
 }
