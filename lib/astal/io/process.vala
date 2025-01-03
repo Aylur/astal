@@ -66,7 +66,7 @@ public class AstalIO.Process : Object {
 
     /**
      * Write a line to the subprocess' stdin synchronously.
-     *What is the issue
+     *
      * @param in String to be written to stdin
      */
     public void write(string in) throws Error {
