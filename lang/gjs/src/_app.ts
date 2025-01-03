@@ -53,8 +53,7 @@ export function mkApp(App: App3 | App4) {
                         ${body.includes(";") ? body : `return ${body};`}
                     })`)
                     fn()().then(res).catch(rej)
-                }
-                catch (error) {
+                } catch (error) {
                     rej(error)
                 }
             })
@@ -69,8 +68,7 @@ export function mkApp(App: App3 | App4) {
                         IO.write_sock_finish(res),
                     )
                 })
-            }
-            else {
+            } else {
                 super.vfunc_request(msg, conn)
             }
         }
@@ -102,8 +100,7 @@ export function mkApp(App: App3 | App4) {
 
             try {
                 app.acquire_socket()
-            }
-            catch (error) {
+            } catch (error) {
                 return client(msg => IO.send_message(app.instanceName, msg)!, ...programArgs)
             }
 

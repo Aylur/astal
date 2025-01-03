@@ -4,6 +4,12 @@ import Gtk from "gi://Gtk?version=3.0"
 import GObject from "gi://GObject"
 import astalify, { type ConstructProps, type BindableChild } from "./astalify.js"
 
+function filter(children: any[]) {
+    return children.flat(Infinity).map(ch => ch instanceof Gtk.Widget
+        ? ch
+        : new Gtk.Label({ visible: true, label: String(ch) }))
+}
+
 // Box
 Object.defineProperty(Astal.Box.prototype, "children", {
     get() { return this.get_children() },
@@ -14,6 +20,7 @@ export type BoxProps = ConstructProps<Box, Astal.Box.ConstructorProps>
 export class Box extends astalify(Astal.Box) {
     static { GObject.registerClass({ GTypeName: "Box" }, this) }
     constructor(props?: BoxProps, ...children: Array<BindableChild>) { super({ children, ...props } as any) }
+    protected setChildren(children: any[]): void { this.set_children(filter(children)) }
 }
 
 // Button
@@ -35,6 +42,12 @@ export type CenterBoxProps = ConstructProps<CenterBox, Astal.CenterBox.Construct
 export class CenterBox extends astalify(Astal.CenterBox) {
     static { GObject.registerClass({ GTypeName: "CenterBox" }, this) }
     constructor(props?: CenterBoxProps, ...children: Array<BindableChild>) { super({ children, ...props } as any) }
+    protected setChildren(children: any[]): void {
+        const ch = filter(children)
+        this.startWidget = ch[0] || new Gtk.Box
+        this.centerWidget = ch[1] || new Gtk.Box
+        this.endWidget = ch[2] || new Gtk.Box
+    }
 }
 
 // CircularProgress
@@ -91,6 +104,7 @@ export type LabelProps = ConstructProps<Label, Astal.Label.ConstructorProps>
 export class Label extends astalify(Astal.Label) {
     static { GObject.registerClass({ GTypeName: "Label" }, this) }
     constructor(props?: LabelProps) { super(props as any) }
+    protected setChildren(children: any[]): void { this.label = String(children) }
 }
 
 // LevelBar
@@ -102,14 +116,12 @@ export class LevelBar extends astalify(Astal.LevelBar) {
 
 // TODO: ListBox
 
-
 // MenuButton
 export type MenuButtonProps = ConstructProps<MenuButton, Gtk.MenuButton.ConstructorProps>
 export class MenuButton extends astalify(Gtk.MenuButton) {
     static { GObject.registerClass({ GTypeName: "MenuButton" }, this) }
     constructor(props?: MenuButtonProps, child?: BindableChild) { super({ child, ...props } as any) }
 }
-
 
 // Overlay
 Object.defineProperty(Astal.Overlay.prototype, "overlays", {
@@ -121,6 +133,11 @@ export type OverlayProps = ConstructProps<Overlay, Astal.Overlay.ConstructorProp
 export class Overlay extends astalify(Astal.Overlay) {
     static { GObject.registerClass({ GTypeName: "Overlay" }, this) }
     constructor(props?: OverlayProps, ...children: Array<BindableChild>) { super({ children, ...props } as any) }
+    protected setChildren(children: any[]): void {
+        const [child, ...overlays] = filter(children)
+        this.set_child(child)
+        this.set_overlays(overlays)
+    }
 }
 
 // Revealer
@@ -151,6 +168,7 @@ export type StackProps = ConstructProps<Stack, Astal.Stack.ConstructorProps>
 export class Stack extends astalify(Astal.Stack) {
     static { GObject.registerClass({ GTypeName: "Stack" }, this) }
     constructor(props?: StackProps, ...children: Array<BindableChild>) { super({ children, ...props } as any) }
+    protected setChildren(children: any[]): void { this.set_children(filter(children)) }
 }
 
 // Switch

@@ -6,7 +6,8 @@
 #include "river-control-unstable-v1-client.h"
 #include "river-private.h"
 #include "river-status-unstable-v1-client.h"
-#include "wayland-source.h"
+// #include "wayland-source.h"
+#include <wayland-glib.h>
 
 struct _AstalRiverRiver {
     GObject parent_instance;
@@ -22,7 +23,7 @@ typedef struct {
     struct wl_registry* wl_registry;
     struct wl_seat* seat;
     struct wl_display* display;
-    WLSource* wl_source;
+    WlGlibWlSource* wl_source;
     struct zriver_status_manager_v1* river_status_manager;
     struct zriver_control_v1* river_control;
     struct zriver_seat_status_v1* river_seat_status;
@@ -340,7 +341,7 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
 
     if (priv->init) return TRUE;
 
-    priv->wl_source = wl_source_new(NULL, NULL);
+    priv->wl_source = wl_glib_wl_source_new();
 
     if (priv->wl_source == NULL) {
         g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_FAILED,
@@ -348,7 +349,7 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
         return FALSE;
     }
 
-    priv->display = wl_source_get_display(priv->wl_source);
+    priv->display = priv->wl_source->display;
 
     priv->wl_registry = wl_display_get_registry(priv->display);
     wl_registry_add_listener(priv->wl_registry, &registry_listener, self);
@@ -449,7 +450,8 @@ static void astal_river_river_finalize(GObject* object) {
     if (priv->seat != NULL) wl_seat_destroy(priv->seat);
     if (priv->display != NULL) wl_display_flush(priv->display);
 
-    if (priv->wl_source != NULL) wl_source_free(priv->wl_source);
+    // if (priv->wl_source != NULL) wl_source_free(priv->wl_source);
+    if (priv->wl_source != NULL) g_source_unref((GSource*)(priv->wl_source));
 
     g_free(self->focused_view);
     g_free(self->focused_output);

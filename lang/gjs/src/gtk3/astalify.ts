@@ -1,45 +1,12 @@
+import { hook, noImplicitDestroy, setChildren, mergeBindings, type BindableProps, construct } from "../_astal.js"
 import Astal from "gi://Astal?version=3.0"
 import Gtk from "gi://Gtk?version=3.0"
 import Gdk from "gi://Gdk?version=3.0"
 import GObject from "gi://GObject"
-import { execAsync } from "../process.js"
-import Variable from "../variable.js"
-import Binding, { kebabify, snakeify, type Connectable, type Subscribable } from "../binding.js"
+import Gio from 'gi://Gio?version=2.0';
+import Binding, { type Connectable, type Subscribable } from "../binding.js"
 
-export function mergeBindings(array: any[]) {
-    function getValues(...args: any[]) {
-        let i = 0
-        return array.map(value => value instanceof Binding
-            ? args[i++]
-            : value,
-        )
-    }
-
-    const bindings = array.filter(i => i instanceof Binding)
-
-    if (bindings.length === 0)
-        return array
-
-    if (bindings.length === 1)
-        return bindings[0].as(getValues)
-
-    return Variable.derive(bindings, getValues)()
-}
-
-function setProp(obj: any, prop: string, value: any) {
-    try {
-        // the setter method has to be used because
-        // array like properties are not bound correctly as props
-        const setter = `set_${snakeify(prop)}`
-        if (typeof obj[setter] === "function")
-            return obj[setter](value)
-
-        return (obj[prop] = value)
-    }
-    catch (error) {
-        console.error(`could not set property "${prop}" on ${obj}:`, error)
-    }
-}
+export { BindableProps, mergeBindings }
 
 export default function astalify<
     C extends { new(...args: any[]): Gtk.Widget },
@@ -65,63 +32,47 @@ export default function astalify<
         get_click_through(): boolean { return this.clickThrough }
         set_click_through(clickThrough: boolean) { this.clickThrough = clickThrough }
 
-        declare private __no_implicit_destroy: boolean
-        get noImplicitDestroy(): boolean { return this.__no_implicit_destroy }
-        set noImplicitDestroy(value: boolean) { this.__no_implicit_destroy = value }
+        declare private [noImplicitDestroy]: boolean
+        get noImplicitDestroy(): boolean { return this[noImplicitDestroy] }
+        set noImplicitDestroy(value: boolean) { this[noImplicitDestroy] = value }
 
         set actionGroup([prefix, group]: ActionGroup) { this.insert_action_group(prefix, group) }
         set_action_group(actionGroup: ActionGroup) { this.actionGroup = actionGroup }
 
-        _setChildren(children: Gtk.Widget[]) {
+        protected getChildren(): Array<Gtk.Widget> {
+            if (this instanceof Gtk.Bin) {
+                return this.get_child() ? [this.get_child()!] : []
+            } else if (this instanceof Gtk.Container) {
+                return this.get_children()
+            }
+            return []
+        }
+
+        protected setChildren(children: any[]) {
             children = children.flat(Infinity).map(ch => ch instanceof Gtk.Widget
                 ? ch
                 : new Gtk.Label({ visible: true, label: String(ch) }))
 
-            // remove
-            if (this instanceof Gtk.Bin) {
-                const ch = this.get_child()
-                if (ch)
-                    this.remove(ch)
-                if (ch && !children.includes(ch) && !this.noImplicitDestroy)
-                    ch?.destroy()
+            if (this instanceof Gtk.Container) {
+                for (const ch of children)
+                    this.add(ch)
+            } else {
+                throw Error(`can not add children to ${this.constructor.name}`)
             }
-            else if (this instanceof Gtk.Container) {
-                for (const ch of this.get_children()) {
+        }
+
+        [setChildren](children: any[]) {
+            // remove
+            if (this instanceof Gtk.Container) {
+                for (const ch of this.getChildren()) {
                     this.remove(ch)
                     if (!children.includes(ch) && !this.noImplicitDestroy)
                         ch?.destroy()
                 }
             }
 
-            // TODO: add more container types
-            if (this instanceof Astal.Box) {
-                this.set_children(children)
-            }
-
-            else if (this instanceof Astal.Stack) {
-                this.set_children(children)
-            }
-
-            else if (this instanceof Astal.CenterBox) {
-                this.startWidget = children[0]
-                this.centerWidget = children[1]
-                this.endWidget = children[2]
-            }
-
-            else if (this instanceof Astal.Overlay) {
-                const [child, ...overlays] = children
-                this.set_child(child)
-                this.set_overlays(overlays)
-            }
-
-            else if (this instanceof Gtk.Container) {
-                for (const ch of children)
-                    this.add(ch)
-            }
-
-            else {
-                throw Error(`can not add children to ${this.constructor.name}, it is not a container widget`)
-            }
+            // append
+            this.setChildren(children)
         }
 
         toggleClassName(cn: string, cond = true) {
@@ -142,103 +93,15 @@ export default function astalify<
             signalOrCallback: string | ((self: this, ...args: any[]) => void),
             callback?: (self: this, ...args: any[]) => void,
         ) {
-            if (typeof object.connect === "function" && callback) {
-                const id = object.connect(signalOrCallback, (_: any, ...args: unknown[]) => {
-                    callback(this, ...args)
-                })
-                this.connect("destroy", () => {
-                    (object.disconnect as Connectable["disconnect"])(id)
-                })
-            }
-
-            else if (typeof object.subscribe === "function" && typeof signalOrCallback === "function") {
-                const unsub = object.subscribe((...args: unknown[]) => {
-                    signalOrCallback(this, ...args)
-                })
-                this.connect("destroy", unsub)
-            }
-
+            hook(this, object, signalOrCallback, callback)
             return this
         }
 
         constructor(...params: any[]) {
             super()
-            const [config] = params
-
-            const { setup, child, children = [], ...props } = config
+            const props = params[0] || {}
             props.visible ??= true
-
-            // remove undefined values
-            for (const [key, value] of Object.entries(props)) {
-                if (value === undefined) {
-                    delete props[key]
-                }
-            }
-
-            if (child)
-                children.unshift(child)
-
-            // collect bindings
-            const bindings = Object.keys(props).reduce((acc: any, prop) => {
-                if (props[prop] instanceof Binding) {
-                    const binding = props[prop]
-                    delete props[prop]
-                    return [...acc, [prop, binding]]
-                }
-                return acc
-            }, [])
-
-            // collect signal handlers
-            const onHandlers = Object.keys(props).reduce((acc: any, key) => {
-                if (key.startsWith("on")) {
-                    const sig = kebabify(key).split("-").slice(1).join("-")
-                    const handler = props[key]
-                    delete props[key]
-                    return [...acc, [sig, handler]]
-                }
-                return acc
-            }, [])
-
-            // set children
-            const mergedChildren = mergeBindings(children.flat(Infinity))
-            if (mergedChildren instanceof Binding) {
-                this._setChildren(mergedChildren.get())
-                this.connect("destroy", mergedChildren.subscribe((v) => {
-                    this._setChildren(v)
-                }))
-            }
-            else {
-                if (mergedChildren.length > 0) {
-                    this._setChildren(mergedChildren)
-                }
-            }
-
-            // setup signal handlers
-            for (const [signal, callback] of onHandlers) {
-                if (typeof callback === "function") {
-                    this.connect(signal, callback)
-                }
-                else {
-                    this.connect(signal, () => execAsync(callback)
-                        .then(print).catch(console.error))
-                }
-            }
-
-            // setup bindings handlers
-            for (const [prop, binding] of bindings) {
-                if (prop === "child" || prop === "children") {
-                    this.connect("destroy", binding.subscribe((v: any) => {
-                        this._setChildren(v)
-                    }))
-                }
-                this.connect("destroy", binding.subscribe((v: any) => {
-                    setProp(this, prop, v)
-                }))
-                setProp(this, prop, binding.get())
-            }
-
-            Object.assign(this, props)
-            setup?.(this)
+            construct(this, props)
         }
     }
 
@@ -266,14 +129,12 @@ export default function astalify<
     return Widget
 }
 
-export type BindableProps<T> = {
-    [K in keyof T]: Binding<T[K]> | T[K];
-}
-
 type SigHandler<
     W extends InstanceType<typeof Gtk.Widget>,
     Args extends Array<unknown>,
 > = ((self: W, ...args: Args) => unknown) | string | string[]
+
+export type BindableChild = Gtk.Widget | Binding<Gtk.Widget>
 
 export type ConstructProps<
     Self extends InstanceType<typeof Gtk.Widget>,
@@ -284,23 +145,22 @@ export type ConstructProps<
     [S in keyof Signals]: SigHandler<Self, Signals[S]>
 }> & Partial<{
     [Key in `on${string}`]: SigHandler<Self, any[]>
-}> & BindableProps<Partial<Props> & {
+}> & BindableProps<Partial<Props & {
     className?: string
     css?: string
     cursor?: string
     clickThrough?: boolean
-}> & {
-    onDestroy?: (self: Self) => unknown
-    onDraw?: (self: Self) => unknown
-    onKeyPressEvent?: (self: Self, event: Gdk.Event) => unknown
-    onKeyReleaseEvent?: (self: Self, event: Gdk.Event) => unknown
-    onButtonPressEvent?: (self: Self, event: Gdk.Event) => unknown
-    onButtonReleaseEvent?: (self: Self, event: Gdk.Event) => unknown
-    onRealize?: (self: Self) => unknown
-    setup?: (self: Self) => void
-}
-
-export type BindableChild = Gtk.Widget | Binding<Gtk.Widget>
+    actionGroup?: ActionGroup
+}>> & Partial<{
+    onDestroy: (self: Self) => unknown
+    onDraw: (self: Self) => unknown
+    onKeyPressEvent: (self: Self, event: Gdk.Event) => unknown
+    onKeyReleaseEvent: (self: Self, event: Gdk.Event) => unknown
+    onButtonPressEvent: (self: Self, event: Gdk.Event) => unknown
+    onButtonReleaseEvent: (self: Self, event: Gdk.Event) => unknown
+    onRealize: (self: Self) => unknown
+    setup: (self: Self) => void
+}>
 
 type Cursor =
     | "default"
@@ -338,4 +198,4 @@ type Cursor =
     | "zoom-in"
     | "zoom-out"
 
-type ActionGroup = [prefix: string, actionGroup: Gtk.ActionGroup]
+type ActionGroup = [prefix: string, actionGroup: Gio.ActionGroup]

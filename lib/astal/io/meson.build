@@ -38,6 +38,7 @@ deps = [
 
 sources = [config] + files(
   'application.vala',
+  'daemon.vala',
   'file.vala',
   'process.vala',
   'time.vala',

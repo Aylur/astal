@@ -20,7 +20,7 @@ export interface Connectable {
     [key: string]: any
 }
 
-export default class Binding<Value> {
+export class Binding<Value> {
     private transformFn = (v: any) => v
 
     #emitter: Subscribable<Value> | Connectable
@@ -72,8 +72,7 @@ export default class Binding<Value> {
             return this.#emitter.subscribe(() => {
                 callback(this.get())
             })
-        }
-        else if (typeof this.#emitter.connect === "function") {
+        } else if (typeof this.#emitter.connect === "function") {
             const signal = `notify::${this.#prop}`
             const id = this.#emitter.connect(signal, () => {
                 callback(this.get())
@@ -87,3 +86,4 @@ export default class Binding<Value> {
 }
 
 export const { bind } = Binding
+export default Binding
