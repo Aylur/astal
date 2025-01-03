@@ -260,7 +260,9 @@ function Variable.derive(deps, transform)
     local unsubs = {}
 
     for i, b in ipairs(deps) do
-        unsubs[i] = b:subscribe(update)
+        unsubs[i] = b:subscribe(function()
+            var:set(update())
+        end)
     end
 
     var.variable.on_dropped = function()
