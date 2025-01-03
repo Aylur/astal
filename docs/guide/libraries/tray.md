@@ -69,6 +69,8 @@ sudo dnf install meson json-glib-devel gobject-introspection-devel
 sudo apt install meson libjson-glib-dev gobject-introspection
 ```
 
+:::
+
 2. install `appmenu-glib-translator`
 
 ```sh
@@ -76,10 +78,7 @@ git clone https://github.com/rilian-la-te/vala-panel-appmenu.git
 cd vala-panel-appmenu/subprojects/appmenu-glib-translator
 meson setup --prefix /usr build
 meson install -C build
-
 ```
-
-:::
 
 3. clone repo
 
