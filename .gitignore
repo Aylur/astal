@@ -4,3 +4,4 @@ result-dev
 .cache/
 test.sh
 tmp/
+lang/haskell/**/GI/

@@ -16,7 +16,7 @@ extra-source-files: README.md ChangeLog.md stack.yaml
 custom-setup
       setup-depends: base >= 4.11 && < 5,
                      Cabal >= 1.24 && < 4,
-                     haskell-gi >= 0.26.12 && < 0.27,
+                     haskell-gi >= 0.26.14 && < 0.27,
                      gi-glib == 2.0.*,
                      gi-gio == 2.0.*,
                      gi-gobject == 2.0.*
