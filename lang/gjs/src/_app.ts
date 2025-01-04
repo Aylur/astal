@@ -4,8 +4,6 @@ import { exit, programArgs } from "system"
 import IO from "gi://AstalIO"
 import GObject from "gi://GObject"
 import Gio from "gi://Gio?version=2.0"
-import type Astal3 from "gi://Astal?version=3.0"
-import type Astal4 from "gi://Astal?version=4.0"
 
 type Config = Partial<{
     instanceName: string
@@ -20,30 +18,12 @@ type Config = Partial<{
     client(message: (msg: string) => string, ...args: string[]): void
 }>
 
-interface Astal3JS extends Astal3.Application {
-    eval(body: string): Promise<any>
-    requestHandler: Config["requestHandler"]
-    apply_css(style: string, reset?: boolean): void
-    quit(code?: number): void
-    start(config?: Config): void
-}
+export async function mkApp<Application extends IO.Application>(gtkVersion: "3" | "4") {
+    const Astal = await import(`gi://Astal?version=${gtkVersion}`)
 
-interface Astal4JS extends Astal4.Application {
-    eval(body: string): Promise<any>
-    requestHandler?: Config["requestHandler"]
-    apply_css(style: string, reset?: boolean): void
-    quit(code?: number): void
-    start(config?: Config): void
-}
+    const App = Astal.Application
 
-type App3 = typeof Astal3.Application
-type App4 = typeof Astal4.Application
-
-export function mkApp<App extends App3>(App: App): Astal3JS
-export function mkApp<App extends App4>(App: App): Astal4JS
-
-export function mkApp(App: App3 | App4) {
-    return new (class AstalJS extends App {
+    return (new (class AstalJS extends App {
         static { GObject.registerClass({ GTypeName: "AstalJS" }, this as any) }
 
         eval(body: string): Promise<any> {
@@ -83,7 +63,7 @@ export function mkApp(App: App3 | App4) {
         }
 
         start({ requestHandler, css, hold, main, client, icons, ...cfg }: Config = {}) {
-            const app = this as unknown as InstanceType<App3 | App4>
+            const app = this as unknown as InstanceType<typeof App>
 
             client ??= () => {
                 print(`Astal instance "${app.instanceName}" already running`)
@@ -100,6 +80,7 @@ export function mkApp(App: App3 | App4) {
 
             try {
                 app.acquire_socket()
+                // eslint-disable-next-line
             } catch (error) {
                 return client(msg => IO.send_message(app.instanceName, msg)!, ...programArgs)
             }
@@ -116,5 +97,11 @@ export function mkApp(App: App3 | App4) {
 
             app.runAsync([])
         }
-    })
+    })) as Application & {
+        eval(body: string): Promise<any>
+        requestHandler?: Config["requestHandler"]
+        apply_css(style: string, reset?: boolean): void
+        quit(code?: number): void
+        start(config?: Config): void
+    }
 }
