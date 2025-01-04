@@ -1,6 +1,6 @@
 import Gtk from "gi://Gtk?version=4.0"
-import Astal from "gi://Astal?version=4.0"
 import { mkApp } from "../_app"
+import Astal from "gi://Astal?version=4.0"
 
 Gtk.init()
 
@@ -10,4 +10,4 @@ await import("gi://Adw?version=1")
     .then(({ default: Adw }) => Adw.init())
     .catch(() => void 0)
 
-export default mkApp(Astal.Application)
+export default await mkApp<Astal.Application>("4")
