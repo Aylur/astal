@@ -11,7 +11,7 @@ category:             Bindings
 build-type:           Custom
 cabal-version:        2.0
 
-extra-source-files: README.md ChangeLog.md stack.yaml AstalNetwork.overrides
+extra-source-files: README.md ChangeLog.md stack.yaml
 
 custom-setup
       setup-depends: base >= 4.11 && < 5,

@@ -5,7 +5,6 @@
     "synopsis": "libastal-network bindings",
     "author": "kotontrion",
     "girName": "AstalNetwork",
-    "girOverrides": "AstalNetwork.overrides",
     "girVersion": "0.1",
     "baseVersion": "base >= 4.7 && <5",
     "distributionPackages": {
