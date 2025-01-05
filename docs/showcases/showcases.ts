@@ -33,6 +33,13 @@ export default [
         title: "kompass",
         author: "kotontrion",
     },
+    {
+        image: "/astal/showcase/ezerinz.webp",
+        url: "https://github.com/ezerinz/epik-shell",
+        icon: "devicon-javascript-plain",
+        title: "Epik Shell",
+        author: "ezerinz",
+    },
 
     // add more showcases here~
 ] satisfies Array<Grid<Showcase>>
