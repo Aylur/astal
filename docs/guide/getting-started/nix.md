@@ -21,8 +21,12 @@ derivation for your projects like you would for any other program.
 
 ## TypeScript
 
-Using [AGS](https://aylur.github.io/ags/) as the bundler.
+Instructions for using [AGS](https://aylur.github.io/ags/) as the bundler
+are now located on [the Nix page on the AGS Wiki](https://aylur.github.io/ags/guide/nix.html#bundle-and-devshell).
 
+
+The following flake exposes a devShell with an astalGjsBundler command
+(shebang usage: `#!/usr/bin/env -S astalBundler --run`)
 :::code-group
 
 ```nix [<i class="devicon-nixos-plain"></i> flake.nix]
@@ -33,36 +37,130 @@ Using [AGS](https://aylur.github.io/ags/) as the bundler.
       url = "github:aylur/astal";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    ags = {
-      url = "github:aylur/ags";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
-
-  outputs = { self, nixpkgs, astal, ags }: let
+  outputs = {nixpkgs, astal, self, ...}:
+  let
+    inherit (pkgs) lib;
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
+    astalPkgs = astal.packages.${system};
+
+    extraPackages = with pkgs; [
+      glib
+
+      # Remove the packages related to the gtk version you're not using
+      gtk3
+      gtk-layer-shell
+      astalPkgs.astal3
+
+      gtk4
+      gtk4-layer-shell
+      astalPkgs.astal4
+
+      # Change and add packages as desired
+      astalPkgs.greet
+    ];
+
   in {
-    packages.${system}. default = pkgs.stdenvNoCC.mkDerivation rec {
-      name = "my-shell";
-      src = ./.;
+    packages.${system} = {
+      bundler = pkgs.writeShellApplication {
+        name = "astalGjsBundler";
+        runtimeInputs = with pkgs; [esbuild gjs];
+        # Remove the following line if you're not using gtk4
+        runtimeEnv.LD_PRELOAD = "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so";
+        derivationArgs = {
+          # Use wrapGAppsHook4 if you're using gtk4
+          nativeBuildInputs = with pkgs; [wrapGAppsHook3 gobject-introspection];
+          buildInputs = extraPackages;
+        };
+        text = ''
+          if [[ $# == 0 ]]; then
+            echo "[astalGjsBundler] You must at least provide an entrypoint in positional arguments"
+            exit 1
+          elif [[ $# == 1 ]]; then
+            entrypoint="$1";
+          elif [[ $# == 2 ]]; then
+            entrypoint="$2"
+            [[ $1 == "--run" ]] && run=true
+          else
+            echo "[astalGjsBundler] More than 2 arguments were provided"
+            echo "[astalGjsBundler] They were: $*"
+            echo "[astalGjsBundler] Exiting..."
+            exit 1
+          fi
 
-      nativeBuildInputs = [
-        ags.packages.${system}.default
-        pkgs.wrapGAppsHook
-        pkgs.gobject-introspection
-      ];
+          # Inherits the environmental value or defaults to /tmp/my-shell.js
+          outfile="''${outfile:-/tmp/my-shell.js}";
+          # Same as above, except it defaults to "warning"
+          logLevel="''${logLevel:-warning}"
+          # If previously set, preserve the old value. Otherwise, set to false
+          run="''${run:-false}"
 
-      buildInputs = with astal.packages.${system}; [
-        astal3
-        io
-        # any other package
-      ];
+          esbuild \
+            --log-level="''${loglevel:-warning}" \
+            --external:{console,systemtem,cairo,gettext,"file://*","gi://*","resource://*"} \
+            --format=esm --target=es2022 \
+            --alias:astal="${astalPkgs.gjs}/share/astal/gjs" \
+            --bundle "$entrypoint" --outfile="$outfile"
 
-      installPhase = ''
-        mkdir -p $out/bin
-        ags bundle app.ts $out/bin/${name}
-      '';
+          if [[ $run == "true" ]]; then gjs -m "$outfile"; fi
+        '';
+      };
+      default = pkgs.stdenvNoCC.mkDerivation rec {
+        name = "my-shell";
+        version = "0.1.0";
+        src = lib.cleanSource path/to/source; # Should contain an app.ts or another entrypoint
+
+        nativeBuildInputs = with pkgs; [
+          gobject-introspection
+          wrapGAppsHook3 # Use wrapGAppsHook4 if needed
+          self.packages.${system}.bundler
+        ];
+        buildInputs = [pkgs.gjs] ++ extraPackages;
+
+        # If app.ts isn't your entry point, modify this accordingly
+        buildPhase = "astalGjsBundler app.ts";
+
+        installPhase = ''
+          mkdir -p $out/bin
+
+          shebang='#!/usr/bin/env gjs -m'
+          firstLine="$(head -n 1 $outfile)"
+
+          if [[ $firstline == \#!* ]] && [[ $firstline != $shebang ]]; then
+            # If the file already contains a shebang, create $out/bin/$${name}
+            # after making the `$shebang` variable the first line
+            {
+              echo $shebang;
+              tail -n +2 $outfile;
+            } > $out/bin/${name}
+          else
+            # Creates that file after making the $shebang the first line
+            echo $shebang | cat - $outfile > $out/bin/${name}
+          fi
+
+          chmod +x $out/bin/${name}
+        '';
+
+        # Remove this entire phase if not using gtk4
+        preFixup = ''
+          gappsWrapperArgs+=(--set LD_PRELOAD "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so")
+        '';
+
+        loglevel = "error";
+        outfile = "built.js";
+
+        meta.mainProgram = name;
+      };
+    };
+    devShells.${system}.default = pkgs.mkShell {
+      # Use wrapGAppsHook4 if needed
+      nativeBuildInputs = with pkgs; [wrapGAppsHook3 gobject-introspection];
+      buildInputs = extraPackages;
+      packages = with pkgs; [self.packages.${system}.bundler esbuild gjs];
+
+      # Remove if not using gtk4
+      LD_PRELOAD = "${pkgs.gtk4-layer-shell}/lib/libgtk4-layer-shell.so";
     };
   };
 }
@@ -71,8 +169,7 @@ Using [AGS](https://aylur.github.io/ags/) as the bundler.
 :::
 
 :::tip
-You can use any other bundler too like `esbuild`
-which is what `ags` uses under the hood.
+You can use any other bundler too, like `bun`
 :::
 
 ## Lua
