@@ -1,3 +1,4 @@
+import GLib from "gi://GLib?version=2.0"
 import Gtk from "gi://Gtk?version=4.0"
 import Astal from "gi://Astal?version=4.0"
 import { mkApp } from "../_app"
