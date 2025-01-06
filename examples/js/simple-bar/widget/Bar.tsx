@@ -11,33 +11,33 @@ import Tray from "gi://AstalTray"
 function SysTray() {
     const tray = Tray.get_default()
 
-    return <box>
-        {bind(tray, "items").as(items => items.map(item => {
-            if (item.iconThemePath)
-                App.add_icons(item.iconThemePath)
-
-            const menu = item.create_menu()
-
-            return <button
+    return <box className="SysTray">
+        {bind(tray, "items").as(items => items.map(item => (
+            <menubutton
                 tooltipMarkup={bind(item, "tooltipMarkup")}
-                onDestroy={() => menu?.destroy()}
-                onClickRelease={self => {
-                    menu?.popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, null)
-                }}>
-                <icon gIcon={bind(item, "gicon")} />
-            </button>
-        }))}
+                usePopover={false}
+                actionGroup={bind(item, "action-group").as(ag => ["dbusmenu", ag])}
+                menuModel={bind(item, "menu-model")}>
+                <icon gicon={bind(item, "gicon")} />
+            </menubutton>
+        )))}
     </box>
 }
 
 function Wifi() {
-    const { wifi } = Network.get_default()
+    const network = Network.get_default()
+    const wifi = bind(network, "wifi")
 
-    return <icon
-        tooltipText={bind(wifi, "ssid").as(String)}
-        className="Wifi"
-        icon={bind(wifi, "iconName")}
-    />
+    return <box visible={wifi.as(Boolean)}>
+        {wifi.as(wifi => wifi && (
+            <icon
+                tooltipText={bind(wifi, "ssid").as(String)}
+                className="Wifi"
+                icon={bind(wifi, "iconName")}
+            />
+        ))}
+    </box>
+
 }
 
 function AudioSlider() {
@@ -95,6 +95,7 @@ function Workspaces() {
 
     return <box className="Workspaces">
         {bind(hypr, "workspaces").as(wss => wss
+            .filter(ws => !(ws.id >= -99 && ws.id <= -2)) // filter out special workspaces
             .sort((a, b) => a.id - b.id)
             .map(ws => (
                 <button
@@ -133,15 +134,13 @@ function Time({ format = "%H:%M - %A %e." }) {
 }
 
 export default function Bar(monitor: Gdk.Monitor) {
-    const anchor = Astal.WindowAnchor.TOP
-        | Astal.WindowAnchor.LEFT
-        | Astal.WindowAnchor.RIGHT
+    const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
 
     return <window
         className="Bar"
         gdkmonitor={monitor}
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
-        anchor={anchor}>
+        anchor={TOP | LEFT | RIGHT}>
         <centerbox>
             <box hexpand halign={Gtk.Align.START}>
                 <Workspaces />

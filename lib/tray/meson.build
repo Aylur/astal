@@ -3,7 +3,7 @@ project(
   'vala',
   'c',
   version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
-  meson_version: '>= 0.62.0',
+  meson_version: '>= 0.63.0',
   default_options: [
     'warning_level=2',
     'werror=false',
@@ -18,8 +18,9 @@ assert(
 
 version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
-gir = 'AstalTray-' + api_version + '.gir'
-typelib = 'AstalTray-' + api_version + '.typelib'
+namespace = 'AstalTray'
+gir = namespace + '-' + api_version + '.gir'
+typelib = namespace + '-' + api_version + '.typelib'
 
 config = configure_file(
   input: 'config.vala.in',
@@ -38,30 +39,10 @@ deps = [
   dependency('gio-2.0'),
   dependency('json-glib-1.0'),
   dependency('gdk-pixbuf-2.0'),
-  dependency('gtk+-3.0'),
+  dependency('appmenu-glib-translator')
 ]
 
-dbusmenu_cflags = run_command(
-  find_program('pkg-config', required: true),
-  '--cflags', 'dbusmenu-gtk3-0.4',
-  'gobject-introspection-1.0',
-  'gobject-2.0',
-  'glib-2.0',
-  capture: true,
-  check: true,
-).stdout().strip()
-
-dbusmenu_libs = run_command(
-  find_program('pkg-config', required: true),
-  '--libs', 'dbusmenu-gtk3-0.4',
-  'gobject-introspection-1.0',
-  'gobject-2.0',
-  'glib-2.0',
-  capture: true,
-  check: true,
-).stdout().strip()
-
-sources = [config, 'tray.vala', 'watcher.vala', 'trayItem.vala']
+sources = [config] + files('tray.vala', 'watcher.vala', 'trayItem.vala')
 
 if get_option('lib')
   lib = library(
@@ -70,23 +51,27 @@ if get_option('lib')
     dependencies: deps,
     vala_header: meson.project_name() + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-    vala_gir: gir,
-    vala_args: ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4'],
+    vala_args: ['--vapi-comments'],
     version: meson.project_version(),
-    c_args: dbusmenu_cflags.split(' '),
-    link_args: dbusmenu_libs.split(' '),
     install: true,
-    install_dir: [true, true, true, true],
+    install_dir: [true, true, true]
   )
 
-  import('pkgconfig').generate(
-    lib,
-    name: meson.project_name(),
-    filebase: meson.project_name() + '-' + api_version,
-    version: meson.project_version(),
-    subdirs: meson.project_name(),
-    requires: deps,
-    install_dir: get_option('libdir') / 'pkgconfig',
+  pkgs = []
+  foreach dep : deps
+    pkgs += ['--pkg=' + dep.name()]
+  endforeach
+
+  gir_tgt = custom_target(
+    gir,
+    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
+    + pkgs
+    + sources,
+    input: sources,
+    depends: lib,
+    output: gir,
+    install: true,
+    install_dir: get_option('datadir') / 'gir-1.0',
   )
 
   custom_target(
@@ -99,20 +84,27 @@ if get_option('lib')
     ],
     input: lib,
     output: typelib,
-    depends: lib,
+    depends: [lib, gir_tgt],
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
   )
-endif
+
+  import('pkgconfig').generate(
+    lib,
+    name: meson.project_name(),
+    filebase: meson.project_name() + '-' + api_version,
+    version: meson.project_version(),
+    subdirs: meson.project_name(),
+    requires: deps,
+    install_dir: get_option('libdir') / 'pkgconfig',
+  )
+  endif
 
 if get_option('cli')
   executable(
     meson.project_name(),
     ['cli.vala', sources],
     dependencies: deps,
-    vala_args: ['--pkg', 'DbusmenuGtk3-0.4', '--pkg', 'Dbusmenu-0.4'],
-    c_args: dbusmenu_cflags.split(' '),
-    link_args: dbusmenu_libs.split(' '),
     install: true,
   )
 endif

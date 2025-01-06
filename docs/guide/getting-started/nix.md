@@ -5,13 +5,81 @@ next:
 ---
 # Nix
 
-## Astal
+Using Astal on Nix will require you to write a derivation for your project.
+You can either copy and build off of these example flakes or you can
+incorporate the derivations into your existing flake/configuration.
 
-Using Astal on Nix will require you to package your project.
+## Q: "How do I install Astal on Nix?"
+
+:::details See answer
+A: <span style="font-size: 1.2em; font-weight: bold;">You don't.</span>
+
+You can't install libraries globally on Nix as you would with regular
+package managers like `pacman`, `dnf` or `apt`. You have to write a
+derivation for your projects like you would for any other program.
+:::
+
+## TypeScript
+
+Using [AGS](https://aylur.github.io/ags/) as the bundler.
 
 :::code-group
 
-```nix [<i class="devicon-lua-plain"></i> Lua]
+```nix [<i class="devicon-nixos-plain"></i> flake.nix]
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    astal = {
+      url = "github:aylur/astal";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    ags = {
+      url = "github:aylur/ags";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { self, nixpkgs, astal, ags }: let
+    system = "x86_64-linux";
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
+    packages.${system}. default = pkgs.stdenvNoCC.mkDerivation rec {
+      name = "my-shell";
+      src = ./.;
+
+      nativeBuildInputs = [
+        ags.packages.${system}.default
+        pkgs.wrapGAppsHook
+        pkgs.gobject-introspection
+      ];
+
+      buildInputs = with astal.packages.${system}; [
+        astal3
+        io
+        # any other package
+      ];
+
+      installPhase = ''
+        mkdir -p $out/bin
+        ags bundle app.ts $out/bin/${name}
+      '';
+    };
+  };
+}
+```
+
+:::
+
+:::tip
+You can use any other bundler too like `esbuild`
+which is what `ags` uses under the hood.
+:::
+
+## Lua
+
+:::code-group
+
+```nix [<i class="devicon-nixos-plain"></i> flake.nix]
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -27,6 +95,7 @@ Using Astal on Nix will require you to package your project.
   in {
     packages.${system}.default = astal.lib.mkLuaPackage {
       inherit pkgs;
+      name = "my-shell"; # how to name the executable
       src = ./path/to/project; # should contain init.lua
 
       # add extra glib packages or binaries
@@ -39,60 +108,22 @@ Using Astal on Nix will require you to package your project.
 }
 ```
 
-```nix [<i class="devicon-python-plain"></i> Python]
+:::
+
+## Python
+
+:::code-group
+
+```nix [<i class="devicon-nixos-plain"></i> flake.nix]
 # Not documented yet
-```
-
-```nix [<i class="devicon-vala-plain"></i> Vala]
-# keep in mind that this is just the nix derivation
-# and you still have to use some build tool like meson
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    astal.url = "github:aylur/astal";
-  };
-
-  outputs = { self, nixpkgs, astal }: let
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-  in {
-    packages.${system} = {
-      default = pkgs.stdenv.mkDerivation {
-        name = "my-shell";
-        src = ./.;
-
-        nativeBuildInputs = with pkgs; [
-          meson
-          ninja
-          pkg-config
-          vala
-          gobject-introspection
-        ];
-
-        # add extra packages
-        buildInputs = [
-          astal.packages.${system}.astal
-        ];
-      };
-    };
-  };
-}
-```
-
-```nix [<i class="devicon-typescript-plain"></i> TypeScript]
-# The usage of AGS (read below) is recommended
-# Usage without AGS is not yet documented
 ```
 
 :::
 
-## AGS
+## Vala
 
-The recommended way to use [AGS](../typescript/first-widgets#first-widgets) on NixOS is through the home-manager module.
-
-Example content of a `flake.nix` file that contains your `homeConfigurations`.
-
-<!--TODO: remove v2 after merge-->
+Keep in mind that this is just the nix derivation
+and you still have to use some build tool like meson.
 
 :::code-group
 
@@ -100,94 +131,37 @@ Example content of a `flake.nix` file that contains your `homeConfigurations`.
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    home-manager = {
-      url = "github:nix-community/home-manager";
+    astal = {
+      url = "github:aylur/astal";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # add ags https://github.com/Aylur/ags/pull/504
-    ags.url = "github:aylur/ags/v2";
   };
 
-  outputs = { home-manager, nixpkgs, ... }@inputs:
-  let
+  outputs = { self, nixpkgs, astal }: let
     system = "x86_64-linux";
-  in
-  {
-    homeConfigurations."${username}" = home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs { inherit system; };
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
+    packages.${system}.default = pkgs.stdenv.mkDerivation {
+      name = "my-shell";
+      src = ./.;
 
-      # pass inputs as specialArgs
-      extraSpecialArgs = { inherit inputs; };
+      nativeBuildInputs = with pkgs; [
+        meson
+        ninja
+        pkg-config
+        vala
+        gobject-introspection
+      ];
 
-      # import your home.nix
-      modules = [ ./home-manager/home.nix ];
+      buildInputs = [
+        astal.packages.${system}.io
+        astal.packages.${system}.astal3
+        astal.packages.${system}.battery
+        # add extra packages
+      ];
     };
   };
 }
-```
-
-:::
-
-Example content of `home.nix` file
-
-:::code-group
-
-```nix [<i class="devicon-nixos-plain"></i> home.nix]
-{ inputs, pkgs, ... }:
-{
-  # add the home manager module
-  imports = [ inputs.ags.homeManagerModules.default ];
-
-  programs.ags = {
-    enable = true;
-    configDir = ../ags;
-
-    # additional packages to add to gjs's runtime
-    extraPackages = with pkgs; [
-      inputs.ags.packages.${pkgs.system}.battery
-      fzf
-    ];
-  };
-}
-```
-
-:::
-
-AGS by default only includes the core `astal3/astal4` and `astal-io` libraries.
-If you want to include any other [library](../libraries/references) you have to add them to `extraPackages`.
-You can also add binaries which will be added to the gjs runtime.
-
-:::warning
-The `configDir` option symlinks the given path to `~/.config/ags`.
-If you already have your source code there leave it as `null`.
-:::
-
-The AGS flake does not expose the `astal` cli to the home environment, you have to do that yourself if you want:
-
-:::code-group
-
-```nix [<i class="devicon-nixos-plain"></i> home.nix]
-home.packages = [ inputs.ags.packages.${pkgs.system}.io ];
-```
-
-```sh [<i class="devicon-bash-plain"></i> sh]
-astal --help
-```
-
-:::
-
-Same applies to the `extraPackages` option, it does not expose the passed packages to the home environment.
-To make astal cli tools available to home environments, you have to add them yourself:
-
-:::code-group
-
-```nix [<i class="devicon-nixos-plain"></i> home.nix]
-home.packages = [ inputs.ags.packages.${pkgs.system}.notifd ];
-```
-
-```sh [<i class="devicon-bash-plain"></i> sh]
-astal-notifd --help
 ```
 
 :::

@@ -4,7 +4,6 @@
 
 A simple bar for Hyprland using
 
-- [Audio library](https://aylur.github.io/astal/guide/libraries/audio).
 - [Battery library](https://aylur.github.io/astal/guide/libraries/battery).
 - [Hyprland library](https://aylur.github.io/astal/guide/libraries/hyprland).
 - [Mpris library](https://aylur.github.io/astal/guide/libraries/mpris).

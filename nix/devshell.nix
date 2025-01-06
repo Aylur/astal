@@ -6,7 +6,7 @@
     ps.lgi
     (ps.luaPackages.toLuaModule (pkgs.stdenv.mkDerivation {
       name = "astal";
-      src = "${self}/lang/lua";
+      src = "${self}/lang/lua/astal";
       dontBuild = true;
       installPhase = ''
         mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
@@ -39,21 +39,35 @@
     wireplumber
     libdbusmenu-gtk3
     wayland
+    blueprint-compiler
+    libadwaita
 
     dart-sass
     lua
     python
     gjs
   ];
+
+  lsp = with pkgs; [
+    nodejs
+    mesonlsp
+    vala-language-server
+    vtsls
+    vscode-langservers-extracted
+  ];
 in {
   default = pkgs.mkShell {
-    inherit buildInputs;
+    packages = buildInputs ++ lsp;
   };
   astal = pkgs.mkShell {
-    buildInputs =
+    packages =
       buildInputs
+      ++ lsp
       ++ builtins.attrValues (
-        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
+        builtins.removeAttrs self.packages.${pkgs.system} [
+          "docs"
+          "cava" # FIXME: temporary autoreconf
+        ]
       );
   };
 }

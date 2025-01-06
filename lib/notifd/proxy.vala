@@ -32,10 +32,6 @@ internal class AstalNotifd.DaemonProxy : Object {
         set { proxy.dont_disturb = value; }
     }
 
-    public uint[] notification_ids() throws DBusError, IOError {
-        return proxy.notification_ids();
-    }
-
     public Notification get_notification(uint id) {
         return notifs.get(id);
     }

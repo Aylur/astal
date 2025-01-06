@@ -1,11 +1,21 @@
 namespace AstalBluetooth {
-public Bluetooth get_default() {
-    return Bluetooth.get_default();
+    /**
+     * Gets the default singleton Bluetooth object.
+     */
+    public Bluetooth get_default() {
+        return Bluetooth.get_default();
+    }
 }
 
-public class Bluetooth : Object {
+/**
+ * Manager object for `org.bluez`.
+ */
+public class AstalBluetooth.Bluetooth : Object {
     private static Bluetooth _instance;
 
+    /**
+     * Gets the default singleton Bluetooth object.
+     */
     public static Bluetooth get_default() {
         if (_instance == null)
             _instance = new Bluetooth();
@@ -21,30 +31,59 @@ public class Bluetooth : Object {
     private HashTable<string, Device> _devices =
         new HashTable<string, Device>(str_hash, str_equal);
 
+    /**
+     * Emitted when a new device is registered on the `org.bluez` bus.
+     */
     public signal void device_added (Device device) {
         notify_property("devices");
     }
 
+    /**
+     * Emitted when a device is unregistered on the `org.bluez` bus.
+     */
     public signal void device_removed (Device device) {
         notify_property("devices");
     }
 
+    /**
+     * Emitted when an adapter is registered on the `org.bluez` bus.
+     */
     public signal void adapter_added (Adapter adapter) {
         notify_property("adapters");
     }
 
+    /**
+     * Emitted when an adapter is unregistered on the `org.bluez` bus.
+     */
     public signal void adapter_removed (Adapter adapter) {
         notify_property("adapters");
     }
 
+    /**
+     * `true` if any of the [property@AstalBluetooth.Bluetooth:adapters] are powered.
+     */
     public bool is_powered { get; private set; default = false; }
+
+    /**
+     * `true` if any of the [property@AstalBluetooth.Bluetooth:devices] is connected.
+     */
     public bool is_connected { get; private set; default = false; }
+
+    /**
+     * The first registered adapter which is usually the only adapter.
+     */
     public Adapter? adapter { get { return adapters.nth_data(0); } }
 
+    /**
+     * List of adapters available on the host device.
+     */
     public List<weak Adapter> adapters {
         owned get { return _adapters.get_values(); }
     }
 
+    /**
+     * List of registered devices on the `org.bluez` bus.
+     */
     public List<weak Device> devices {
         owned get { return _devices.get_values(); }
     }
@@ -85,6 +124,10 @@ public class Bluetooth : Object {
         }
     }
 
+    /**
+     * Toggle the [property@AstalBluetooth.Adapter:powered]
+     * property of the [property@AstalBluetooth.Bluetooth:adapter].
+     */
     public void toggle() {
         adapter.powered = !adapter.powered;
     }
@@ -177,5 +220,4 @@ public class Bluetooth : Object {
 
         return false;
     }
-}
 }

@@ -3,6 +3,7 @@ local Astal = lgi.require("Astal", "3.0")
 local Gtk = lgi.require("Gtk", "3.0")
 local astalify = require("astal.gtk3.astalify")
 
+---@overload fun(ctor: any): function
 local Widget = {
     astalify = astalify,
     Box = astalify(Astal.Box),
@@ -18,6 +19,7 @@ local Widget = {
     Label = astalify(Gtk.Label),
     LevelBar = astalify(Astal.LevelBar),
     -- TODO: ListBox
+    MenuButton = astalify(Gtk.MenuButton),
     Overlay = astalify(Astal.Overlay),
     Revealer = astalify(Gtk.Revealer),
     Scrollable = astalify(Astal.Scrollable),
@@ -61,6 +63,12 @@ Gtk.Widget._attribute.cursor = {
 Gtk.Widget._attribute.click_through = {
     get = Astal.widget_get_click_through,
     set = Astal.widget_set_click_through,
+}
+
+Gtk.Widget._attribute.action_group = {
+  set = function (self, v)
+    self:insert_action_group(v[1], v[2])
+  end
 }
 
 local no_implicit_destroy = {}

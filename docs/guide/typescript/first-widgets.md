@@ -2,41 +2,26 @@
 
 ## Getting Started
 
-Start by initializing a project
+Start by importing the singleton
+[Astal.Application](https://aylur.github.io/libastal/astal3/class.Application.html) instance.
 
-```sh
-ags --init
+:::code-group
+
+```ts [app.ts]
+import { App } from "astal/gtk3"
+
+App.start({
+    main() {
+        // you will instantiate Widgets here
+        // and setup anything else if you need
+    }
+})
 ```
 
-then run `ags` in the terminal
-
-```sh
-ags
-```
-
-:::details Usage without AGS
-🚧 Not yet documented. 🚧
 :::
 
-That's it! You have now a custom written bar using Gtk.
-
-:::tip
-AGS will transpile every `.ts`, `.jsx` and `.tsx` files into regular JavaScript, then
-it will bundle everything into a single JavaScript file which then GJS can execute.
-:::
-
-The AGS init command will generate the following files
-
-```txt
-.
-├── @girs/              # generated types
-├── widget/
-│   └── Bar.tsx
-├── app.ts              # entry proint
-├── env.d.ts            # additional types
-├── style.css
-└── tsconfig.json       # needed by LSPs
-```
+After your [bundle step](./installation.md) run `gjs -m app.js`, and that's it!
+Now you have an Astal instance running written in TypeScript.
 
 ## Root of every shell component: Window
 
@@ -86,13 +71,24 @@ function MyButton(): JSX.Element {
 }
 ```
 
-```ts [MyButton.ts]
+```ts [MyButton.ts (gtk3)]
 import { Widget } from "astal/gtk3"
 
 function MyButton(): Widget.Button {
     return new Widget.Button(
         { onClicked: "echo hello" },
         new Widget.Label({ label: "Click me!" }),
+    )
+}
+```
+
+```ts [MyButton.ts (gtk4)]
+import { Widget } from "astal/gtk4"
+
+function MyButton(): Widget.Button {
+    return Widget.Button(
+        { onClicked: "echo hello" },
+        Widget.Label({ label: "Click me!" }),
     )
 }
 ```
@@ -233,6 +229,14 @@ Their types are not generated, but written by hand, which means not all of them 
 Refer to the Gtk and Astal docs to have a full list of them.
 :::
 
+:::info
+Attributes prefixed with `onNotify` will connect to a `notify::` signal of the widget.
+
+```tsx
+<switch onNotifyActive={self => print("switched to", self.active)}>
+```
+:::
+
 ## How properties are passed
 
 Using JSX, a custom widget will always have a single object as its parameter.
@@ -290,7 +294,7 @@ function Counter() {
         <label label={bind(count).as(num => num.toString())} />
         <button onClicked={increment}>
             Click to increment
-        <button>
+        </button>
     </box>
 }
 ```
@@ -363,48 +367,80 @@ by setting `noImplicityDestroy` property on the container widget.
 :::info
 The above example destroys and recreates every widget in the list **every time**
 the value of the `Variable` changes. There might be cases where you would
-want to [handle child creation and deletion](/guide/typescript/faq#avoiding-unnecessary-re-rendering)
+want to handle child creation and deletion
 yourself, because you don't want to lose the
 inner state of widgets that does not need to be recreated. In this case
 you can create a [custom reactive structure](./binding#example-custom-subscribable)
 :::
 
-When there is at least one `Binding` passed as a child, the `children`
-parameter will always be a flattened `Binding<Array<JSX.Element>>`.
-When there is a single `Binding` passed as a child, the `child` parameter will
-be a `Binding<JSX.Element>` or a flattened `Binding<Array<JSX.Element>>`.
+# How children are passed
+
+Here is full list of how children and bound children can be passed to custom widgets.
 
 ```tsx
-import { type Binding } from "astal"
+import Binding from "astal/binding"
 
-function MyContainer({ children }: {
-    children?: Binding<Array<JSX.Element>>
-}) {
-    // children is a Binding over an Array of widgets
-}
+function Parent(props: {
+    child?: JSX.Element | Binding<JSX.Element> | Binding<Array<JSX.Element>>
+    children?: Array<JSX.Element> | Binding<Array<JSX.Element>>
+})
 
-return <MyContainer>
-    <box />
-    {num(n => range(n).map(i => (
-        <button>
-            {i.toString()}
-        <button/>
-    )))}
-    [
-        [
-            <button />
-        ]
-        <button />
-    ]
-</MyContainer>
+// { child: JSX.Element }
+<Parent>
+    <child />
+</Parent>
+
+// { children: Array<JSX.Element> }
+<Parent>
+    <child />
+    <child />
+</Parent>
+
+// { child: Binding<JSX.Element> }
+<Parent>
+    {variable(c => (
+        <child />
+    ))}
+</Parent>
+
+// { child: Binding<Array<JSX.Element>> }
+<Parent>
+    {variable(c => (
+        <child />
+        <child />
+    ))}
+</Parent>
+
+// { children: Binding<Array<JSX.Element>> }
+<Parent>
+    <child />
+    {variable(c => (
+        <child />
+    ))}
+</Parent>
+
+
+// { children: Binding<Array<JSX.Element>> }
+<Parent>
+    <child />
+    {variable(c => (
+        <child />
+        <child />
+    ))}
+</Parent>
 ```
+
+:::tip
+If you have a widget where you pass widgets in various ways, you can
+wrap `child` and `children` props in a [`Subscribable`](./faq#custom-widgets-with-bindable-properties) and handle all cases as if they were bindings.
+:::
 
 :::info
 You can pass the followings as children:
 
 - widgets
 - deeply nested arrays of widgets
-- bindings of widgets,
+- bindings of widgets
 - bindings of deeply nested arrays of widgets
 
 [falsy](https://developer.mozilla.org/en-US/docs/Glossary/Falsy) values are not rendered and anything not from this list

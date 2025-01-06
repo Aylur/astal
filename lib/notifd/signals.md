@@ -5,7 +5,7 @@ ignore this, I'm just dumb and can't follow where signals go or get emitted from
 ## Notification
 
 * resolved(reason) - by daemon/proxy
-* dismissed() - by user with `.dismiss()`
+* dismissed() - by user with `.dismiss()`, used to emit resolved from proxy/daemon
 * invoked(action) - by user with `.invoke()`
 
 ## Deamon

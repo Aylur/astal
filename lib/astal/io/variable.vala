@@ -172,7 +172,7 @@ public class AstalIO.Variable : VariableBase {
         return_if_fail(watch_proc == null);
         return_if_fail(watch_exec != null);
 
-        watch_proc = new Process.subprocessv(watch_exec);
+        watch_proc = Process.subprocessv(watch_exec);
         watch_proc.stdout.connect((str) => set_closure(str, watch_transform));
         watch_proc.stderr.connect((str) => this.error(str));
     }

@@ -1,10 +1,34 @@
+/**
+ * [class@Gtk.Image] subclass meant to be used only for icons.
+ *
+ * It's size is calculated from `font-size` css property.
+ * Its css selector is `icon`.
+ */
 public class Astal.Icon : Gtk.Image {
     private IconType type = IconType.NAMED;
     private double size { get; set; default = 14; }
 
     public new Gdk.Pixbuf pixbuf { get; set; }
+    
+    private static bool gicon_warned = false;
+    [Version (deprecated = true, deprecated_since = "0.1.0", replacement = "gicon")]
+    public GLib.Icon g_icon { 
+        owned get {
+            return this.gicon;
+        } 
+        set {
+            if( !gicon_warned ) {
+              GLib.warning("g-icon is deprecated. Use gicon instead.");
+              gicon_warned = true;
+            }
+            this.gicon = value;
+        }
+    }
+
+    /**
+     * Either a named icon or a path to a file.
+     */
     public string icon { get; set; default = ""; }
-    public GLib.Icon g_icon {get; set;}
 
     public static Gtk.IconInfo? lookup_icon(string icon) {
         var theme = Gtk.IconTheme.get_default();
@@ -47,7 +71,6 @@ public class Astal.Icon : Gtk.Image {
             break;
         case IconType.GICON:
             pixel_size = (int)size;
-            gicon = g_icon;
             break;
 
         }
@@ -76,7 +99,7 @@ public class Astal.Icon : Gtk.Image {
             display_icon.begin();
         });
 
-        notify["g-icon"].connect(() => {
+        notify["gicon"].connect(() => {
             type = IconType.GICON;
             display_icon.begin();
         });

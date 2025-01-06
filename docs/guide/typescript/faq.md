@@ -7,7 +7,7 @@ the same as the compositor. Instead use the `gdkmonitor` property which expects
 a `Gdk.Monitor` object.
 
 ```tsx
-import { App } from "astal"
+import { App } from "astal/gtk3"
 
 function Bar(gdkmonitor) {
     return <window gdkmonitor={gdkmonitor} />
@@ -55,14 +55,14 @@ const HOME = GLib.getenv("HOME")
 
 ## Custom SVG symbolic icons
 
-Put the svgs in a directory, named `<icon-name>-symbolic.svg`
+Put the svgs in a directory, name them `<icon-name>-symbolic.svg`
 and use `App.add_icons` or `icons` parameter in `App.start`
 
 :::code-group
 
 ```ts [app.ts]
 App.start({
-    icons: `${SRC}/icons`,
+    icons: `/path/to/icons`, // this dir should include custom-symbolic.svg
     main() {
         Widget.Icon({
             icon: "custom-symbolic", // custom-symbolic.svg
@@ -92,7 +92,7 @@ printerr("print this line to stderr")
 
 ## Populate the global scope with frequently accessed variables
 
-It might be annoying to always import Gtk only for `Gtk.Align` enums.
+It might be annoying to always import Gtk only for the `Gtk.Align` enum.
 
 :::code-group
 
@@ -118,7 +118,7 @@ Object.assign(globalThis, {
 
 :::code-group
 
-```tsx [Bar.tsx]
+```tsx [Bar.tsx] {3}
 export default function Bar() {
     return <window>
         <box halign={START} />
@@ -131,11 +131,13 @@ export default function Bar() {
 :::code-group
 
 ```ts [app.ts]
-import "./globals"
+import "./globals" // don't forget to import it first // [!code ++]
 import Bar from "./Bar"
 
 App.start({
-    main: Bar
+    main() {
+        Bar()
+    }
 })
 ```
 
@@ -162,7 +164,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
 :::code-group
 
 ```ts [app.ts]
-import { Gdk, Gtk } from "astal"
+import { Gdk, Gtk } from "astal/gtk3"
 import Bar from "./Bar"
 
 function main() {
@@ -197,10 +199,13 @@ These happen when accessing list type properties. Gjs fails to correctly bind
 import Notifd from "gi://AstalNotifd"
 const notifd = Notifd.get_default()
 
-notifd.notifications // ❌ // [!code error]
-
-notifd.get_notifications() // ✅
+notifd.notifications // [!code --]
+notifd.get_notifications() // [!code ++]
 ```
+
+:::tip
+Open up an issue/PR to add a [workaround](https://github.com/Aylur/astal/blob/main/lang/gjs/src/overrides.ts).
+:::
 
 ## How to create regular floating windows
 
@@ -264,3 +269,33 @@ class MyWidget extends Widget.Box {
     }
 }
 ```
+
+## How do I register keybindings?
+
+If you want global keybindings use your compositor.
+Only **focused** windows can capture events. To make a window
+focusable set its keymode.
+
+::: code-group
+```tsx [gtk3]
+<window
+    keymode={Astal.Keymode.ON_DEMAND}
+    onKeyPressEvent={(self, event: Gdk.Event) => {
+        if (event.get_keyval()[1] === Gdk.KEY_Escape) {
+            self.hide()
+        }
+    }}
+/>
+```
+
+```tsx [gtk4]
+<window
+    keymode={Astal.Keymode.ON_DEMAND}
+    onKeyPressed={(self, keyval) => {
+        if (keyval === Gdk.KEY_Escape) {
+            self.hide()
+        }
+    }}
+/>
+```
+:::

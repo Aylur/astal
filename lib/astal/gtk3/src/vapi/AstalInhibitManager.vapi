@@ -5,9 +5,8 @@ namespace Astal {
         public static unowned InhibitManager? get_default();
         public Inhibitor inhibit (Gtk.Window window);
     }
-  
+
     [CCode (cheader_filename = "idle-inhibit.h", free_function = "zwp_idle_inhibitor_v1_destroy")]
     [Compact]
-    public class Inhibitor {
-    }
+    public class Inhibitor { }
 }

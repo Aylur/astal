@@ -21,8 +21,8 @@ public interface Application : Object {
 }
 
 /**
- * Starts a [class@GLib.SocketService] and binds `XDG_RUNTIME_DIR/astal/<instance_name>.sock`.
- * This socket is then used by the astal cli. Not meant for public usage, but for [func@AstalIO.Application.acquire_socket].
+ * Starts a [class@Gio.SocketService] and binds `XDG_RUNTIME_DIR/astal/<instance_name>.sock`.
+ * This socket is then used by the astal cli. Not meant for public usage, but for [method@AstalIO.Application.acquire_socket].
  */
 public SocketService acquire_socket(Application app, out string sock) throws Error {
     var name = app.instance_name;
@@ -103,75 +103,58 @@ public static List<string> get_instances() {
  * Quit an an Astal instances.
  * It is the equivalent of `astal --quit -i instance`.
  */
-public static void quit_instance(string instance) {
-    try {
-        IApplication proxy = Bus.get_proxy_sync(
-            BusType.SESSION,
-            "io.Astal." + instance,
-            "/io/Astal/Application"
-        );
+public static void quit_instance(string instance) throws Error {
+    IApplication proxy = Bus.get_proxy_sync(
+        BusType.SESSION,
+        "io.Astal." + instance,
+        "/io/Astal/Application"
+    );
 
-        proxy.quit();
-    } catch (Error err) {
-        critical(err.message);
-    }
+    proxy.quit();
 }
 
 /**
  * Open the Gtk debug tool of an an Astal instances.
  * It is the equivalent of `astal --inspector -i instance`.
  */
-public static void open_inspector(string instance) {
-    try {
-        IApplication proxy = Bus.get_proxy_sync(
-            BusType.SESSION,
-            "io.Astal." + instance,
-            "/io/Astal/Application"
-        );
+public static void open_inspector(string instance) throws Error {
+    IApplication proxy = Bus.get_proxy_sync(
+        BusType.SESSION,
+        "io.Astal." + instance,
+        "/io/Astal/Application"
+    );
 
-        proxy.inspector();
-    } catch (Error err) {
-        critical(err.message);
-    }
+    proxy.inspector();
 }
 
 /**
  * Toggle a Window of an Astal instances.
  * It is the equivalent of `astal -i instance --toggle window`.
  */
-public static void toggle_window_by_name(string instance, string window) {
-    try {
-        IApplication proxy = Bus.get_proxy_sync(
-            BusType.SESSION,
-            "io.Astal." + instance,
-            "/io/Astal/Application"
-        );
+public static void toggle_window_by_name(string instance, string window) throws Error {
+    IApplication proxy = Bus.get_proxy_sync(
+        BusType.SESSION,
+        "io.Astal." + instance,
+        "/io/Astal/Application"
+    );
 
-        proxy.toggle_window(window);
-    } catch (Error err) {
-        critical(err.message);
-    }
+    proxy.toggle_window(window);
 }
 
 /**
  * Send a message to an Astal instances.
  * It is the equivalent of `astal -i instance content of the message`.
  */
-public static string send_message(string instance, string msg) {
+public static string send_message(string instance, string msg) throws Error {
     var rundir = Environment.get_user_runtime_dir();
     var socket_path = @"$rundir/astal/$instance.sock";
     var client = new SocketClient();
 
-    try {
-        var conn = client.connect(new UnixSocketAddress(socket_path), null);
-        conn.output_stream.write(msg.concat("\x04").data);
+    var conn = client.connect(new UnixSocketAddress(socket_path), null);
+    conn.output_stream.write(msg.concat("\x04").data);
 
-        var stream = new DataInputStream(conn.input_stream);
-        return stream.read_upto("\x04", -1, null, null);
-    } catch (Error err) {
-        printerr(err.message);
-        return "";
-    }
+    var stream = new DataInputStream(conn.input_stream);
+    return stream.read_upto("\x04", -1, null, null);
 }
 
 /**
@@ -186,7 +169,7 @@ public async string read_sock(SocketConnection conn) throws IOError {
  * Write the socket of an Astal.Application instance.
  */
 public async void write_sock(SocketConnection conn, string response) throws IOError  {
-    yield conn.output_stream.write_async(response.concat("\x04").data, Priority.DEFAULT);
+    yield conn.output_stream.write_async(@"$response\x04".data, Priority.DEFAULT);
 }
 
 [DBus (name="io.Astal.Application")]

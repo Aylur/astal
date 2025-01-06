@@ -2,45 +2,6 @@
 
 Library for monitoring [bluez](https://www.bluez.org/) over dbus.
 
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala gobject-introspection
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac gobject-introspection
-```
-
-:::
-
-::: info
-Although bluez is not a direct build dependency,
-it should be self-explanatory that the daemon is required to be available at runtime.
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/bluetooth
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
-
 ## Usage
 
 You can browse the [Bluetooth reference](https://aylur.github.io/libastal/bluetooth).
@@ -91,3 +52,42 @@ end
 ```
 
 :::
+
+## Installation
+
+1. install dependencies
+
+:::code-group
+
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
+sudo pacman -Syu meson vala valadoc gobject-introspection
+```
+
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
+sudo dnf install meson vala valadoc gobject-introspection-devel
+```
+
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+sudo apt install meson valac valadoc gobject-introspection
+```
+
+:::
+
+::: info
+Although bluez is not a direct build dependency,
+it should be self-explanatory that the daemon is required to be available at runtime.
+:::
+
+2. clone repo
+
+```sh
+git clone https://github.com/aylur/astal.git
+cd astal/lib/bluetooth
+```
+
+3. install
+
+```sh
+meson setup --prefix /usr build
+meson install -C build
+```

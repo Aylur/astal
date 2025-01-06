@@ -36,25 +36,57 @@ deps = [
   dependency('gio-2.0'),
 ]
 
-sources = [
-  config,
+sources = [config] + files(
   'application.vala',
+  'daemon.vala',
   'file.vala',
   'process.vala',
   'time.vala',
   'variable.vala',
-]
+)
 
 lib = library(
   meson.project_name(),
   sources,
   dependencies: deps,
+  vala_args: ['--vapi-comments'],
   vala_header: meson.project_name() + '.h',
   vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-  vala_gir: gir,
   version: meson.project_version(),
   install: true,
-  install_dir: [true, true, true, true],
+  install_dir: [true, true, true],
+)
+
+pkgs = []
+foreach dep : deps
+  pkgs += ['--pkg=' + dep.name()]
+endforeach
+
+gir_tgt = custom_target(
+  gir,
+  command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
+  + pkgs
+  + sources,
+  input: sources,
+  depends: lib,
+  output: gir,
+  install: true,
+  install_dir: get_option('datadir') / 'gir-1.0',
+)
+
+custom_target(
+  typelib,
+  command: [
+    find_program('g-ir-compiler'),
+    '--output', '@OUTPUT@',
+    '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
+    meson.current_build_dir() / gir,
+  ],
+  input: lib,
+  output: typelib,
+  depends: [lib, gir_tgt],
+  install: true,
+  install_dir: get_option('libdir') / 'girepository-1.0',
 )
 
 import('pkgconfig').generate(
@@ -64,22 +96,7 @@ import('pkgconfig').generate(
   version: meson.project_version(),
   subdirs: meson.project_name(),
   requires: deps,
-  install_dir: libdir / 'pkgconfig',
-)
-
-custom_target(
-  typelib,
-  command: [
-    find_program('g-ir-compiler'),
-    '--output', '@OUTPUT@',
-    '--shared-library', libdir / '@PLAINNAME@',
-    meson.current_build_dir() / gir,
-  ],
-  input: lib,
-  output: typelib,
-  depends: lib,
-  install: true,
-  install_dir: libdir / 'girepository-1.0',
+  install_dir: get_option('libdir') / 'pkgconfig',
 )
 
 executable(

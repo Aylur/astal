@@ -1,5 +1,3 @@
-using DbusmenuGtk;
-
 namespace AstalTray {
 public struct Pixmap {
     int width;
@@ -57,12 +55,12 @@ public enum Status {
 [DBus (name="org.kde.StatusNotifierItem")]
 internal interface IItem : DBusProxy {
     public abstract string Title { owned get; }
-    public abstract Category Category { owned get; }
-    public abstract Status Status { owned get; }
+    public abstract Category Category { get; }
+    public abstract Status Status { get; }
     public abstract Tooltip? ToolTip { owned get; }
     public abstract string Id { owned get; }
     public abstract string? IconThemePath { owned get; }
-    public abstract bool ItemIsMenu { owned get; }
+    public abstract bool ItemIsMenu { get; }
     public abstract ObjectPath? Menu { owned get; }
     public abstract string IconName { owned get; }
     public abstract Pixmap[] IconPixmap { owned get; }
@@ -88,11 +86,22 @@ public class TrayItem : Object {
     private IItem proxy;
     private List<ulong> connection_ids;
 
+    /** The Title of the TrayItem */
     public string title { owned get { return proxy.Title; } }
+
+    /** The category this item belongs to */
     public Category category { get { return proxy.Category; } }
+
+    /** The current status of this item */
     public Status status {  get { return proxy.Status; } }
+
+    /** The tooltip of this item */
     public Tooltip? tooltip { owned get { return proxy.ToolTip; } }
 
+    /**
+    * A markup representation of the tooltip. This is basically equvivalent
+    * to `tooltip.title \n tooltip.description`
+    */
     public string tooltip_markup {
         owned get {
             if (proxy.ToolTip == null)
@@ -106,10 +115,28 @@ public class TrayItem : Object {
         }
     }
 
+    /** the id of the item. This id is specified by the tray app.*/
     public string id { owned get { return proxy.Id ;} }
-    public string icon_theme_path { owned get { return proxy.IconThemePath ;} }
+
+    /**
+    * If set, this only supports the menu, so showing the menu should be prefered
+    * over calling [method@AstalTray.TrayItem.activate].
+    */
     public bool is_menu { get { return proxy.ItemIsMenu ;} }
 
+    /**
+    * The icon theme path, where to look for the [property@AstalTray.TrayItem:icon-name].
+    * It is recommended to use the [property@AstalTray.TrayItem:gicon] property,
+    * which does the icon lookups for you.
+    */
+    public string icon_theme_path { owned get { return proxy.IconThemePath ;} }
+
+    /**
+    * The name of the icon. This should be looked up in the [property@AstalTray.TrayItem:icon-theme-path]
+    * if set or in the currently used icon theme otherwise.
+    * It is recommended to use the [property@AstalTray.TrayItem:gicon] property,
+    * which does the icon lookups for you.
+    */
     public string icon_name {
         owned get {
             return proxy.Status == Status.NEEDS_ATTENTION
@@ -118,16 +145,44 @@ public class TrayItem : Object {
         }
     }
 
+    /**
+    * A pixbuf containing the icon.
+    * It is recommended to use the [property@AstalTray.TrayItem:gicon] property,
+    * which does the icon lookups for you.
+    */
     public Gdk.Pixbuf icon_pixbuf { owned get { return _get_icon_pixbuf(); } }
 
+    /**
+    * Contains the items icon. This property is intended to be used with the gicon property
+    * of the Icon widget and the recommended way to display the icon.
+    * This property unifies the [property@AstalTray.TrayItem:icon-name],
+    * [property@AstalTray.TrayItem:icon-theme-path] and [property@AstalTray.TrayItem:icon-pixbuf] properties.
+    */
     public GLib.Icon gicon { get; private set; }
-    
+
+    /** The id of the item used to uniquely identify the TrayItems by this lib.*/
     public string item_id { get; private set; }
+
+    private DBusMenu.Importer menu_importer;
+
+    public MenuModel menu_model {
+        owned get {
+            if (menu_importer == null) return null;
+            return menu_importer.model;
+        }
+    }
+
+    public ActionGroup action_group {
+        owned get {
+            if (menu_importer == null) return null;
+            return menu_importer.action_group;
+        }
+    }
 
     public signal void changed();
     public signal void ready();
 
-    public TrayItem(string service, string path) {
+    internal TrayItem(string service, string path) {
         connection_ids = new List<ulong>();
         item_id = service + path;
         setup_proxy.begin(service, path, (_, res) => setup_proxy.end(res));
@@ -138,7 +193,8 @@ public class TrayItem : Object {
             proxy = yield Bus.get_proxy(
                 BusType.SESSION,
                 service,
-                path);
+                path
+            );
 
             connection_ids.append(proxy.NewStatus.connect(refresh_all_properties));
             connection_ids.append(proxy.NewToolTip.connect(refresh_all_properties));
@@ -151,9 +207,16 @@ public class TrayItem : Object {
                         SignalHandler.disconnect(proxy, id);
                 }
             });
-           
-            update_gicon();
 
+            if (proxy.Menu != null) {
+                this.menu_importer = new DBusMenu.Importer(proxy.get_name_owner(), proxy.Menu);
+                this.menu_importer.notify["model"].connect(() => {
+                    notify_property("menu-model");
+                    notify_property("action-group");
+                });
+            }
+
+            update_gicon();
             ready();
         } catch (Error err) {
             critical(err.message);
@@ -161,28 +224,33 @@ public class TrayItem : Object {
     }
 
     private void _notify() {
-        string[] props = { "category", "id", "title", "status", "is-menu", "tooltip-markup", "icon-name", "icon-pixbuf" };
+        string[] props = {
+            "category",
+            "id",
+            "title",
+            "status",
+            "is-menu",
+            "tooltip-markup",
+            "icon-name",
+            "icon-pixbuf"
+        };
 
-        foreach (string prop in props)
+        foreach (string prop in props) {
             notify_property(prop);
+        }
 
         changed();
     }
 
     private void update_gicon() {
-        if(icon_name != null && icon_name != "") {
-            if(icon_theme_path != null && icon_theme_path != "") {
-
-                Gtk.IconTheme icon_theme = new Gtk.IconTheme();
-                string[] paths = {icon_theme_path};
-                icon_theme.set_search_path(paths);
-
-                int size = icon_theme.get_icon_sizes(icon_name)[0];
-                Gtk.IconInfo icon_info = icon_theme.lookup_icon(
-                    icon_name, size, Gtk.IconLookupFlags.FORCE_SIZE);
-
-                if (icon_info != null)
-                    gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_info.get_filename()));
+        if (icon_name != null && icon_name != "") {
+            if (GLib.FileUtils.test(icon_name, GLib.FileTest.EXISTS)) {
+                gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_name));
+            }
+            else if(icon_theme_path != null && icon_theme_path != "") {
+                gicon = new GLib.FileIcon(GLib.File.new_for_path(
+                    find_icon_in_theme(icon_name, icon_theme_path)
+                ));
             } else {
                 gicon = new GLib.ThemedIcon(icon_name);
             }
@@ -230,24 +298,36 @@ public class TrayItem : Object {
         );
     }
 
+    /**
+    * Send an activate request to the tray app.
+    */
     public void activate(int x, int y) {
         try {
             proxy.Activate(x, y);
         } catch (Error e) {
-            if(e.domain != DBusError.quark() || e.code != DBusError.UNKNOWN_METHOD)
+            if (e.domain != DBusError.quark() || e.code != DBusError.UNKNOWN_METHOD) {
                 warning(e.message);
+            }
         }
     }
 
+    /**
+    * Send a secondary activate request to the tray app.
+    */
     public void secondary_activate(int x, int y) {
         try {
             proxy.SecondaryActivate(x, y);
         } catch (Error e) {
-            if(e.domain != DBusError.quark() || e.code != DBusError.UNKNOWN_METHOD)
+            if (e.domain != DBusError.quark() || e.code != DBusError.UNKNOWN_METHOD) {
                 warning(e.message);
+            }
         }
     }
 
+    /**
+    * Send a scroll request to the tray app.
+    * valid values for the orientation are "horizontal" and "vertical".
+    */
     public void scroll(int delta, string orientation) {
         try {
             proxy.Scroll(delta, orientation);
@@ -257,56 +337,44 @@ public class TrayItem : Object {
         }
     }
 
-
-    public Gtk.Menu? create_menu() {
-        if (proxy.Menu == null)
+    private string? find_icon_in_theme(string icon_name, string theme_path){
+        if (icon_name == null || theme_path == null || icon_name == "" || theme_path == "") {
             return null;
+        }
 
-        return new DbusmenuGtk.Menu(
-            proxy.get_name_owner(),
-            proxy.Menu);
+        try {
+            Dir dir = Dir.open(theme_path, 0);
+            string? name = null;
+
+            while ((name = dir.read_name ()) != null) {
+                var path = Path.build_filename(theme_path, name);
+
+                if (FileUtils.test(path, FileTest.IS_DIR)) {
+                    string? icon = find_icon_in_theme(icon_name, path);
+                    if (icon != null) return icon;
+                    else continue;
+                }
+
+                int dot_index = name.last_index_of(".");
+                if (dot_index != -1) {
+                    name = name.substring(0, dot_index);
+                }
+
+                if (name == icon_name) return path;
+            }
+        } catch (FileError err) {
+            return null;
+        }
+        return null;
+
     }
 
-    public Gdk.Pixbuf? _get_icon_pixbuf() {
+    private Gdk.Pixbuf? _get_icon_pixbuf() {
         Pixmap[] pixmaps = proxy.Status == Status.NEEDS_ATTENTION
             ? proxy.AttentionIconPixmap
             : proxy.IconPixmap;
 
-
-        string icon_name = proxy.Status == Status.NEEDS_ATTENTION
-            ? proxy.AttentionIconName
-            : proxy.IconName;
-
-        Gdk.Pixbuf pixbuf = null;
-
-        if (icon_name != null && proxy.IconThemePath != null)
-            pixbuf = load_from_theme(icon_name, proxy.IconThemePath);
-
-        if (pixbuf == null)
-            pixbuf = pixmap_to_pixbuf(pixmaps);
-
-        return pixbuf;
-    }
-
-    private Gdk.Pixbuf? load_from_theme(string icon_name, string theme_path) {
-        if (theme_path == "" || theme_path == null)
-            return null;
-
-        if (icon_name == "" || icon_name == null)
-            return null;
-
-        Gtk.IconTheme icon_theme = new Gtk.IconTheme();
-        string[] paths = {theme_path};
-        icon_theme.set_search_path(paths);
-
-        int size = icon_theme.get_icon_sizes(icon_name)[0];
-        Gtk.IconInfo icon_info = icon_theme.lookup_icon(
-            icon_name, size, Gtk.IconLookupFlags.FORCE_SIZE);
-
-        if (icon_info != null)
-            return icon_info.load_icon();
-
-        return null;
+        return pixmap_to_pixbuf(pixmaps);
     }
 
     private Gdk.Pixbuf? pixmap_to_pixbuf(Pixmap[] pixmaps) {
@@ -314,6 +382,12 @@ public class TrayItem : Object {
             return null;
 
         Pixmap pixmap = pixmaps[0];
+
+        for (int i = 0; i < pixmaps.length; i++){
+            if(pixmap.width < pixmaps[i].width)
+              pixmap = pixmaps[i];
+        };
+
         uint8[] image_data = pixmap.bytes.copy();
 
         for (int i = 0; i < pixmap.width * pixmap.height * 4; i += 4) {

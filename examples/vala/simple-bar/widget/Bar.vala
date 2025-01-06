@@ -10,8 +10,12 @@ class Workspaces : Gtk.Box {
         foreach (var child in get_children())
             child.destroy();
 
-        foreach (var ws in hypr.workspaces)
-            add(button(ws));
+        foreach (var ws in hypr.workspaces) {
+            // filter out special workspaces
+            if (!(ws.id >= -99 && ws.id <= -2)) {
+                add(button(ws));
+            }
+        }
     }
 
     Gtk.Button button(AstalHyprland.Workspace ws) {
@@ -103,6 +107,7 @@ class SysTray : Gtk.Box {
     AstalTray.Tray tray = AstalTray.get_default();
 
     public SysTray() {
+        Astal.widget_set_class_names(this, { "SysTray" });
         tray.item_added.connect(add_item);
         tray.item_removed.connect(remove_item);
     }
@@ -112,26 +117,18 @@ class SysTray : Gtk.Box {
             return;
 
         var item = tray.get_item(id);
-
-        if (item.icon_theme_path != null)
-            App.instance.add_icons(item.icon_theme_path);
-
-        var menu = item.create_menu();
-        var btn = new Astal.Button();
-        var icon = new Astal.Icon();
-
-        btn.clicked.connect(() => {
-            if (menu != null)
-                menu.popup_at_widget(this, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, null);
-        });
-
-        btn.destroy.connect(() => {
-            if (menu != null)
-                menu.destroy();
-        });
+        var btn = new Gtk.MenuButton() { use_popover = false, visible = true };
+        var icon = new Astal.Icon() { visible = true };
 
         item.bind_property("tooltip-markup", btn, "tooltip-markup", BindingFlags.SYNC_CREATE);
         item.bind_property("gicon", icon, "gicon", BindingFlags.SYNC_CREATE);
+        item.bind_property("menu-model", btn, "menu-model", BindingFlags.SYNC_CREATE);
+        btn.insert_action_group("dbusmenu", item.action_group);
+        item.notify["action-group"].connect(() => {
+            btn.insert_action_group("dbusmenu", item.action_group);
+        });
+
+        btn.add(icon);
         add(btn);
         items.set(id, btn);
     }
@@ -146,9 +143,11 @@ class SysTray : Gtk.Box {
 class Wifi : Astal.Icon {
     public Wifi() {
         Astal.widget_set_class_names(this, {"Wifi"});
-        var wifi = AstalNetwork.get_default().wifi;
-        wifi.bind_property("ssid", this, "tooltip-text", BindingFlags.SYNC_CREATE);
-        wifi.bind_property("icon-name", this, "icon", BindingFlags.SYNC_CREATE);
+        var wifi = AstalNetwork.get_default().get_wifi();
+        if (wifi != null) {
+            wifi.bind_property("ssid", this, "tooltip-text", BindingFlags.SYNC_CREATE);
+            wifi.bind_property("icon-name", this, "icon", BindingFlags.SYNC_CREATE);
+        }
     }
 }
 

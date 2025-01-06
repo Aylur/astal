@@ -2,16 +2,22 @@ using GtkLayerShell;
 
 [Flags]
 public enum Astal.WindowAnchor {
-    NONE = 0,
-    TOP = 1,
-    RIGHT = 2,
-    LEFT = 4,
-    BOTTOM = 8,
+    NONE,
+    TOP,
+    RIGHT,
+    LEFT,
+    BOTTOM,
 }
 
 public enum Astal.Exclusivity {
     NORMAL,
+    /**
+     * Request the compositor to allocate space for this window.
+     */
     EXCLUSIVE,
+    /**
+     * Request the compositor to stack layers on top of each other.
+     */
     IGNORE,
 }
 
@@ -23,34 +29,51 @@ public enum Astal.Layer {
 }
 
 public enum Astal.Keymode {
+    /**
+     * Window should not receive keyboard events.
+     */
     NONE = 0, // GtkLayerShell.KeyboardMode.NONE
+    /**
+     * Window should have exclusive focus if it is on the top or overlay layer.
+     */
     EXCLUSIVE = 1, // GtkLayerShell.KeyboardMode.EXCLUSIVE
+    /**
+     * Focus and Unfocues the window as needed.
+     */
     ON_DEMAND = 2, // GtkLayerShell.KeyboardMode.ON_DEMAND
 }
 
+/**
+ * Subclass of [class@Gtk.Window] which integrates GtkLayerShell as class fields.
+ */
 public class Astal.Window : Gtk.Window {
-    private static bool check(string action) {
+    private InhibitManager? inhibit_manager;
+    private Inhibitor? inhibitor;
+
+    private bool check(string action) {
         if (!is_supported()) {
             critical(@"can not $action on window: layer shell not supported");
             print("tip: running from an xwayland terminal can cause this, for example VsCode");
             return true;
         }
+        if (!is_layer_window(this)) {
+            init_for_window(this);
+        }
         return false;
     }
 
-    private InhibitManager? inhibit_manager;
-    private Inhibitor? inhibitor;
-
     construct {
-        if (check("initialize layer shell"))
-            return;
-
+        // If the window has no size allocatoted when it gets mapped.
+        // It won't show up later either when it size changes by adding children.
         height_request = 1;
         width_request = 1;
-        init_for_window(this);
+        check("initialize layer shell");
         inhibit_manager = InhibitManager.get_default();
     }
 
+    /**
+     * When `true` it will permit inhibiting the idle behavior such as screen blanking, locking, and screensaving.
+     */
     public bool inhibit {
         set {
             if (inhibit_manager == null) {
@@ -75,12 +98,21 @@ public class Astal.Window : Gtk.Window {
         }
     }
 
+    /**
+     * Namespace of this window. This can be used to target the layer in compositor rules.
+     */
     public string namespace {
         get { return get_namespace(this); }
         set { set_namespace(this, value); }
     }
 
-    public int anchor {
+    /**
+     * Edges to anchor the window to.
+     *
+     * If two perpendicular edges are anchored, the surface will be anchored to that corner.
+     * If two opposite edges are anchored, the window will be stretched across the screen in that direction.
+     */
+    public WindowAnchor anchor {
         set {
             if (check("set anchor"))
                 return;
@@ -108,6 +140,9 @@ public class Astal.Window : Gtk.Window {
         }
     }
 
+    /**
+     * Exclusivity of this window.
+     */
     public Exclusivity exclusivity {
         set {
             if (check("set exclusivity"))
@@ -136,6 +171,9 @@ public class Astal.Window : Gtk.Window {
         }
     }
 
+    /**
+     * Which layer to appear this window on.
+     */
     public Layer layer {
         get { return (Layer)get_layer(this); }
         set {
@@ -146,6 +184,9 @@ public class Astal.Window : Gtk.Window {
         }
     }
 
+    /**
+     * Keyboard mode of this window.
+     */
     public Keymode keymode {
         get { return (Keymode)get_keyboard_mode(this); }
         set {
@@ -156,6 +197,9 @@ public class Astal.Window : Gtk.Window {
         }
     }
 
+    /**
+     * Which monitor to appear this window on.
+     */
     public Gdk.Monitor gdkmonitor {
         get { return get_monitor(this); }
         set {
@@ -219,8 +263,9 @@ public class Astal.Window : Gtk.Window {
     }
 
     /**
-     * CAUTION: the id might not be the same mapped by the compositor
-     * to reset and let the compositor map it pass a negative number
+     * Which monitor to appear this window on.
+     *
+     * CAUTION: the id might not be the same mapped by the compositor.
      */
     public int monitor {
         set {

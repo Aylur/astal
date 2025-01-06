@@ -40,11 +40,19 @@ type MetaInfo = GObject.MetaInfo<never, Array<{ $gtype: GObject.GType }>, never>
 
 export function register(options: MetaInfo = {}) {
     return function (cls: GObjectConstructor) {
+        const t = options.Template
+        if (typeof t === "string" && !t.startsWith("resource://") && !t.startsWith("file://")) {
+            // assume xml template
+            options.Template = new TextEncoder().encode(t)
+        }
+
         GObject.registerClass({
             Signals: { ...cls[meta]?.Signals },
             Properties: { ...cls[meta]?.Properties },
             ...options,
         }, cls)
+
+        delete cls[meta]
     }
 }
 
@@ -82,9 +90,7 @@ export function property(declaration: PropertyDeclaration = Object) {
             })
 
             target.constructor[meta].Properties[kebabify(prop)] = pspec(name, ParamFlags.READWRITE, declaration)
-        }
-
-        else {
+        } else {
             let flags = 0
             if (desc.get) flags |= ParamFlags.READABLE
             if (desc.set) flags |= ParamFlags.WRITABLE
@@ -95,10 +101,10 @@ export function property(declaration: PropertyDeclaration = Object) {
 }
 
 export function signal(...params: Array<{ $gtype: GObject.GType } | typeof Object>):
-    (target: any, signal: any, desc?: PropertyDescriptor) => void
+(target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(declaration?: SignalDeclaration):
-    (target: any, signal: any, desc?: PropertyDescriptor) => void
+(target: any, signal: any, desc?: PropertyDescriptor) => void
 
 export function signal(
     declaration?: SignalDeclaration | { $gtype: GObject.GType } | typeof Object,
@@ -116,9 +122,10 @@ export function signal(
             target.constructor[meta].Signals[name] = {
                 param_types: arr,
             }
-        }
-        else {
-            target.constructor[meta].Signals[name] = declaration
+        } else {
+            target.constructor[meta].Signals[name] = declaration || {
+                param_types: [],
+            }
         }
 
         if (!desc) {
@@ -127,8 +134,7 @@ export function signal(
                     this.emit(name, ...args)
                 },
             })
-        }
-        else {
+        } else {
             const og: ((...args: any[]) => void) = desc.value
             desc.value = function (...args: any[]) {
                 // @ts-expect-error not typed
@@ -168,7 +174,7 @@ function defaultValue(declaration: PropertyDeclaration) {
 
     switch (declaration) {
         case String:
-            return "default-string"
+            return ""
         case Number:
             return 0
         case Boolean:

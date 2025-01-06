@@ -2,40 +2,6 @@
 
 Wrapper library over [networkmanager](https://networkmanager.dev/) to better integrate with Astal.
 
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala libnm gobject-introspection
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac NetworkManager-libnm-devel gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac libnm-dev gobject-introspection
-```
-
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/network
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
-
 ## Usage
 
 You can browse the [Network reference](https://aylur.github.io/libastal/network).
@@ -81,3 +47,37 @@ print(network.wifi.ssid)
 ```
 
 :::
+
+## Installation
+
+1. install dependencies
+
+:::code-group
+
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
+sudo pacman -Syu meson vala valadoc libnm gobject-introspection
+```
+
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
+sudo dnf install meson vala valadoc NetworkManager-libnm-devel gobject-introspection-devel
+```
+
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+sudo apt install meson valac valadoc libnm-dev gobject-introspection
+```
+
+:::
+
+2. clone repo
+
+```sh
+git clone https://github.com/aylur/astal.git
+cd astal/lib/network
+```
+
+3. install
+
+```sh
+meson setup --prefix /usr build
+meson install -C build
+```

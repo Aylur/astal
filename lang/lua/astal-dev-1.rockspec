@@ -8,7 +8,7 @@ source = {
 description = {
     summary = "lua bindings for libastal.",
     homepage = "https://aylur.github.io/astal/",
-    license = "GPL-3",
+    license = "LGPL-2.1",
 }
 
 dependencies = {

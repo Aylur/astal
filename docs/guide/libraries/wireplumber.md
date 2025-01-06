@@ -2,40 +2,6 @@
 
 Wrapper library over [wireplumber](https://pipewire.pages.freedesktop.org/wireplumber/) to better integrate with Astal.
 
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala wireplumber gobject-introspection
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac wireplumber-devel gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-# Not yet documented
-```
-
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/wireplumber
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
-
 ## Usage
 
 You can browse the [Wireplumber reference](https://aylur.github.io/libastal/wireplumber).
@@ -81,3 +47,37 @@ print(audio.default_speaker.volume)
 ```
 
 :::
+
+## Installation
+
+1. install dependencies
+
+:::code-group
+
+```sh [<i class="devicon-archlinux-plain"></i> Arch]
+sudo pacman -Syu meson vala valadoc wireplumber gobject-introspection
+```
+
+```sh [<i class="devicon-fedora-plain"></i> Fedora]
+sudo dnf install meson vala valadoc wireplumber-devel gobject-introspection-devel
+```
+
+```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+# Not yet documented
+```
+
+:::
+
+2. clone repo
+
+```sh
+git clone https://github.com/aylur/astal.git
+cd astal/lib/wireplumber
+```
+
+3. install
+
+```sh
+meson setup --prefix /usr build
+meson install -C build
+```
