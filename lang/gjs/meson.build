@@ -3,7 +3,13 @@ project('astal-gjs')
 dest = get_option('prefix') / get_option('datadir') / 'astal' / 'gjs'
 
 dependency('astal-io-0.1')
-dependency('astal-3.0')
+
+gtk3 = dependency('astal-3.0', required: false)
+gtk4 = dependency('astal-4-4.0', required: false)
+
+if (not gtk3.found() and not gtk4.found())
+  error('Neither astal-3.0 nor astal-4.0 was found.')
+endif
 
 install_data(
   [
