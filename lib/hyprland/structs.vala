@@ -21,15 +21,15 @@ public class Bind : Object {
         mouse = obj.get_boolean_member("mouse");
         release = obj.get_boolean_member("release");
         repeat = obj.get_boolean_member("repeat");
-        long_press = obj.get_boolean_member("longPress");
+        long_press = obj.get_member("longPress")?.get_boolean() ?? false;
         non_consuming = obj.get_boolean_member("non_consuming");
-        has_description = obj.get_boolean_member("has_description");
+        has_description = obj.get_member("has_description")?.get_boolean() ?? false;
         modmask = obj.get_int_member("modmask");
         submap = obj.get_string_member("submap");
         key = obj.get_string_member("key");
         keycode = obj.get_int_member("keycode");
         catch_all = obj.get_boolean_member("catch_all");
-        description = obj.get_string_member("description");
+        description = obj.get_member("description")?.get_string() ?? "";
         dispatcher = obj.get_string_member("dispatcher");
         arg = obj.get_string_member("arg");
     }
