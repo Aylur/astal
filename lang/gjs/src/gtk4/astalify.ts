@@ -213,6 +213,7 @@ function setupControllers<T>(widget: Gtk.Widget, {
 
     if (onScroll || onScrollDecelerate) {
         const scroll = new Gtk.EventControllerScroll
+        scroll.flags = Gtk.EventControllerScrollFlags.BOTH_AXES | Gtk.EventControllerScrollFlags.KINETIC
         widget.add_controller(scroll)
 
         if (onScroll)

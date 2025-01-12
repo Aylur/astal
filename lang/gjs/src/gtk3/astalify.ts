@@ -3,7 +3,7 @@ import Astal from "gi://Astal?version=3.0"
 import Gtk from "gi://Gtk?version=3.0"
 import Gdk from "gi://Gdk?version=3.0"
 import GObject from "gi://GObject"
-import Gio from 'gi://Gio?version=2.0';
+import Gio from "gi://Gio?version=2.0"
 import Binding, { type Connectable, type Subscribable } from "../binding.js"
 
 export { BindableProps, mergeBindings }
