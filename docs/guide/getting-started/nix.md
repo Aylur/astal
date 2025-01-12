@@ -9,15 +9,39 @@ Using Astal on Nix will require you to write a derivation for your project.
 You can either copy and build off of these example flakes or you can
 incorporate the derivations into your existing flake/configuration.
 
-## Q: "How do I install Astal on Nix?"
+## Installing libraries versus installing executables
 
-:::details See answer
-A: <span style="font-size: 1.2em; font-weight: bold;">You don't.</span>
-
-You can't install libraries globally on Nix as you would with regular
+In case you did not know already,
+you can't install libraries globally on Nix as you would with regular
 package managers like `pacman`, `dnf` or `apt`. You have to write a
 derivation for your projects like you would for any other program.
+If you try to install a library through `home.packages` or `environment.systemPackages`
+don't expect it to be picked up from runtimes.
+
+However, if you want to use the CLI tool that comes with some of the libraries
+you have to **also** install them through `home.packages` or `environment.systemPackages`
+alongside your derivations.
+
+### Astal CLI
+
+The core library also comes with a CLI tool that you can use to send
+requests to your app.
+
+:::code-group
+
+```nix [nixos]
+environment.systemPackages = [inputs.astal.packages.${system}.default];
+```
+
+```nix [home-manager]
+home.packages = [inputs.astal.packages.${system}.default];
+```
+
 :::
+
+```sh [astal cli]
+astal --list # list running instances
+```
 
 ## TypeScript
 
