@@ -40,6 +40,13 @@ export default [
         title: "Epik Shell",
         author: "ezerinz",
     },
+    {
+        image: "/astal/showcase/hyprpanel_showcase.webp",
+        url: "https://github.com/Jas-SinghFSU/hyprpanel",
+        icon: "devicon-javascript-plain",
+        title: "HyprPanel",
+        author: "Jas",
+    },
 
     // add more showcases here~
 ] satisfies Array<Grid<Showcase>>
