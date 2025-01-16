@@ -12,3 +12,6 @@
 
 ### [Media Player](https://github.com/Aylur/astal/tree/main/examples/gtk3/js/media-player)
 ![media-player](https://github.com/user-attachments/assets/891e9706-74db-4505-bd83-c3628d7b4fd0)
+
+### [OSD](https://github.com/Aylur/astal/tree/main/examples/gtk3/js/osd)
+![osd](https://github.com/user-attachments/assets/08e0e118-6b07-4cac-8ebc-08262594cee7)
