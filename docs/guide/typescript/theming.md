@@ -119,7 +119,7 @@ npm install -g sass # not packaged on Ubuntu
 ```ts [app.ts]
 import { exec } from "astal/process"
 
-exec("sass", "./style.scss", "/tmp/style.css")
+exec("sass ./style.scss /tmp/style.css")
 
 App.start({
     css: "/tmp/style.css",
