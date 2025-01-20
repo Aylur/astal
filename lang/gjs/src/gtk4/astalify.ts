@@ -160,10 +160,10 @@ function setupControllers<T>(widget: Gtk.Widget, {
         widget.add_controller(focus)
 
         if (onFocusEnter)
-            focus.connect("focus-enter", () => onFocusEnter(widget))
+            focus.connect("enter", () => onFocusEnter(widget))
 
         if (onFocusLeave)
-            focus.connect("focus-leave", () => onFocusLeave(widget))
+            focus.connect("leave", () => onFocusLeave(widget))
     }
 
     if (onKeyPressed || onKeyReleased || onKeyModifier) {
