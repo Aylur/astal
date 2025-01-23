@@ -19,9 +19,17 @@ type PopoverProps = Pick<
     onClose?(self: Widget.Window): void
 }
 
+/**
+ * Full screen window widget where you can space the child widget
+ * using margins and alignment properties.
+ *
+ * NOTE: Child widgets will assume they can span across the full window width
+ * this means that setting `wrap` or `ellipsize` on labels for example will not work
+ * without explicitly setting its `max_width_chars` property.
+ * For a workaround see Popover2.tsx
+ */
 export default function Popover({
     child,
-    visible = false,
     marginBottom,
     marginTop,
     marginLeft,
@@ -39,13 +47,7 @@ export default function Popover({
             anchor={TOP | BOTTOM | LEFT | RIGHT}
             exclusivity={Astal.Exclusivity.IGNORE}
             onNotifyVisible={(self) => {
-                // instead of anchoring to all sides we set the width explicitly
-                // otherwise label wrapping won't work correctly without setting their width
-                if (self.visible) {
-                    self.widthRequest = self.get_current_monitor().workarea.width
-                } else {
-                    onClose?.(self)
-                }
+                if (!self.visible) onClose?.(self)
             }}
             // close when click occurs otside of child
             onButtonPressEvent={(self, event) => {
