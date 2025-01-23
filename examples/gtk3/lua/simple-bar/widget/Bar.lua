@@ -22,9 +22,9 @@ local function SysTray()
 					tooltip_markup = bind(item, "tooltip_markup"),
 					use_popover = false,
 					menu_model = bind(item, "menu-model"),
-					action_group = bind(item, "action-group"):as(function(ag)
-						return { "dbusmenu", ag }
-					end),
+					action_group = bind(item, "action-group"):as(
+						function(ag) return { "dbusmenu", ag } end
+					),
 					Widget.Icon({
 						gicon = bind(item, "gicon"),
 					}),
@@ -41,11 +41,14 @@ local function FocusedClient()
 	return Widget.Box({
 		class_name = "Focused",
 		visible = focused,
-		focused:as(function(client)
-			return client and Widget.Label({
-				label = bind(client, "title"):as(tostring),
-			})
-		end),
+		focused:as(
+			function(client)
+				return client
+					and Widget.Label({
+						label = bind(client, "title"):as(tostring),
+					})
+			end
+		),
 	})
 end
 
@@ -54,16 +57,16 @@ local function Wifi()
 	local wifi = bind(network, "wifi")
 
 	return Widget.Box({
-		visible = wifi:as(function(v)
-			return v ~= nil
-		end),
-		wifi:as(function(w)
-			return Widget.Icon({
-				tooltip_text = bind(w, "ssid"):as(tostring),
-				class_name = "Wifi",
-				icon = bind(w, "icon-name"),
-			})
-		end),
+		visible = wifi:as(function(v) return v ~= nil end),
+		wifi:as(
+			function(w)
+				return Widget.Icon({
+					tooltip_text = bind(w, "ssid"):as(tostring),
+					class_name = "Wifi",
+					icon = bind(w, "icon-name"),
+				})
+			end
+		),
 	})
 end
 
@@ -78,9 +81,7 @@ local function AudioSlider()
 		}),
 		Widget.Slider({
 			hexpand = true,
-			on_dragged = function(self)
-				speaker.volume = self.value
-			end,
+			on_dragged = function(self) speaker.volume = self.value end,
 			value = bind(speaker, "volume"),
 		}),
 	})
@@ -96,9 +97,9 @@ local function BatteryLevel()
 			icon = bind(bat, "battery-icon-name"),
 		}),
 		Widget.Label({
-			label = bind(bat, "percentage"):as(function(p)
-				return tostring(math.floor(p * 100)) .. " %"
-			end),
+			label = bind(bat, "percentage"):as(
+				function(p) return tostring(math.floor(p * 100)) .. " %" end
+			),
 		}),
 	})
 end
@@ -112,14 +113,20 @@ local function Media()
 		Widget.Box({
 			class_name = "Cover",
 			valign = "CENTER",
-			css = bind(player, "cover-art"):as(function(cover)
-				return "background-image: url('" .. (cover or "") .. "');"
-			end),
+			css = bind(player, "cover-art"):as(
+				function(cover)
+					return "background-image: url('" .. (cover or "") .. "');"
+				end
+			),
 		}),
 		Widget.Label({
-			label = bind(player, "metadata"):as(function()
-				return (player.title or "") .. " - " .. (player.artist or "")
-			end),
+			label = bind(player, "metadata"):as(
+				function()
+					return (player.title or "")
+						.. " - "
+						.. (player.artist or "")
+				end
+			),
 		}),
 	})
 end
@@ -130,22 +137,22 @@ local function Workspaces()
 	return Widget.Box({
 		class_name = "Workspaces",
 		bind(hypr, "workspaces"):as(function(wss)
-			table.sort(wss, function(a, b)
-				return a.id < b.id
-			end)
+			table.sort(wss, function(a, b) return a.id < b.id end)
 
 			return map(wss, function(ws)
 				if not (ws.id >= -99 and ws.id <= -2) then -- filter out special workspaces
 					return Widget.Button({
-						class_name = bind(hypr, "focused-workspace"):as(function(fw)
-							return fw == ws and "focused" or ""
-						end),
-						on_clicked = function()
-							ws:focus()
-						end,
-						label = bind(ws, "id"):as(function(v)
-							return type(v) == "number" and string.format("%.0f", v) or v
-						end),
+						class_name = bind(hypr, "focused-workspace"):as(
+							function(fw) return fw == ws and "focused" or "" end
+						),
+						on_clicked = function() ws:focus() end,
+						label = bind(ws, "id"):as(
+							function(v)
+								return type(v) == "number"
+										and string.format("%.0f", v)
+									or v
+							end
+						),
 					})
 				end
 			end)
@@ -154,28 +161,26 @@ local function Workspaces()
 end
 
 local function Time(format)
-	local time = Variable(""):poll(1000, function()
-		return GLib.DateTime.new_now_local():format(format)
-	end)
+	local time = Variable(""):poll(
+		1000,
+		function() return GLib.DateTime.new_now_local():format(format) end
+	)
 
 	return Widget.Label({
 		class_name = "Time",
-		on_destroy = function()
-			time:drop()
-		end,
+		on_destroy = function() time:drop() end,
 		label = time(),
 	})
 end
 
 return function(gdkmonitor)
-	local WindowAnchor = astal.require("Astal", "3.0").WindowAnchor
+	local Anchor = astal.require("Astal").WindowAnchor
 
 	return Widget.Window({
 		class_name = "Bar",
 		gdkmonitor = gdkmonitor,
-		anchor = WindowAnchor.TOP + WindowAnchor.LEFT + WindowAnchor.RIGHT,
+		anchor = Anchor.TOP + Anchor.LEFT + Anchor.RIGHT,
 		exclusivity = "EXCLUSIVE",
-
 		Widget.CenterBox({
 			Widget.Box({
 				halign = "START",
