@@ -41,6 +41,7 @@
     wayland
     blueprint-compiler
     libadwaita
+    wayland-scanner
 
     dart-sass
     lua

@@ -47,6 +47,13 @@ public enum Astal.Keymode {
  * Subclass of [class@Gtk.Window] which integrates GtkLayerShell as class fields.
  */
 public class Astal.Window : Gtk.Window {
+    /**
+     * Get the current [class@Gdk.Monitor] this window resides in.
+     */
+    public Gdk.Monitor get_current_monitor() {
+        return Gdk.Display.get_default().get_monitor_at_surface(base.get_surface());
+    }
+
     private bool check(string action) {
         if (!is_supported()) {
             critical(@"can not $action on window: layer shell not supported");
