@@ -1,7 +1,6 @@
 local astal = require("astal")
 
 local Astal = astal.require("Astal", "3.0")
-local Gtk = astal.require("Gtk", "3.0")
 
 local bind = astal.bind
 local Widget = require("astal.gtk3.widget")
@@ -20,29 +19,32 @@ local function length_str(length)
 end
 
 local function MediaPlayer(player)
-	local title = bind(player, "title"):as(function(t)
-		return t or "Unknown Track"
-	end)
+	local title = bind(player, "title"):as(
+		function(t) return t or "Unknown Track" end
+	)
 
-	local artist = bind(player, "artist"):as(function(a)
-		return a or "Unknown Artist"
-	end)
+	local artist = bind(player, "artist"):as(
+		function(a) return a or "Unknown Artist" end
+	)
 
-	local cover_art = bind(player, "cover-art"):as(function(c)
-		return string.format("background-image: url('%s');", c)
-	end)
+	local cover_art = bind(player, "cover-art"):as(
+		function(c) return string.format("background-image: url('%s');", c) end
+	)
 
-	local player_icon = bind(player, "entry"):as(function(e)
-		return lookup_icon(e) and e or "audio-x-generic-symbolic"
-	end)
+	local player_icon = bind(player, "entry"):as(
+		function(e) return lookup_icon(e) and e or "audio-x-generic-symbolic" end
+	)
 
-	local position = bind(player, "position"):as(function(p)
-		return player.length > 0 and p / player.length or 0
-	end)
+	local position = bind(player, "position"):as(
+		function(p) return player.length > 0 and p / player.length or 0 end
+	)
 
-	local play_icon = bind(player, "playback-status"):as(function(s)
-		return s == "PLAYING" and "media-playback-pause-symbolic" or "media-playback-start-symbolic"
-	end)
+	local play_icon = bind(player, "playback-status"):as(
+		function(s)
+			return s == "PLAYING" and "media-playback-pause-symbolic"
+				or "media-playback-start-symbolic"
+		end
+	)
 
 	return Widget.Box({
 		class_name = "MediaPlayer",
@@ -72,9 +74,9 @@ local function MediaPlayer(player)
 				label = artist,
 			}),
 			Widget.Slider({
-				visible = bind(player, "length"):as(function(l)
-					return l > 0
-				end),
+				visible = bind(player, "length"):as(
+					function(l) return l > 0 end
+				),
 				on_dragged = function(event)
 					player.position = event.value * player.length
 				end,
@@ -86,35 +88,29 @@ local function MediaPlayer(player)
 					hexpand = true,
 					class_name = "position",
 					halign = "START",
-					visible = bind(player, "length"):as(function(l)
-						return l > 0
-					end),
+					visible = bind(player, "length"):as(
+						function(l) return l > 0 end
+					),
 					label = bind(player, "position"):as(length_str),
 				}),
 				Widget.Box({
 					Widget.Button({
-						on_clicked = function()
-							player:previous()
-						end,
-						visible = bind(player, "canGoPrevious"),
+						on_clicked = function() player:previous() end,
+						visible = bind(player, "can-go-previous"),
 						Widget.Icon({
 							icon = "media-skip-backward-symbolic",
 						}),
 					}),
 					Widget.Button({
-						on_clicked = function()
-							player:play_pause()
-						end,
-						visible = bind(player, "canControl"),
+						on_clicked = function() player:play_pause() end,
+						visible = bind(player, "can-control"),
 						Widget.Icon({
 							icon = play_icon,
 						}),
 					}),
 					Widget.Button({
-						on_clicked = function()
-							player:next()
-						end,
-						visible = bind(player, "canGoNext"),
+						on_clicked = function() player:next() end,
+						visible = bind(player, "can-go-next"),
 						Widget.Icon({
 							icon = "media-skip-forward-symbolic",
 						}),
@@ -124,12 +120,12 @@ local function MediaPlayer(player)
 					class_name = "length",
 					hexpand = true,
 					halign = "END",
-					visible = bind(player, "length"):as(function(l)
-						return l > 0
-					end),
-					label = bind(player, "length"):as(function(l)
-						return l > 0 and length_str(l) or "0:00"
-					end),
+					visible = bind(player, "length"):as(
+						function(l) return l > 0 end
+					),
+					label = bind(player, "length"):as(
+						function(l) return l > 0 and length_str(l) or "0:00" end
+					),
 				}),
 			}),
 		}),
@@ -141,8 +137,8 @@ return function()
 
 	return Widget.Box({
 		vertical = true,
-		bind(mpris, "players"):as(function(players)
-			return map(players, MediaPlayer)
-		end),
+		bind(mpris, "players"):as(
+			function(players) return map(players, MediaPlayer) end
+		),
 	})
 end

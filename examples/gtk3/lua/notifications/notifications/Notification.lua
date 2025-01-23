@@ -6,9 +6,7 @@ local map = require("lib").map
 local time = require("lib").time
 local file_exists = require("lib").file_exists
 
-local function is_icon(icon)
-	return Astal.Icon.lookup_icon(icon) ~= nil
-end
+local function is_icon(icon) return Astal.Icon.lookup_icon(icon) ~= nil end
 
 ---@param props { setup?: function, on_hover_lost?: function, notification: any }
 return function(props)
@@ -33,9 +31,7 @@ return function(props)
 			label = time(n.time),
 		}),
 		Widget.Button({
-			on_clicked = function()
-				n:dismiss()
-			end,
+			on_clicked = function() n:dismiss() end,
 			Widget.Icon({ icon = "window-close-symbolic" }),
 		}),
 	})
@@ -88,24 +84,21 @@ return function(props)
 			header,
 			Gtk.Separator({ visible = true }),
 			content,
-			Widget.Box({
-				#n.actions > 0 and Widget.Box({
-					map(n.actions, function(action)
-						local label, id = action.label, action.id
+			#n.actions > 0 and Widget.Box({
+				class_name = "actions",
+				map(n.actions, function(action)
+					local label, id = action.label, action.id
 
-						return Widget.Button({
+					return Widget.Button({
+						hexpand = true,
+						on_clicked = function() return n:invoke(id) end,
+						Widget.Label({
+							label = label,
+							halign = "CENTER",
 							hexpand = true,
-							on_clicked = function()
-								return n:invoke(id)
-							end,
-							Widget.Label({
-								label = label,
-								halign = "CENTER",
-								hexpand = true,
-							}),
-						})
-					end),
-				}),
+						}),
+					})
+				end),
 			}),
 		}),
 	})
