@@ -299,3 +299,11 @@ focusable set its keymode.
 />
 ```
 :::
+
+## How to create a Popup
+
+In Gtk4 simply use Gtk's builtin [Popover](https://docs.gtk.org/gtk4/class.Popover.html).
+
+In Gtk3 you can create an [Astal.Window](https://aylur.github.io/libastal/astal3/class.Window.html) and handle click events.
+
+Checkout [examples/gtk3/js/popover](https://github.com/Aylur/astal/tree/main/examples/gtk3/js/popover)

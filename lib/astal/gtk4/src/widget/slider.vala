@@ -14,6 +14,10 @@ public class Astal.Slider : Gtk.Scale {
             step = 0.05;
         }
 
+        if (page == 0) {
+            page = 0.01;
+        }
+
         controller = new Gtk.EventControllerLegacy();
         add_controller(controller);
         controller.event.connect((event) => {
@@ -61,5 +65,13 @@ public class Astal.Slider : Gtk.Scale {
     public double step {
         get { return adjustment.step_increment; }
         set { adjustment.step_increment = value; }
+    }
+
+    /**
+     * Size of page increments. Defaults to `0.01`.
+     */
+    public double page {
+        get { return adjustment.page_increment; }
+        set { adjustment.page_increment = value; }
     }
 }

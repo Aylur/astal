@@ -165,14 +165,14 @@ public class TrayItem : Object {
 
     private DBusMenu.Importer menu_importer;
 
-    public MenuModel menu_model {
+    public MenuModel? menu_model {
         owned get {
             if (menu_importer == null) return null;
             return menu_importer.model;
         }
     }
 
-    public ActionGroup action_group {
+    public ActionGroup? action_group {
         owned get {
             if (menu_importer == null) return null;
             return menu_importer.action_group;
@@ -296,6 +296,31 @@ public class TrayItem : Object {
                 }
             }
         );
+    }
+
+    /**
+    * tells the tray app that its menu is about to be opened, 
+    * so it can update the menu if needed. You should call this method
+    * before openening the menu.
+    */
+    public void about_to_show() {
+      if(proxy.Menu == null) return;
+      try {
+        Bus.get_sync(BusType.SESSION).call_sync(
+          this.proxy.g_name_owner,
+          this.proxy.Menu,
+          "com.canonical.dbusmenu",
+          "AboutToShow",
+          new Variant("(i)", 0),
+          null,
+          DBusCallFlags.NONE,
+          -1,
+          null
+        );
+      }
+      catch (Error r) {
+        //silently ignore
+      }
     }
 
     /**

@@ -54,6 +54,7 @@
     vala-language-server
     vtsls
     vscode-langservers-extracted
+    markdownlint-cli2
   ];
 in {
   default = pkgs.mkShell {
@@ -64,10 +65,7 @@ in {
       buildInputs
       ++ lsp
       ++ builtins.attrValues (
-        builtins.removeAttrs self.packages.${pkgs.system} [
-          "docs"
-          "cava" # FIXME: temporary autoreconf
-        ]
+        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
       );
   };
 }

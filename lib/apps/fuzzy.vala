@@ -2,15 +2,15 @@ namespace AstalApps {
 private int fuzzy_match_string(string pattern, string str) {
     const int unmatched_letter_penalty = -1;
     int score = 100;
+    int not_found_score = -10;
 
     if (pattern.length == 0) return score;
-    if (str.length < pattern.length) return int.MIN;
+    if (str.length < pattern.length) return not_found_score;
 
     bool found = fuzzy_match_recurse(pattern, str, score, true, out score);
     score += unmatched_letter_penalty * (str.length - pattern.length);
     
-    if(!found) score = -10;
-
+    if(!found) score = not_found_score;
     return score;
 }
 

@@ -98,7 +98,7 @@ export default function NotificationPopups(gdkmonitor: Gdk.Monitor) {
         gdkmonitor={gdkmonitor}
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
         anchor={TOP | RIGHT}>
-        <box vertical>
+        <box vertical noImplicitDestroy>
             {bind(notifs)}
         </box>
     </window>
