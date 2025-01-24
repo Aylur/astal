@@ -1,7 +1,7 @@
 /**
  * Object representing a [[https://github.com/bluez/bluez/blob/master/doc/org.bluez.Battery.rst|battery]].
  */
-public class AstalBluetooth.Battery : Object {
+internal class AstalBluetooth.Battery : Object {
     private IBattery proxy;
 
     internal ObjectPath object_path { owned get; private set; }

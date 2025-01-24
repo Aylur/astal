@@ -114,12 +114,12 @@ public class AstalBluetooth.Device : Object {
     }
 
     /**
-     * The percentage of battery left on the device if it has one, else 0.
+     * The percentage of battery left on the device if it has one, else -1.
      */
-    public uint battery_percentage { 
+    public double battery_percentage { 
         get { 
-            if (battery != null) return battery.percentage;
-            else return 0;
+            if (battery != null) return battery.percentage * 0.01;
+            else return -1;
         } 
     }
 
