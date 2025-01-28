@@ -79,13 +79,13 @@ function Media() {
                     )}
                 />
                 <label
-                    label={bind(ps[0], "title").as(() =>
+                    label={bind(ps[0], "metadata").as(() =>
                         `${ps[0].title} - ${ps[0].artist}`
                     )}
                 />
             </box>
         ) : (
-            "Nothing Playing"
+            <label label="Nothing Playing" />
         ))}
     </box>
 }

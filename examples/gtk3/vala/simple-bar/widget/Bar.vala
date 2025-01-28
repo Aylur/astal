@@ -84,7 +84,7 @@ class Media : Gtk.Box {
         };
 
         Astal.widget_set_class_names(cover, {"Cover"});
-        player.bind_property("title", label, "label", BindingFlags.SYNC_CREATE, (_, src, ref trgt) => {
+        player.bind_property("metadata", label, "label", BindingFlags.SYNC_CREATE, (_, src, ref trgt) => {
             var title = player.title;
             var artist = player.artist;
             trgt.set_string(@"$artist - $title");
