@@ -138,6 +138,9 @@ public class AstalBluetooth.Bluetooth : Object {
     [CCode (cname="astal_bluetooth_iadapter_proxy_get_type")]
     extern static GLib.Type get_iadapter_proxy_type();
 
+    [CCode (cname="astal_bluetooth_ibattery_proxy_get_type")]
+    extern static GLib.Type get_ibattery_proxy_type();
+
     private Type manager_proxy_get_type(DBusObjectManagerClient _, string object_path, string? interface_name) {
         if (interface_name == null)
             return typeof(DBusObjectProxy);
@@ -147,6 +150,8 @@ public class AstalBluetooth.Bluetooth : Object {
                 return get_idevice_proxy_type();
             case "org.bluez.Adapter1":
                 return get_iadapter_proxy_type();
+            case "org.bluez.Battery1":
+                return get_ibattery_proxy_type();
             default:
                 return typeof(DBusProxy);
         }
@@ -158,6 +163,15 @@ public class AstalBluetooth.Bluetooth : Object {
             _devices.set(device.object_path, device);
             device_added(device);
             device.notify.connect(sync);
+            sync();
+        }
+
+        if (iface is IBattery) {
+            var battery = new Battery((IBattery)iface);
+            var device = _devices.lookup(iface.g_object_path);
+            if (device != null) {
+                device.set_battery(battery);
+            } 
             sync();
         }
 
