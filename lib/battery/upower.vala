@@ -29,7 +29,7 @@ public class AstalBattery.UPower : Object {
     public bool lid_is_closed { get { return proxy.lid_is_closed; } }
 
     /** Indicates if the system has a lid device. */
-    public bool lis_is_present { get { return proxy.lid_is_closed; } }
+    public bool lid_is_present { get { return proxy.lid_is_closed; } }
 
     /**
      * When the system's power supply is critical (critically low batteries or UPS),
