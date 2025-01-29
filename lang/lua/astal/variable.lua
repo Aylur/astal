@@ -126,7 +126,7 @@ function Variable:stop_watch()
 end
 
 function Variable:drop()
-    self.variable.emit_dropped()
+    self.variable:emit_dropped()
 end
 
 ---@param callback function
@@ -233,7 +233,7 @@ function Variable:observe(object, sigOrFn, callback)
         end
 
         self.variable.on_dropped = function()
-            GObject.signal_handler_disconnect(object, id)
+            GObject.signal_handler_disconnect(obj, id)
         end
     end
 
