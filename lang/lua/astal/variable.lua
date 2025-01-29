@@ -195,7 +195,7 @@ function Variable:watch(exec, transform)
     return self
 end
 
----@param object table | table[]
+---@param object table | {[1]: table, [2]: string}[]
 ---@param sigOrFn string | fun(...): any
 ---@param callback fun(...): any
 ---@return Variable
@@ -216,12 +216,27 @@ function Variable:observe(object, sigOrFn, callback)
     end
 
     if type(sigOrFn) == "string" then
-        object["on_" .. sigOrFn]:connect(set)
-    else
-        for _, obj in ipairs(object) do
-            obj[1]["on_" .. obj[2]]:connect(set)
+        object = { { object, sigOrFn } }
+    end
+
+    for _, tbl in ipairs(object) do
+        local id
+        local obj, signal = tbl[1], tbl[2]
+
+        if string.sub(signal, 1, 8) == "notify::" then
+            local prop = string.gsub(signal, "notify::", "")
+            id = obj.on_notify:connect(function()
+                set(obj, obj[prop])
+            end, prop, false)
+        else
+            id = obj["on_" .. signal]:connect(set)
+        end
+
+        self.variable.on_dropped = function()
+            GObject.signal_handler_disconnect(object, id)
         end
     end
+
     return self
 end
 
