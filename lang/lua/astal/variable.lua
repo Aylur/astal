@@ -90,7 +90,7 @@ function Variable:start_poll()
         self._poll = Time.interval(self.poll_interval, function()
             Process.exec_async(self.poll_exec, function(out, err)
                 if err ~= nil then
-                    return self.variable.emit_error(err)
+                    return self.variable:emit_error(err)
                 else
                     self:set(self.poll_transform(out, self:get()))
                 end
@@ -107,7 +107,7 @@ function Variable:start_watch()
     self._watch = Process.subprocess(self.watch_exec, function(out)
         self:set(self.watch_transform(out, self:get()))
     end, function(err)
-        self.variable.emit_error(err)
+        self.variable:emit_error(err)
     end)
 end
 
@@ -126,7 +126,7 @@ function Variable:stop_watch()
 end
 
 function Variable:drop()
-    self.variable.emit_dropped()
+    self.variable:emit_dropped()
 end
 
 ---@param callback function
@@ -233,7 +233,7 @@ function Variable:observe(object, sigOrFn, callback)
         end
 
         self.variable.on_dropped = function()
-            GObject.signal_handler_disconnect(object, id)
+            GObject.signal_handler_disconnect(obj, id)
         end
     end
 
