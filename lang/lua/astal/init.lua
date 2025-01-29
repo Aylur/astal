@@ -7,7 +7,6 @@ local Binding = require("astal.binding")
 local File = require("astal.file")
 local Process = require("astal.process")
 local Time = require("astal.time")
----@type Variable | fun(v: any): Variable
 local Variable = require("astal.variable")
 
 return {
