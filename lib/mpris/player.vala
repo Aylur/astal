@@ -440,6 +440,9 @@ public class AstalMpris.Player : Object {
                 _loop_status = Loop.from_string(proxy.loop_status);
                 notify_property("loop-status");
             }
+        } else {
+            _loop_status = Loop.UNSUPPORTED;
+            notify_property("loop-status");
         }
 
         if (rate != proxy.rate) {
@@ -452,6 +455,9 @@ public class AstalMpris.Player : Object {
                 _shuffle_status = Shuffle.from_bool(proxy.shuffle);
                 notify_property("shuffle-status");
             }
+        } else {
+            _shuffle_status = Shuffle.UNSUPPORTED;
+            notify_property("shuffle-status");
         }
 
         if (volume != proxy.volume) {
@@ -498,8 +504,10 @@ public class AstalMpris.Player : Object {
     }
 
     private async void cache_cover() {
-        if (art_url == null || art_url == "")
+        if (art_url == null || art_url == "") {
+            cover_art = null;
             return;
+        }
 
         var file = File.new_for_uri(art_url);
         if (file.get_path() != null) {

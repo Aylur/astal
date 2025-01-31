@@ -61,7 +61,7 @@ try {
 :::code-group
 
 ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala json-glib gobject-introspection
+sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
@@ -69,7 +69,7 @@ sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac libjson-glib-dev gobject-introspection
+sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
 ```
 
 :::

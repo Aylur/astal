@@ -71,13 +71,24 @@ function MyButton(): JSX.Element {
 }
 ```
 
-```ts [MyButton.ts]
+```ts [MyButton.ts (gtk3)]
 import { Widget } from "astal/gtk3"
 
 function MyButton(): Widget.Button {
     return new Widget.Button(
         { onClicked: "echo hello" },
         new Widget.Label({ label: "Click me!" }),
+    )
+}
+```
+
+```ts [MyButton.ts (gtk4)]
+import { Widget } from "astal/gtk4"
+
+function MyButton(): Widget.Button {
+    return Widget.Button(
+        { onClicked: "echo hello" },
+        Widget.Label({ label: "Click me!" }),
     )
 }
 ```
@@ -216,6 +227,14 @@ function MyButton() {
 Attributes prefixed with `on` will connect to a `signal` of the widget.
 Their types are not generated, but written by hand, which means not all of them are typed.
 Refer to the Gtk and Astal docs to have a full list of them.
+:::
+
+:::info
+Attributes prefixed with `onNotify` will connect to a `notify::` signal of the widget.
+
+```tsx
+<switch onNotifyActive={self => print("switched to", self.active)}>
+```
 :::
 
 ## How properties are passed
@@ -413,8 +432,7 @@ function Parent(props: {
 
 :::tip
 If you have a widget where you pass widgets in various ways, you can
-wrap `child` in `children` in a [`Subscribable`](./faq#custom-widgets-with-bindable-properties) and handle all cases
-as if they were bindings.
+wrap `child` and `children` props in a [`Subscribable`](./faq#custom-widgets-with-bindable-properties) and handle all cases as if they were bindings.
 :::
 
 :::info

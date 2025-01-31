@@ -22,6 +22,7 @@ config = configure_file(
   input: 'config.vala.in',
   output: 'config.vala',
   configuration: {
+    'API_VERSION': api_version,
     'VERSION': meson.project_version(),
     'MAJOR_VERSION': version_split[0],
     'MINOR_VERSION': version_split[1],
@@ -38,6 +39,7 @@ deps = [
 
 sources = [config] + files(
   'application.vala',
+  'daemon.vala',
   'file.vala',
   'process.vala',
   'time.vala',

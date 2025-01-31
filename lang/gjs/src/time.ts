@@ -1,6 +1,7 @@
 import Astal from "gi://AstalIO"
 
-export const { Time } = Astal
+export type Time = Astal.Time
+export const Time = Astal.Time
 
 export function interval(interval: number, callback?: () => void) {
     return Astal.Time.interval(interval, () => void callback?.())

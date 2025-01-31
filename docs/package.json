@@ -12,7 +12,7 @@
         "vue": "^3.4.38"
     },
     "scripts": {
-        "dev": "vitepress dev",
+        "dev": "vitepress dev --open",
         "build": "vitepress build",
         "preview": "vitepress preview",
         "vitepress": "vitepress",

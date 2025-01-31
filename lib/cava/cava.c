@@ -440,7 +440,7 @@ static void astal_cava_cava_get_property(GObject* object, guint property_id, GVa
             g_value_set_int(value, self->bars);
             break;
         case ASTAL_CAVA_CAVA_PROP_VALUES:
-            g_value_set_pointer(value, self->values);
+            g_value_set_boxed(value, self->values);
             break;
         case ASTAL_CAVA_CAVA_PROP_AUTOSENS:
             g_value_set_boolean(value, self->autosens);
@@ -558,7 +558,7 @@ static void astal_cava_cava_class_init(AstalCavaCavaClass* class) {
      * be 0.
      */
     astal_cava_cava_properties[ASTAL_CAVA_CAVA_PROP_VALUES] =
-        g_param_spec_pointer("values", "values", "a list of values", G_PARAM_READABLE);
+        g_param_spec_boxed("values", "values", "a list of values", G_TYPE_ARRAY, G_PARAM_READABLE);
     /**
      * AstalCavaCava:active:
      *

@@ -67,7 +67,7 @@ end
 :::code-group
 
 ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala gdk-pixbuf2 json-glib gobject-introspection
+sudo pacman -Syu meson vala valadoc gdk-pixbuf2 json-glib gobject-introspection
 ```
 
 ```sh [<i class="devicon-fedora-plain"></i> Fedora]
@@ -75,7 +75,7 @@ sudo dnf install meson vala valadoc gdk-pixbuf2-devel json-glib-devel gobject-in
 ```
 
 ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac libgdk-pixbuf-2.0-dev libjson-glib-dev gobject-introspection
+sudo apt install meson valac valadoc libgdk-pixbuf-2.0-dev libjson-glib-dev gobject-introspection
 ```
 
 :::

@@ -1,8 +1,6 @@
 local astal = require("astal")
-local App = require("astal.gtk3.app")
 local Widget = require("astal.gtk3.widget")
 local Variable = astal.Variable
-local Gdk = astal.require("Gdk", "3.0")
 local GLib = astal.require("GLib")
 local bind = astal.bind
 local Mpris = astal.require("AstalMpris")
@@ -17,28 +15,18 @@ local function SysTray()
 	local tray = Tray.get_default()
 
 	return Widget.Box({
+		class_name = "SysTray",
 		bind(tray, "items"):as(function(items)
 			return map(items, function(item)
-				if item.icon_theme_path ~= nil then
-					App:add_icons(item.icon_theme_path)
-				end
-
-				local menu = item:create_menu()
-
-				return Widget.Button({
+				return Widget.MenuButton({
 					tooltip_markup = bind(item, "tooltip_markup"),
-					on_destroy = function()
-						if menu ~= nil then
-							menu:destroy()
-						end
-					end,
-					on_click_release = function(self)
-						if menu ~= nil then
-							menu:popup_at_widget(self, Gdk.Gravity.SOUTH, Gdk.Gravity.NORTH, nil)
-						end
-					end,
+					use_popover = false,
+					menu_model = bind(item, "menu-model"),
+					action_group = bind(item, "action-group"):as(function(ag)
+						return { "dbusmenu", ag }
+					end),
 					Widget.Icon({
-						g_icon = bind(item, "gicon"),
+						gicon = bind(item, "gicon"),
 					}),
 				})
 			end)
@@ -62,12 +50,20 @@ local function FocusedClient()
 end
 
 local function Wifi()
-	local wifi = Network.get_default().wifi
+	local network = Network.get_default()
+	local wifi = bind(network, "wifi")
 
-	return Widget.Icon({
-		tooltip_text = bind(wifi, "ssid"):as(tostring),
-		class_name = "Wifi",
-		icon = bind(wifi, "icon-name"),
+	return Widget.Box({
+		visible = wifi:as(function(v)
+			return v ~= nil
+		end),
+		wifi:as(function(w)
+			return Widget.Icon({
+				tooltip_text = bind(w, "ssid"):as(tostring),
+				class_name = "Wifi",
+				icon = bind(w, "icon-name"),
+			})
+		end),
 	})
 end
 
@@ -139,17 +135,19 @@ local function Workspaces()
 			end)
 
 			return map(wss, function(ws)
-				return Widget.Button({
-					class_name = bind(hypr, "focused-workspace"):as(function(fw)
-						return fw == ws and "focused" or ""
-					end),
-					on_clicked = function()
-						ws:focus()
-					end,
-					label = bind(ws, "id"):as(function(v)
-						return type(v) == "number" and string.format("%.0f", v) or v
-					end),
-				})
+				if not (ws.id >= -99 and ws.id <= -2) then -- filter out special workspaces
+					return Widget.Button({
+						class_name = bind(hypr, "focused-workspace"):as(function(fw)
+							return fw == ws and "focused" or ""
+						end),
+						on_clicked = function()
+							ws:focus()
+						end,
+						label = bind(ws, "id"):as(function(v)
+							return type(v) == "number" and string.format("%.0f", v) or v
+						end),
+					})
+				end
 			end)
 		end),
 	})
@@ -189,10 +187,10 @@ return function(gdkmonitor)
 			}),
 			Widget.Box({
 				halign = "END",
+				SysTray(),
 				Wifi(),
 				AudioSlider(),
 				BatteryLevel(),
-				SysTray(),
 				Time("%H:%M - %A %e."),
 			}),
 		}),

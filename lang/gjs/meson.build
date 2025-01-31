@@ -3,19 +3,27 @@ project('astal-gjs')
 dest = get_option('prefix') / get_option('datadir') / 'astal' / 'gjs'
 
 dependency('astal-io-0.1')
-dependency('astal-3.0')
+
+gtk3 = dependency('astal-3.0', required: false)
+gtk4 = dependency('astal-4-4.0', required: false)
+
+if (not gtk3.found() and not gtk4.found())
+  error('Neither astal-3.0 nor astal-4.0 was found.')
+endif
 
 install_data(
   [
+    'src/_app.ts',
+    'src/_astal.ts',
     'src/binding.ts',
     'src/file.ts',
     'src/gobject.ts',
     'src/index.ts',
+    'src/overrides.ts',
     'src/process.ts',
     'src/time.ts',
     'src/variable.ts',
-    'src/overrides.ts',
-    'src/_app.ts',
+    'src/package.json',
   ],
   install_dir: dest,
 )

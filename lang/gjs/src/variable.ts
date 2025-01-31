@@ -62,13 +62,11 @@ class VariableWrapper<T> extends Function {
                 if (v instanceof Promise) {
                     v.then(v => this.set(v))
                         .catch(err => this.variable.emit("error", err))
-                }
-                else {
+                } else {
                     this.set(v)
                 }
             })
-        }
-        else if (this.pollExec) {
+        } else if (this.pollExec) {
             this._poll = interval(this.pollInterval, () => {
                 execAsync(this.pollExec!)
                     .then(v => this.set(this.pollTransform!(v, this.get())))
@@ -145,8 +143,7 @@ class VariableWrapper<T> extends Function {
         if (typeof exec === "function") {
             this.pollFn = exec
             delete this.pollExec
-        }
-        else {
+        } else {
             this.pollExec = exec
             delete this.pollFn
         }
@@ -190,8 +187,7 @@ class VariableWrapper<T> extends Function {
                 const id = o.connect(s, set)
                 this.onDropped(() => o.disconnect(id))
             }
-        }
-        else {
+        } else {
             if (typeof sigOrFn === "string") {
                 const id = objs.connect(sigOrFn, set)
                 this.onDropped(() => objs.disconnect(id))
@@ -229,4 +225,5 @@ export const Variable = new Proxy(VariableWrapper as any, {
     new<T>(init: T): Variable<T>
 }
 
+export const { derive } = Variable
 export default Variable

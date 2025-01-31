@@ -22,7 +22,7 @@ export interface Connectable {
 
 type UnwrapBinding<T> = T extends Binding<infer Value> ? Value : T
 
-export default abstract class Binding<T> implements Subscribable<T> {
+export abstract class Binding<T> implements Subscribable<T> {
     abstract toString(): string
     abstract get(): T
     abstract subscribe(callback: (value: T) => void): () => void
@@ -200,8 +200,7 @@ export class DataBinding<Value> extends Binding<Value> {
             return this.#emitter.subscribe(() => {
                 callback(this.get())
             })
-        }
-        else if (typeof this.#emitter.connect === "function") {
+        } else if (typeof this.#emitter.connect === "function") {
             const signal = `notify::${this.#prop}`
             const id = this.#emitter.connect(signal, () => {
                 callback(this.get())

@@ -90,9 +90,7 @@ export function property(declaration: PropertyDeclaration = Object) {
             })
 
             target.constructor[meta].Properties[kebabify(prop)] = pspec(name, ParamFlags.READWRITE, declaration)
-        }
-
-        else {
+        } else {
             let flags = 0
             if (desc.get) flags |= ParamFlags.READABLE
             if (desc.set) flags |= ParamFlags.WRITABLE
@@ -124,8 +122,7 @@ export function signal(
             target.constructor[meta].Signals[name] = {
                 param_types: arr,
             }
-        }
-        else {
+        } else {
             target.constructor[meta].Signals[name] = declaration || {
                 param_types: [],
             }
@@ -137,8 +134,7 @@ export function signal(
                     this.emit(name, ...args)
                 },
             })
-        }
-        else {
+        } else {
             const og: ((...args: any[]) => void) = desc.value
             desc.value = function (...args: any[]) {
                 // @ts-expect-error not typed
@@ -178,7 +174,7 @@ function defaultValue(declaration: PropertyDeclaration) {
 
     switch (declaration) {
         case String:
-            return "default-string"
+            return ""
         case Number:
             return 0
         case Boolean:

@@ -7,3 +7,4 @@ export { Astal, Gtk, Gdk }
 export { default as App } from "./app.js"
 export { astalify, ConstructProps, BindableProps }
 export * as Widget from "./widget.js"
+export { hook } from "../_astal"

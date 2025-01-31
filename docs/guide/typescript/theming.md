@@ -1,24 +1,25 @@
 # Theming
 
-Since the widget toolkit is **GTK3** theming is done with **CSS**.
+Since the widget toolkit is **GTK** theming is done with **CSS**.
 
 - [CSS tutorial](https://www.w3schools.com/css/)
-- [GTK CSS Overview wiki](https://docs.gtk.org/gtk3/css-overview.html)
-- [GTK CSS Properties Overview wiki](https://docs.gtk.org/gtk3/css-properties.html)
+- [GTK3 CSS Overview wiki](https://docs.gtk.org/gtk3/css-overview.html)
+- [GTK3 CSS Properties Overview wiki](https://docs.gtk.org/gtk3/css-properties.html)
+- [GTK4 CSS Overview wiki](https://docs.gtk.org/gtk4/css-overview.html)
+- [GTK4 CSS Properties Overview wiki](https://docs.gtk.org/gtk4/css-properties.html)
 
 :::warning GTK is not the web
 While most features are implemented in GTK,
 you can't assume anything that works on the web will work with GTK.
-Refer to the [GTK docs](https://docs.gtk.org/gtk3/css-overview.html)
-to see what is available.
+Refer to the GTK docs to see what is available.
 :::
 
-So far every widget you made used your default GTK3 theme.
+So far every widget you made used your default GTK theme.
 To make them more custom, you can apply stylesheets to them.
 
 ## From file at startup
 
-You can pass a path to a file or css as a string in `App.start`
+You can pass a path to a file or CSS as a string in `App.start`
 
 :::code-group
 
