@@ -8,12 +8,27 @@ export const kebabify = (str: string) => str
     .replaceAll("_", "-")
     .toLowerCase()
 
+/**
+ * A reactive source of a single value.
+ */
 export interface Subscribable<T = unknown> {
+    /**
+     * Subscribe to updates on the value.
+     * @param callback The function to call when the value changes
+     * @returns A function to cancel the subscription
+     */
     subscribe(callback: (value: T) => void): () => void
+    /**
+     * Get the current value (non-reactively).
+     */
     get(): T
     [key: string]: any
 }
 
+/**
+ * A reactive object with many signals that can be connected to individually.
+ * Usually, these are going to be GObjects.
+ */
 export interface Connectable {
     connect(signal: string, callback: (...args: any[]) => unknown): number
     disconnect(id: number): void
@@ -23,16 +38,34 @@ export interface Connectable {
 type UnwrapBinding<T> = T extends Binding<infer Value> ? Value : T
 
 export abstract class Binding<T> implements Subscribable<T> {
+    /**
+     * This function is mostly here to aid in debugging.
+     * It returns a regular, non-reactive string,
+     * and will not work to reactively use a binding somewhere that expects a plain string.
+     */
     abstract toString(): string
+    /**
+     * Get the binding's current value (non-reactively).
+     */
     abstract get(): T
     abstract subscribe(callback: (value: T) => void): () => void
 
+    /**
+     * Create a new binding that additionally applies a function on its value.
+     * If `fn` returns a `Binding`, it will also be unwrapped.
+     * @param fn The transformation to apply. This should be a pure function, as it can be called at any time.
+     */
     as<R>(
         fn: (v: T) => R,
     ): TransformBinding<T, R> {
         return new TransformBinding(this, fn)
     }
 
+    /**
+     * Create a new binding that accesses one of the value's fields.
+     * Note that the binding must be to a `Connectable` for this to work.
+     * @param key The field name
+     */
     prop<T extends Connectable, K extends keyof T>(this: Binding<T>, key: K): Binding<T[K]> {
         return this.as((obj) => {
             if (typeof obj.connect !== "function") {
@@ -40,6 +73,11 @@ export abstract class Binding<T> implements Subscribable<T> {
             }
             return bind(obj, key)
         })
+    }
+
+    [Symbol.toPrimitive]() {
+        console.warn("Binding implicitly converted to a primitive value. This is almost always a mistake.");
+        return this.toString();
     }
 }
 
@@ -49,13 +87,15 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
     #outerCleanup: (() => void) | null
     /** `this.#value`'s `subscribe()` return value. Called when `this.#value` is replaced. */
     #innerCleanup: (() => void) | null
-    /** This function is largely untyped so that TransformBinding<?, T> can be assigned to Binding<T | undefined>.
+    /**
+     * This function is largely untyped so that TransformBinding<?, T> can be assigned to Binding<T | undefined>.
      * Otherwise, TypeScript complains because it can't guarantee that this function won't later be called with an undefined.
      * But bindings don't work like that (the parameters to this function are only obtained internally),
      * so it's safe (I think) to bypass TS here.
-    */
+     */
     #transformFn: (v: any) => any
-    /** To track the bound value's reactivity, this object only has one subscription to `this.#source`.
+    /**
+     * To track the bound value's reactivity, this object only has one subscription to `this.#source`.
      * This means that tracking its subscribers can't be delegated to the source object, like in a regular `Binding`.
      */
     #subscribers: Set<(value: UnwrapBinding<Output>) => void>
@@ -159,11 +199,17 @@ export class DataBinding<Value> extends Binding<Value> {
     #emitter: Subscribable<Value> | Connectable
     #prop?: string
 
+    /**
+     * Bind to a `Connectable`'s property, preserving its reactivity to be used somewhere else.
+     */
     static bind<
         T extends Connectable,
         P extends keyof T,
     >(object: T, property: P): DataBinding<T[P]>
 
+    /**
+     * Bind to a `Subscribable`, preserving its reactivity to be used somewhere else.
+     */
     static bind<T>(object: Subscribable<T>): DataBinding<T>
 
     static bind(emitter: Connectable | Subscribable, prop?: string) {
