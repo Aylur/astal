@@ -76,8 +76,8 @@ export abstract class Binding<T> implements Subscribable<T> {
     }
 
     [Symbol.toPrimitive]() {
-        console.warn("Binding implicitly converted to a primitive value. This is almost always a mistake.");
-        return this.toString();
+        console.warn("Binding implicitly converted to a primitive value. This is almost always a mistake.")
+        return this.toString()
     }
 }
 

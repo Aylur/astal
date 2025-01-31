@@ -1,5 +1,5 @@
 import Astal from "gi://AstalIO"
-import Binding, { bind, type Connectable, type DataBinding, type Subscribable, type TransformBinding } from "./binding.js"
+import { bind, type Connectable, type DataBinding, type Subscribable, type TransformBinding } from "./binding.js"
 import { execAsync, subprocess } from "./process.js"
 import { interval } from "./time.js"
 
