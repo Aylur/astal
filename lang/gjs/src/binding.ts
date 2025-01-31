@@ -33,7 +33,6 @@ export abstract class Binding<T> implements Subscribable<T> {
         return new TransformBinding(this, fn)
     }
 
-    // This wizardry is simultaneously the least and most cursed bit of TypeScript I've ever written.
     prop<T extends Connectable, K extends keyof T>(this: Binding<T>, key: K): Binding<T[K]> {
         return this.as((obj) => {
             if (typeof obj.connect !== "function") {
@@ -50,10 +49,11 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
     #outerCleanup: (() => void) | null
     /** `this.#value`'s `subscribe()` return value. Called when `this.#value` is replaced. */
     #innerCleanup: (() => void) | null
-    // This function is largely untyped so that TransformBinding<?, T> can be assigned to Binding<T | undefined>.
-    // Otherwise, TypeScript complains because it can't guarantee that this function won't later be called with an undefined.
-    // But bindings don't work like that (the parameters to this function are only obtained internally),
-    // so it's safe (I think) to bypass TS here.
+    /** This function is largely untyped so that TransformBinding<?, T> can be assigned to Binding<T | undefined>.
+     * Otherwise, TypeScript complains because it can't guarantee that this function won't later be called with an undefined.
+     * But bindings don't work like that (the parameters to this function are only obtained internally),
+     * so it's safe (I think) to bypass TS here.
+    */
     #transformFn: (v: any) => any
     /** To track the bound value's reactivity, this object only has one subscription to `this.#source`.
      * This means that tracking its subscribers can't be delegated to the source object, like in a regular `Binding`.
@@ -112,7 +112,7 @@ export class TransformBinding<Input, Output> extends Binding<UnwrapBinding<Outpu
 
     #recomputeValue() {
         this.#value = this.#transformFn(this.#source.get())
-        // Do not track reactivity when there are no subscribers
+        // Ensure that reactivity is tracked lazily
         if (this.#value instanceof Binding && this.#subscribers.size > 0) {
             console.assert(this.#innerCleanup === null, "Inner cleanup function is about to be lost!")
             this.#innerCleanup = this.#value.subscribe(() =>
