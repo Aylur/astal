@@ -376,6 +376,8 @@ public class Hyprland : Object {
             case "moveworkspacev2":
                 yield sync_workspaces();
                 yield sync_monitors();
+                focused_workspace = get_workspace(int.parse(args[1]));
+                notify_property("workspaces");
                 break;
 
             case "renameworkspace":

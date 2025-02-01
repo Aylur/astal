@@ -89,7 +89,7 @@ class Media(Gtk.Box):
         self.add(label)
 
         player.bind_property(
-            "title",
+            "metadata",
             label,
             "label",
             SYNC,
