@@ -64,8 +64,8 @@ export class Binding<Value> implements Subscribable<Value> {
     }
 
     [Symbol.toPrimitive]() {
-        console.warn("Binding implicitly converted to a primitive value. This is almost always a mistake.");
-        return this.toString();
+        console.warn("Binding implicitly converted to a primitive value. This is almost always a mistake.")
+        return this.toString()
     }
 
     /**
@@ -104,7 +104,6 @@ export class Binding<Value> implements Subscribable<Value> {
 
         throw Error("can not get value of binding")
     }
-
 
     subscribe(callback: (value: Value) => void): () => void {
         if (typeof this.#emitter.subscribe === "function") {
