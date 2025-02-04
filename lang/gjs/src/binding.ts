@@ -259,4 +259,45 @@ export class DataBinding<Value> extends Binding<Value> {
     }
 }
 
+/**
+ * A binding that never changes its value.
+ * Useful if you want to use the binding API
+ * if your input happens to not be a binding already.
+ */
+export class DummyBinding<Value> extends Binding<Value> {
+    #value: Value
+
+    /**
+     * Wrap a value in a non-reactive dummy binding if it isn't a binding already.
+     * Useful if your custom widget takes a `T | Binding<T>`
+     * and you just want to work with the binding API.
+     * Note that this function will not magically make plain values reactive.
+     */
+    static toBinding<T>(value: T | Binding<T>): Binding<T> {
+        if (value instanceof Binding) {
+            return value
+        } else {
+            return new DummyBinding(value)
+        }
+    }
+
+    constructor(value: Value) {
+        super()
+        this.#value = value
+    }
+
+    toString() {
+        return `DummyBinding<${this.#value}>`
+    }
+
+    get(): Value {
+        return this.#value
+    }
+
+    subscribe(): () => void {
+        return () => {}
+    }
+}
+
 export const { bind } = DataBinding
+export const { toBinding } = DummyBinding
