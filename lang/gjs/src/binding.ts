@@ -57,7 +57,7 @@ export abstract class Binding<T> implements Subscribable<T> {
      */
     as<R>(
         fn: (v: T) => R,
-    ): TransformBinding<T, R> {
+    ): Binding<UnwrapBinding<R>> {
         return new TransformBinding(this, fn)
     }
 
@@ -205,12 +205,12 @@ export class DataBinding<Value> extends Binding<Value> {
     static bind<
         T extends Connectable,
         P extends keyof T,
-    >(object: T, property: P): DataBinding<T[P]>
+    >(object: T, property: P): Binding<T[P]>
 
     /**
      * Bind to a `Subscribable`, preserving its reactivity to be used somewhere else.
      */
-    static bind<T>(object: Subscribable<T>): DataBinding<T>
+    static bind<T>(object: Subscribable<T>): Binding<T>
 
     static bind(emitter: Connectable | Subscribable, prop?: string) {
         return new DataBinding(emitter, prop)
