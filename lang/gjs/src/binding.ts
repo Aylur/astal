@@ -297,6 +297,17 @@ export class DummyBinding<Value> extends Binding<Value> {
     subscribe(): () => void {
         return () => {}
     }
+
+    as<R>(fn: (v: Value) => R): Binding<UnwrapBinding<R>> {
+        const newValue = fn(this.#value)
+        // if the user creates a binding in the `.as` callback,
+        // the reactivity shouldn't mysteriously disappear
+        if (newValue instanceof Binding) {
+            return newValue
+        } else {
+            return new DummyBinding(newValue as UnwrapBinding<R>)
+        }
+    }
 }
 
 export const { bind } = DataBinding
