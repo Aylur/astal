@@ -243,7 +243,7 @@ function BrightnessSlider() {
 
 ## Bindings in depth
 
-There are actually two types of bindings: `DataBinding` and `TransformBinding`.
+There are actually two types of (reactive) bindings: `DataBinding` and `TransformBinding`.
 The first kind is created by the `bind` function, and works with both Subscribables and Connectables.
 
 The second kind is created by the `.as()` and the `.prop()` functions, and it's responsible for applying a transformation
@@ -253,6 +253,10 @@ This is useful for preserving reactivity in weird situations, usually involving 
 > The `.prop(key)` function is equivalent to `.as((obj) => bind(obj, key))`.
 >
 
-However, most of the time you don't need to care about what kind of binding you have - they both work in widgets,
-and have the same functions defined on them. The `Binding` type is a supertype of both kinds,
+There is also a special, third kind of binding called a `DummyBinding` that wraps a regular value in the binding API (without any reactivity).
+It's useful when making a function that takes a `T | Binding<T>`, so that you don't have to deal with conditionally using `.as` and such.
+There is also a convenience function called `toBinding` that wraps its input in a `DummyBinding` only if it isn't a binding already.
+
+However, most of the time you don't need to care about what kind of binding you have - all of them work in widgets,
+and have the same functions defined on them. The `Binding` type is a supertype all the kinds,
 and so is useful when you don't care about the kind you're dealing with.
