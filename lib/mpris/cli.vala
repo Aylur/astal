@@ -298,7 +298,7 @@ int do_loop(Player player, string? arg) {
             player.loop_status = Loop.PLAYLIST;
             break;
         default:
-            stderr.printf(@"unknown shuffle status \"$arg\"");
+            stderr.printf(@"unknown loop status \"$arg\"");
             return 1;
     }
 
