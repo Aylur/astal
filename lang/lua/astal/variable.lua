@@ -27,16 +27,17 @@ function Variable.new(value)
     local v = Astal.VariableBase()
     local variable = setmetatable({ variable = v, _value = value }, Variable)
 
-    v.on_dropped = function()
+    local id = v.on_error:connect(function(_, err)
+        if variable.err_handler then ---@diagnostic disable-line
+            variable.err_handler(err) ---@diagnostic disable-line
+        end
+    end)
+
+    variable:on_dropped(function()
         variable:stop_watch()
         variable:stop_poll()
-    end
-
-    v.on_error = function(_, err)
-        if variable.err_handler then
-            variable.err_handler(err)
-        end
-    end
+        GObject.signal_handler_disconnect(v, id)
+    end)
 
     return variable
 end
@@ -61,7 +62,6 @@ function Variable:get()
 end
 
 ---@param value any
----@return nil
 function Variable:set(value)
     if value ~= self:get() then
         self._value = value
@@ -90,7 +90,7 @@ function Variable:start_poll()
         self._poll = Time.interval(self.poll_interval, function()
             Process.exec_async(self.poll_exec, function(out, err)
                 if err ~= nil then
-                    return self.variable.emit_error(err)
+                    return self.variable:emit_error(err)
                 else
                     self:set(self.poll_transform(out, self:get()))
                 end
@@ -107,7 +107,7 @@ function Variable:start_watch()
     self._watch = Process.subprocess(self.watch_exec, function(out)
         self:set(self.watch_transform(out, self:get()))
     end, function(err)
-        self.variable.emit_error(err)
+        self.variable:emit_error(err)
     end)
 end
 
@@ -126,7 +126,7 @@ function Variable:stop_watch()
 end
 
 function Variable:drop()
-    self.variable.emit_dropped()
+    self.variable:emit_dropped()
 end
 
 ---@param callback function
@@ -139,10 +139,7 @@ end
 ---@param callback function
 ---@return Variable
 function Variable:on_error(callback)
-    self.err_handler = nil
-    self.variable.on_error = function(_, err)
-        callback(err)
-    end
+    self.err_handler = callback
     return self
 end
 
@@ -195,10 +192,11 @@ function Variable:watch(exec, transform)
     return self
 end
 
----@param object table | table[]
----@param sigOrFn string | fun(...): any
+---@param object table
+---@param sigOrFn string
 ---@param callback fun(...): any
 ---@return Variable
+---@overload fun(self: Variable, object: { [1]: table, [2]: string }[], callback: fun(...): any): Variable
 function Variable:observe(object, sigOrFn, callback)
     local f
     if type(sigOrFn) == "function" then
@@ -215,13 +213,30 @@ function Variable:observe(object, sigOrFn, callback)
         self:set(f(...))
     end
 
+    local arr = {}
+
     if type(sigOrFn) == "string" then
-        object["on_" .. sigOrFn]:connect(set)
-    else
-        for _, obj in ipairs(object) do
-            obj[1]["on_" .. obj[2]]:connect(set)
-        end
+        table.insert(arr, { object, sigOrFn })
     end
+
+    for _, tbl in ipairs(arr) do
+        local id
+        local obj, signal = tbl[1], tbl[2]
+
+        if string.sub(signal, 1, 8) == "notify::" then
+            local prop = string.gsub(signal, "notify::", "")
+            id = obj.on_notify:connect(function()
+                set(obj, obj[prop])
+            end, prop, false)
+        else
+            id = obj["on_" .. signal]:connect(set)
+        end
+
+        self:on_dropped(function()
+            GObject.signal_handler_disconnect(obj, id)
+        end)
+    end
+
     return self
 end
 
@@ -235,9 +250,9 @@ function Variable.derive(deps, transform)
 
     if getmetatable(deps) == Variable then
         local var = Variable.new(transform(deps:get()))
-        deps:subscribe(function(v)
+        var:on_dropped(deps:subscribe(function(v)
             var:set(transform(v))
-        end)
+        end))
         return var
     end
 
@@ -265,11 +280,11 @@ function Variable.derive(deps, transform)
         end)
     end
 
-    var.variable.on_dropped = function()
+    var:on_dropped(function()
         for _, unsub in ipairs(unsubs) do
             unsub()
         end
-    end
+    end)
     return var
 end
 
