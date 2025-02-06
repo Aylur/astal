@@ -71,6 +71,11 @@ public class Astal.Window : Gtk.Window {
         // It won't show up later either when it size changes by adding children.
         height_request = 1;
         width_request = 1;
+
+        // When children get redrawn with a smaller size, the window won't
+        // shrink automatically so we set default_size to force it to.
+        default_height = 1;
+        default_width = 1;
         check("initialize layer shell");
     }
 
