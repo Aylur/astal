@@ -134,6 +134,31 @@ public class Astal.CircularProgressBar : Gtk.Widget {
 		}
 	}
 
+	static construct {
+		set_css_name("circular-progress");
+		Gtk.CssProvider css_provider = new Gtk.CssProvider();
+		css_provider.load_from_string(
+			"""
+			circular-progress progress-arc {
+				color: @accent_color;
+			}
+			circular-progress radius-fill {
+				color: @headerbar_backdrop_color;
+			}
+			circular-progress center-fill {
+				color: @headerbar_shade_color;
+			}
+			"""
+		);
+
+		//`add_provider_for_display` is not deprecated even though vala states that it is
+		Gtk.StyleContext.add_provider_for_display(
+			Gdk.Display.get_default(),
+			css_provider,
+			Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+		);
+	}
+
 	construct {
 		_progress_arc = new ProgressArc();
 		_center_fill = new CenterFill();
@@ -157,8 +182,7 @@ public class Astal.CircularProgressBar : Gtk.Widget {
 
 	public CircularProgressBar() {
 		Object(
-			name: "circular-progress",
-			css_name: "circular-progress"
+			name: "circular-progress"
 		);
 		notify.connect(() => {
 			queue_draw();
