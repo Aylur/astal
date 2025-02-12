@@ -27,18 +27,16 @@ function Variable.new(value)
     local v = Astal.VariableBase()
     local variable = setmetatable({ variable = v, _value = value }, Variable)
 
-    local id = v.on_error:connect(function(_, err)
-        if variable.err_handler then ---@diagnostic disable-line
-            variable.err_handler(err) ---@diagnostic disable-line
+    v.on_error = function(_, err)
+        if variable.err_handler then
+            variable.err_handler(err)
         end
-    end)
+    end
 
     variable:on_dropped(function()
         variable:stop_watch()
         variable:stop_poll()
-        GObject.signal_handler_disconnect(v, id)
     end)
-
     return variable
 end
 
@@ -113,14 +111,14 @@ end
 
 function Variable:stop_poll()
     if self:is_polling() then
-        self._poll.cancel()
+        self._poll:cancel()
     end
     self._poll = nil
 end
 
 function Variable:stop_watch()
     if self:is_watching() then
-        self._watch.kill()
+        self._watch:kill()
     end
     self._watch = nil
 end
@@ -139,7 +137,10 @@ end
 ---@param callback function
 ---@return Variable
 function Variable:on_error(callback)
-    self.err_handler = callback
+    self.err_handler = nil
+    self.variable.on_error = function(_, err)
+        callback(err)
+    end
     return self
 end
 
@@ -201,10 +202,8 @@ function Variable:observe(object, sigOrFn, callback)
     local f
     if type(sigOrFn) == "function" then
         f = sigOrFn
-    elseif type(callback) == "function" then
-        f = callback
     else
-        f = function()
+        f = callback or function()
             return self:get()
         end
     end
@@ -240,7 +239,7 @@ function Variable:observe(object, sigOrFn, callback)
     return self
 end
 
----@param deps Variable | (Binding | Variable)[]
+---@param deps Variable | table<integer, Binding | Variable>
 ---@param transform? fun(...): any
 ---@return Variable
 function Variable.derive(deps, transform)
