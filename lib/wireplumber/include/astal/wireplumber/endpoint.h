@@ -40,7 +40,6 @@ const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self);
 guint astal_wp_endpoint_get_serial(AstalWpEndpoint *self);
 const gchar *astal_wp_endpoint_get_path(AstalWpEndpoint *self);
 
-
 G_END_DECLS
 
 #endif  // !ASTAL_WP_ENDPOINT_H

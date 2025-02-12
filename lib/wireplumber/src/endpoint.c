@@ -297,7 +297,6 @@ guint astal_wp_endpoint_get_serial(AstalWpEndpoint *self) { return self->serial;
  */
 const gchar *astal_wp_endpoint_get_path(AstalWpEndpoint *self) { return self->path; }
 
-
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
                                            GParamSpec *pspec) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
@@ -437,12 +436,14 @@ static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
     g_free(self->icon);
     self->icon = g_strdup(icon);
 
-    const gchar *serial = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "object.serial");
+    const gchar *serial =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "object.serial");
     if (serial != NULL) {
         self->serial = g_ascii_strtoull(serial, NULL, 10);
     }
- 
-    const gchar* path = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "object.path");
+
+    const gchar *path =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "object.path");
     g_free(self->path);
     self->path = g_strdup(path);
 
@@ -670,8 +671,8 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
      *
      * The object path of this endpoint
      */
-    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_PATH] = g_param_spec_string(
-        "path", "path", "path", NULL, G_PARAM_READABLE);
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_PATH] =
+        g_param_spec_string("path", "path", "path", NULL, G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);
