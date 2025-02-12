@@ -165,13 +165,22 @@ public class TrayItem : Object {
 
     private DBusMenu.Importer menu_importer;
 
+    /**
+    * The MenuModel describing the menu for this TrayItem to be used with a MenuButton or PopoverMenu.
+    * The actions for this menu are defined in [property@AstalTray.TrayItem:action-group].
+    */
     public MenuModel? menu_model {
         owned get {
             if (menu_importer == null) return null;
             return menu_importer.model;
         }
     }
-
+    
+    /**
+    * The ActionGroup containing the actions for the menu. All actions have the `dbusmenu` prefix and are
+    * setup to work with the [property@AstalTray.TrayItem:menu-model]. Make sure to insert this action group
+    * into a parent widget of the menu, eg the MenuButton for which the MenuModel for this TrayItem is set.
+    */
     public ActionGroup? action_group {
         owned get {
             if (menu_importer == null) return null;
