@@ -66,7 +66,7 @@ function Binding:subscribe(callback)
             callback(self:get())
         end)
     else
-        error("can not subscribe: Not a GObject or a Variable " + self)
+        error("can not subscribe: Not a GObject or a Variable " .. tostring(self))
     end
 end
 

@@ -27,18 +27,16 @@ function Variable.new(value)
     local v = Astal.VariableBase()
     local variable = setmetatable({ variable = v, _value = value }, Variable)
 
-    v.on_dropped = function()
-        variable:stop_watch()
-        variable:stop_poll()
-    end
-
     v.on_error = function(_, err)
         if variable.err_handler then
             variable.err_handler(err)
         end
     end
 
-    return variable
+    return variable:on_dropped(function()
+        variable:stop_watch()
+        variable:stop_poll()
+    end)
 end
 
 ---@param transform? fun(v: any): any
@@ -61,7 +59,6 @@ function Variable:get()
 end
 
 ---@param value any
----@return nil
 function Variable:set(value)
     if value ~= self:get() then
         self._value = value
@@ -90,7 +87,7 @@ function Variable:start_poll()
         self._poll = Time.interval(self.poll_interval, function()
             Process.exec_async(self.poll_exec, function(out, err)
                 if err ~= nil then
-                    return self.variable.emit_error(err)
+                    return self.variable:emit_error(err)
                 else
                     self:set(self.poll_transform(out, self:get()))
                 end
@@ -107,26 +104,26 @@ function Variable:start_watch()
     self._watch = Process.subprocess(self.watch_exec, function(out)
         self:set(self.watch_transform(out, self:get()))
     end, function(err)
-        self.variable.emit_error(err)
+        self.variable:emit_error(err)
     end)
 end
 
 function Variable:stop_poll()
     if self:is_polling() then
-        self._poll.cancel()
+        self._poll:cancel()
     end
     self._poll = nil
 end
 
 function Variable:stop_watch()
     if self:is_watching() then
-        self._watch.kill()
+        self._watch:kill()
     end
     self._watch = nil
 end
 
 function Variable:drop()
-    self.variable.emit_dropped()
+    self.variable:emit_dropped()
 end
 
 ---@param callback function
@@ -195,18 +192,17 @@ function Variable:watch(exec, transform)
     return self
 end
 
----@param object table | table[]
----@param sigOrFn string | fun(...): any
+---@param object table
+---@param sigOrFn string
 ---@param callback fun(...): any
 ---@return Variable
+---@overload fun(self: Variable, object: { [1]: table, [2]: string }[], callback: fun(...): any): Variable
 function Variable:observe(object, sigOrFn, callback)
     local f
     if type(sigOrFn) == "function" then
         f = sigOrFn
-    elseif type(callback) == "function" then
-        f = callback
     else
-        f = function()
+        f = callback or function()
             return self:get()
         end
     end
@@ -215,17 +211,34 @@ function Variable:observe(object, sigOrFn, callback)
         self:set(f(...))
     end
 
+    local arr = {}
+
     if type(sigOrFn) == "string" then
-        object["on_" .. sigOrFn]:connect(set)
-    else
-        for _, obj in ipairs(object) do
-            obj[1]["on_" .. obj[2]]:connect(set)
-        end
+        table.insert(arr, { object, sigOrFn })
     end
+
+    for _, tbl in ipairs(arr) do
+        local id
+        local obj, signal = tbl[1], tbl[2]
+
+        if string.sub(signal, 1, 8) == "notify::" then
+            local prop = string.gsub(signal, "notify::", "")
+            id = obj.on_notify:connect(function()
+                set(obj, obj[prop])
+            end, prop, false)
+        else
+            id = obj["on_" .. signal]:connect(set)
+        end
+
+        self:on_dropped(function()
+            GObject.signal_handler_disconnect(obj, id)
+        end)
+    end
+
     return self
 end
 
----@param deps Variable | (Binding | Variable)[]
+---@param deps Variable | table<integer, Binding | Variable>
 ---@param transform? fun(...): any
 ---@return Variable
 function Variable.derive(deps, transform)
@@ -235,10 +248,10 @@ function Variable.derive(deps, transform)
 
     if getmetatable(deps) == Variable then
         local var = Variable.new(transform(deps:get()))
-        deps:subscribe(function(v)
+
+        return var:on_dropped(deps:subscribe(function(v)
             var:set(transform(v))
-        end)
-        return var
+        end))
     end
 
     for i, var in ipairs(deps) do
@@ -265,12 +278,11 @@ function Variable.derive(deps, transform)
         end)
     end
 
-    var.variable.on_dropped = function()
+    return var:on_dropped(function()
         for _, unsub in ipairs(unsubs) do
             unsub()
         end
-    end
-    return var
+    end)
 end
 
 return setmetatable(Variable, {
