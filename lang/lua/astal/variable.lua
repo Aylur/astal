@@ -33,11 +33,10 @@ function Variable.new(value)
         end
     end
 
-    variable:on_dropped(function()
+    return variable:on_dropped(function()
         variable:stop_watch()
         variable:stop_poll()
     end)
-    return variable
 end
 
 ---@param transform? fun(v: any): any
@@ -249,10 +248,10 @@ function Variable.derive(deps, transform)
 
     if getmetatable(deps) == Variable then
         local var = Variable.new(transform(deps:get()))
-        var:on_dropped(deps:subscribe(function(v)
+
+        return var:on_dropped(deps:subscribe(function(v)
             var:set(transform(v))
         end))
-        return var
     end
 
     for i, var in ipairs(deps) do
@@ -279,12 +278,11 @@ function Variable.derive(deps, transform)
         end)
     end
 
-    var:on_dropped(function()
+    return var:on_dropped(function()
         for _, unsub in ipairs(unsubs) do
             unsub()
         end
     end)
-    return var
 end
 
 return setmetatable(Variable, {
