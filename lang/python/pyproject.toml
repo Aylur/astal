@@ -1,0 +1,14 @@
+[project]
+name = "astal"
+version = "0.1.0"
+description = "python bindings for libastal"
+requires-python = ">=3.12"
+dependencies = [
+    "gengir (>=1.0.2,<2.0.0)",
+    "pygobject (>=3.50.0,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
