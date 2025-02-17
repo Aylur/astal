@@ -1,5 +1,6 @@
 from astal.process import exec_async, subprocess
 from astal.binding import Binding
+from astal.time import interval
 
 from gi.repository import AstalIO
 
@@ -27,14 +28,14 @@ class Variable(AstalIO.VariableBase):
         return Binding(self).transform(transform)
 
     def subscribe(self, callback):
-        id = self.emitter.connect(
+        id = self.connect(
             'changed',
-            lambda gobject, _=None: callback(self.emitter.get_value())
+            lambda gobject, _=None: callback(self.get_value())
         )
 
         def unsubscribe(_=None):
             self.emit_dropped()
-            self.emitter.disconnect(id)
+            self.r.disconnect(id)
 
         return unsubscribe
 
@@ -70,10 +71,10 @@ class Variable(AstalIO.VariableBase):
         if not self.poll_transform: return
 
         if self.poll_fn:
-            self.poll_timer = AstalIO.Time.interval(self.poll_interval, lambda: self.set_value(self.poll_transform(self.poll_fn(self.get_value()))))
+            self.poll_timer = interval(self.poll_interval, lambda: self.set_value(self.poll_transform(self.poll_fn(self.get_value()))))
 
         else:
-            self.poll_timer = AstalIO.Time.interval(
+            self.poll_timer = interval(
                 self.poll_interval,
                 lambda: exec_async(self.poll_exec, lambda out, err=None: 
                     self.set_value(self.poll_transform(out, self.get_value()))
