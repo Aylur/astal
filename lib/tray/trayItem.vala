@@ -218,7 +218,7 @@ public class TrayItem : Object {
             });
 
             Variant? menuVariant = proxy.get_cached_property("Menu");
-            if (proxy.Menu != null && menuVariant != null && menuVariant.is_of_type(VariantType.SIGNATURE)) { 
+            if (proxy.Menu != null && menuVariant != null && menuVariant.is_of_type(VariantType.OBJECT_PATH)) { 
                 this.menu_importer = new DBusMenu.Importer(proxy.get_name_owner(), proxy.Menu);
                 this.menu_importer.notify["model"].connect(() => {
                     notify_property("menu-model");
