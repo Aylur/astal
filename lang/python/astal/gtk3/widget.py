@@ -1,10 +1,5 @@
-import gi
-
-from .astalify import astalify
+from astal.gtk3.astalify import astalify
 from enum import Enum
-
-gi.require_version("Astal", "3.0")
-gi.require_version("Gtk", "3.0")
 
 from gi.repository import Astal, Gtk
 

@@ -1,12 +1,8 @@
-import gi, sys
+import sys
 
 from typing import Callable, Optional, Any, Dict
 
-gi.require_version("Astal", "3.0")
-gi.require_version("AstalIO", "0.1")
 from gi.repository import Astal, AstalIO, Gio
-
-type Config = Dict[str, Any]
 
 class AstalPy(Astal.Application):
     request_handler: Optional[Callable[[str, Callable[[Any], None]], None]] = None
@@ -51,6 +47,7 @@ class AstalPy(Astal.Application):
 
         try:
             self.acquire_socket()
+
         except Exception:
             return config["client"](lambda msg: AstalIO.send_message(self.get_instance_name(), msg), *sys.argv[1:])
         

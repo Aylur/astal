@@ -1,17 +1,9 @@
-import gi
-import asyncio
-from .process import *
-from .binding import Binding
+from astal.process import exec_async, subprocess
+from astal.binding import Binding
 
-gi.require_version("Astal", "3.0")
-gi.require_version("AstalIO", "0.1")
-gi.require_version("GObject", "2.0")
+from gi.repository import AstalIO
 
-from gi.repository import Astal, AstalIO, GObject
-
-import threading
-import time
-from typing import Any, Callable, List, Optional, Union
+from typing import Callable, List, Union
 
 class Variable(AstalIO.VariableBase):
     def __init__(self, init_value=None):

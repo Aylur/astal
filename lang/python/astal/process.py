@@ -1,8 +1,6 @@
-import gi, sys
+import sys
 
 from typing import List, Callable
-
-gi.require_version("AstalIO", "0.1")
 
 from gi.repository import AstalIO
 

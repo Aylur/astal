@@ -1,4 +1,3 @@
-import gi
 from functools import partial, singledispatch
 
 from typing import Callable, List
@@ -6,10 +5,6 @@ from typing import Callable, List
 from astal.binding import Binding, bind
 from astal.variable import Variable
 
-gi.require_version("Astal", "3.0")
-gi.require_version("AstalIO", "0.1")
-gi.require_version("Gtk", "3.0")
-gi.require_version("GObject", "2.0")
 from gi.repository import Astal, Gtk, GObject
 
 def astalify(widget: Gtk.Widget):
