@@ -130,7 +130,7 @@ public class Astal.Window : Gtk.Window {
             set_anchor(this, Edge.RIGHT, WindowAnchor.RIGHT in value);
         }
         get {
-            var a = WindowAnchor.NONE;
+            var a = 0;
             if (get_anchor(this, Edge.TOP))
                 a = a | WindowAnchor.TOP;
 
@@ -142,6 +142,9 @@ public class Astal.Window : Gtk.Window {
 
             if (get_anchor(this, Edge.BOTTOM))
                 a = a | WindowAnchor.BOTTOM;
+
+            if (a == 0)
+                return WindowAnchor.NONE;
 
             return a;
         }
