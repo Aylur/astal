@@ -27,5 +27,7 @@ return {
     write_file_async = File.write_file_async,
     monitor_file = File.monitor_file,
 
+    ---@generic T
+    ---@type fun(libname: `T`, version: string): T
     require = lgi.require,
 }
