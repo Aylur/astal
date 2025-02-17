@@ -118,7 +118,7 @@ public class Astal.CircularProgress : Gtk.Bin {
             arc_length += 1; // Adjust for circular representation
 
         // Calculate the position on the arc based on the percentage value
-        var scaled = arc_length + value;
+        var scaled = value * arc_length;
 
         // Ensure the position is between 0 and 1
         return (scaled % 1 + 1) % 1;
