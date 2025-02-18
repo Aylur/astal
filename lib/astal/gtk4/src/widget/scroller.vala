@@ -89,8 +89,8 @@ public class Astal.Scroller : Gtk.Widget, Gtk.Orientable, Gtk.Buildable {
     Gtk.Requisition child_req;
     this._child.get_preferred_size(out child_req, null);
 
-    child_width = child_req.width;
-    child_height = child_req.height;
+    child_width = int.max(child_req.width, width);
+    child_height = int.max(child_req.height, height);
     if (this.orientation == Gtk.Orientation.HORIZONTAL) {
       this._child.allocate_size({ (int)this.position, 0, child_width, child_height }, -1);
     } else {
