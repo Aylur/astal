@@ -5,7 +5,7 @@
  * It supports various styling options including center filling, radius filling, and
  * customizable line properties.
  */
-public class Astal.CircularProgressBar : Gtk.Widget {
+public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
     private ProgressArc _progress_arc;
     private CenterFill _center_fill;
     private RadiusFill _radius_fill;
@@ -124,14 +124,33 @@ public class Astal.CircularProgressBar : Gtk.Widget {
     public Gtk.Widget? child {
         get { return _child; }
         set {
+            if (_child == value) {
+                return;
+            }
+
             if (_child != null) {
                 _child.unparent();
             }
+
             _child = value;
+
             if (_child != null) {
                 _child.set_parent(this);
             }
+
+            queue_draw();
         }
+    }
+
+    /*
+     * Implements Gtk.Buildable interface.
+     */
+    public void add_child(Gtk.Builder builder, GLib.Object child, string? type) {
+        if (!(child is Gtk.Widget)) {
+            return;
+        }
+
+        this.child = (Gtk.Widget)child;
     }
 
     static construct {
@@ -151,7 +170,7 @@ public class Astal.CircularProgressBar : Gtk.Widget {
 			"""
         );
 
-        //`add_provider_for_display` is not deprecated even though vala states that it is
+        // `add_provider_for_display` is not deprecated even though vala states that it is
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(),
             css_provider,
@@ -182,7 +201,7 @@ public class Astal.CircularProgressBar : Gtk.Widget {
 
     public CircularProgressBar() {
         Object(
-            name: "circular-progress"
+            name : "circular-progress"
         );
         notify.connect(() => {
             queue_draw();
@@ -248,14 +267,12 @@ public class Astal.CircularProgressBar : Gtk.Widget {
         }
     }
 
-    public override void measure(
-        Gtk.Orientation orientation,
-        int for_size,
-        out int minimum,
-        out int natural,
-        out int minimum_baseline,
-        out int natural_baseline
-    ) {
+    public override void measure(Gtk.Orientation orientation,
+                                 int for_size,
+                                 out int minimum,
+                                 out int natural,
+                                 out int minimum_baseline,
+                                 out int natural_baseline) {
         minimum = natural = 24;
         minimum_baseline = natural_baseline = -1;
 
@@ -294,14 +311,12 @@ private class ProgressArc : Gtk.Widget {
         );
     }
 
-    public void update_geometry(
-        float center_x,
-        float center_y,
-        float delta,
-        float line_width,
-        Gsk.LineCap line_cap,
-        double percentage
-    ) {
+    public void update_geometry(float center_x,
+                                float center_y,
+                                float delta,
+                                float line_width,
+                                Gsk.LineCap line_cap,
+                                double percentage) {
         if (_updating_geometry) {
             return;
         }
@@ -400,12 +415,10 @@ private class CenterFill : Gtk.Widget {
         );
     }
 
-    public void update_geometry(
-        float center_x,
-        float center_y,
-        float delta,
-        Gsk.FillRule fill_rule
-    ) {
+    public void update_geometry(float center_x,
+                                float center_y,
+                                float delta,
+                                Gsk.FillRule fill_rule) {
         if (_updating_geometry) {
             return;
         }
