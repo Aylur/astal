@@ -17,9 +17,11 @@ local Process = require("astal.process")
 ---@field private poll_fn? function
 ---@field private watch_transform? fun(next: any, prev: any): any
 ---@field private watch_exec? string[] | string
+---@field private __index Variable
 ---@overload fun(transform?: fun(v: any): any): Binding
 local Variable = {}
-Variable.__index = Variable
+
+Variable.__index = Variable ---@diagnostic disable-line
 
 ---@param value? any
 ---@return Variable
@@ -39,6 +41,7 @@ function Variable.new(value)
     end)
 end
 
+---@private
 ---@param transform? fun(v: any): any
 ---@return Binding
 function Variable:__call(transform)
@@ -49,6 +52,7 @@ function Variable:__call(transform)
     end
 end
 
+---@private
 function Variable:__tostring()
     return "Variable<" .. tostring(self:get()) .. ">"
 end

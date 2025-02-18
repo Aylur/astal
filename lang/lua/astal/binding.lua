@@ -5,9 +5,10 @@ local GObject = lgi.require("GObject", "2.0")
 ---@field emitter table | Variable | userdata
 ---@field property? string
 ---@field transform_fn function
+---@field private __index Binding
 ---@overload fun(emitter: table | userdata, property?: string): Binding
 local Binding = {}
-Binding.__index = Binding
+Binding.__index = Binding ---@diagnostic disable-line
 
 ---@param emitter table | Variable | userdata
 ---@param property? string
@@ -22,6 +23,7 @@ function Binding.new(emitter, property)
     }, Binding)
 end
 
+---@private
 function Binding:__tostring()
     local str = "Binding<" .. tostring(self.emitter)
     if self.property ~= nil then
