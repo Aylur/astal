@@ -17,7 +17,7 @@ public class Astal.Scroller : Gtk.Widget, Gtk.Orientable, Gtk.Buildable {
   public double speed { get; set; default = 25; }
 
   /**
-  * The delay used when changeng the scroll direction. This has only an effect when
+  * The delay used when changing the scroll direction. This has only an effect when
   * [property@Astal.Scroller:behaviour] is set to alternate.
   */
   public int direction_change_delay { get; set; default = 500; }
@@ -28,7 +28,7 @@ public class Astal.Scroller : Gtk.Widget, Gtk.Orientable, Gtk.Buildable {
   public Astal.ScrollBehaviour behaviour { get; set; default = Astal.ScrollBehaviour.ALTERNATE; }
   
   /**
-  * The orienttion of the scroller. This determines the scroll direction.
+  * The orientation of the scroller. This determines the scroll direction.
   */
   public Gtk.Orientation orientation { get; set; default = Gtk.Orientation.HORIZONTAL; }
 
@@ -46,6 +46,10 @@ public class Astal.Scroller : Gtk.Widget, Gtk.Orientable, Gtk.Buildable {
       this._child = value;
       this._child.set_parent(this);
     }
+  }
+
+  static construct {
+    set_css_name("scroller");
   }
 
   construct {
