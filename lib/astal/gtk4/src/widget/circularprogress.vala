@@ -146,11 +146,11 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
      * Implements Gtk.Buildable interface.
      */
     public void add_child(Gtk.Builder builder, GLib.Object child, string? type) {
-        if (!(child is Gtk.Widget)) {
-            return;
+        if (child is Gtk.Widget) {
+            this.child = (Gtk.Widget)child;
+        } else if (child is Gtk.EventController) {
+            this.add_controller((Gtk.EventController)child);
         }
-
-        this.child = (Gtk.Widget)child;
     }
 
     static construct {
@@ -190,6 +190,9 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
         // Set for the child, and better compatibility with Composite Templates
         layout_manager = new Gtk.BinLayout();
         overflow = Gtk.Overflow.HIDDEN;
+        can_focus = true;
+        focusable = true;
+        can_target = true;
 
         // Connect to child's notify signal to redraw when child changes
         notify["child"].connect(() => {
