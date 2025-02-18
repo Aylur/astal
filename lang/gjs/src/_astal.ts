@@ -49,7 +49,7 @@ export function hook<Widget extends Connectable>(
 ) {
     if (typeof object.connect === "function" && callback) {
         const id = object.connect(signalOrCallback, (_: any, ...args: unknown[]) => {
-            callback(widget, ...args)
+            return callback(widget, ...args)
         })
         widget.connect("destroy", () => {
             (object.disconnect as Connectable["disconnect"])(id)

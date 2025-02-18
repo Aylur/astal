@@ -37,6 +37,7 @@ await suppress(import("gi://AstalBluetooth"), ({ Adapter, Bluetooth, Device }) =
 })
 
 await suppress(import("gi://AstalHyprland"), ({ Hyprland, Monitor, Workspace }) => {
+    patch(Hyprland.prototype, "binds")
     patch(Hyprland.prototype, "monitors")
     patch(Hyprland.prototype, "workspaces")
     patch(Hyprland.prototype, "clients")

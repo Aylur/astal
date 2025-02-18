@@ -68,12 +68,13 @@ local Gtk = require("astal.gtk3").Gtk
 local Variable = require("astal.variable")
 
 ---@param initial table
+---@return varmap
 return function(initial)
     local map = initial
-    local var = Variable()
+    local var = Variable.new({})
 
     local function notify()
-        local arr
+        local arr = {}
         for _, value in pairs(map) do
             table.insert(arr, value)
         end
@@ -90,7 +91,13 @@ return function(initial)
 
     notify() -- init
 
-    return {
+    ---@class varmap
+    ---@field set fun(key: any, value: any): nil
+    ---@field delete fun(key: any): nil
+    ---@field get fun(): any
+    ---@field subscribe fun(callback: function): function
+    ---@overload fun(): Binding
+    return setmetatable({
         set = function(key, value)
             delete(key)
             map[key] = value
@@ -106,7 +113,11 @@ return function(initial)
         subscribe = function(callback)
             return var:subscribe(callback)
         end,
-    }
+    }, {
+        __call = function()
+            return var()
+        end,
+    })
 end
 ```
 
@@ -130,7 +141,7 @@ function MappedBox()
                 map.delete(id)
             end)
         end,
-        bind(map):as(function (arr)
+        map():as(function(arr)
             -- can be sorted here
             return arr
         end),

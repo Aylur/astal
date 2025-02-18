@@ -303,6 +303,20 @@ public class Hyprland : Object {
         }
     }
 
+    private async bool try_add_client(string addr) throws Error {
+        if (addr == "" || get_client(addr) != null) {
+            return true;
+        }
+
+        var client = new Client();
+        _clients.insert(addr, client);
+        yield sync_clients();
+        yield sync_workspaces();
+        client_added(client);
+        notify_property("clients");
+        return false;
+    }
+
     private async void handle_event(string line) throws Error {
         var args = line.split(">>");
 
@@ -318,21 +332,6 @@ public class Hyprland : Object {
                 yield sync_monitors();
                 focused_monitor = get_monitor_by_name(argv[0]);
                 focused_workspace = get_workspace_by_name(argv[1]);
-                break;
-
-            // first event that signals a new client
-            case "activewindowv2":
-                if (args[1] != "" && get_client(args[1]) == null) {
-                    var client = new Client();
-                    _clients.insert(args[1], client);
-                    yield sync_clients();
-                    yield sync_workspaces();
-                    client_added(client);
-                    notify_property("clients");
-                    focused_client = client;
-                } else {
-                    focused_client = get_client(args[1]);
-                }
                 break;
 
             // TODO: nag vaxry for fullscreenv2 that passes address
@@ -377,6 +376,8 @@ public class Hyprland : Object {
             case "moveworkspacev2":
                 yield sync_workspaces();
                 yield sync_monitors();
+                focused_workspace = get_workspace(int.parse(args[1]));
+                notify_property("workspaces");
                 break;
 
             case "renameworkspace":
@@ -393,9 +394,18 @@ public class Hyprland : Object {
                 keyboard_layout(argv[0], argv[1]);
                 break;
 
+            // first event that signals a new client when it opens as an active window
+            case "activewindowv2":
+                yield try_add_client(args[1]);
+                focused_client = get_client(args[1]);
+                break;
+
             case "openwindow":
-                yield sync_clients();
-                yield sync_workspaces();
+                var addr = args[1].split(",")[0];
+                if (yield try_add_client(addr)) {
+                    yield sync_clients();
+                    yield sync_workspaces();
+                }
                 break;
 
             case "closewindow":

@@ -142,7 +142,7 @@ export function signal(
             }
             Object.defineProperty(target, `on_${name.replace("-", "_")}`, {
                 value: function (...args: any[]) {
-                    return og(...args)
+                    return og.apply(this, args)
                 },
             })
         }

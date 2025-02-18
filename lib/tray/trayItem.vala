@@ -165,14 +165,23 @@ public class TrayItem : Object {
 
     private DBusMenu.Importer menu_importer;
 
-    public MenuModel menu_model {
+    /**
+    * The MenuModel describing the menu for this TrayItem to be used with a MenuButton or PopoverMenu.
+    * The actions for this menu are defined in [property@AstalTray.TrayItem:action-group].
+    */
+    public MenuModel? menu_model {
         owned get {
             if (menu_importer == null) return null;
             return menu_importer.model;
         }
     }
-
-    public ActionGroup action_group {
+    
+    /**
+    * The ActionGroup containing the actions for the menu. All actions have the `dbusmenu` prefix and are
+    * setup to work with the [property@AstalTray.TrayItem:menu-model]. Make sure to insert this action group
+    * into a parent widget of the menu, eg the MenuButton for which the MenuModel for this TrayItem is set.
+    */
+    public ActionGroup? action_group {
         owned get {
             if (menu_importer == null) return null;
             return menu_importer.action_group;
@@ -208,7 +217,8 @@ public class TrayItem : Object {
                 }
             });
 
-            if (proxy.Menu != null) {
+            Variant? menuVariant = proxy.get_cached_property("Menu");
+            if (proxy.Menu != null && menuVariant != null && menuVariant.is_of_type(VariantType.OBJECT_PATH)) { 
                 this.menu_importer = new DBusMenu.Importer(proxy.get_name_owner(), proxy.Menu);
                 this.menu_importer.notify["model"].connect(() => {
                     notify_property("menu-model");
@@ -296,6 +306,31 @@ public class TrayItem : Object {
                 }
             }
         );
+    }
+
+    /**
+    * tells the tray app that its menu is about to be opened, 
+    * so it can update the menu if needed. You should call this method
+    * before openening the menu.
+    */
+    public void about_to_show() {
+      if(proxy.Menu == null) return;
+      try {
+        Bus.get_sync(BusType.SESSION).call_sync(
+          this.proxy.g_name_owner,
+          this.proxy.Menu,
+          "com.canonical.dbusmenu",
+          "AboutToShow",
+          new Variant("(i)", 0),
+          null,
+          DBusCallFlags.NONE,
+          -1,
+          null
+        );
+      }
+      catch (Error r) {
+        //silently ignore
+      }
     }
 
     /**

@@ -52,15 +52,20 @@ local function includes(tbl, elem)
 end
 
 local function set_children(parent, children)
-    children = map(flatten(children), function(item)
-        if Gtk.Widget:is_type_of(item) then
-            return item
+    children = map(
+        filter(flatten(children), function(item)
+            return not not item
+        end),
+        function(item)
+            if Gtk.Widget:is_type_of(item) then
+                return item
+            end
+            return Gtk.Label({
+                visible = true,
+                label = tostring(item),
+            })
         end
-        return Gtk.Label({
-            visible = true,
-            label = tostring(item),
-        })
-    end)
+    )
 
     -- remove
     if Gtk.Bin:is_type_of(parent) then

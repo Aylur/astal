@@ -25,11 +25,12 @@ function _setChildren(widget: Gtk.Widget, children: any[]) {
         ? ch
         : new Gtk.Label({ visible: true, label: String(ch) }))
 
+
     for (const child of children) {
         widget.vfunc_add_child(
             dummyBulder,
             child,
-            type in widget ? widget[type] as string : null,
+            type in child ? child[type] : null,
         )
     }
 }
@@ -160,10 +161,10 @@ function setupControllers<T>(widget: Gtk.Widget, {
         widget.add_controller(focus)
 
         if (onFocusEnter)
-            focus.connect("focus-enter", () => onFocusEnter(widget))
+            focus.connect("enter", () => onFocusEnter(widget))
 
         if (onFocusLeave)
-            focus.connect("focus-leave", () => onFocusLeave(widget))
+            focus.connect("leave", () => onFocusLeave(widget))
     }
 
     if (onKeyPressed || onKeyReleased || onKeyModifier) {
@@ -213,6 +214,7 @@ function setupControllers<T>(widget: Gtk.Widget, {
 
     if (onScroll || onScrollDecelerate) {
         const scroll = new Gtk.EventControllerScroll
+        scroll.flags = Gtk.EventControllerScrollFlags.BOTH_AXES | Gtk.EventControllerScrollFlags.KINETIC
         widget.add_controller(scroll)
 
         if (onScroll)
