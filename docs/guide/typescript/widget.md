@@ -410,8 +410,8 @@ import { hook } from "astal/gtk4"
 function MyWidget() {
     return <box
         setup={(self) => {
-            self.hook(gobject, "signal", callback)
-            self.hook(variable, callback)
+            hook(self, gobject, "signal", callback)
+            hook(self, variable, callback)
         }}
     />
 }
