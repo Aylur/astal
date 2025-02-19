@@ -59,6 +59,7 @@ public class Astal.Scroller : Gtk.Widget, Gtk.Orientable, Gtk.Buildable {
 
   public void add_child(Gtk.Builder builder, Object child, string? type) {
     if(child is Gtk.Widget) this.child = child as Gtk.Widget;
+    else base.add_child(builder, child, type);
   }
 
   protected override void measure(Gtk.Orientation orientation,
