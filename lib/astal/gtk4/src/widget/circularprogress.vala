@@ -5,7 +5,7 @@
  * It supports various styling options including center filling, radius filling, and
  * customizable line properties.
  */
-public class CircularProgressBar : Gtk.Widget, Gtk.Buildable {
+public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
     private ProgressArc _progress_arc;
     private CenterFill _center_fill;
     private RadiusFill _radius_fill;
