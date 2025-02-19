@@ -5,7 +5,7 @@
  * It supports various styling options including center filling, radius filling, and
  * customizable line properties.
  */
-public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
+public class CircularProgressBar : Gtk.Widget, Gtk.Buildable {
     private ProgressArc _progress_arc;
     private CenterFill _center_fill;
     private RadiusFill _radius_fill;
@@ -63,6 +63,7 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
             } else {
                 _line_width = value;
             }
+            invalidate_dimensions();
             queue_draw();
         }
     }
@@ -234,13 +235,20 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
             _cached_width = width;
             _cached_height = height;
             _cached_radius = float.min(width / 2.0f, height / 2.0f) - 1;
-            _cached_delta = _cached_radius - ((float)line_width / 2.0f);
+
+            // Adjust delta based on line width to prevent overflow
+            float half_line_width = (float)line_width / 2.0f;
+            _cached_delta = _cached_radius - half_line_width;
+
+            if (_cached_delta < 0) {
+                _cached_delta = 0;
+            }
         }
 
-        // Use cached values
+        // Use cached values and ensure line width doesn't exceed available space
         var actual_line_width = (float)line_width;
-        if (actual_line_width > _cached_radius) {
-            actual_line_width = _cached_radius;
+        if (actual_line_width > _cached_radius * 2) {
+            actual_line_width = _cached_radius * 2;
         }
 
         // Update geometries
@@ -268,6 +276,13 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
         if (_child != null) {
             _child.snapshot(snapshot);
         }
+    }
+
+    private void invalidate_dimensions() {
+        _cached_width = -1;
+        _cached_height = -1;
+        _cached_radius = -1;
+        _cached_delta = -1;
     }
 
     public override void measure(Gtk.Orientation orientation,
