@@ -18,7 +18,6 @@ function M.subprocess(commandline, on_stdout, on_stderr)
         io.stderr:write(tostring(err) .. "\n")
     end
 
-
     local proc, err
 
     if type(commandline) == "table" then
@@ -28,9 +27,9 @@ function M.subprocess(commandline, on_stdout, on_stderr)
     end
 
     if err ~= nil then
-        err(err)
-        return nil
+        return error(err)
     end
+
     proc.on_stdout = function(_, stdout)
         on_stdout(stdout)
     end
@@ -53,13 +52,14 @@ end
 ---@param commandline string | string[]
 ---@param callback? fun(out: string, err: string): nil
 function M.exec_async(commandline, callback)
-    callback = callback or function(out, err)
-        if err ~= nil then
-            io.stdout:write(tostring(out) .. "\n")
-        else
-            io.stderr:write(tostring(err) .. "\n")
+    callback = callback
+        or function(out, err)
+            if err ~= nil then
+                io.stderr:write(tostring(out) .. "\n")
+            else
+                io.stdout:write(tostring(err) .. "\n")
+            end
         end
-    end
 
     if type(commandline) == "table" then
         Astal.Process.exec_asyncv(commandline, function(_, res)

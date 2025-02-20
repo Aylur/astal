@@ -7,7 +7,6 @@ local Binding = require("astal.binding")
 local File = require("astal.file")
 local Process = require("astal.process")
 local Time = require("astal.time")
----@type Variable | fun(v: any): Variable
 local Variable = require("astal.variable")
 
 return {
@@ -28,5 +27,7 @@ return {
     write_file_async = File.write_file_async,
     monitor_file = File.monitor_file,
 
+    ---@generic T
+    ---@type fun(libname: `T`, version: string): T
     require = lgi.require,
 }
