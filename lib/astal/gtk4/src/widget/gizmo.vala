@@ -1,3 +1,8 @@
+/**
+ * Helper widget to create custom widgets
+ *
+ * Based on private GtkGizmo widget
+ */
 public class Astal.Gizmo : Gtk.Widget {
     public delegate void MeasureFunc(
         Gtk.Orientation orientation, int for_size,
@@ -33,6 +38,17 @@ public class Astal.Gizmo : Gtk.Widget {
     private FocusFunc? focus_func;
     private GrabFocusFunc? grab_focus_func;
 
+    /**
+     * Create a new Gizmo
+     *
+     * @param css_name CSS class name. CSS Node
+     * @param measure_func Optional function for measuring the widget
+     * @param allocate_func Optional function for allocating size
+     * @param snapshot_func Optional function for snapshotting the widget
+     * @param contains_func Optional function for checking if a point is within the widget
+     * @param focus_func Optional function for handling focus behaviour
+     * @param grab_focus_func Optional function for grabbing focus
+     */
     public Gizmo(
         string css_name,
         MeasureFunc? measure_func,
@@ -51,6 +67,18 @@ public class Astal.Gizmo : Gtk.Widget {
         this.grab_focus_func = grab_focus_func;
     }
 
+    /**
+     * Create a new Gizmo with a specific role
+     *
+     * @param css_name CSS class name. CSS Node
+     * @param role Accessible role
+     * @param measure_func Optional function for measuring the widget
+     * @param allocate_func Optional function for allocating size
+     * @param snapshot_func Optional function for snapshotting the widget
+     * @param contains_func Optional function for checking if a point is within the widget
+     * @param focus_func Optional function for handling focus behaviour
+     * @param grab_focus_func Optional function for grabbing focus
+     */
     public Gizmo.with_role(
         string css_name,
         Gtk.AccessibleRole role,
