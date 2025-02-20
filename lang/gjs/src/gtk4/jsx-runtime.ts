@@ -22,7 +22,7 @@ const ctors = {
     box: Widget.Box,
     button: Widget.Button,
     centerbox: Widget.CenterBox,
-    // circularprogress: Widget.CircularProgress,
+    circularprogress: Widget.CircularProgress,
     // drawingarea: Widget.DrawingArea,
     entry: Widget.Entry,
     image: Widget.Image,
