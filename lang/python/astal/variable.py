@@ -2,22 +2,28 @@ from astal.process import exec_async, subprocess
 from astal.binding import Binding
 from astal.time import interval
 
-from gi.repository import AstalIO
+from gi.repository import AstalIO, GObject
 
-from typing import Callable, List, Union
+from typing import Callable, List, Any, Union
 
 class Variable(AstalIO.VariableBase):
-    def __init__(self, init_value=None):
+    _value: Any
+
+    _poll: AstalIO.Time | None = None
+    _watch: AstalIO.Process | None = None
+
+    _poll_interval: int = 1000
+    _poll_exec: List[str] | str = ""
+    _poll_transform: Callable[[Any, Any], Any] = lambda x, _ = None: x
+    _poll_fn: Callable[[Any], Any] | None = lambda last: None
+
+    _watch_transform: Callable[[Any, Any], Any] = lambda x, _ = None: x
+    _watch_exec: List[str] | str = ""
+
+    def __init__(self, value=None):
         super().__init__()
-        self.value = init_value
-        self.watch_proc = None
-        self.poll_interval = None
-        self.poll_exec = None
-        self.poll_transform = None
-        self.poll_fn = None
-        self.poll_timer = None
-        self.watch_transform = None
-        self.watch_exec = []
+
+        self.value = value
 
         self.connect('dropped', self._on_dropped)
 
@@ -27,25 +33,6 @@ class Variable(AstalIO.VariableBase):
     def __call__(self, transform: Callable = lambda x: x):
         return Binding(self).transform(transform)
 
-    def subscribe(self, callback):
-        id = self.connect(
-            'changed',
-            lambda gobject, _=None: callback(self.get_value())
-        )
-
-        def unsubscribe(_=None):
-            self.emit_dropped()
-            self.r.disconnect(id)
-
-        return unsubscribe
-
-    def get_value(self): 
-        return self.value
-    
-    def set_value(self, new_value):
-        self.value = new_value
-        self.emit_changed()
-
     def get(self): 
         return self.value
     
@@ -53,75 +40,89 @@ class Variable(AstalIO.VariableBase):
         self.value = new_value
         self.emit_changed()
 
-    def poll(self, interval, exec, transform=lambda x: x):
-        self.stop_poll()
-        self.poll_transform = transform
-        self.poll_interval = interval
-        if isinstance(exec, Callable):
-            self.poll_fn = exec
-        
-        else:
-            self.poll_exec = exec
+    def is_polling(self):
+        return self._poll != None
 
-        self.start_poll()
-        return self
+    def is_watching(self):
+        return self._watch != None
 
     def start_poll(self):
         if self.is_polling(): return
-        if not self.poll_transform: return
 
-        if self.poll_fn:
-            self.poll_timer = interval(self.poll_interval, lambda: self.set_value(self.poll_transform(self.poll_fn(self.get_value()))))
+        if self._poll_fn:
+            self._poll = interval(
+                self._poll_interval, 
+                lambda: self.set(self._poll_transform(self._poll_fn(self.get()))))
 
         else:
-            self.poll_timer = interval(
-                self.poll_interval,
-                lambda: exec_async(self.poll_exec, lambda out, err=None: 
-                    self.set_value(self.poll_transform(out, self.get_value()))
-                )
-            )
-
-    def stop_poll(self):
-        if self.is_polling():
-            self.poll_timer.cancel()
-            self.poll_timer = None
-
-        return self
-
-    def watch(self, exec, transform=lambda x, _: x):
-        self.stop_watch()
-        self.watch_transform = transform
-        self.watch_exec = exec
-        self.start_watch()
-        return self
+            self._poll = interval(
+                self._poll_interval,
+                lambda: exec_async(
+                    self._poll_exec, lambda out, err=None: 
+                        self.set(self._poll_transform(out, self.get()))))
 
     def start_watch(self):
         if self.is_watching(): return 
-        if not self.watch_transform: return
 
-        self.watch_proc = subprocess(
-            self.watch_exec, 
-            lambda _, out: self.set_value(self.watch_transform(out, self.get_value())),
-        )
+        self._watch = subprocess(
+            self._watch_exec, 
+            lambda _, out: self.set(self._watch_transform(out, self.get())))
+
+    def stop_poll(self):
+        if self.is_polling():
+            self._poll.cancel()
+
+        self._poll = None
 
     def stop_watch(self):
         if self.is_watching():
-            self.watch_proc.kill()
-            self.watch_proc = None
+            self._watch.kill()
+            
+        self._watch = None
+
+    def poll(self, interval: int, exec: str | Callable, transform: Callable[[Any, Any], Any] = lambda x, _ = None: x):
+        self.stop_poll()
+        self._poll_interval = interval
+        self._poll_transform = transform
+
+        if isinstance(exec, Callable):
+            self._poll_fn = exec
+            self._poll_exec = ""
+
+        else:
+            self._poll_exec = exec
+            self._poll_fn = None
+
+        self.start_poll()
 
         return self
 
+    def watch(self, exec: str, transform: Callable[[Any, Any], Any] = lambda x, _ = None: x):
+        self.stop_watch()
+        self._watch_exec = exec
+        self._watch_transform = transform
+        self.start_watch()
+
+        return self
+
+    def drop(self):
+        self.emit_dropped()
+
     def _on_dropped(self, *_):
-        if self.is_polling():
-            self.stop_poll()
-        if self.is_watching():
-            self.stop_watch()
+        self.stop_poll()
+        self.stop_watch()
 
-    def is_polling(self):
-        return self.poll_timer != None
+    def subscribe(self, callback):
+        id = self.connect(
+            'changed',
+            lambda gobject, _=None: callback(self.get())
+        )
 
-    def is_watching(self):
-        return self.watch_proc != None
+        def unsubscribe(_=None):
+            self.emit_dropped()
+            self.disconnect(id)
+
+        return unsubscribe
 
     def observe(self, object, signal_or_callback, callback=lambda _, x: x):
         if isinstance(signal_or_callback, str):
