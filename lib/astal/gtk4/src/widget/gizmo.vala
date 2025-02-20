@@ -1,4 +1,4 @@
-public class Gizmo : Gtk.Widget {
+public class Astal.Gizmo : Gtk.Widget {
     public delegate void MeasureFunc(
         Gtk.Orientation orientation, int for_size,
         out int minimum, out int natural,
