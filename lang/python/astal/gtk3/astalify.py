@@ -1,8 +1,8 @@
-from functools import partial, singledispatch
+from functools import partial
 
-from typing import Callable, List
+from typing import Callable
 
-from astal.binding import Binding, bind
+from astal.binding import Binding
 from astal.variable import Variable
 
 from gi.repository import Astal, Gtk, GObject
@@ -23,12 +23,18 @@ def astalify(widget: Gtk.Widget):
                 if isinstance(signal_or_callback, Callable): return 
 
                 if 'notify::' in signal_or_callback:
-                    id = object.connect(f'{signal_or_callback}', lambda obj, *_: callback(self, object.get_property(signal_or_callback.replace('notify::', '').replace('-', '_')) if signal_or_callback.replace('notify::', '') in [*map(lambda x: x.name, object.list_properties())] else None))
+                    id = object.connect(
+                        f'{signal_or_callback}', 
+                        lambda *_: callback(
+                            self, 
+                            object.get_property(signal_or_callback.replace('notify::', '').replace('-', '_'))))
 
                 else:
-                    id = object.connect(signal_or_callback, lambda _, value, *args: callback(self, value) if not args else callback(self, value, *args))
+                    id = object.connect(
+                        signal_or_callback, 
+                        lambda _, value, *args: callback(self, value) if not args else callback(self, value, *args))
 
-                unsubscribe = lambda _=None: object.disconnect(id)
+                unsubscribe = lambda *_: object.disconnect(id)
 
             self.connect('destroy', unsubscribe)
 

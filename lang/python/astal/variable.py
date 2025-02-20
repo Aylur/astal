@@ -14,7 +14,7 @@ class Variable(AstalIO.VariableBase):
 
     _poll_interval: int = 1000
     _poll_exec: List[str] | str = ""
-    _poll_transform: Callable[[Any, Any], Any] = lambda x, _ = None: x
+    _poll_transform: Callable[[Any, Any], Any] | Callable[[Any], Any] = lambda x, _ = None: x
     _poll_fn: Callable[[Any], Any] | None = lambda last: None
 
     _watch_transform: Callable[[Any, Any], Any] = lambda x, _ = None: x
