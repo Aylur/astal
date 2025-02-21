@@ -234,13 +234,11 @@ but you can not set max size.
 ## Custom widgets with bindable properties
 
 In function components you can wrap any primitive to handle both
-binding and value cases as one.
+binding and value cases as one using the `toBinding` function.
 
 ```tsx
 function MyWidget(props: { prop: string | Binding<string> }) {
-    const prop = props.prop instanceof Binding
-        ? props.prop
-        : bind({ get: () => props.prop, subscribe: () => () => {} })
+    const prop = toBinding(props.prop)
 
     function setup(self: Widget.Box) {
         self.hook(prop, () => {
