@@ -4,8 +4,138 @@
 
 #include "device.h"
 #include "endpoint-private.h"
+#include "glib-object.h"
 #include "glib.h"
 #include "wp.h"
+
+struct _AstalWpChannelVolume {
+  GObject parent_instance;
+
+  AstalWpEndpoint *endpoint;
+
+  gchar* name;
+  gdouble volume;
+};
+
+G_DEFINE_TYPE(AstalWpChannelVolume, astal_wp_channel_volume, G_TYPE_OBJECT);
+
+typedef enum {
+    ASTAL_WP_CHANNEL_VOLUME_PROP_NAME = 1,
+    ASTAL_WP_CHANNEL_VOLUME_PROP_VOLUME,
+    ASTAL_WP_CHANNEL_VOLUME_PROP_VOLUME_ICON,
+    ASTAL_WP_CHANNEL_VOLUME_N_PROPERTIES,
+} AstalWpChannelVolumeProperties;
+
+static GParamSpec *astal_wp_channel_volume_properties[ASTAL_WP_CHANNEL_VOLUME_N_PROPERTIES] = {
+    NULL,
+};
+
+void astal_wp_channel_volume_set_volume(AstalWpChannelVolume *self, gdouble volume) {
+  astal_wp_endpoint_set_channel_volume(self->endpoint, self->name, volume);
+}
+
+void astal_wp_channel_volume_update_volume(AstalWpChannelVolume *self, gdouble volume) {
+  if( volume == self-> volume) return;
+  self->volume = volume;
+  g_object_notify(G_OBJECT(self), "volume");
+  g_object_notify(G_OBJECT(self), "volume-icon");
+}
+
+/**
+ * astal_wp_channel_volume_get_name:
+ *
+ * the name of the channel
+ *
+ * Returns: (nullable)
+ */
+const gchar* astal_wp_channel_volume_get_name(AstalWpChannelVolume *self) {
+  return self->name;
+}
+
+gdouble astal_wp_channel_volume_get_volume(AstalWpChannelVolume *self) {
+  return self->volume;
+}
+
+const gchar* astal_wp_channel_volume_get_volume_icon(AstalWpChannelVolume *self) {
+        if (self->volume == 0) return "audio-volume-muted-symbolic";
+        if (self->volume <= 0.33) return "audio-volume-low-symbolic";
+        if (self->volume <= 0.66) return "audio-volume-medium-symbolic";
+        if (self->volume <= 1) return "audio-volume-high-symbolic";
+        return "audio-volume-overamplified-symbolic";
+}
+
+void astal_wp_channel_volume_set_property(GObject *gobject, guint property_id, const GValue *value, GParamSpec *pspec) {
+  AstalWpChannelVolume *self = ASTAL_WP_CHANNEL_VOLUME(gobject);
+
+  switch(property_id) {
+    case ASTAL_WP_CHANNEL_VOLUME_PROP_NAME:
+      g_free(self->name);
+      self->name = g_value_dup_string(value);
+      break;
+    case ASTAL_WP_CHANNEL_VOLUME_PROP_VOLUME:
+      astal_wp_channel_volume_set_volume(self, g_value_get_double(value));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, property_id, pspec);
+      break;
+  }
+}
+
+void astal_wp_channel_volume_get_property(GObject *gobject, guint property_id, GValue *value, GParamSpec *pspec) {
+  AstalWpChannelVolume *self = ASTAL_WP_CHANNEL_VOLUME(gobject);
+
+  switch(property_id) {
+    case ASTAL_WP_CHANNEL_VOLUME_PROP_NAME:
+      g_value_set_string(value, self->name);
+      break;
+    case ASTAL_WP_CHANNEL_VOLUME_PROP_VOLUME:
+      g_value_set_double(value, self->volume);
+      break;
+    case ASTAL_WP_CHANNEL_VOLUME_PROP_VOLUME_ICON:
+      g_value_set_string(value, astal_wp_channel_volume_get_volume_icon(self));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (gobject, property_id, pspec);
+      break;
+  }
+}
+
+static AstalWpChannelVolume* astal_wp_channel_volume_new(AstalWpEndpoint* ep, const gchar* name) {
+  AstalWpChannelVolume *self = g_object_new(ASTAL_WP_TYPE_CHANNEL_VOLUME, "name", name, NULL);
+  self->endpoint = ep;
+  return self;
+}
+
+static void astal_wp_channel_volume_finalize(GObject *gobject) {
+  AstalWpChannelVolume *self = ASTAL_WP_CHANNEL_VOLUME(gobject);
+  g_free(self->name);
+
+  G_OBJECT_CLASS(astal_wp_channel_volume_parent_class)->finalize(gobject);
+}
+
+static void astal_wp_channel_volume_class_init(AstalWpChannelVolumeClass* klass) {
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->set_property = astal_wp_channel_volume_set_property;
+  object_class->get_property = astal_wp_channel_volume_get_property;
+  object_class->finalize = astal_wp_channel_volume_finalize;
+
+  astal_wp_channel_volume_properties[ASTAL_WP_CHANNEL_VOLUME_PROP_NAME] =
+    g_param_spec_string ("name", "name", "name of the channel", NULL, G_PARAM_CONSTRUCT_ONLY | G_PARAM_READWRITE);
+
+  astal_wp_channel_volume_properties[ASTAL_WP_CHANNEL_VOLUME_PROP_VOLUME] =
+    g_param_spec_double ("volume", "volume", "volume for this channel.", 0, G_MAXFLOAT, 0, G_PARAM_READWRITE);
+
+  astal_wp_channel_volume_properties[ASTAL_WP_CHANNEL_VOLUME_PROP_VOLUME_ICON] =
+    g_param_spec_string("volume-icon", "volume-icon", "volume-icon", "audio-volume-muted", G_PARAM_READABLE);
+
+  g_object_class_install_properties (object_class, ASTAL_WP_CHANNEL_VOLUME_N_PROPERTIES, astal_wp_channel_volume_properties);
+}
+
+
+static void astal_wp_channel_volume_init(AstalWpChannelVolume* self) {
+
+}
 
 struct _AstalWpEndpoint {
     GObject parent_instance;
@@ -23,6 +153,8 @@ struct _AstalWpEndpoint {
     gboolean lock_channels;
 
     gchar *icon;
+
+    GHashTable* channel_volumes;
 };
 
 typedef struct {
@@ -64,6 +196,7 @@ typedef enum {
     ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS,
     ASTAL_WP_ENDPOINT_PROP_SERIAL,
     ASTAL_WP_ENDPOINT_PROP_PATH,
+    ASTAL_WP_ENDPOINT_PROP_CHANNEL_VOLUMES,
     ASTAL_WP_ENDPOINT_N_PROPERTIES,
 } AstalWpEndpointProperties;
 
@@ -83,6 +216,8 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
 
     if (variant == NULL) return;
 
+    g_object_freeze_notify(G_OBJECT(self));
+
     g_variant_lookup(variant, "volume", "d", &volume);
     g_variant_lookup(variant, "mute", "b", &mute);
     g_variant_lookup(variant, "channelVolumes", "a{sv}", &channels);
@@ -97,6 +232,14 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
             g_variant_lookup(varvol, "volume", "d", &channel_volume);
             g_variant_lookup(varvol, "channel", "&s", &channel_str);
             if (channel_volume > volume) volume = channel_volume;
+
+            AstalWpChannelVolume *cv = g_hash_table_lookup(self->channel_volumes, channel_str);
+            if(cv == NULL) {
+                cv = astal_wp_channel_volume_new(self, channel_str);
+                g_hash_table_insert(self->channel_volumes, g_strdup(channel_str), cv);
+                g_object_notify(G_OBJECT(self), "channel-volumes");
+            }
+            astal_wp_channel_volume_update_volume(cv, channel_volume);
         }
     }
 
@@ -111,6 +254,53 @@ void astal_wp_endpoint_update_volume(AstalWpEndpoint *self) {
     }
 
     g_object_notify(G_OBJECT(self), "volume-icon");
+
+    g_object_thaw_notify(G_OBJECT(self));
+}
+
+void astal_wp_endpoint_set_channel_volume(AstalWpEndpoint *self, const gchar* name, gdouble volume) {
+   AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+
+    gboolean ret;
+    if (volume >= 1.5) volume = 1.5;
+    if (volume <= 0) volume = 0;
+
+    gboolean mute;
+    GVariant *variant = NULL;
+    GVariantIter *channels = NULL;
+
+    g_auto(GVariantBuilder) vol_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+    g_signal_emit_by_name(priv->mixer, "get-volume", self->id, &variant);
+
+    if (variant == NULL) return;
+
+    g_variant_lookup(variant, "mute", "b", &mute);
+    g_variant_lookup(variant, "channelVolumes", "a{sv}", &channels);
+
+    if (channels != NULL) {
+        g_auto(GVariantBuilder) channel_volumes_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+
+        const gchar *key;
+        const gchar *channel_str;
+        gdouble channel_volume;
+        GVariant *varvol;
+
+        while (g_variant_iter_loop(channels, "{&sv}", &key, &varvol)) {
+            g_auto(GVariantBuilder) channel_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+            g_variant_lookup(varvol, "volume", "d", &channel_volume);
+            g_variant_lookup(varvol, "channel", "&s", &channel_str);
+            gdouble vol = g_str_equal(name, channel_str) ? volume : channel_volume;
+            g_variant_builder_add(&channel_b, "{sv}", "volume", g_variant_new_double(vol));
+            g_variant_builder_add(&channel_volumes_b, "{sv}", key,
+                                  g_variant_builder_end(&channel_b));
+        }
+
+        g_variant_builder_add(&vol_b, "{sv}", "channelVolumes",
+                              g_variant_builder_end(&channel_volumes_b));
+    }
+
+    g_signal_emit_by_name(priv->mixer, "set-volume", self->id, g_variant_builder_end(&vol_b), &ret);
+
 }
 
 /**
@@ -297,6 +487,18 @@ guint astal_wp_endpoint_get_serial(AstalWpEndpoint *self) { return self->serial;
  */
 const gchar *astal_wp_endpoint_get_path(AstalWpEndpoint *self) { return self->path; }
 
+/**
+ * astal_wp_endpoint_get_channel_volumes:
+ * @self: the AstalWpEndpoint instance
+ *
+ * gets the list representing the per channel volumes
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpChannelVolume))
+ */
+GList* astal_wp_endpoint_get_channel_volumes(AstalWpEndpoint *self) {
+  return g_hash_table_get_values(self->channel_volumes);
+}
+
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
                                            GParamSpec *pspec) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
@@ -337,6 +539,9 @@ static void astal_wp_endpoint_get_property(GObject *object, guint property_id, G
             break;
         case ASTAL_WP_ENDPOINT_PROP_PATH:
             g_value_set_string(value, self->path);
+            break;
+        case ASTAL_WP_ENDPOINT_PROP_CHANNEL_VOLUMES:
+            g_value_set_pointer(value, self->channel_volumes);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -556,6 +761,9 @@ static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
     self->description = NULL;
     self->name = NULL;
     self->path = NULL;
+
+    self->channel_volumes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_object_unref);
+
 }
 
 static void astal_wp_endpoint_dispose(GObject *object) {
@@ -565,10 +773,18 @@ static void astal_wp_endpoint_dispose(GObject *object) {
     g_signal_handler_disconnect(priv->defaults, priv->default_signal_handler_id);
     g_signal_handler_disconnect(priv->mixer, priv->mixer_signal_handler_id);
 
+    if(self->channel_volumes) {
+        g_hash_table_destroy(self->channel_volumes);
+        self->channel_volumes = NULL;
+    }
+
     g_clear_object(&priv->node);
     g_clear_object(&priv->mixer);
     g_clear_object(&priv->defaults);
     g_clear_object(&priv->wp);
+
+    G_OBJECT_CLASS(astal_wp_endpoint_parent_class)->dispose(object);
+
 }
 
 static void astal_wp_endpoint_finalize(GObject *object) {
@@ -576,6 +792,8 @@ static void astal_wp_endpoint_finalize(GObject *object) {
     g_free(self->description);
     g_free(self->name);
     g_free(self->path);
+
+    G_OBJECT_CLASS(astal_wp_endpoint_parent_class)->finalize(object);
 }
 
 static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
@@ -673,6 +891,13 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
      */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_PATH] =
         g_param_spec_string("path", "path", "path", NULL, G_PARAM_READABLE);
+
+     /**
+     * AstalWpEndpoint:channel-volumes: (type GList(AstalWpChannelVolume)) (transfer container) (nullable)
+     *
+     * A list of per channel volumes
+     */
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_CHANNEL_VOLUMES] = g_param_spec_pointer("channel-volumes","channel-volumes", "per channel volume", G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);

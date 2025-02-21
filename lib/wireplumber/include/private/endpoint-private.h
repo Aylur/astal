@@ -16,6 +16,7 @@ AstalWpEndpoint *astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlug
                                                    AstalWpWp *wp);
 void astal_wp_endpoint_update_default(AstalWpEndpoint *self, gboolean is_default);
 void astal_wp_endpoint_update_volume(AstalWpEndpoint *self);
+void astal_wp_endpoint_set_channel_volume(AstalWpEndpoint *self, const gchar* name, gdouble volume);
 
 G_END_DECLS
 
