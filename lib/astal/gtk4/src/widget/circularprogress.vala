@@ -92,9 +92,6 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
 
             if (_child != null) {
                 _child.set_parent(this);
-                _child.notify.connect(() => {
-                    queue_draw();
-                });
             }
         }
     }
@@ -207,17 +204,17 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
 
         // Draw in correct order: background to foreground
         if (center_filled) {
-            _center_fill.snapshot(snapshot);
+            snapshot_child(_center_fill, snapshot);
         }
 
         if (radius_filled) {
-            _radius_fill.snapshot(snapshot);
+            snapshot_child(_radius_fill, snapshot);
         }
 
-        _progress_arc.snapshot(snapshot);
+        snapshot_child(_progress_arc, snapshot);
 
         if (_child != null) {
-            _child.snapshot(snapshot);
+            snapshot_child(_child, snapshot);
         }
     }
 }
