@@ -37,6 +37,16 @@ def astalify(widget: Gtk.Widget):
                 unsubscribe = lambda *_: object.disconnect(id)
 
             self.connect('destroy', unsubscribe)
+        
+        def _set_children(self, children):
+            children = map(lambda x: x if isinstance(x, Gtk.Widget) else Gtk.Label(visible=True, label=x), children)
+
+            if isinstance(self, Gtk.Container):
+                for child in children:
+                    self.add(child)
+
+            else:
+                raise TypeError(f"{self.__gtype_name__} is not an instance of Gtk.Container")
 
         def toggle_class_name(self, name: str, state: bool | None = None):
             Astal.widget_toggle_class_name(self, name, state if state is not None else not name in Astal.widget_get_class_names(self))
@@ -68,19 +78,24 @@ def astalify(widget: Gtk.Widget):
         @GObject.Property(type=str)
         def click_through(self):
             return Astal.widget_get_click_through(self)
-
+       
         @click_through.setter
         def click_through(self, click_through: str):
             Astal.widget_set_click_through(self, click_through)
 
-        if widget == Astal.Box or widget == Gtk.Box:
-            @GObject.Property()
-            def children(self):
-                return Astal.Box.get_children(self)
+        @GObject.Property()
+        def children(self):
+            if isinstance(self, Gtk.Container):
+                return self.get_children()
 
-            @children.setter
-            def children(self, children):
-                Astal.Box.set_children(self, children)
+        @children.setter
+        def children(self, children):
+            # TODO: inquire as to the purpose of the special case for Gtk.Bin in the lua bindings.
+            if isinstance(self, Gtk.Container):
+                for child in self.get_children():
+                    self.remove(child)
+
+            self._set_children(children)
 
         def __init__(self, **props):
             super().__init__()
