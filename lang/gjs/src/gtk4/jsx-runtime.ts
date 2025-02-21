@@ -47,7 +47,7 @@ declare global {
             box: Widget.BoxProps
             button: Widget.ButtonProps
             centerbox: Widget.CenterBoxProps
-            // circularprogress: Widget.CircularProgressProps
+            circularprogress: Widget.CircularProgressProps
             // drawingarea: Widget.DrawingAreaProps
             entry: Widget.EntryProps
             image: Widget.ImageProps
