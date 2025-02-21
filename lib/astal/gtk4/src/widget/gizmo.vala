@@ -31,12 +31,12 @@ internal class Astal.Gizmo : Gtk.Widget {
 
     public delegate bool GrabFocusFunc();
 
-    private MeasureFunc? measure_func;
-    private AllocateFunc? allocate_func;
-    private SnapshotFunc? snapshot_func;
-    private ContainsFunc? contains_func;
-    private FocusFunc? focus_func;
-    private GrabFocusFunc? grab_focus_func;
+    private unowned MeasureFunc? measure_func;
+    private unowned AllocateFunc? allocate_func;
+    private unowned SnapshotFunc? snapshot_func;
+    private unowned ContainsFunc? contains_func;
+    private unowned FocusFunc? focus_func;
+    private unowned GrabFocusFunc? grab_focus_func;
 
     /**
      * Create a new Gizmo
