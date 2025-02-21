@@ -160,9 +160,6 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
         Object(
             name : "circularprogress"
         );
-        notify.connect(() => {
-            queue_draw();
-        });
     }
 
     protected override void dispose() {
