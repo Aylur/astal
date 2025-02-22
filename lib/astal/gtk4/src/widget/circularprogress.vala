@@ -362,7 +362,9 @@ private class ProgressArc : Gtk.Widget {
         }
 
         var path_builder = new Gsk.PathBuilder();
-        bool is_complete_arc = _percentage == 1.0 && (sweep_angle).abs() >= 2 * Math.PI;
+
+        // Instead of an arc, we can just draw a full circle, which is easier
+        bool is_complete_arc = should_draw_full_circle(sweep_angle);
 
         // Draw as pie when line_width is 0
         if (_line_width <= 0) {
@@ -382,6 +384,17 @@ private class ProgressArc : Gtk.Widget {
             stroke.set_line_cap(_line_cap);
             snapshot.append_stroke(path_builder.to_path(), stroke, color);
         }
+    }
+
+    // Take example if `_end_at` is 0.75 and `_start_at` is -0.50
+    // Then `_end_at - _start_at` is 1.25, which is greater than 1
+    // If Percentage is > 0.75, then the arc goes beyond the full circle
+    // Let's just draw a full circle and avoid headaches
+    private bool should_draw_full_circle(double sweep_angle) {
+        double diff_abs = Math.fabs(_end_at - _start_at);
+        bool exceeds_full_circle = diff_abs > 1 && _percentage >= (1.0 - (diff_abs - 1));
+
+        return (_percentage == 1.0 || exceeds_full_circle) && (sweep_angle).abs() >= 2 * Math.PI;
     }
 
     private void draw_full_circle(Gsk.PathBuilder path_builder, float center_x, float center_y, float delta) {
