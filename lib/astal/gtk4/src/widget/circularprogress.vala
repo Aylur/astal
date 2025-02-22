@@ -321,56 +321,40 @@ private class ProgressArc : Gtk.Widget {
         // Draw as pie when line_width is 0
         if (_line_width <= 0) {
             path_builder.move_to(_center_x, _center_y);
+            var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
+            var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
+            var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
+            var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
 
-            if (_percentage >= 1.0) {
-                path_builder.add_circle(
-                    Graphene.Point().init(_center_x, _center_y),
-                    _delta
-                );
-            } else {
-                var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
-                var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
-                var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
-                var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
+            path_builder.line_to(start_x, start_y);
+            bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
+            bool sweep = _inverted;
 
-                path_builder.line_to(start_x, start_y);
-                bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
-                bool sweep = _inverted;
-
-                path_builder.svg_arc_to(
-                    _delta, _delta, 0.0f,
-                    large_arc, sweep,
-                    end_x, end_y
-                );
-                path_builder.line_to(_center_x, _center_y);
-                path_builder.close();
-            }
+            path_builder.svg_arc_to(
+                _delta, _delta, 0.0f,
+                large_arc, sweep,
+                end_x, end_y
+            );
+            path_builder.line_to(_center_x, _center_y);
+            path_builder.close();
 
             snapshot.append_fill(path_builder.to_path(), Gsk.FillRule.EVEN_ODD, color);
         } else {
-            // Original stroke drawing code
-            if (_percentage >= 1.0) {
-                path_builder.add_circle(
-                    Graphene.Point().init(_center_x, _center_y),
-                    _delta
-                );
-            } else {
-                var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
-                var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
-                var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
-                var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
+            // Stroke drawing code
+            var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
+            var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
+            var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
+            var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
 
-                path_builder.move_to(start_x, start_y);
-                // Use same arc parameters for stroke drawing
-                bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
-                bool sweep = _inverted;
+            path_builder.move_to(start_x, start_y);
+            bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
+            bool sweep = _inverted;
 
-                path_builder.svg_arc_to(
-                    _delta, _delta, 0.0f,
-                    large_arc, sweep,
-                    end_x, end_y
-                );
-            }
+            path_builder.svg_arc_to(
+                _delta, _delta, 0.0f,
+                large_arc, sweep,
+                end_x, end_y
+            );
 
             var stroke = new Gsk.Stroke(_line_width);
             stroke.set_line_cap(_line_cap);
