@@ -89,8 +89,8 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
         set {
             if (value > 1) {
                 _start_at = 1;
-            } else if (value < 0) {
-                _start_at = 0;
+            } else if (value < -1) {
+                _start_at = -1;
             } else {
                 _start_at = value;
             }
@@ -106,8 +106,8 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
         set {
             if (value > 1) {
                 _end_at = 1;
-            } else if (value < 0) {
-                _end_at = 0;
+            } else if (value < -1) {
+                _end_at = -1;
             } else {
                 _end_at = value;
             }
