@@ -13,6 +13,8 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
 
     private int _line_width;
     private double _percentage;
+    private double _start_at;
+    private double _end_at;
 
     /**
      * Whether the center of the circle is filled.
@@ -75,6 +77,49 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
     }
 
     /**
+     * The normalized starting position (0.0 to 1.0).
+     * 0.0 = 0 degrees (3 o'clock)
+     * 0.25 = 90 degrees (12 o'clock)
+     * 0.5 = 180 degrees (9 o'clock)
+     * 0.75 = 270 degrees (6 o'clock)
+     * 1.0 = 360 degrees (3 o'clock)
+     */
+    public double start_at {
+        get { return _start_at; }
+        set {
+            if (value > 1) {
+                _start_at = 1;
+            } else if (value < 0) {
+                _start_at = 0;
+            } else {
+                _start_at = value;
+            }
+        }
+    }
+
+    /**
+     * The normalized ending position (0.0 to 1.0).
+     * Values follow the same pattern as start_at.
+     */
+    public double end_at {
+        get { return _end_at; }
+        set {
+            if (value > 1) {
+                _end_at = 1;
+            } else if (value < 0) {
+                _end_at = 0;
+            } else {
+                _end_at = value;
+            }
+        }
+    }
+
+    /**
+     * Whether the progress moves clockwise instead of counterclockwise.
+     */
+    public bool inverted  { get; set; default = true; }
+
+    /**
      * The child widget contained within the circular progress.
      */
     public Gtk.Widget? child {
@@ -112,6 +157,9 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
     }
 
     construct {
+        _start_at = 0.0;
+        _end_at = 1;
+
         _progress_arc = new ProgressArc();
         _center_fill = new CenterFill();
         _radius_fill = new RadiusFill();
@@ -171,7 +219,7 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
         }
 
         // Update geometries
-        _progress_arc.update_geometry(width / 2.0f, height / 2.0f, delta, actual_line_width, line_cap, percentage);
+        _progress_arc.update_geometry(width / 2.0f, height / 2.0f, delta, actual_line_width, line_cap, start_at, end_at, inverted, percentage);
 
         if (center_filled) {
             _center_fill.update_geometry(width / 2.0f, height / 2.0f, delta, fill_rule);
@@ -209,6 +257,9 @@ private class ProgressArc : Gtk.Widget {
     private Gsk.LineCap _line_cap;
     private double _percentage;
     private bool _updating_geometry = false;
+    private double _start_at;
+    private double _end_at;
+    private bool _inverted;
 
     public ProgressArc() {
         Object(
@@ -223,6 +274,9 @@ private class ProgressArc : Gtk.Widget {
         float delta,
         float line_width,
         Gsk.LineCap line_cap,
+        double start_at,
+        double end_at,
+        bool inverted,
         double percentage
     ) {
         if (_updating_geometry) {
@@ -236,6 +290,9 @@ private class ProgressArc : Gtk.Widget {
         _line_width = line_width;
         _line_cap = line_cap;
         _percentage = percentage;
+        _start_at = start_at;
+        _end_at = end_at;
+        _inverted = inverted;
 
         _updating_geometry = false;
         queue_draw();
@@ -247,8 +304,18 @@ private class ProgressArc : Gtk.Widget {
         }
 
         var color = get_color();
-        var start_angle = 1.5f * Math.PI;
-        var end_angle = start_angle + (_percentage * 2 * Math.PI);
+
+        var start_angle = _start_at * 2 * Math.PI;
+        var end_angle = _end_at * 2 * Math.PI;
+        var sweep_angle = end_angle - start_angle;
+
+        var progress_angle = start_angle;
+        if (_inverted) {
+            progress_angle += (_percentage * sweep_angle);
+        } else {
+            progress_angle -= (_percentage * sweep_angle);
+        }
+
         var path_builder = new Gsk.PathBuilder();
 
         // Draw as pie when line_width is 0
@@ -263,13 +330,16 @@ private class ProgressArc : Gtk.Widget {
             } else {
                 var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
                 var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
-                var end_x = _center_x + (float)(_delta * Math.cos(end_angle));
-                var end_y = _center_y + (float)(_delta * Math.sin(end_angle));
+                var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
+                var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
 
                 path_builder.line_to(start_x, start_y);
+                bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
+                bool sweep = _inverted;
+
                 path_builder.svg_arc_to(
                     _delta, _delta, 0.0f,
-                    _percentage > 0.5, true,
+                    large_arc, sweep,
                     end_x, end_y
                 );
                 path_builder.line_to(_center_x, _center_y);
@@ -287,13 +357,17 @@ private class ProgressArc : Gtk.Widget {
             } else {
                 var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
                 var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
-                var end_x = _center_x + (float)(_delta * Math.cos(end_angle));
-                var end_y = _center_y + (float)(_delta * Math.sin(end_angle));
+                var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
+                var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
 
                 path_builder.move_to(start_x, start_y);
+                // Use same arc parameters for stroke drawing
+                bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
+                bool sweep = _inverted;
+
                 path_builder.svg_arc_to(
                     _delta, _delta, 0.0f,
-                    _percentage > 0.5, true,
+                    large_arc, sweep,
                     end_x, end_y
                 );
             }
