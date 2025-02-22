@@ -29,6 +29,7 @@ sources = [config] + files(
   'widget/box.vala',
   'widget/slider.vala',
   'widget/window.vala',
+  'widget/circularprogress.vala',
   'application.vala',
 )
 
@@ -40,6 +41,7 @@ lib = library(
   vala_header: meson.project_name() + '.h',
   vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
   version: meson.project_version(),
+  link_args: ['-lm'],
   install: true,
   install_dir: [true, true, true],
 )
