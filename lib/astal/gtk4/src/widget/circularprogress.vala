@@ -77,7 +77,7 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
     }
 
     /**
-     * The normalized starting position (-1.0 to 1.0).
+     * The starting position (-1.0 to 1.0).
      * 0.0 = 0 degrees (3 o'clock)
      * 0.25 = 90 degrees (12 o'clock)
      * 0.5 = 180 degrees (9 o'clock)
@@ -98,7 +98,7 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
     }
 
     /**
-     * The normalized ending position (-1.0 to 1.0).
+     * The ending position (-1.0 to 1.0).
      * Values follow the same pattern as start_at.
      */
     public double end_at {
