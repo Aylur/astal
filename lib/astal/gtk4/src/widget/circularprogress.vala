@@ -250,6 +250,13 @@ public class Astal.CircularProgressBar : Gtk.Widget, Gtk.Buildable {
  * Private widget that handles drawing the progress arc.
  */
 private class ProgressArc : Gtk.Widget {
+    private struct ArcPoints {
+        public float start_x;
+        public float start_y;
+        public float end_x;
+        public float end_y;
+    }
+
     private float _center_x;
     private float _center_y;
     private float _delta;
@@ -298,7 +305,44 @@ private class ProgressArc : Gtk.Widget {
         queue_draw();
     }
 
-    // Refactoring this would not hurt anyone
+    private void draw_arc(
+        Gsk.PathBuilder path_builder,
+        double start_angle,
+        double progress_angle,
+        double sweep_angle,
+        bool as_pie = false
+    ) {
+        var points = calculate_arc_points(start_angle, progress_angle);
+        bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
+
+        if (as_pie) {
+            path_builder.move_to(_center_x, _center_y);
+            path_builder.line_to(points.start_x, points.start_y);
+        } else {
+            path_builder.move_to(points.start_x, points.start_y);
+        }
+
+        path_builder.svg_arc_to(
+            _delta, _delta, 0.0f,
+            large_arc, _inverted,
+            points.end_x, points.end_y
+        );
+
+        if (as_pie) {
+            path_builder.line_to(_center_x, _center_y);
+            path_builder.close();
+        }
+    }
+
+    private ArcPoints calculate_arc_points(double start_angle, double progress_angle) {
+        return ArcPoints() {
+                   start_x = _center_x + (float)(_delta * Math.cos(start_angle)),
+                   start_y = _center_y + (float)(_delta * Math.sin(start_angle)),
+                   end_x = _center_x + (float)(_delta * Math.cos(progress_angle)),
+                   end_y = _center_y + (float)(_delta * Math.sin(progress_angle))
+        };
+    }
+
     public override void snapshot(Gtk.Snapshot snapshot) {
         if (_percentage <= 0) {
             return;
@@ -318,61 +362,33 @@ private class ProgressArc : Gtk.Widget {
         }
 
         var path_builder = new Gsk.PathBuilder();
+        bool is_complete_arc = _percentage == 1.0 && (sweep_angle).abs() >= 2 * Math.PI;
 
         // Draw as pie when line_width is 0
         if (_line_width <= 0) {
-            if (_percentage == 1.0 && (sweep_angle).abs() >= 2 * Math.PI) {
-                path_builder.add_circle(
-                    Graphene.Point().init(_center_x, _center_y),
-                    _delta
-                );
+            if (is_complete_arc) {
+                draw_full_circle(path_builder, _center_x, _center_y, _delta);
             } else {
-                path_builder.move_to(_center_x, _center_y);
-                var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
-                var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
-                var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
-                var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
-
-                path_builder.line_to(start_x, start_y);
-                bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
-                bool sweep = _inverted;
-
-                path_builder.svg_arc_to(
-                    _delta, _delta, 0.0f,
-                    large_arc, sweep,
-                    end_x, end_y
-                );
-                path_builder.line_to(_center_x, _center_y);
-                path_builder.close();
+                draw_arc(path_builder, start_angle, progress_angle, sweep_angle, true);
             }
             snapshot.append_fill(path_builder.to_path(), Gsk.FillRule.EVEN_ODD, color);
         } else {
-            if (_percentage == 1.0 && (sweep_angle).abs() >= 2 * Math.PI) {
-                path_builder.add_circle(
-                    Graphene.Point().init(_center_x, _center_y),
-                    _delta
-                );
+            if (is_complete_arc) {
+                draw_full_circle(path_builder, _center_x, _center_y, _delta);
             } else {
-                // Stroke drawing code
-                var start_x = _center_x + (float)(_delta * Math.cos(start_angle));
-                var start_y = _center_y + (float)(_delta * Math.sin(start_angle));
-                var end_x = _center_x + (float)(_delta * Math.cos(progress_angle));
-                var end_y = _center_y + (float)(_delta * Math.sin(progress_angle));
-
-                path_builder.move_to(start_x, start_y);
-                bool large_arc = (_percentage * sweep_angle).abs() > Math.PI;
-                bool sweep = _inverted;
-
-                path_builder.svg_arc_to(
-                    _delta, _delta, 0.0f,
-                    large_arc, sweep,
-                    end_x, end_y
-                );
+                draw_arc(path_builder, start_angle, progress_angle, sweep_angle, false);
             }
             var stroke = new Gsk.Stroke(_line_width);
             stroke.set_line_cap(_line_cap);
             snapshot.append_stroke(path_builder.to_path(), stroke, color);
         }
+    }
+
+    private void draw_full_circle(Gsk.PathBuilder path_builder, float center_x, float center_y, float delta) {
+        path_builder.add_circle(
+            Graphene.Point().init(center_x, center_y),
+            delta
+        );
     }
 }
 
