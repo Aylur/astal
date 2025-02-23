@@ -7,6 +7,9 @@
 #include "glib.h"
 #include "video.h"
 #include "wp.h"
+#include "wp/node.h"
+#include "wp/object-interest.h"
+#include "wp/object-manager.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
@@ -445,25 +448,15 @@ static void astal_wp_wp_init(AstalWpWp *self) {
                                               WP_OBJECT_FEATURES_ALL);
 
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Audio/Sink", NULL);
-    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Audio/Source", NULL);
-    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Stream/Output/Audio", NULL);
-    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Stream/Input/Audio", NULL);
+                                   "media.class", "c(ssss)", "Audio/Sink", "Audio/Source",
+                                   "Stream/Output/Audio", "Stream/Input/Audio", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_DEVICE,
                                    WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "media.class", "=s",
                                    "Audio/Device", NULL);
 
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Video/Sink", NULL);
-    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Video/Source", NULL);
-    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Stream/Output/Video", NULL);
-    wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "=s", "Stream/Input/Video", NULL);
+                                   "media.class", "c(ssss)", "Video/Sink", "Video/Source",
+                                   "Stream/Output/Video", "Stream/Input/Video", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_DEVICE,
                                    WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "media.class", "=s",
                                    "Video/Device", NULL);

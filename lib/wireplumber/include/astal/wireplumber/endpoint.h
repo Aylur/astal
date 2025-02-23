@@ -7,13 +7,13 @@ G_BEGIN_DECLS
 
 #define ASTAL_WP_TYPE_CHANNEL_VOLUME (astal_wp_channel_volume_get_type())
 
-G_DECLARE_FINAL_TYPE(AstalWpChannelVolume, astal_wp_channel_volume, ASTAL_WP, CHANNEL_VOLUME, GObject)
+G_DECLARE_FINAL_TYPE(AstalWpChannelVolume, astal_wp_channel_volume, ASTAL_WP, CHANNEL_VOLUME,
+                     GObject)
 
 gdouble astal_wp_channel_volume_get_volume(AstalWpChannelVolume *self);
 void astal_wp_channel_volume_set_volume(AstalWpChannelVolume *self, gdouble volume);
-const gchar* astal_wp_channel_volume_get_name(AstalWpChannelVolume *self);
-const gchar* astal_wp_channel_volume_get_volume_icon(AstalWpChannelVolume *self);
-
+const gchar *astal_wp_channel_volume_get_name(AstalWpChannelVolume *self);
+const gchar *astal_wp_channel_volume_get_volume_icon(AstalWpChannelVolume *self);
 
 #define ASTAL_WP_TYPE_ENDPOINT (astal_wp_endpoint_get_type())
 
@@ -39,7 +39,7 @@ void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default
 gboolean astal_wp_endpoint_get_lock_channels(AstalWpEndpoint *self);
 void astal_wp_endpoint_set_lock_channels(AstalWpEndpoint *self, gboolean lock_channels);
 
-GList* astal_wp_endpoint_get_channel_volumes(AstalWpEndpoint *self);
+GList *astal_wp_endpoint_get_channel_volumes(AstalWpEndpoint *self);
 AstalWpMediaClass astal_wp_endpoint_get_media_class(AstalWpEndpoint *self);
 guint astal_wp_endpoint_get_id(AstalWpEndpoint *self);
 gboolean astal_wp_endpoint_get_mute(AstalWpEndpoint *self);
