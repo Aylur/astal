@@ -1,7 +1,9 @@
 srcs = files(
   'audio.c',
   'device.c',
+  'node.c',
   'endpoint.c',
+  'stream.c',
   'profile.c',
   'video.c',
   'wireplumber.c',

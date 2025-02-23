@@ -2,14 +2,12 @@
 
 #include "audio.h"
 #include "device-private.h"
-#include "endpoint-private.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "node-private.h"
 #include "video.h"
 #include "wp.h"
-#include "wp/node.h"
-#include "wp/object-interest.h"
-#include "wp/object-manager.h"
+#include "node.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
@@ -26,12 +24,14 @@ struct _AstalWpWp {
 typedef struct {
     WpCore *core;
     WpObjectManager *obj_manager;
+    WpObjectManager *metadata_manager;
 
     WpPlugin *mixer;
     WpPlugin *defaults;
     gint pending_plugins;
 
-    GHashTable *endpoints;
+    WpMetadata *metadata;
+    GHashTable *nodes;
     GHashTable *devices;
     GHashTable *delayed_endpoints;
 } AstalWpWpPrivate;
@@ -43,8 +43,8 @@ G_DEFINE_ENUM_TYPE(AstalWpScale, astal_wp_scale,
                    G_DEFINE_ENUM_VALUE(ASTAL_WP_SCALE_CUBIC, "cubic"));
 
 typedef enum {
-    ASTAL_WP_WP_SIGNAL_ENDPOINT_ADDED,
-    ASTAL_WP_WP_SIGNAL_ENDPOINT_REMOVED,
+    ASTAL_WP_WP_SIGNAL_NODE_ADDED,
+    ASTAL_WP_WP_SIGNAL_NODE_REMOVED,
     ASTAL_WP_WP_SIGNAL_DEVICE_ADDED,
     ASTAL_WP_WP_SIGNAL_DEVICE_REMOVED,
     ASTAL_WP_WP_N_SIGNALS
@@ -57,7 +57,7 @@ static guint astal_wp_wp_signals[ASTAL_WP_WP_N_SIGNALS] = {
 typedef enum {
     ASTAL_WP_WP_PROP_AUDIO = 1,
     ASTAL_WP_WP_PROP_VIDEO,
-    ASTAL_WP_WP_PROP_ENDPOINTS,
+    ASTAL_WP_WP_PROP_NODES,
     ASTAL_WP_WP_PROP_DEVICES,
     ASTAL_WP_WP_PROP_DEFAULT_SPEAKER,
     ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE,
@@ -78,33 +78,33 @@ static GParamSpec *astal_wp_wp_properties[ASTAL_WP_WP_N_PROPERTIES] = {
  */
 
 /**
- * astal_wp_wp_get_endpoint:
+ * astal_wp_wp_get_node:
  * @self: the AstalWpWp object
- * @id: the id of the endpoint
+ * @id: the id of the node
  *
- * the endpoint with the given id
+ * the node with the given id
  *
- * Returns: (transfer none) (nullable): the endpoint with the given id
+ * Returns: (transfer none) (nullable): the node with the given id
  */
-AstalWpEndpoint *astal_wp_wp_get_endpoint(AstalWpWp *self, guint id) {
+AstalWpNode *astal_wp_wp_get_node(AstalWpWp *self, guint id) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = g_hash_table_lookup(priv->endpoints, GUINT_TO_POINTER(id));
-    return endpoint;
+    AstalWpNode *node = g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id));
+    return node;
 }
 
 /**
- * astal_wp_wp_get_endpoints:
+ * astal_wp_wp_get_nodes:
  * @self: the AstalWpWp object
  *
- * a GList containing all endpoints
+ * a GList containing all nodes
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
- * endpoints
+ * Returns: (transfer container) (nullable) (type GList(AstalWpNode)): a GList containing the
+ * nodes
  */
-GList *astal_wp_wp_get_endpoints(AstalWpWp *self) {
+GList *astal_wp_wp_get_nodes(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
-    return g_hash_table_get_values(priv->endpoints);
+    return g_hash_table_get_values(priv->nodes);
 }
 
 /**
@@ -188,14 +188,14 @@ void astal_wp_wp_set_scale(AstalWpWp *self, AstalWpScale scale) {
     GHashTableIter iter;
     gpointer key, value;
 
-    g_hash_table_iter_init(&iter, priv->endpoints);
+    g_hash_table_iter_init(&iter, priv->nodes);
     while (g_hash_table_iter_next(&iter, &key, &value)) {
-        AstalWpEndpoint *ep = ASTAL_WP_ENDPOINT(value);
-        astal_wp_endpoint_update_volume(ep);
+        AstalWpNode *ep = ASTAL_WP_NODE(value);
+        astal_wp_node_update_volume(ep);
     }
 
-    astal_wp_endpoint_update_volume(self->default_speaker);
-    astal_wp_endpoint_update_volume(self->default_microphone);
+    astal_wp_node_update_volume(ASTAL_WP_NODE(self->default_speaker));
+    astal_wp_node_update_volume(ASTAL_WP_NODE(self->default_microphone));
 }
 
 static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue *value,
@@ -210,8 +210,8 @@ static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue 
         case ASTAL_WP_WP_PROP_VIDEO:
             g_value_set_object(value, astal_wp_wp_get_video(self));
             break;
-        case ASTAL_WP_WP_PROP_ENDPOINTS:
-            g_value_set_pointer(value, g_hash_table_get_values(priv->endpoints));
+        case ASTAL_WP_WP_PROP_NODES:
+            g_value_set_pointer(value, g_hash_table_get_values(priv->nodes));
             break;
         case ASTAL_WP_WP_PROP_DEVICES:
             g_value_set_pointer(value, g_hash_table_get_values(priv->devices));
@@ -255,19 +255,33 @@ static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id
         if (dev != NULL) {
             if (device_id == g_ascii_strtoull(dev, NULL, 10)) {
                 AstalWpEndpoint *endpoint =
-                    astal_wp_endpoint_create(l->data, priv->mixer, priv->defaults, self);
+                    astal_wp_endpoint_new(l->data, priv->mixer, priv->defaults, self);
 
-                g_hash_table_insert(priv->endpoints,
+                g_hash_table_insert(priv->nodes,
                                     GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(l->data))),
                                     endpoint);
                 g_hash_table_remove(priv->delayed_endpoints,
                                     GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(l->data))));
-                g_signal_emit_by_name(self, "endpoint-added", endpoint);
-                g_object_notify(G_OBJECT(self), "endpoints");
+                g_signal_emit_by_name(self, "node-added", endpoint);
+                g_object_notify(G_OBJECT(self), "nodes");
             }
         }
     }
     g_list_free(eps);
+}
+
+static void astal_wp_wp_metadata_changed(WpMetadata *metadata, guint subject, gchar *key,
+                                         gchar *type, gchar *value, gpointer user_data) {
+    g_print("metadata changed: %d %s %s %s\n", subject, key, type, value);
+}
+
+static void astal_wp_wp_metadata_added(AstalWpWp *self, gpointer object) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    if (!WP_IS_METADATA(object)) return;
+    WpMetadata *metadata = WP_METADATA(object);
+    g_object_unref(priv->metadata);
+    priv->metadata = g_object_ref(metadata);
+    g_signal_connect(priv->metadata, "changed", G_CALLBACK(astal_wp_wp_metadata_changed), self);
 }
 
 static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
@@ -285,14 +299,21 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
             }
         }
 
-        AstalWpEndpoint *endpoint =
-            astal_wp_endpoint_create(node, priv->mixer, priv->defaults, self);
+        AstalWpNode *astal_node;
+        const gchar *media_class =
+            wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
+        if (g_str_has_prefix(media_class, "Stream")) {
+            astal_node =
+                ASTAL_WP_NODE(astal_wp_stream_new(node, priv->mixer, priv->defaults, self));
+        } else {
+            astal_node =
+                ASTAL_WP_NODE(astal_wp_endpoint_new(node, priv->mixer, priv->defaults, self));
+        }
+        g_hash_table_insert(priv->nodes, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
+                            astal_node);
 
-        g_hash_table_insert(priv->endpoints,
-                            GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))), endpoint);
-
-        g_signal_emit_by_name(self, "endpoint-added", endpoint);
-        g_object_notify(G_OBJECT(self), "endpoints");
+        g_signal_emit_by_name(self, "node-added", astal_node);
+        g_object_notify(G_OBJECT(self), "nodes");
     } else if (WP_IS_DEVICE(object)) {
         WpDevice *node = WP_DEVICE(object);
         AstalWpDevice *device = astal_wp_device_create(node);
@@ -309,14 +330,13 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
 
     if (WP_IS_NODE(object)) {
         guint id = wp_proxy_get_bound_id(WP_PROXY(object));
-        AstalWpEndpoint *endpoint =
-            g_object_ref(g_hash_table_lookup(priv->endpoints, GUINT_TO_POINTER(id)));
+        AstalWpNode *node = g_object_ref(g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id)));
 
-        g_hash_table_remove(priv->endpoints, GUINT_TO_POINTER(id));
+        g_hash_table_remove(priv->nodes, GUINT_TO_POINTER(id));
 
-        g_signal_emit_by_name(self, "endpoint-removed", endpoint);
-        g_object_notify(G_OBJECT(self), "endpoints");
-        g_object_unref(endpoint);
+        g_signal_emit_by_name(self, "node-removed", node);
+        g_object_notify(G_OBJECT(self), "nodes");
+        g_object_unref(node);
     } else if (WP_IS_DEVICE(object)) {
         guint id = wp_proxy_get_bound_id(WP_PROXY(object));
         AstalWpDevice *device =
@@ -331,11 +351,12 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
 
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    g_print("1");
 
-    astal_wp_endpoint_init_as_default(self->default_speaker, priv->mixer, priv->defaults,
-                                      ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER, self);
-    astal_wp_endpoint_init_as_default(self->default_microphone, priv->mixer, priv->defaults,
-                                      ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE, self);
+    astal_wp_node_init_as_default(ASTAL_WP_NODE(self->default_speaker), priv->mixer, priv->defaults,
+                                  ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
+    astal_wp_node_init_as_default(ASTAL_WP_NODE(self->default_microphone), priv->mixer,
+                                  priv->defaults, ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE);
 }
 
 static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
@@ -365,15 +386,19 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
 static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
+    g_print("1.7");
     GError *error = NULL;
     wp_core_load_component_finish(priv->core, result, &error);
     if (error) {
         g_critical("Failed to load component: %s\n", error->message);
         return;
     }
+    g_print("1.8");
 
     wp_object_activate(obj, WP_PLUGIN_FEATURE_ENABLED, NULL,
                        (GAsyncReadyCallback)astal_wp_wp_plugin_activated, self);
+
+    g_print("1.9");
 }
 
 /**
@@ -412,24 +437,26 @@ static void astal_wp_wp_dispose(GObject *object) {
     g_clear_object(&self->default_microphone);
     g_clear_object(&priv->mixer);
     g_clear_object(&priv->defaults);
+    g_clear_object(&priv->metadata_manager);
+    g_clear_object(&priv->metadata);
     g_clear_object(&priv->obj_manager);
     g_clear_object(&priv->core);
 
-    if (priv->endpoints != NULL) {
-        g_hash_table_destroy(priv->endpoints);
-        priv->endpoints = NULL;
+    if (priv->nodes != NULL) {
+        g_hash_table_destroy(priv->nodes);
+        priv->nodes = NULL;
     }
 }
 
 static void astal_wp_wp_finalize(GObject *object) {
-    AstalWpWp *self = ASTAL_WP_WP(object);
-    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    // AstalWpWp *self = ASTAL_WP_WP(object);
+    // AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 }
 
 static void astal_wp_wp_init(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    priv->endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+    priv->nodes = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
     priv->delayed_endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
     priv->devices = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 
@@ -440,6 +467,17 @@ static void astal_wp_wp_init(AstalWpWp *self) {
         g_critical("could not connect to PipeWire\n");
         return;
     }
+
+    priv->metadata_manager = wp_object_manager_new();
+    wp_object_manager_request_object_features(priv->metadata_manager, WP_TYPE_GLOBAL_PROXY,
+                                              WP_OBJECT_FEATURES_ALL);
+
+    wp_object_manager_add_interest(priv->metadata_manager, WP_TYPE_METADATA,
+                                   WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "metadata.name", "=s",
+                                   "default", NULL);
+    g_signal_connect_swapped(priv->metadata_manager, "object-added",
+                             G_CALLBACK(astal_wp_wp_metadata_added), self);
+    wp_core_install_object_manager(priv->core, priv->metadata_manager);
 
     priv->obj_manager = wp_object_manager_new();
     wp_object_manager_request_object_features(priv->obj_manager, WP_TYPE_NODE,
@@ -465,12 +503,15 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     g_signal_connect_swapped(priv->obj_manager, "installed", (GCallback)astal_wp_wp_objm_installed,
                              self);
 
-    self->default_speaker = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
-    self->default_microphone = g_object_new(ASTAL_WP_TYPE_ENDPOINT, NULL);
+    g_print("-1");
+    self->default_speaker = astal_wp_endpoint_new_default(self);
+    self->default_microphone = astal_wp_endpoint_new_default(self);
+    g_print("0");
 
     self->audio = astal_wp_audio_new(self);
     self->video = astal_wp_video_new(self);
 
+    g_print("1.5");
     priv->pending_plugins = 2;
     wp_core_load_component(priv->core, "libwireplumber-module-default-nodes-api", "module", NULL,
                            "default-nodes-api", NULL,
@@ -504,8 +545,8 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
      *
      * A list of [class@AstalWp.Endpoint] objects
      */
-    astal_wp_wp_properties[ASTAL_WP_WP_PROP_ENDPOINTS] =
-        g_param_spec_pointer("endpoints", "endpoints", "endpoints", G_PARAM_READABLE);
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_NODES] =
+        g_param_spec_pointer("nodes", "nodes", "nodes", G_PARAM_READABLE);
     /**
      * AstalWpWp:devices: (type GList(AstalWpDevice)) (transfer container)
      *
@@ -533,12 +574,12 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     g_object_class_install_properties(object_class, ASTAL_WP_WP_N_PROPERTIES,
                                       astal_wp_wp_properties);
 
-    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_ENDPOINT_ADDED] =
-        g_signal_new("endpoint-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
-                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
-    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_ENDPOINT_REMOVED] =
-        g_signal_new("endpoint-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
-                     NULL, NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_NODE_ADDED] =
+        g_signal_new("node-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_NODE);
+    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_NODE_REMOVED] =
+        g_signal_new("node-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_NODE);
     astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_DEVICE_ADDED] =
         g_signal_new("device-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
