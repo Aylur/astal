@@ -23,7 +23,9 @@ void astal_wp_node_init_as_default(AstalWpNode *self, WpPlugin *mixer, WpPlugin 
 void astal_wp_node_update_default(AstalWpNode *self, gboolean is_default);
 void astal_wp_node_update_volume(AstalWpNode *self);
 void astal_wp_node_set_channel_volume(AstalWpNode *self, const gchar *name, gdouble volume);
+void astal_wp_node_set_icon(AstalWpNode *self, const gchar* icon);
 
+void astal_wp_node_properties_changed(AstalWpNode *self);
 G_END_DECLS
 
 #endif  // !ASTAL_WP_NODE_PRIV_H

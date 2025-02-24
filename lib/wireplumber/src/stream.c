@@ -7,6 +7,7 @@
 #include "node-private.h"
 #include "node.h"
 #include "wp-private.h"
+#include "wp/node.h"
 
 struct _AstalWpStream {
     AstalWpNode parent_instance;
@@ -70,7 +71,7 @@ void astal_wp_stream_real_metadata_changed(AstalWpNode *node, const gchar *key, 
 
     AstalWpStream *self = ASTAL_WP_STREAM(node);
 
-    if (g_str_equal(key, "target.object")) {
+    if (!g_strcmp0(key, "target.object")) {
         if (value == NULL) {
             self->target_serial = -1;
         } else {
@@ -79,6 +80,33 @@ void astal_wp_stream_real_metadata_changed(AstalWpNode *node, const gchar *key, 
         }
         g_object_notify(G_OBJECT(self), "target-serial");
     }
+}
+
+static void astal_wp_stream_properties_changed(AstalWpStream* self) {
+
+    WpNode *node;
+    g_object_get(G_OBJECT(self), "node", &node, NULL);
+    WpPipewireObject *pwo = WP_PIPEWIRE_OBJECT(node);
+
+    const gchar *value;
+
+    value = wp_pipewire_object_get_property(pwo, "media.icon-name");
+    if(value == NULL) value = wp_pipewire_object_get_property(pwo, "window.icon-name");
+    if(value == NULL) value = wp_pipewire_object_get_property(pwo, "application.icon-name");
+    if(value == NULL) value = "application-x-executable-symbolic";
+    astal_wp_node_set_icon(ASTAL_WP_NODE(self), value);
+
+}
+
+void astal_wp_stream_real_params_changed(AstalWpNode* node, const gchar* id) {
+  AstalWpStream* self = ASTAL_WP_STREAM(node);
+  
+  g_object_freeze_notify(G_OBJECT(self));
+
+  if(!g_strcmp0(id, "Props")) astal_wp_stream_properties_changed(self);
+
+  ASTAL_WP_NODE_CLASS(astal_wp_stream_parent_class)->params_changed(node, id);
+  g_object_thaw_notify(G_OBJECT(self));
 }
 
 AstalWpStream *astal_wp_stream_new(WpNode *node, WpPlugin *mixer, WpPlugin *defaults,
@@ -97,7 +125,7 @@ static void astal_wp_stream_constructed(GObject *object) {
     if (target_object == NULL) {
         self->target_serial = -1;
     } else {
-        const gint serial = g_ascii_strtoull(target_object, NULL, 10);
+        const gint serial = g_ascii_strtoll(target_object, NULL, 10);
         self->target_serial = serial;
     }
 
@@ -114,6 +142,7 @@ static void astal_wp_stream_class_init(AstalWpStreamClass *class) {
 
     AstalWpNodeClass *node_class = ASTAL_WP_NODE_CLASS(class);
     node_class->metadata_changed = astal_wp_stream_real_metadata_changed;
+    node_class->params_changed = astal_wp_stream_real_params_changed;
 
     astal_wp_stream_properties[ASTAL_WP_STREAM_PROP_TARGET_SERIAL] = g_param_spec_int(
         "target-serial", "target-serial", "The object serial number of the target node", INT_MIN,

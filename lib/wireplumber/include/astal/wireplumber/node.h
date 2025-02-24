@@ -35,6 +35,8 @@ typedef enum {
 struct _AstalWpNodeClass {
     GObjectClass parent_class;
 
+    void (*params_changed)(AstalWpNode *self, const gchar *id);
+
     void (*metadata_changed)(AstalWpNode *self, const gchar *key, const gchar *type,
                              const gchar *value);
 };
@@ -60,6 +62,7 @@ const gchar *astal_wp_node_get_path(AstalWpNode *self);
 
 void astal_wp_node_metadata_changed(AstalWpNode *self, const gchar *key, const gchar *type,
                                     const gchar *value);
+void astal_wp_node_params_changed(AstalWpNode *self, const gchar *id);
 
 G_END_DECLS
 
