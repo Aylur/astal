@@ -5,9 +5,9 @@
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
-#include "video.h"
-#include "wp.h"
 #include "node.h"
+#include "video.h"
+#include "wp-private.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
@@ -34,6 +34,8 @@ typedef struct {
     GHashTable *nodes;
     GHashTable *devices;
     GHashTable *delayed_endpoints;
+
+    guint metadata_handler_id;
 } AstalWpWpPrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpWp, astal_wp_wp, G_TYPE_OBJECT);
@@ -270,18 +272,33 @@ static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id
     g_list_free(eps);
 }
 
+void astal_wp_wp_set_matadata(AstalWpWp *self, guint subject, const gchar *key, const gchar *type,
+                              const gchar *value) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    wp_metadata_set(priv->metadata, subject, key, type, value);
+}
+
 static void astal_wp_wp_metadata_changed(WpMetadata *metadata, guint subject, gchar *key,
                                          gchar *type, gchar *value, gpointer user_data) {
-    g_print("metadata changed: %d %s %s %s\n", subject, key, type, value);
+    AstalWpWp *self = ASTAL_WP_WP(user_data);
+    AstalWpNode *node = astal_wp_wp_get_node(self, subject);
+
+    if (node == NULL) return;
+
+    astal_wp_node_metadata_changed(node, key, type, value);
 }
 
 static void astal_wp_wp_metadata_added(AstalWpWp *self, gpointer object) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     if (!WP_IS_METADATA(object)) return;
     WpMetadata *metadata = WP_METADATA(object);
-    g_object_unref(priv->metadata);
+    if (priv->metadata != NULL) {
+        g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);
+        g_clear_object(&priv->metadata);
+    }
     priv->metadata = g_object_ref(metadata);
-    g_signal_connect(priv->metadata, "changed", G_CALLBACK(astal_wp_wp_metadata_changed), self);
+    priv->metadata_handler_id =
+        g_signal_connect(priv->metadata, "changed", G_CALLBACK(astal_wp_wp_metadata_changed), self);
 }
 
 static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
@@ -351,7 +368,6 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
 
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
-    g_print("1");
 
     astal_wp_node_init_as_default(ASTAL_WP_NODE(self->default_speaker), priv->mixer, priv->defaults,
                                   ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
@@ -386,19 +402,15 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
 static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    g_print("1.7");
     GError *error = NULL;
     wp_core_load_component_finish(priv->core, result, &error);
     if (error) {
         g_critical("Failed to load component: %s\n", error->message);
         return;
     }
-    g_print("1.8");
 
     wp_object_activate(obj, WP_PLUGIN_FEATURE_ENABLED, NULL,
                        (GAsyncReadyCallback)astal_wp_wp_plugin_activated, self);
-
-    g_print("1.9");
 }
 
 /**
@@ -429,6 +441,10 @@ static void astal_wp_wp_dispose(GObject *object) {
     AstalWpWp *self = ASTAL_WP_WP(object);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
+    if (priv->metadata) {
+        g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);
+    }
+
     g_clear_object(&self->video);
     g_clear_object(&self->audio);
 
@@ -441,16 +457,14 @@ static void astal_wp_wp_dispose(GObject *object) {
     g_clear_object(&priv->metadata);
     g_clear_object(&priv->obj_manager);
     g_clear_object(&priv->core);
+    g_clear_object(&priv->metadata);
 
     if (priv->nodes != NULL) {
         g_hash_table_destroy(priv->nodes);
         priv->nodes = NULL;
     }
-}
 
-static void astal_wp_wp_finalize(GObject *object) {
-    // AstalWpWp *self = ASTAL_WP_WP(object);
-    // AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    G_OBJECT_CLASS(astal_wp_wp_parent_class)->dispose(object);
 }
 
 static void astal_wp_wp_init(AstalWpWp *self) {
@@ -503,15 +517,12 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     g_signal_connect_swapped(priv->obj_manager, "installed", (GCallback)astal_wp_wp_objm_installed,
                              self);
 
-    g_print("-1");
     self->default_speaker = astal_wp_endpoint_new_default(self);
     self->default_microphone = astal_wp_endpoint_new_default(self);
-    g_print("0");
 
     self->audio = astal_wp_audio_new(self);
     self->video = astal_wp_video_new(self);
 
-    g_print("1.5");
     priv->pending_plugins = 2;
     wp_core_load_component(priv->core, "libwireplumber-module-default-nodes-api", "module", NULL,
                            "default-nodes-api", NULL,
@@ -522,7 +533,6 @@ static void astal_wp_wp_init(AstalWpWp *self) {
 
 static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     GObjectClass *object_class = G_OBJECT_CLASS(class);
-    object_class->finalize = astal_wp_wp_finalize;
     object_class->dispose = astal_wp_wp_dispose;
     object_class->get_property = astal_wp_wp_get_property;
     object_class->set_property = astal_wp_wp_set_property;

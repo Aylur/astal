@@ -413,6 +413,8 @@ static void astal_wp_audio_dispose(GObject *object) {
     AstalWpAudio *self = ASTAL_WP_AUDIO(object);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     g_clear_object(&priv->wp);
+
+    G_OBJECT_CLASS(astal_wp_audio_parent_class)->dispose(object);
 }
 
 static void astal_wp_audio_init(AstalWpAudio *self) {

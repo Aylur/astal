@@ -1,6 +1,7 @@
 #include <wp/wp.h>
 
 #include "device-private.h"
+#include "glib-object.h"
 #include "profile.h"
 
 struct _AstalWpDevice {
@@ -307,12 +308,16 @@ static void astal_wp_device_dispose(GObject *object) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     g_clear_object(&priv->device);
+
+    G_OBJECT_CLASS(astal_wp_device_parent_class)->dispose(object);
 }
 
 static void astal_wp_device_finalize(GObject *object) {
     AstalWpDevice *self = ASTAL_WP_DEVICE(object);
     g_free(self->description);
     g_free(self->icon);
+
+    G_OBJECT_CLASS(astal_wp_device_parent_class)->finalize(object);
 }
 
 static void astal_wp_device_class_init(AstalWpDeviceClass *class) {

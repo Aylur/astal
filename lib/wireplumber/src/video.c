@@ -4,6 +4,7 @@
 
 #include "device.h"
 #include "endpoint.h"
+#include "glib-object.h"
 #include "wp.h"
 
 struct _AstalWpVideo {
@@ -354,10 +355,9 @@ AstalWpVideo *astal_wp_video_new(AstalWpWp *wp) {
     AstalWpVideo *self = g_object_new(ASTAL_WP_TYPE_VIDEO, NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     priv->wp = g_object_ref(wp);
-    g_signal_connect_swapped(priv->wp, "node-added", G_CALLBACK(astal_wp_video_object_added),
+    g_signal_connect_swapped(priv->wp, "node-added", G_CALLBACK(astal_wp_video_object_added), self);
+    g_signal_connect_swapped(priv->wp, "node-removed", G_CALLBACK(astal_wp_video_object_removed),
                              self);
-    g_signal_connect_swapped(priv->wp, "node-removed",
-                             G_CALLBACK(astal_wp_video_object_removed), self);
     g_signal_connect_swapped(priv->wp, "device-added", G_CALLBACK(astal_wp_video_device_added),
                              self);
     g_signal_connect_swapped(priv->wp, "device-removed", G_CALLBACK(astal_wp_video_device_removed),
@@ -370,6 +370,8 @@ static void astal_wp_video_dispose(GObject *object) {
     AstalWpVideo *self = ASTAL_WP_VIDEO(object);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     g_clear_object(&priv->wp);
+
+    G_OBJECT_CLASS(astal_wp_video_parent_class)->dispose(object);
 }
 
 static void astal_wp_video_init(AstalWpVideo *self) {

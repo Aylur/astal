@@ -154,7 +154,7 @@ typedef struct {
     gboolean mute;
     gchar *description;
     gchar *name;
-    guint serial;
+    gint serial;
     gchar *path;
 
     AstalWpMediaClass type;
@@ -506,7 +506,7 @@ const gchar *astal_wp_node_get_volume_icon(AstalWpNode *self) {
  *
  * gets the serial number of this node
  */
-guint astal_wp_node_get_serial(AstalWpNode *self) {
+gint astal_wp_node_get_serial(AstalWpNode *self) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
     return priv->serial;
 }
@@ -541,6 +541,12 @@ static void astal_wp_node_get_property(GObject *object, guint property_id, GValu
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
     switch (property_id) {
+        case ASTAL_WP_NODE_PROP_NODE:
+            g_value_set_object(value, priv->node);
+            break;
+        case ASTAL_WP_NODE_PROP_WP:
+            g_value_set_object(value, priv->wp);
+            break;
         case ASTAL_WP_NODE_PROP_ID:
             g_value_set_uint(value, priv->id);
             break;
@@ -572,7 +578,7 @@ static void astal_wp_node_get_property(GObject *object, guint property_id, GValu
             g_value_set_boolean(value, priv->lock_channels);
             break;
         case ASTAL_WP_NODE_PROP_SERIAL:
-            g_value_set_uint(value, priv->serial);
+            g_value_set_int(value, priv->serial);
             break;
         case ASTAL_WP_NODE_PROP_PATH:
             g_value_set_string(value, priv->path);
@@ -590,38 +596,38 @@ static void astal_wp_node_set_property(GObject *object, guint property_id, const
                                        GParamSpec *pspec) {
     AstalWpNode *self = ASTAL_WP_NODE(object);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
-  
+
     WpPlugin *plugin;
     AstalWpWp *wp;
-    WpNode * node;
+    WpNode *node;
 
     switch (property_id) {
         case ASTAL_WP_NODE_PROP_WP:
             wp = g_value_get_object(value);
-            if(wp != NULL && ASTAL_WP_IS_WP(wp)) {
-              g_clear_object(&priv->wp);
-              priv->wp = g_object_ref(wp);
+            if (wp != NULL && ASTAL_WP_IS_WP(wp)) {
+                g_clear_object(&priv->wp);
+                priv->wp = g_object_ref(wp);
             }
             break;
         case ASTAL_WP_NODE_PROP_DEFAULT_PLUGIN:
             plugin = g_value_get_object(value);
-            if(plugin != NULL && WP_IS_PLUGIN(plugin)) {
-              g_clear_object(&priv->defaults);
-              priv->defaults = g_object_ref(plugin);
+            if (plugin != NULL && WP_IS_PLUGIN(plugin)) {
+                g_clear_object(&priv->defaults);
+                priv->defaults = g_object_ref(plugin);
             }
             break;
         case ASTAL_WP_NODE_PROP_MIXER_PLUGIN:
             plugin = g_value_get_object(value);
-            if(plugin != NULL && WP_IS_PLUGIN(plugin)) {
-              g_clear_object(&priv->mixer);
-              priv->mixer = g_object_ref(plugin);
+            if (plugin != NULL && WP_IS_PLUGIN(plugin)) {
+                g_clear_object(&priv->mixer);
+                priv->mixer = g_object_ref(plugin);
             }
             break;
         case ASTAL_WP_NODE_PROP_NODE:
             node = g_value_get_object(value);
-            if(node != NULL && WP_IS_NODE(node)) {
-              g_clear_object(&priv->node);
-              priv->node = g_object_ref(node);
+            if (node != NULL && WP_IS_NODE(node)) {
+                g_clear_object(&priv->node);
+                priv->node = g_object_ref(node);
             }
             break;
         case ASTAL_WP_NODE_PROP_IS_DEFAULT_NODE:
@@ -717,7 +723,7 @@ static void astal_wp_node_update_properties(AstalWpNode *self) {
     const gchar *serial =
         wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "object.serial");
     if (serial != NULL) {
-        priv->serial = g_ascii_strtoull(serial, NULL, 10);
+        priv->serial = g_ascii_strtoll(serial, NULL, 10);
     }
 
     const gchar *path =
@@ -804,40 +810,30 @@ void astal_wp_node_init_as_default(AstalWpNode *self, WpPlugin *mixer, WpPlugin 
     astal_wp_node_update_properties(self);
 }
 
-// AstalWpNode *astal_wp_node_create(WpNode *node, WpPlugin *mixer, WpPlugin *defaults,
-//                                           AstalWpWp *wp) {
-//     AstalWpNode *self = g_object_new(ASTAL_WP_TYPE_NODE, NULL);
-//     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
-//
-//     priv->mixer = g_object_ref(mixer);
-//     priv->defaults = g_object_ref(defaults);
-//     priv->node = g_object_ref(node);
-//     priv->is_default_node = FALSE;
-//     priv->wp = g_object_ref(wp);
-//
-//     priv->default_signal_handler_id = g_signal_connect_swapped(
-//         priv->defaults, "changed", G_CALLBACK(astal_wp_node_default_changed), self);
-//     priv->mixer_signal_handler_id = g_signal_connect_swapped(
-//         priv->mixer, "changed", G_CALLBACK(astal_wp_node_mixer_changed), self);
-//
-//     astal_wp_node_update_properties(self);
-//     astal_wp_node_default_changed(self);
-//     return self;
-// }
+static void astal_wp_node_real_metadata_changed(AstalWpNode *self, const gchar *key,
+                                                const gchar *type, const gchar *value) {}
+
+void astal_wp_node_metadata_changed(AstalWpNode *self, const gchar *key, const gchar *type,
+                                    const gchar *value) {
+    AstalWpNodeClass *klass = ASTAL_WP_NODE_GET_CLASS(self);
+    (*klass->metadata_changed)(self, key, type, value);
+}
 
 static void astal_wp_node_constructed(GObject *object) {
     AstalWpNode *self = ASTAL_WP_NODE(object);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
-    if (priv->is_default_node) return;
+    if (!priv->is_default_node) {
+        priv->default_signal_handler_id = g_signal_connect_swapped(
+            priv->defaults, "changed", G_CALLBACK(astal_wp_node_default_changed), self);
+        priv->mixer_signal_handler_id = g_signal_connect_swapped(
+            priv->mixer, "changed", G_CALLBACK(astal_wp_node_mixer_changed), self);
 
-    priv->default_signal_handler_id = g_signal_connect_swapped(
-        priv->defaults, "changed", G_CALLBACK(astal_wp_node_default_changed), self);
-    priv->mixer_signal_handler_id = g_signal_connect_swapped(
-        priv->mixer, "changed", G_CALLBACK(astal_wp_node_mixer_changed), self);
+        astal_wp_node_update_properties(self);
+        astal_wp_node_default_changed(self);
+    }
 
-    astal_wp_node_update_properties(self);
-    astal_wp_node_default_changed(self);
+    G_OBJECT_CLASS(astal_wp_node_parent_class)->constructed(object);
 }
 
 static void astal_wp_node_init(AstalWpNode *self) {
@@ -894,17 +890,36 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
     object_class->set_property = astal_wp_node_set_property;
     object_class->constructed = astal_wp_node_constructed;
 
-    astal_wp_node_properties[ASTAL_WP_NODE_PROP_WP] =
-        g_param_spec_object("wp", "wp", "wp", ASTAL_WP_TYPE_WP, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-    astal_wp_node_properties[ASTAL_WP_NODE_PROP_NODE] =
-        g_param_spec_object("node", "node", "node", WP_TYPE_NODE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-    astal_wp_node_properties[ASTAL_WP_NODE_PROP_MIXER_PLUGIN] = g_param_spec_object(
-        "mixer-plugin", "mixer-plugin", "mixer-plugin", WP_TYPE_PLUGIN, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    class->metadata_changed = astal_wp_node_real_metadata_changed;
+
+    /**
+     * AstalWpNode:wp: (skip)
+     */
+    astal_wp_node_properties[ASTAL_WP_NODE_PROP_WP] = g_param_spec_object(
+        "wp", "wp", "wp", ASTAL_WP_TYPE_WP, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    /**
+     * AstalWpNode:node: (skip)
+     */
+    astal_wp_node_properties[ASTAL_WP_NODE_PROP_NODE] = g_param_spec_object(
+        "node", "node", "node", WP_TYPE_NODE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    /**
+     * AstalWpNode:mixer-plugin: (skip)
+     */
+    astal_wp_node_properties[ASTAL_WP_NODE_PROP_MIXER_PLUGIN] =
+        g_param_spec_object("mixer-plugin", "mixer-plugin", "mixer-plugin", WP_TYPE_PLUGIN,
+                            G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    /**
+     * AstalWpNode:default-plugin: (skip)
+     */
     astal_wp_node_properties[ASTAL_WP_NODE_PROP_DEFAULT_PLUGIN] =
         g_param_spec_object("default-plugin", "default-plugin", "default-plugin", WP_TYPE_PLUGIN,
                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
-    astal_wp_node_properties[ASTAL_WP_NODE_PROP_IS_DEFAULT_NODE] = g_param_spec_boolean(
-        "is-default-node", "is-default-node", "is-default-node", FALSE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    /**
+     * AstalWpNode:is-default-node: (skip)
+     */
+    astal_wp_node_properties[ASTAL_WP_NODE_PROP_IS_DEFAULT_NODE] =
+        g_param_spec_boolean("is-default-node", "is-default-node", "is-default-node", FALSE,
+                             G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
 
     /**
      * AstalWpNode:id:
@@ -986,7 +1001,7 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
      * The object serial of this node.
      */
     astal_wp_node_properties[ASTAL_WP_NODE_PROP_SERIAL] =
-        g_param_spec_uint("serial", "serial", "serial", 0, UINT_MAX, 0, G_PARAM_READABLE);
+        g_param_spec_int("serial", "serial", "serial", INT_MIN, INT_MAX, 0, G_PARAM_READABLE);
 
     /**
      * AstalWpNode:path:
@@ -998,7 +1013,6 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
 
     /**
      * AstalWpNode:channel-volumes: (type GList(AstalWpChannelVolume)) (transfer container)
-     * (nullable)
      *
      * A list of per channel volumes
      */
