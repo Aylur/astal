@@ -24,6 +24,12 @@ namespace AstalBspc {
                 Bspc.get_default().message_async.end(task));
         }
 
+        public async void send_to(Desktop d) {
+            var Did = d.id;
+            Bspc.get_default().message_async.begin(@"node $id -d $Did", (_, task) =>
+                Bspc.get_default().message_async.end(task));
+        }
+
         internal void sync(Json.Object obj) {
             var client = obj.get_object_member("client");
             var geom = client.get_object_member(client.get_string_member("state") + "Rectangle");

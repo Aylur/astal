@@ -268,6 +268,17 @@ namespace AstalBspc {
         private async void handle_event(string line) throws Error  {
             var args = line.split(" ");
 
+            if (args.length == 1) {
+                ReportFormat data = new ReportFormat(line.split(":"));
+
+                if (data.T == null) {
+                    focused_node = null;
+                }
+
+                return;
+            }
+
+
             switch (args[0]) {
                 // node events
                 case "node_add":
@@ -414,13 +425,10 @@ namespace AstalBspc {
                     break;
 
                 default:
-                    ReportFormat data = new ReportFormat(line.split(":"));
-
-                    if (data.T == null) {
-                        focused_node = null;
-                    }
                     break;
             }
+
+            event(args[0], line.substring(args[0].length + 1));
         }
     }
 }
