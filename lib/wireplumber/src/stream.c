@@ -82,8 +82,7 @@ void astal_wp_stream_real_metadata_changed(AstalWpNode *node, const gchar *key, 
     }
 }
 
-static void astal_wp_stream_properties_changed(AstalWpStream* self) {
-
+static void astal_wp_stream_properties_changed(AstalWpStream *self) {
     WpNode *node;
     g_object_get(G_OBJECT(self), "node", &node, NULL);
     WpPipewireObject *pwo = WP_PIPEWIRE_OBJECT(node);
@@ -91,28 +90,26 @@ static void astal_wp_stream_properties_changed(AstalWpStream* self) {
     const gchar *value;
 
     value = wp_pipewire_object_get_property(pwo, "media.icon-name");
-    if(value == NULL) value = wp_pipewire_object_get_property(pwo, "window.icon-name");
-    if(value == NULL) value = wp_pipewire_object_get_property(pwo, "application.icon-name");
-    if(value == NULL) value = "application-x-executable-symbolic";
+    if (value == NULL) value = wp_pipewire_object_get_property(pwo, "window.icon-name");
+    if (value == NULL) value = wp_pipewire_object_get_property(pwo, "application.icon-name");
+    if (value == NULL) value = "application-x-executable-symbolic";
     astal_wp_node_set_icon(ASTAL_WP_NODE(self), value);
-
 }
 
-void astal_wp_stream_real_params_changed(AstalWpNode* node, const gchar* id) {
-  AstalWpStream* self = ASTAL_WP_STREAM(node);
-  
-  g_object_freeze_notify(G_OBJECT(self));
+void astal_wp_stream_real_params_changed(AstalWpNode *node, const gchar *id) {
+    AstalWpStream *self = ASTAL_WP_STREAM(node);
 
-  if(!g_strcmp0(id, "Props")) astal_wp_stream_properties_changed(self);
+    g_object_freeze_notify(G_OBJECT(self));
 
-  ASTAL_WP_NODE_CLASS(astal_wp_stream_parent_class)->params_changed(node, id);
-  g_object_thaw_notify(G_OBJECT(self));
+    if (!g_strcmp0(id, "Props")) astal_wp_stream_properties_changed(self);
+
+    ASTAL_WP_NODE_CLASS(astal_wp_stream_parent_class)->params_changed(node, id);
+    g_object_thaw_notify(G_OBJECT(self));
 }
 
-AstalWpStream *astal_wp_stream_new(WpNode *node, WpPlugin *mixer, WpPlugin *defaults,
+AstalWpStream *astal_wp_stream_new(WpNode *node, WpPlugin *mixer,
                                    AstalWpWp *wp) {
-    return g_object_new(ASTAL_WP_TYPE_STREAM, "node", node, "mixer-plugin", mixer, "default-plugin",
-                        defaults, "wp", wp, "is-default-node", FALSE, NULL);
+    return g_object_new(ASTAL_WP_TYPE_STREAM, "mixer-plugin", mixer, "node", node, "wp", wp, NULL);
 }
 
 static void astal_wp_stream_constructed(GObject *object) {

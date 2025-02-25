@@ -1,7 +1,7 @@
 #include <wp/wp.h>
 
 #include "audio.h"
-#include "device-private.h"
+#include "device.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
@@ -39,10 +39,6 @@ typedef struct {
 } AstalWpWpPrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpWp, astal_wp_wp, G_TYPE_OBJECT);
-
-G_DEFINE_ENUM_TYPE(AstalWpScale, astal_wp_scale,
-                   G_DEFINE_ENUM_VALUE(ASTAL_WP_SCALE_LINEAR, "linear"),
-                   G_DEFINE_ENUM_VALUE(ASTAL_WP_SCALE_CUBIC, "cubic"));
 
 typedef enum {
     ASTAL_WP_WP_SIGNAL_NODE_ADDED,
@@ -321,7 +317,7 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
             wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
         if (g_str_has_prefix(media_class, "Stream")) {
             astal_node =
-                ASTAL_WP_NODE(astal_wp_stream_new(node, priv->mixer, priv->defaults, self));
+                ASTAL_WP_NODE(astal_wp_stream_new(node, priv->mixer, self));
         } else {
             astal_node =
                 ASTAL_WP_NODE(astal_wp_endpoint_new(node, priv->mixer, priv->defaults, self));
@@ -333,7 +329,8 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
         g_object_notify(G_OBJECT(self), "nodes");
     } else if (WP_IS_DEVICE(object)) {
         WpDevice *node = WP_DEVICE(object);
-        AstalWpDevice *device = astal_wp_device_create(node);
+        // AstalWpDevice *device = astal_wp_device_create(node);
+        AstalWpDevice *device = g_object_new(ASTAL_WP_TYPE_DEVICE, "device", node, NULL);
         g_hash_table_insert(priv->devices, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
                             device);
         g_signal_emit_by_name(self, "device-added", device);
@@ -369,10 +366,10 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    astal_wp_node_init_as_default(ASTAL_WP_NODE(self->default_speaker), priv->mixer, priv->defaults,
-                                  ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
-    astal_wp_node_init_as_default(ASTAL_WP_NODE(self->default_microphone), priv->mixer,
-                                  priv->defaults, ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE);
+    astal_wp_endpoint_init_as_default(self->default_speaker, priv->mixer, priv->defaults,
+                                      ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
+    astal_wp_endpoint_init_as_default(self->default_microphone, priv->mixer, priv->defaults,
+                                      ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE);
 }
 
 static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {

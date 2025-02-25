@@ -4,6 +4,7 @@
 #include <glib-object.h>
 
 #include "profile.h"
+#include "astal-wp-enum-types.h"
 
 G_BEGIN_DECLS
 
@@ -11,9 +12,10 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE(AstalWpDevice, astal_wp_device, ASTAL_WP, DEVICE, GObject)
 
-#define ASTAL_WP_TYPE_DEVICE_TYPE (astal_wp_device_type_get_type())
-
-typedef enum { ASTAL_WP_DEVICE_TYPE_AUDIO, ASTAL_WP_DEVICE_TYPE_VIDEO } AstalWpDeviceType;
+typedef enum {
+    ASTAL_WP_DEVICE_TYPE_AUDIO, /*< nixk=Audio/Device >*/
+    ASTAL_WP_DEVICE_TYPE_VIDEO  /*< nixk=Video/Device >*/
+} AstalWpDeviceType;
 
 guint astal_wp_device_get_id(AstalWpDevice *self);
 const gchar *astal_wp_device_get_description(AstalWpDevice *self);
@@ -23,6 +25,7 @@ GList *astal_wp_device_get_profiles(AstalWpDevice *self);
 void astal_wp_device_set_active_profile(AstalWpDevice *self, int profile_id);
 gint astal_wp_device_get_active_profile(AstalWpDevice *self);
 AstalWpDeviceType astal_wp_device_get_device_type(AstalWpDevice *self);
+const gchar *astal_wp_device_get_form_factor(AstalWpDevice *self);
 
 G_END_DECLS
 

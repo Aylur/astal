@@ -3,6 +3,11 @@
 #define WP_H
 
 #include "astal/wireplumber/audio.h"
+#include "astal/wireplumber/video.h"
+#include "astal/wireplumber/device.h"
+#include "astal/wireplumber/profile.h"
+#include "astal/wireplumber/node.h"
+#include "astal/wireplumber/stream.h"
 #include "astal/wireplumber/endpoint.h"
 #include "astal/wireplumber/wp.h"
 

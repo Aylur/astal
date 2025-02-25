@@ -5,6 +5,7 @@
 #include "device.h"
 #include "endpoint.h"
 #include "glib-object.h"
+#include "node.h"
 #include "stream.h"
 #include "wp.h"
 

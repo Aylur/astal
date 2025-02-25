@@ -3,6 +3,8 @@
 
 #include <glib-object.h>
 
+#include "astal-wp-enum-types.h"
+
 G_BEGIN_DECLS
 
 #define ASTAL_WP_TYPE_CHANNEL_VOLUME (astal_wp_channel_volume_get_type())
@@ -19,18 +21,24 @@ const gchar *astal_wp_channel_volume_get_volume_icon(AstalWpChannelVolume *self)
 
 G_DECLARE_DERIVABLE_TYPE(AstalWpNode, astal_wp_node, ASTAL_WP, NODE, GObject)
 
-#define ASTAL_WP_TYPE_MEDIA_CLASS (astal_wp_media_class_get_type())
+typedef enum {
+    ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE, /*< nick=Audio/Source >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER,    /*< nick=Audio/Sink >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER,   /*< nick=Stream/Input/Audio >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM,     /*< nick=Stream/Output/Audio >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE,     /*< nick=Video/Source >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_SINK,       /*< nick=Video/Sink >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER,   /*< nick=Stream/Input/Video >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM,     /*< nick=Stream/Output/Video >*/
+} AstalWpMediaClass;
 
 typedef enum {
-    ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE,
-    ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER,
-    ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER,
-    ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM,
-    ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE,
-    ASTAL_WP_MEDIA_CLASS_VIDEO_SINK,
-    ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER,
-    ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM,
-} AstalWpMediaClass;
+    ASTAL_WP_NODE_STATE_ERROR     = -1,
+    ASTAL_WP_NODE_STATE_CREATING  = 0,
+    ASTAL_WP_NODE_STATE_SUSPENDED = 1,
+    ASTAL_WP_NODE_STATE_IDLE      = 2,
+    ASTAL_WP_NODE_STATE_RUNNING   = 3
+} AstalWpNodeState;
 
 struct _AstalWpNodeClass {
     GObjectClass parent_class;
@@ -43,8 +51,6 @@ struct _AstalWpNodeClass {
 
 void astal_wp_node_set_volume(AstalWpNode *self, gdouble volume);
 void astal_wp_node_set_mute(AstalWpNode *self, gboolean mute);
-gboolean astal_wp_node_get_is_default(AstalWpNode *self);
-void astal_wp_node_set_is_default(AstalWpNode *self, gboolean is_default);
 gboolean astal_wp_node_get_lock_channels(AstalWpNode *self);
 void astal_wp_node_set_lock_channels(AstalWpNode *self, gboolean lock_channels);
 
@@ -59,6 +65,7 @@ const gchar *astal_wp_node_get_icon(AstalWpNode *self);
 const gchar *astal_wp_node_get_volume_icon(AstalWpNode *self);
 gint astal_wp_node_get_serial(AstalWpNode *self);
 const gchar *astal_wp_node_get_path(AstalWpNode *self);
+AstalWpNodeState astal_wp_node_get_state(AstalWpNode *self);
 
 void astal_wp_node_metadata_changed(AstalWpNode *self, const gchar *key, const gchar *type,
                                     const gchar *value);
