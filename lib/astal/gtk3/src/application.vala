@@ -159,10 +159,13 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
             reset_css();
 
         try {
-            if (FileUtils.test(style, FileTest.EXISTS))
+            if (FileUtils.test(style, FileTest.EXISTS)) {
                 provider.load_from_path(style);
-            else
+            } else if (style.has_prefix("resource://")) {
+                provider.load_from_resource(style.replace("resource://", ""));
+            } else {
                 provider.load_from_data(style);
+            }
         } catch (Error err) {
             critical(err.message);
         }
