@@ -5,8 +5,7 @@ public errordomain AppError {
 }
 
 /**
- * This interface is used as a placeholder for the Astal Application class.
- * It is not meant to be used by consumers.
+ * This interface is used internally in Astal3 and Astal4, not meant for public usage.
  */
 public interface Application : Object {
     public abstract void quit() throws Error;
@@ -15,7 +14,7 @@ public interface Application : Object {
 
     public abstract string instance_name { owned get; construct set; }
     public abstract void acquire_socket() throws Error;
-    public virtual void request(string msg, SocketConnection conn) throws Error {
+    public virtual void request(string request, SocketConnection conn) throws Error {
         write_sock.begin(conn, @"missing response implementation on $instance_name");
     }
 }
@@ -61,8 +60,8 @@ public SocketService acquire_socket(Application app, out string sock) throws Err
     service.incoming.connect((conn) => {
         read_sock.begin(conn, (_, res) => {
             try {
-                string message = read_sock.end(res);
-                app.request(message != null ? message.strip() : "", conn);
+                string request = read_sock.end(res);
+                app.request(request != null ? request.strip() : "", conn);
             } catch (Error err) {
                 critical(err.message);
             }
@@ -142,20 +141,30 @@ public static void toggle_window_by_name(string instance, string window) throws 
 }
 
 /**
- * Send a message to an Astal instances.
- * It is the equivalent of `astal -i instance content of the message`.
+ * Use [func@AstalIO.send_request] instead.
  */
-public static string send_message(string instance, string msg) throws Error {
+[Version (deprecated = true)]
+public static string send_message(string instance, string request) throws Error {
+    return send_request(instance, request);
+}
+
+/**
+ * Send a request to an Astal instances.
+ * It is the equivalent of `astal -i instance "request content"`.
+ */
+public static string send_request(string instance, string request) throws Error {
     var rundir = Environment.get_user_runtime_dir();
     var socket_path = @"$rundir/astal/$instance.sock";
     var client = new SocketClient();
 
     var conn = client.connect(new UnixSocketAddress(socket_path), null);
-    conn.output_stream.write(msg.concat("\x04").data);
+    conn.output_stream.write(request.concat("\x04").data);
 
     var stream = new DataInputStream(conn.input_stream);
     return stream.read_upto("\x04", -1, null, null);
 }
+
+// TODO: send_request_async
 
 /**
  * Read the socket of an Astal.Application instance.
