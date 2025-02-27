@@ -129,18 +129,20 @@ static void astal_wp_endpoint_properties_changed(AstalWpEndpoint *self) {
     AstalWpMediaClass media_class;
     g_object_get(G_OBJECT(self), "node", &node, "media-class", &media_class, NULL);
 
-    if(node == NULL) return;
+    if (node == NULL) return;
 
     WpPipewireObject *pwo = WP_PIPEWIRE_OBJECT(node);
 
     const gchar *value;
 
     value = wp_pipewire_object_get_property(pwo, "device.id");
-    guint id = g_ascii_strtoull(value, NULL, 10);
-    if (self->device_id != id) {
-        self->device_id = id;
-        g_object_notify(G_OBJECT(self), "device-id");
-        g_object_notify(G_OBJECT(self), "device");
+    if (value != NULL) {
+        guint id = g_ascii_strtoull(value, NULL, 10);
+        if (self->device_id != id) {
+            self->device_id = id;
+            g_object_notify(G_OBJECT(self), "device-id");
+            g_object_notify(G_OBJECT(self), "device");
+        }
     }
 
     AstalWpDevice *device = astal_wp_endpoint_get_device(self);
@@ -241,15 +243,15 @@ AstalWpEndpoint *astal_wp_endpoint_new_default(AstalWpWp *wp) {
 
 AstalWpEndpoint *astal_wp_endpoint_new(WpNode *node, WpPlugin *mixer, WpPlugin *defaults,
                                        AstalWpWp *wp) {
-    AstalWpEndpoint* self =  g_object_new(ASTAL_WP_TYPE_ENDPOINT, "mixer-plugin", mixer, "node", node,
-                        "default-plugin", defaults, "wp", wp, "is-default-node", FALSE, NULL);
-  AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+    AstalWpEndpoint *self =
+        g_object_new(ASTAL_WP_TYPE_ENDPOINT, "mixer-plugin", mixer, "node", node, "default-plugin",
+                     defaults, "wp", wp, "is-default-node", FALSE, NULL);
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
-    priv->default_node_handler_signal_id =
-        g_signal_connect_swapped(priv->default_plugin, "changed",
-                                 G_CALLBACK(astal_wp_endpoint_default_changed), self);
+    priv->default_node_handler_signal_id = g_signal_connect_swapped(
+        priv->default_plugin, "changed", G_CALLBACK(astal_wp_endpoint_default_changed), self);
 
-  return self;
+    return self;
 }
 
 static void astal_wp_endpoint_dispose(GObject *object) {

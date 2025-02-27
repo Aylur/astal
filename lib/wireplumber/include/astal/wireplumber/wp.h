@@ -28,6 +28,7 @@ AstalWpVideo* astal_wp_wp_get_video(AstalWpWp* self);
 
 AstalWpNode* astal_wp_wp_get_node(AstalWpWp* self, guint id);
 GList* astal_wp_wp_get_nodes(AstalWpWp* self);
+AstalWpNode* astal_wp_wp_get_node_by_serial(AstalWpWp* self, gint serial);
 
 AstalWpDevice* astal_wp_wp_get_device(AstalWpWp* self, guint id);
 GList* astal_wp_wp_get_devices(AstalWpWp* self);

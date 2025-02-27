@@ -4,13 +4,10 @@
 #include <wp/wp.h>
 
 #include "astal-wp-enum-types.h"
-#include "device.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
 #include "wp.h"
-#include "wp/node.h"
-#include "wp/plugin.h"
 
 struct _AstalWpChannelVolume {
     GObject parent_instance;
@@ -200,7 +197,7 @@ static GParamSpec *astal_wp_node_properties[ASTAL_WP_NODE_N_PROPERTIES] = {
 void astal_wp_node_update_volume(AstalWpNode *self) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
-    if(priv->mixer == NULL) return;
+    if (priv->mixer == NULL) return;
 
     gdouble volume = 0;
     gboolean mute;
@@ -394,9 +391,9 @@ AstalWpMediaClass astal_wp_node_get_media_class(AstalWpNode *self) {
  *
  * gets the current state of this node
  */
-AstalWpNodeState astal_wp_node_get_state(AstalWpNode *self){
-  AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
-  return priv->state;
+AstalWpNodeState astal_wp_node_get_state(AstalWpNode *self) {
+    AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    return priv->state;
 }
 
 /**
@@ -439,6 +436,7 @@ gdouble astal_wp_node_get_volume(AstalWpNode *self) {
  * gets the description of this node
  */
 const gchar *astal_wp_node_get_description(AstalWpNode *self) {
+    g_return_val_if_fail(self != NULL, NULL);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
     if (priv->description != NULL) return priv->description;
     if (priv->nick != NULL) return priv->nick;
@@ -511,6 +509,7 @@ const gchar *astal_wp_node_get_volume_icon(AstalWpNode *self) {
  * gets the serial number of this node
  */
 gint astal_wp_node_get_serial(AstalWpNode *self) {
+    g_return_val_if_fail(self != NULL, -1);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
     return priv->serial;
 }
@@ -539,10 +538,11 @@ GList *astal_wp_node_get_channel_volumes(AstalWpNode *self) {
     return g_hash_table_get_values(priv->channel_volumes);
 }
 
-static void astal_wp_node_state_changed(AstalWpNode *self, WpNodeState old_state, WpNodeState new_state) {
-  AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
-  priv->state = (AstalWpNodeState) new_state;
-  g_object_notify(G_OBJECT(self), "state");
+static void astal_wp_node_state_changed(AstalWpNode *self, WpNodeState old_state,
+                                        WpNodeState new_state) {
+    AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    priv->state = (AstalWpNodeState)new_state;
+    g_object_notify(G_OBJECT(self), "state");
 }
 
 void astal_wp_node_set_node(AstalWpNode *self, WpNode *node) {
@@ -556,7 +556,8 @@ void astal_wp_node_set_node(AstalWpNode *self, WpNode *node) {
         priv->node = g_object_ref(node);
         priv->params_signal_handler_id = g_signal_connect_swapped(
             priv->node, "params-changed", G_CALLBACK(astal_wp_node_params_changed), self);
-        priv->state_change_handler_id = g_signal_connect_swapped(priv->node, "state-changed", G_CALLBACK(astal_wp_node_state_changed), self);
+        priv->state_change_handler_id = g_signal_connect_swapped(
+            priv->node, "state-changed", G_CALLBACK(astal_wp_node_state_changed), self);
     }
     astal_wp_node_params_changed(self, "Props");
     astal_wp_node_update_volume(self);
@@ -793,10 +794,9 @@ static void astal_wp_node_dispose(GObject *object) {
     AstalWpNode *self = ASTAL_WP_NODE(object);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
-    if(priv->mixer != NULL)
-      g_signal_handler_disconnect(priv->mixer, priv->mixer_signal_handler_id);
-    if(priv->node != NULL)
-      g_signal_handler_disconnect(priv->node, priv->state_change_handler_id);
+    if (priv->mixer != NULL)
+        g_signal_handler_disconnect(priv->mixer, priv->mixer_signal_handler_id);
+    if (priv->node != NULL) g_signal_handler_disconnect(priv->node, priv->state_change_handler_id);
 
     if (priv->channel_volumes) {
         g_hash_table_destroy(priv->channel_volumes);
@@ -828,7 +828,6 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
     object_class->finalize = astal_wp_node_finalize;
     object_class->get_property = astal_wp_node_get_property;
     object_class->set_property = astal_wp_node_set_property;
-    // object_class->constructed = astal_wp_node_constructed;
 
     class->metadata_changed = astal_wp_node_real_metadata_changed;
     class->params_changed = astal_wp_node_real_params_changed;
@@ -862,14 +861,15 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
      * The volume of this node
      */
     astal_wp_node_properties[ASTAL_WP_NODE_PROP_VOLUME] =
-        g_param_spec_double("volume", "volume", "volume", 0, G_MAXFLOAT, 0, G_PARAM_READWRITE);
+        g_param_spec_double("volume", "volume", "volume", 0, G_MAXFLOAT, 0,
+                            G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
     /**
      * AstalWpNode:mute:
      *
      * The mute state of this node
      */
-    astal_wp_node_properties[ASTAL_WP_NODE_PROP_MUTE] =
-        g_param_spec_boolean("mute", "mute", "mute", TRUE, G_PARAM_READWRITE);
+    astal_wp_node_properties[ASTAL_WP_NODE_PROP_MUTE] = g_param_spec_boolean(
+        "mute", "mute", "mute", TRUE, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
     /**
      * AstalWpNode:description:
      *
@@ -932,7 +932,7 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
         g_param_spec_string("path", "path", "path", NULL, G_PARAM_READABLE);
 
     /**
-     * AstalWpNode:channel-volumes: (type GList(AstalWpChannelVolume)) (transfer container) 
+     * AstalWpNode:channel-volumes: (type GList(AstalWpChannelVolume)) (transfer container)
      *
      * A list of per channel volumes
      */
@@ -940,11 +940,12 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
         "channel-volumes", "channel-volumes", "per channel volume", G_PARAM_READABLE);
 
     /**
-    * AstalWpNode:state: (type AstalWpNodeState)
-    *
-    * the current state of this node.
-    */
-    astal_wp_node_properties[ASTAL_WP_NODE_PROP_STATE] = g_param_spec_enum("state", "state", "state", ASTAL_WP_TYPE_NODE_STATE, 0, G_PARAM_READABLE);
+     * AstalWpNode:state: (type AstalWpNodeState)
+     *
+     * the current state of this node.
+     */
+    astal_wp_node_properties[ASTAL_WP_NODE_PROP_STATE] =
+        g_param_spec_enum("state", "state", "state", ASTAL_WP_TYPE_NODE_STATE, 0, G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_NODE_N_PROPERTIES,
                                       astal_wp_node_properties);

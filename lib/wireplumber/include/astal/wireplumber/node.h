@@ -33,11 +33,11 @@ typedef enum {
 } AstalWpMediaClass;
 
 typedef enum {
-    ASTAL_WP_NODE_STATE_ERROR     = -1,
-    ASTAL_WP_NODE_STATE_CREATING  = 0,
+    ASTAL_WP_NODE_STATE_ERROR = -1,
+    ASTAL_WP_NODE_STATE_CREATING = 0,
     ASTAL_WP_NODE_STATE_SUSPENDED = 1,
-    ASTAL_WP_NODE_STATE_IDLE      = 2,
-    ASTAL_WP_NODE_STATE_RUNNING   = 3
+    ASTAL_WP_NODE_STATE_IDLE = 2,
+    ASTAL_WP_NODE_STATE_RUNNING = 3
 } AstalWpNodeState;
 
 struct _AstalWpNodeClass {

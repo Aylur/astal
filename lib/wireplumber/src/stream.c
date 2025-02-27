@@ -2,6 +2,7 @@
 
 #include <wp/wp.h>
 
+#include "endpoint.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
@@ -19,6 +20,7 @@ G_DEFINE_FINAL_TYPE(AstalWpStream, astal_wp_stream, ASTAL_WP_TYPE_NODE);
 
 typedef enum {
     ASTAL_WP_STREAM_PROP_TARGET_SERIAL = 1,
+    ASTAL_WP_STREAM_PROP_TARGET_ENDPOINT,
     ASTAL_WP_STREAM_N_PROPERTIES,
 } AstalWpStreamProperties;
 
@@ -26,7 +28,10 @@ static GParamSpec *astal_wp_stream_properties[ASTAL_WP_STREAM_N_PROPERTIES] = {
     NULL,
 };
 
-gint astal_wp_stream_get_target_serial(AstalWpStream *self) { return self->target_serial; }
+gint astal_wp_stream_get_target_serial(AstalWpStream *self) {
+    g_return_val_if_fail(self != NULL, -1);
+    return self->target_serial;
+}
 
 void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
     AstalWpWp *wp;
@@ -37,6 +42,22 @@ void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
     g_free(serial_str);
 }
 
+AstalWpEndpoint *astal_wp_stream_get_target_endpoint(AstalWpStream *self) {
+    AstalWpWp *wp;
+    g_object_get(self, "wp", &wp, NULL);
+
+    AstalWpNode *node = astal_wp_wp_get_node_by_serial(wp, self->target_serial);
+    if (node != NULL && ASTAL_WP_IS_ENDPOINT(node)) return ASTAL_WP_ENDPOINT(node);
+    return NULL;
+}
+
+void astal_wp_stream_set_target_endpoint(AstalWpStream *self, AstalWpEndpoint *target) {
+    if (target == NULL)
+        astal_wp_stream_set_target_serial(self, -1);
+    else
+        astal_wp_stream_set_target_serial(self, astal_wp_node_get_serial(ASTAL_WP_NODE(target)));
+}
+
 static void astal_wp_stream_get_property(GObject *object, guint property_id, GValue *value,
                                          GParamSpec *pspec) {
     AstalWpStream *self = ASTAL_WP_STREAM(object);
@@ -44,6 +65,9 @@ static void astal_wp_stream_get_property(GObject *object, guint property_id, GVa
     switch (property_id) {
         case ASTAL_WP_STREAM_PROP_TARGET_SERIAL:
             g_value_set_int(value, self->target_serial);
+            break;
+        case ASTAL_WP_STREAM_PROP_TARGET_ENDPOINT:
+            g_value_set_object(value, astal_wp_stream_get_target_endpoint(self));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -59,6 +83,9 @@ static void astal_wp_stream_set_property(GObject *object, guint property_id, con
         case ASTAL_WP_STREAM_PROP_TARGET_SERIAL:
             astal_wp_stream_set_target_serial(self, g_value_get_int(value));
             break;
+        case ASTAL_WP_STREAM_PROP_TARGET_ENDPOINT:
+            astal_wp_stream_set_target_endpoint(self, g_value_get_object(value));
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -70,15 +97,19 @@ void astal_wp_stream_real_metadata_changed(AstalWpNode *node, const gchar *key, 
     ASTAL_WP_NODE_CLASS(astal_wp_stream_parent_class)->metadata_changed(node, key, type, value);
 
     AstalWpStream *self = ASTAL_WP_STREAM(node);
+    gint serial;
 
     if (!g_strcmp0(key, "target.object")) {
         if (value == NULL) {
-            self->target_serial = -1;
+            serial = -1;
         } else {
-            guint serial = g_ascii_strtoll(value, NULL, 10);
-            self->target_serial = serial;
+            serial = g_ascii_strtoll(value, NULL, 10);
         }
-        g_object_notify(G_OBJECT(self), "target-serial");
+        if (serial != self->target_serial) {
+            self->target_serial = serial;
+            g_object_notify(G_OBJECT(self), "target-serial");
+            g_object_notify(G_OBJECT(self), "target-endpoint");
+        }
     }
 }
 
@@ -107,26 +138,8 @@ void astal_wp_stream_real_params_changed(AstalWpNode *node, const gchar *id) {
     g_object_thaw_notify(G_OBJECT(self));
 }
 
-AstalWpStream *astal_wp_stream_new(WpNode *node, WpPlugin *mixer,
-                                   AstalWpWp *wp) {
+AstalWpStream *astal_wp_stream_new(WpNode *node, WpPlugin *mixer, AstalWpWp *wp) {
     return g_object_new(ASTAL_WP_TYPE_STREAM, "mixer-plugin", mixer, "node", node, "wp", wp, NULL);
-}
-
-static void astal_wp_stream_constructed(GObject *object) {
-    AstalWpStream *self = ASTAL_WP_STREAM(object);
-
-    WpNode *node;
-    g_object_get(self, "node", &node, NULL);
-    const gchar *target_object =
-        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "target.object");
-    if (target_object == NULL) {
-        self->target_serial = -1;
-    } else {
-        const gint serial = g_ascii_strtoll(target_object, NULL, 10);
-        self->target_serial = serial;
-    }
-
-    G_OBJECT_CLASS(astal_wp_stream_parent_class)->constructed(object);
 }
 
 static void astal_wp_stream_init(AstalWpStream *self) {}
@@ -135,15 +148,27 @@ static void astal_wp_stream_class_init(AstalWpStreamClass *class) {
     GObjectClass *object_class = G_OBJECT_CLASS(class);
     object_class->get_property = astal_wp_stream_get_property;
     object_class->set_property = astal_wp_stream_set_property;
-    object_class->constructed = astal_wp_stream_constructed;
 
     AstalWpNodeClass *node_class = ASTAL_WP_NODE_CLASS(class);
     node_class->metadata_changed = astal_wp_stream_real_metadata_changed;
     node_class->params_changed = astal_wp_stream_real_params_changed;
 
+    /**
+     * AstalWpWp:target-serial:
+     *
+     * The serial of the target endpoint of this node. Set it to -1 for the default.
+     */
     astal_wp_stream_properties[ASTAL_WP_STREAM_PROP_TARGET_SERIAL] = g_param_spec_int(
         "target-serial", "target-serial", "The object serial number of the target node", INT_MIN,
-        INT_MAX, -1, G_PARAM_READWRITE);
+        INT_MAX, -1, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+    /**
+     * AstalWpWp:target-endpoint:
+     *
+     * The target endpoint for this node.
+     */
+    astal_wp_stream_properties[ASTAL_WP_STREAM_PROP_TARGET_ENDPOINT] =
+        g_param_spec_object("target-endpoint", "target-endpoint", "target-endpoint",
+                            ASTAL_WP_TYPE_ENDPOINT, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
     g_object_class_install_properties(object_class, ASTAL_WP_STREAM_N_PROPERTIES,
                                       astal_wp_stream_properties);

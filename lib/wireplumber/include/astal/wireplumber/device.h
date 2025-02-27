@@ -3,8 +3,8 @@
 
 #include <glib-object.h>
 
-#include "profile.h"
 #include "astal-wp-enum-types.h"
+#include "profile.h"
 
 G_BEGIN_DECLS
 
@@ -13,8 +13,8 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(AstalWpDevice, astal_wp_device, ASTAL_WP, DEVICE, GObject)
 
 typedef enum {
-    ASTAL_WP_DEVICE_TYPE_AUDIO, /*< nixk=Audio/Device >*/
-    ASTAL_WP_DEVICE_TYPE_VIDEO  /*< nixk=Video/Device >*/
+    ASTAL_WP_DEVICE_TYPE_AUDIO, /*< nick=Audio/Device >*/
+    ASTAL_WP_DEVICE_TYPE_VIDEO  /*< nick=Video/Device >*/
 } AstalWpDeviceType;
 
 guint astal_wp_device_get_id(AstalWpDevice *self);

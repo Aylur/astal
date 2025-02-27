@@ -8,6 +8,7 @@
 #include "node.h"
 #include "video.h"
 #include "wp-private.h"
+#include "wp.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
@@ -196,6 +197,22 @@ void astal_wp_wp_set_scale(AstalWpWp *self, AstalWpScale scale) {
     astal_wp_node_update_volume(ASTAL_WP_NODE(self->default_microphone));
 }
 
+static gboolean astal_wp_wp_node_compare_serial(gpointer key, gpointer value, gpointer user_data) {
+    return astal_wp_node_get_serial(ASTAL_WP_NODE(value)) == GPOINTER_TO_INT(user_data);
+}
+
+/**
+ * astal_wp_wp_get_node_by_serial
+ *
+ * finds the AstalWpNode with the give serial.
+ *
+ * Returns: (transfer none) (nullable)
+ */
+AstalWpNode *astal_wp_wp_get_node_by_serial(AstalWpWp *self, gint serial) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    return g_hash_table_find(priv->nodes, astal_wp_wp_node_compare_serial, GINT_TO_POINTER(serial));
+}
+
 static void astal_wp_wp_get_property(GObject *object, guint property_id, GValue *value,
                                      GParamSpec *pspec) {
     AstalWpWp *self = ASTAL_WP_WP(object);
@@ -260,6 +277,7 @@ static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id
                                     endpoint);
                 g_hash_table_remove(priv->delayed_endpoints,
                                     GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(l->data))));
+                astal_wp_wp_update_metadata(self, astal_wp_node_get_id(ASTAL_WP_NODE(endpoint)));
                 g_signal_emit_by_name(self, "node-added", endpoint);
                 g_object_notify(G_OBJECT(self), "nodes");
             }
@@ -274,14 +292,33 @@ void astal_wp_wp_set_matadata(AstalWpWp *self, guint subject, const gchar *key, 
     wp_metadata_set(priv->metadata, subject, key, type, value);
 }
 
-static void astal_wp_wp_metadata_changed(WpMetadata *metadata, guint subject, gchar *key,
-                                         gchar *type, gchar *value, gpointer user_data) {
+static void astal_wp_wp_metadata_changed(WpMetadata *metadata, guint subject, const gchar *key,
+                                         const gchar *type, const gchar *value,
+                                         gpointer user_data) {
     AstalWpWp *self = ASTAL_WP_WP(user_data);
     AstalWpNode *node = astal_wp_wp_get_node(self, subject);
 
     if (node == NULL) return;
 
     astal_wp_node_metadata_changed(node, key, type, value);
+}
+
+void astal_wp_wp_update_metadata(AstalWpWp *self, guint subject) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    if (priv->metadata == NULL) return;
+
+    WpIterator *iter = wp_metadata_new_iterator(priv->metadata, subject);
+    GValue value = G_VALUE_INIT;
+    while (wp_iterator_next(iter, &value)) {
+        WpMetadataItem *item = g_value_get_boxed(&value);
+
+        astal_wp_wp_metadata_changed(
+            priv->metadata, wp_metadata_item_get_subject(item), wp_metadata_item_get_key(item),
+            wp_metadata_item_get_value_type(item), wp_metadata_item_get_value(item), self);
+        g_value_unset(&value);
+    }
+    wp_iterator_unref(iter);
 }
 
 static void astal_wp_wp_metadata_added(AstalWpWp *self, gpointer object) {
@@ -295,6 +332,8 @@ static void astal_wp_wp_metadata_added(AstalWpWp *self, gpointer object) {
     priv->metadata = g_object_ref(metadata);
     priv->metadata_handler_id =
         g_signal_connect(priv->metadata, "changed", G_CALLBACK(astal_wp_wp_metadata_changed), self);
+
+    astal_wp_wp_update_metadata(self, -1);
 }
 
 static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
@@ -316,20 +355,18 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
         const gchar *media_class =
             wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
         if (g_str_has_prefix(media_class, "Stream")) {
-            astal_node =
-                ASTAL_WP_NODE(astal_wp_stream_new(node, priv->mixer, self));
+            astal_node = ASTAL_WP_NODE(astal_wp_stream_new(node, priv->mixer, self));
         } else {
             astal_node =
                 ASTAL_WP_NODE(astal_wp_endpoint_new(node, priv->mixer, priv->defaults, self));
         }
         g_hash_table_insert(priv->nodes, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
                             astal_node);
-
+        astal_wp_wp_update_metadata(self, astal_wp_node_get_id(astal_node));
         g_signal_emit_by_name(self, "node-added", astal_node);
         g_object_notify(G_OBJECT(self), "nodes");
     } else if (WP_IS_DEVICE(object)) {
         WpDevice *node = WP_DEVICE(object);
-        // AstalWpDevice *device = astal_wp_device_create(node);
         AstalWpDevice *device = g_object_new(ASTAL_WP_TYPE_DEVICE, "device", node, NULL);
         g_hash_table_insert(priv->devices, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
                             device);

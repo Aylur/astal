@@ -2,10 +2,10 @@
 
 #include <wp/wp.h>
 
+#include "astal-wp-enum-types.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "profile.h"
-#include "astal-wp-enum-types.h"
 
 struct _AstalWpDevice {
     GObject parent_instance;
@@ -238,13 +238,7 @@ static void astal_wp_device_update_active_profile(AstalWpDevice *self) {
         WpSpaPod *pod = g_value_get_boxed(&profile);
 
         gint index;
-        gchar *description;
-        wp_spa_pod_get_object(pod, NULL, "index", "i", &index, "description", "s", &description,
-                              NULL);
-
-        g_hash_table_insert(
-            priv->profiles, GINT_TO_POINTER(index),
-            g_object_new(ASTAL_WP_TYPE_PROFILE, "index", index, "description", description, NULL));
+        wp_spa_pod_get_object(pod, NULL, "index", "i", &index, NULL);
 
         self->active_profile = index;
         g_value_unset(&profile);
@@ -293,7 +287,7 @@ static void astal_wp_device_update_properties(AstalWpDevice *self) {
 
     if (media_class_value != NULL && (AstalWpDeviceType)media_class_value->value != self->type) {
         self->type = media_class_value->value;
-        g_object_notify(G_OBJECT(self), "media-class");
+        g_object_notify(G_OBJECT(self), "device-type");
     }
 
     const gchar *form_factor = wp_pipewire_object_get_property(pwo, "device.form-factor");
@@ -367,6 +361,8 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
     object_class->finalize = astal_wp_device_finalize;
     object_class->get_property = astal_wp_device_get_property;
     object_class->set_property = astal_wp_device_set_property;
+    object_class->constructed = astal_wp_device_constructed;
+
     /**
      * AstalWpDevice:id:
      *
@@ -377,8 +373,8 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
     /**
      *  AstalWpDevice:device: (skip)
      */
-    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_DEVICE] =
-        g_param_spec_object("device", "device", "device", WP_TYPE_DEVICE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_DEVICE] = g_param_spec_object(
+        "device", "device", "device", WP_TYPE_DEVICE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     /*
      * AstalWpDevice:description:
      *
@@ -415,7 +411,7 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
      */
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE] =
         g_param_spec_int("active-profile-id", "active-profile-id", "active-profile-id", G_MININT,
-                         G_MAXINT, 0, G_PARAM_READWRITE);
+                         G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
 
     /**
      * AstalWpDevice:form-factor:
