@@ -4,12 +4,12 @@
   ...
 }:
 mkAstalPkg {
-  pname = "astal-battery";
+  pname = "astal-sway";
   src = ./.;
   packages = [pkgs.json-glib];
 
-  libname = "battery";
-  authors = "Aylur";
-  gir-suffix = "Battery";
-  description = "DBus proxy for upowerd devices";
+  libname = "sway";
+  authors = "Noname";
+  gir-suffix = "Sway";
+  description = "IPC client for Sway";
 }
