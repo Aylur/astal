@@ -157,6 +157,8 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
 
         if (FileUtils.test(style, FileTest.EXISTS)) {
             provider.load_from_path(style);
+        } else if (style.has_prefix("resource://")) {
+            provider.load_from_resource(style.replace("resource://", ""));
         } else {
             provider.load_from_string(style);
         }
