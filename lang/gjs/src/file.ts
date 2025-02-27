@@ -19,13 +19,13 @@ export function readFileAsync(path: string): Promise<string> {
     })
 }
 
-export function writeFile(path: string, content: string): void {
-    Astal.write_file(path, content)
+export function writeFile(path: string, content: string, follow_symlinks: boolean = true): void {
+    Astal.write_file(path, content, follow_symlinks)
 }
 
-export function writeFileAsync(path: string, content: string): Promise<void> {
+export function writeFileAsync(path: string, content: string, follow_symlinks: boolean = true): Promise<void> {
     return new Promise((resolve, reject) => {
-        Astal.write_file_async(path, content, (_, res) => {
+        Astal.write_file_async(path, content, follow_symlinks, (_, res) => {
             try {
                 resolve(Astal.write_file_finish(res))
             } catch (error) {
@@ -38,8 +38,9 @@ export function writeFileAsync(path: string, content: string): Promise<void> {
 export function monitorFile(
     path: string,
     callback: (file: string, event: Gio.FileMonitorEvent) => void,
+    follow_symlinks: boolean = true,
 ): Gio.FileMonitor {
     return Astal.monitor_file(path, (file: string, event: Gio.FileMonitorEvent) => {
         callback(file, event)
-    })!
+    }, follow_symlinks)!
 }

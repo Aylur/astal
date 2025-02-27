@@ -24,11 +24,17 @@ public async string read_file_async(string path) throws Error {
 /**
  * Write content to a file synchronously.
  */
-public void write_file(string path, string content) {
+public void write_file(string path, string content, bool follow_symlinks = true) {
     try {
         var dir = Path.get_dirname(path);
         if (!FileUtils.test(dir, FileTest.IS_DIR)) {
             File.new_for_path(dir).make_directory_with_parents(null);
+        }
+
+        if (follow_symlinks) {
+            while (FileUtils.test(path, FileTest.IS_SYMLINK)) {
+                path = FileUtils.read_link(path);
+            }
         }
 
         FileUtils.set_contents(path, content);
@@ -40,10 +46,16 @@ public void write_file(string path, string content) {
 /**
  * Write content to a file asynchronously.
  */
-public async void write_file_async(string path, string content) throws Error {
+public async void write_file_async(string path, string content, bool follow_symlinks = true) throws Error {
     var dir = Path.get_dirname(path);
     if (!FileUtils.test(dir, FileTest.IS_DIR)) {
         File.new_for_path(dir).make_directory_with_parents(null);
+    }
+
+    if (follow_symlinks) {
+        while (FileUtils.test(path, FileTest.IS_SYMLINK)) {
+            path = FileUtils.read_link(path);
+        }
     }
 
     yield File.new_for_path(path).replace_contents_async(
@@ -60,10 +72,20 @@ public async void write_file_async(string path, string content) throws Error {
  * The callback will be called passed two parameters: the path of the file
  * that changed and an [enum@Gio.FileMonitorEvent] indicating the reason.
  */
-public FileMonitor? monitor_file(string path, Closure callback) {
+public FileMonitor? monitor_file(string path, Closure callback, bool follow_symlinks = true) {
     try {
         var file = File.new_for_path(path);
         var mon = file.monitor(FileMonitorFlags.NONE);
+
+        // For symlinks, if we should follow them, follow each of them
+        // and also monitor changes on them
+        if (follow_symlinks && FileUtils.test(path, FileTest.IS_SYMLINK)) {
+            var linkpath = FileUtils.read_link(path); 
+            var m = monitor_file(linkpath, callback, follow_symlinks);
+            mon.notify["cancelled"].connect(() => {
+                m.cancel();
+            });
+        }
 
         mon.changed.connect((file, _file, event) => {
             var f = Value(Type.STRING);
@@ -85,7 +107,7 @@ public FileMonitor? monitor_file(string path, Closure callback) {
                 if (i.get_file_type() == FileType.DIRECTORY) {
                     var filepath = file.get_child(i.get_name()).get_path();
                     if (filepath != null) {
-                        var m = monitor_file(path, callback);
+                        var m = monitor_file(filepath, callback, follow_symlinks);
                         mon.notify["cancelled"].connect(() => {
                             m.cancel();
                         });

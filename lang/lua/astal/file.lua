@@ -21,25 +21,28 @@ end
 
 ---@param path string
 ---@param content string
-function M.write_file(path, content)
-    Astal.write_file(path, content)
+---@param follow_symlinks boolean
+function M.write_file(path, content, follow_symlinks)
+    Astal.write_file(path, content, follow_symlinks or true)
 end
 
 ---@param path string
 ---@param content string
 ---@param callback? fun(err: string): nil
-function M.write_file_async(path, content, callback)
+---@param follow_symlinks boolean
+function M.write_file_async(path, content, callback, follow_symlinks)
     Astal.write_file_async(path, content, function(_, res)
         if type(callback) == "function" then
             callback(Astal.write_file_finish(res))
         end
-    end)
+    end, follow_symlinks or true)
 end
 
 ---@param path string
 ---@param callback fun(file: string, event: integer): nil
-function M.monitor_file(path, callback)
-    return Astal.monitor_file(path, GObject.Closure(callback))
+---@param follow_symlinks boolean
+function M.monitor_file(path, callback, follow_symlinks)
+    return Astal.monitor_file(path, GObject.Closure(callback), follow_symlinks or true)
 end
 
 return M
