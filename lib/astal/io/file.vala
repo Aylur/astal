@@ -31,11 +31,14 @@ public void write_file(string path, string content) {
             File.new_for_path(dir).make_directory_with_parents(null);
         }
 
-        while (FileUtils.test(path, FileTest.IS_SYMLINK)) {
-            path = FileUtils.read_link(path);
-        }
-
-        FileUtils.set_contents(path, content);
+        File.new_for_path(path).replace_contents(
+            content.data,
+            null,
+            false,
+            FileCreateFlags.NONE,
+            null,
+            null
+        );
     } catch (Error error) {
         critical(error.message);
     }
@@ -50,17 +53,14 @@ public async void write_file_async(string path, string content) throws Error {
         File.new_for_path(dir).make_directory_with_parents(null);
     }
 
-    while (FileUtils.test(path, FileTest.IS_SYMLINK)) {
-        path = FileUtils.read_link(path);
-    }
-
     yield File.new_for_path(path).replace_contents_async(
         content.data,
         null,
         false,
-        FileCreateFlags.REPLACE_DESTINATION,
+        FileCreateFlags.NONE,
         null,
-        null);
+        null
+    );
 }
 
 /**
@@ -71,7 +71,11 @@ public async void write_file_async(string path, string content) throws Error {
 public FileMonitor? monitor_file(string path, Closure callback) {
     try {
         var file = File.new_for_path(path);
-        var mon = file.monitor(FileMonitorFlags.WATCH_HARD_LINKS | FileMonitorFlags.WATCH_MOUNTS | FileMonitorFlags.WATCH_MOVES);
+        var mon = file.monitor(
+            FileMonitorFlags.WATCH_HARD_LINKS |
+            FileMonitorFlags.WATCH_MOUNTS |
+            FileMonitorFlags.WATCH_MOVES
+        );
 
         mon.changed.connect((file, _file, event) => {
             var f = Value(Type.STRING);
