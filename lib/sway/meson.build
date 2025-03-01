@@ -1,5 +1,5 @@
 project(
-  'astal-battery',
+  'astal-sway',
   'vala',
   'c',
   version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
@@ -18,8 +18,8 @@ assert(
 
 version_split = meson.project_version().split('.')
 api_version = version_split[0] + '.' + version_split[1]
-gir = 'AstalBattery-' + api_version + '.gir'
-typelib = 'AstalBattery-' + api_version + '.typelib'
+gir = 'AstalSway-' + api_version + '.gir'
+typelib = 'AstalSway-' + api_version + '.typelib'
 
 config = configure_file(
   input: 'config.vala.in',
@@ -33,19 +33,18 @@ config = configure_file(
   },
 )
 
-pkgconfig_deps = [
+deps = [
   dependency('glib-2.0'),
   dependency('gio-2.0'),
   dependency('gobject-2.0'),
+  dependency('gio-unix-2.0'),
   dependency('json-glib-1.0'),
 ]
 
-deps = pkgconfig_deps + meson.get_compiler('c').find_library('m')
-
 sources = [config] + files(
-  'device.vala',
-  'ifaces.vala',
-  'upower.vala',
+  'workspace.vala',
+  'sway.vala',
+  'ipc.vala',
 )
 
 if get_option('lib')
@@ -53,29 +52,22 @@ if get_option('lib')
     meson.project_name(),
     sources,
     dependencies: deps,
-    vala_args: ['--vapi-comments'],
     vala_header: meson.project_name() + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
+    vala_gir: gir,
     version: meson.project_version(),
     install: true,
-    install_dir: [true, true, true],
+    install_dir: [true, true, true, true],
   )
 
-  pkgs = []
-  foreach dep : pkgconfig_deps
-    pkgs += ['--pkg=' + dep.name()]
-  endforeach
-
-  gir_tgt = custom_target(
-    gir,
-    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-    + pkgs
-    + sources,
-    input: sources,
-    depends: lib,
-    output: gir,
-    install: true,
-    install_dir: get_option('datadir') / 'gir-1.0',
+  import('pkgconfig').generate(
+    lib,
+    name: meson.project_name(),
+    filebase: meson.project_name() + '-' + api_version,
+    version: meson.project_version(),
+    subdirs: meson.project_name(),
+    requires: deps,
+    install_dir: get_option('libdir') / 'pkgconfig',
   )
 
   custom_target(
@@ -88,19 +80,9 @@ if get_option('lib')
     ],
     input: lib,
     output: typelib,
-    depends: [lib, gir_tgt],
+    depends: lib,
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
-  )
-
-  import('pkgconfig').generate(
-    lib,
-    name: meson.project_name(),
-    filebase: meson.project_name() + '-' + api_version,
-    version: meson.project_version(),
-    subdirs: meson.project_name(),
-    requires: pkgconfig_deps,
-    install_dir: get_option('libdir') / 'pkgconfig',
   )
 endif
 

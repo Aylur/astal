@@ -1,5 +1,5 @@
-[CCode (gir_namespace = "AstalBattery", gir_version = "@API_VERSION@")]
-namespace AstalBattery {
+[CCode (gir_namespace = "AstalSway", gir_version = "@API_VERSION@")]
+namespace AstalSway {
     public const int MAJOR_VERSION = @MAJOR_VERSION@;
     public const int MINOR_VERSION = @MINOR_VERSION@;
     public const int MICRO_VERSION = @MICRO_VERSION@;
