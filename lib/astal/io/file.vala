@@ -71,16 +71,7 @@ public async void write_file_async(string path, string content) throws Error {
 public FileMonitor? monitor_file(string path, Closure callback) {
     try {
         var file = File.new_for_path(path);
-        var mon = file.monitor(FileMonitorFlags.NONE);
-
-        // For symlinks, resolve it and also monitor changes on it
-        if (FileUtils.test(path, FileTest.IS_SYMLINK)) {
-            var linkpath = FileUtils.read_link(path); 
-            var m = monitor_file(linkpath, callback);
-            mon.notify["cancelled"].connect(() => {
-                m.cancel();
-            });
-        }
+        var mon = file.monitor(FileMonitorFlags.WATCH_HARD_LINKS | FileMonitorFlags.WATCH_MOUNTS | FileMonitorFlags.WATCH_MOVES);
 
         mon.changed.connect((file, _file, event) => {
             var f = Value(Type.STRING);
