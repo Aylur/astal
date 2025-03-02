@@ -28,7 +28,7 @@ namespace AstalSway {
     EVENT_INPUT = 0x80000015,
   }
 
-  private struct IpcReply {
+  private struct IpcReponse {
     public PayloadType type;
     public string payload;
   }
@@ -73,32 +73,39 @@ namespace AstalSway {
       stream.write(message.data);
     }
 
-    internal IpcReply? receive(InputStream stream) {
+    internal IpcReponse? receive(InputStream stream) {
       var header = stream.read_bytes(14);
-        uint8 *data = header.get_data();
+        uint8 data[14] = header.get_data();
         if (data == null) {
             return null;
         }
         uint32 pl_length = *(uint32 *)&data[IPC_MAGIC.length];
         PayloadType pl_type = *(uint32 *)&data[IPC_MAGIC.length+4];
          
-        var result = stream.read_bytes(pl_length);
-        return {pl_type, (string)result.get_data()};
+        var payload = stream.read_bytes(pl_length);
+        
+        var result = payload.get_data();
+        result += '\0';
+        
+        return {pl_type, (string)result};
 
     }
 
-    internal async IpcReply? receive_async(InputStream stream) {
+    internal async IpcReponse? receive_async(InputStream stream) {
       var header = yield stream.read_bytes_async(14, Priority.DEFAULT, null);
-        uint8 *data = header.get_data();
+        uint8 data[14] = header.get_data();
         if (data == null) {
             return null;
         }
         uint32 pl_length = *(uint32 *)&data[IPC_MAGIC.length];
         PayloadType pl_type = *(uint32 *)&data[IPC_MAGIC.length+4];
          
-        var result = yield stream.read_bytes_async(pl_length, Priority.DEFAULT, null);
+        var payload = yield stream.read_bytes_async(pl_length, Priority.DEFAULT, null);
         
-        return {pl_type, (string)result.get_data()};
+        var result = payload.get_data();
+        result += '\0';
+
+        return {pl_type, (string)result};
     }
 
     public string message(PayloadType type, string payload) {
