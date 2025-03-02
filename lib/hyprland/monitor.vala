@@ -25,6 +25,7 @@ public class AstalHyprland.Monitor : Object {
     public bool vrr { get; private set; }
     public bool actively_tearing { get; private set; }
     public bool disabled { get; private set; }
+    public string mirror_of {get; private set; }
     public string current_format { get; private set; }
     public Array<string> available_modes { get; private set; }
 
@@ -49,6 +50,7 @@ public class AstalHyprland.Monitor : Object {
         vrr = obj.get_boolean_member("vrr");
         actively_tearing = obj.get_boolean_member("activelyTearing");
         disabled = obj.get_boolean_member("disabled");
+        mirror_of = obj.get_string_member("mirrorOf");
         current_format = obj.get_string_member("currentFormat");
 
         var r = obj.get_array_member("reserved");

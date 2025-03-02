@@ -215,7 +215,7 @@ public class Hyprland : Object {
 
     // TODO: nag vaxry to make socket events and hyprctl more consistent
     private void init() throws Error {
-        var mons = Json.from_string(message("j/monitors")).get_array();
+        var mons = Json.from_string(message("j/monitors all")).get_array();
         var wrkspcs = Json.from_string(message("j/workspaces")).get_array();
         var clnts = Json.from_string(message("j/clients")).get_array();
 
@@ -270,7 +270,7 @@ public class Hyprland : Object {
     }
 
     public async void sync_monitors() throws Error {
-        var str = yield message_async("j/monitors");
+        var str = yield message_async("j/monitors all");
         var arr = Json.from_string(str).get_array();
         foreach (var obj in arr.get_elements()) {
             var id = (int)obj.get_object().get_int_member("id");
