@@ -42,6 +42,7 @@ deps = [
 ]
 
 sources = [config] + files(
+  'node.vala',
   'workspace.vala',
   'sway.vala',
   'ipc.vala',
