@@ -1,12 +1,20 @@
 namespace AstalSway {
   public class Workspace : Node {
-    public int num {get; private set; }
+    public string representation;
 
-    public NodeType type = NodeType.WORKSPACE;
+    public Workspace() {
+      node_type = NodeType.WORKSPACE;
+    }
 
     internal override void sync(Json.Object obj) {
+      var rep = obj.get_member("representation");
+      if (rep != null) {
+        representation = rep.get_string();
+      } else {
+        representation = "";
+        print("aa");
+      }
       base.sync(obj);
-      // num = (int)obj.get_int_member("num");
     }
   }
 }

@@ -17,6 +17,9 @@ namespace AstalSway {
       var s = new Sway();
       var ipc = new Ipc();
       
+s.notify.connect((_, p) => {
+    stdout.printf("Property '%s' has changed!\n", p.name);
+});
       try {
         ipc.init();
         s.ipc = ipc;
@@ -27,10 +30,16 @@ namespace AstalSway {
         critical(err.message);
         return null;
       }
+
     }
-    
+
     public Workspace focused_workspace;
   
+    private static HashTable<int, Node> _nodes =
+        new HashTable<int, Node>(i => i, (a,b) => a==b);
+    
+    public List<weak Node> nodes { owned get { return _nodes.get_values(); } }
+    
     private HashTable<string, Workspace> _workspaces =
         new HashTable<string, Workspace>(str_hash, str_equal);
 
@@ -56,15 +65,32 @@ namespace AstalSway {
       return yield ipc.message_async(type, payload);
     }
 
-    public async void sync() {
-      var str = yield message_async(PayloadType.MESSAGE_GET_WORKSPACES, "");
-      var arr = Json.from_string(str).get_array();
-      foreach (var obj in arr.get_elements()) {
-        var name = obj.get_object().get_string_member("name");
-        var ws = get_workspace(name);
-        if (ws != null)
-          ws.sync(obj.get_object());
+    public void run_command(string command) {
+      message_async.begin(PayloadType.MESSAGE_RUN_COMMAND, command, 
+        (_, res) => {
+          var obj = Json.from_string(message_async.end(res)).get_object();
+          if (!obj.get_boolean_member("success")) {
+            critical("Command error: %s", obj.get_string_member("error"));
+          }
+        }
+      );
+    }
 
+    public async void sync() {
+      yield Node.sync_tree();
+      _nodes = Node._all_nodes;
+      
+      var new_workspaces = new HashTable<string, Workspace>(str_hash, str_equal);
+      foreach (var node in nodes) {
+        switch (node.node_type) {
+          case NodeType.WORKSPACE:
+            var ws = node as Workspace;
+            new_workspaces.insert(ws.name, ws);
+            if (ws.focused) {
+              focused_workspace = ws;
+            }
+            break;
+        }
       }
     }
 
@@ -74,6 +100,7 @@ namespace AstalSway {
 
     public signal void workspace_added(Workspace ws);
     public signal void workspace_removed(string name);
+    public signal void workspace_focus(Workspace new_ws, Workspace old_ws);
 
     private async void subscribe() {
       if (subscribe_socket != null) {
@@ -89,12 +116,19 @@ namespace AstalSway {
     }
 
     private async void handle_event(IpcReponse reply) {
+      yield sync();
+      if (focused_workspace != null) {
+        print(focused_workspace.representation);
+        print(focused_workspace.name);
+        print(focused_workspace.id.to_string());
+        print("\n");
+      }
       switch (reply.type) {
         case PayloadType.MESSAGE_SUBSCRIBE:
           return;
         
         case PayloadType.EVENT_WORKSPACE:
-          yield handle_workspace_event(reply.payload);
+          handle_workspace_event(reply.payload);
           break;
         
         case PayloadType.EVENT_WINDOW:
@@ -108,26 +142,26 @@ namespace AstalSway {
       event(reply.type, reply.payload);
     }
 
-    private async void handle_workspace_event(string args) {
-      var data = Json.from_string(args).get_object();
+    private void handle_workspace_event(string args) {
+      notify_property("workspaces");
+      
+      var obj = Json.from_string(args).get_object();
 
-      switch (data.get_string_member("change")) {
+      switch (obj.get_string_member("change")) {
         case "init": 
-          var obj = data.get_object_member("current");
-          var ws = new Workspace();
-          _workspaces.insert(obj.get_string_member("name"), ws);
-          yield sync();
-          workspace_added(ws);
+          var name = obj.get_object_member("current").get_string_member("name");
+          workspace_added(get_workspace(name));
           break;
 
         case "empty":
-          var obj = data.get_object_member("current");
-          var name = obj.get_string_member("name");
-          _workspaces.remove(name);
+          var name = obj.get_object_member("current").get_string_member("name");
           workspace_removed(name);
-          var stuff = yield message_async(PayloadType.MESSAGE_GET_TREE, "");
-          Node.build(Json.from_string(stuff).get_object());
           break;
+
+        case "focus":
+          var new_name = obj.get_object_member("current").get_string_member("name");
+          var old_name = obj.get_object_member("old").get_string_member("name");
+          workspace_focus(get_workspace(new_name), get_workspace(old_name));
         
         default:
           break;
