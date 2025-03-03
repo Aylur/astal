@@ -2,6 +2,8 @@
 
 #include <wp/wp.h>
 
+#include "glib-object.h"
+
 struct _AstalWpProfile {
     GObject parent_instance;
 
@@ -65,6 +67,8 @@ static void astal_wp_profile_init(AstalWpProfile *self) { self->description = NU
 static void astal_wp_profile_finalize(GObject *object) {
     AstalWpProfile *self = ASTAL_WP_PROFILE(object);
     g_free(self->description);
+
+    G_OBJECT_CLASS(astal_wp_profile_parent_class)->finalize(object);
 }
 
 static void astal_wp_profile_class_init(AstalWpProfileClass *class) {
