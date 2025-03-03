@@ -38,6 +38,7 @@ Reading their documentation will vary depending on the language they are used in
 - [Hyprland](https://aylur.github.io/libastal/hyprland): Library and cli tool for Hyprland IPC socket
 - [Mpris](https://aylur.github.io/libastal/mpris): Library and cli tool for controlling media players
 - [Network](https://aylur.github.io/libastal/network): NetworkManager wrapper library
+- [Niri](https://aylur.github.io/libastal/niri): Library and cli tool for niri IPC socket
 - [Notifd](https://aylur.github.io/libastal/notifd): A notification daemon library and cli tool
 - [PowerProfiles](https://aylur.github.io/libastal/powerprofiles): Library and cli to control upowerd powerprofiles
 - [River](https://aylur.github.io/libastal/river): Library and cli tool for getting status information of the river wayland compositor
