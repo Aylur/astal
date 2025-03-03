@@ -31,7 +31,14 @@ public void write_file(string path, string content) {
             File.new_for_path(dir).make_directory_with_parents(null);
         }
 
-        FileUtils.set_contents(path, content);
+        File.new_for_path(path).replace_contents(
+            content.data,
+            null,
+            false,
+            FileCreateFlags.NONE,
+            null,
+            null
+        );
     } catch (Error error) {
         critical(error.message);
     }
@@ -50,9 +57,10 @@ public async void write_file_async(string path, string content) throws Error {
         content.data,
         null,
         false,
-        FileCreateFlags.REPLACE_DESTINATION,
+        FileCreateFlags.NONE,
         null,
-        null);
+        null
+    );
 }
 
 /**
@@ -63,7 +71,11 @@ public async void write_file_async(string path, string content) throws Error {
 public FileMonitor? monitor_file(string path, Closure callback) {
     try {
         var file = File.new_for_path(path);
-        var mon = file.monitor(FileMonitorFlags.NONE);
+        var mon = file.monitor(
+            FileMonitorFlags.WATCH_HARD_LINKS |
+            FileMonitorFlags.WATCH_MOUNTS |
+            FileMonitorFlags.WATCH_MOVES
+        );
 
         mon.changed.connect((file, _file, event) => {
             var f = Value(Type.STRING);
@@ -85,7 +97,7 @@ public FileMonitor? monitor_file(string path, Closure callback) {
                 if (i.get_file_type() == FileType.DIRECTORY) {
                     var filepath = file.get_child(i.get_name()).get_path();
                     if (filepath != null) {
-                        var m = monitor_file(path, callback);
+                        var m = monitor_file(filepath, callback);
                         mon.notify["cancelled"].connect(() => {
                             m.cancel();
                         });
