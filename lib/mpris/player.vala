@@ -510,9 +510,11 @@ public class AstalMpris.Player : Object {
         }
         string path = COVER_CACHE + "/" + Checksum.compute_for_string(ChecksumType.SHA1, art_url, -1);
         if (art_url.index_of(",") != -1) {
-            string? baseType = art_url.substring(art_url.index_of(";") + 1, art_url.index_of(",") - art_url.index_of(";") - 1);
+            int semicolonIndex = art_url.index_of(";");
+            int commaIndex = art_url.index_of(",");
+            string? baseType = art_url.substring(semicolonIndex + 1, commaIndex - semicolonIndex - 1);
             if (baseType == "base64") {
-                uint8[] raw = Base64.decode(art_url.substring(art_url.index_of(",") + 1));
+                uint8[] raw = Base64.decode(art_url.substring(commaIndex + 1));
                 FileUtils.set_data(path, raw);
                 cover_art = path;
                 return;
