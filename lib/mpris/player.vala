@@ -4,7 +4,7 @@
  * but [class@AstalMpris.Player] can be constructed for a dedicated players too.
  */
 public class AstalMpris.Player : Object {
-    private static string COVER_CACHE = Environment.get_user_cache_dir() + "/astal/mpris";
+    private static string COVER_CACHE = "/tmp/astal/mpris";
 
     private IPlayer proxy;
     private uint pollid; // periodically notify position
@@ -180,17 +180,17 @@ public class AstalMpris.Player : Object {
         }
 
         switch (loop_status) {
-            case Loop.NONE:
-                loop_status = Loop.TRACK;
-                break;
-            case Loop.TRACK:
-                loop_status = Loop.PLAYLIST;
-                break;
-            case Loop.PLAYLIST:
-                loop_status = Loop.NONE;
-                break;
-            default:
-                break;
+        case Loop.NONE:
+            loop_status = Loop.TRACK;
+            break;
+        case Loop.TRACK:
+            loop_status = Loop.PLAYLIST;
+            break;
+        case Loop.PLAYLIST:
+            loop_status = Loop.NONE;
+            break;
+        default:
+            break;
         }
     }
 
@@ -211,14 +211,14 @@ public class AstalMpris.Player : Object {
     private double _get_position() {
         try {
             var reply = proxy.call_sync(
-                "org.freedesktop.DBus.Properties.Get",
-                new Variant("(ss)",
-                    "org.mpris.MediaPlayer2.Player",
-                    "Position"
-                ),
-                DBusCallFlags.NONE,
-                -1,
-                null
+                                        "org.freedesktop.DBus.Properties.Get",
+                                        new Variant("(ss)",
+                                                    "org.mpris.MediaPlayer2.Player",
+                                                    "Position"
+                                        ),
+                                        DBusCallFlags.NONE,
+                                        -1,
+                                        null
             );
 
             var body = reply.get_child_value(0);
@@ -226,7 +226,7 @@ public class AstalMpris.Player : Object {
                 return -1; // Position not supported
             }
 
-            return (double)body.get_variant().get_int64() / 1000000;
+            return (double) body.get_variant().get_int64() / 1000000;
         } catch (Error err) {
             return -1;
         }
@@ -234,7 +234,7 @@ public class AstalMpris.Player : Object {
 
     private void _set_position(double pos) {
         try {
-            proxy.set_position((ObjectPath)trackid, (int64)(pos * 1000000));
+            proxy.set_position((ObjectPath) trackid, (int64) (pos * 1000000));
         } catch (Error error) {
             critical(error.message);
         }
@@ -337,7 +337,7 @@ public class AstalMpris.Player : Object {
      * In languages that cannot introspect this
      * use [method@AstalMpris.Player.get_meta].
      */
-    [CCode (notify = false)] // notified manually in sync
+    [CCode(notify = false)] // notified manually in sync
     public HashTable<string, Variant> metadata { owned get; private set; }
 
     /**
@@ -400,7 +400,7 @@ public class AstalMpris.Player : Object {
      * Lookup a key from [property@AstalMpris.Player:metadata].
      * This method is useful for languages that fail to introspect hashtables.
      */
-    public Variant? get_meta(string key) {
+    public Variant ? get_meta(string key) {
         return metadata.lookup(key);
     }
 
@@ -481,9 +481,9 @@ public class AstalMpris.Player : Object {
             if (metadata.get("mpris:length") != null) {
                 var v = metadata.get("mpris:length");
                 if (v.get_type_string() == "x") {
-                    length = (double)v.get_int64() / 1000000;
+                    length = (double) v.get_int64() / 1000000;
                 } else if (v.get_type_string() == "t") {
-                    length = (double)v.get_uint64() / 1000000;
+                    length = (double) v.get_uint64() / 1000000;
                 }
             } else {
                 length = -1;
@@ -508,6 +508,16 @@ public class AstalMpris.Player : Object {
             cover_art = null;
             return;
         }
+        if (art_url.index_of(",") != -1) {
+            string? baseType = art_url.substring(art_url.index_of(";") + 1, art_url.index_of(",") - art_url.index_of(";") - 1);
+            if (baseType == "base64") {
+                uint8[] raw = Base64.decode(art_url.substring(art_url.index_of(",") + 1));
+                string path = COVER_CACHE + "/" + Checksum.compute_for_string(ChecksumType.SHA1, art_url, -1);
+                FileUtils.set_data(path, raw);
+                cover_art = path;
+                return;
+            }
+        }
 
         var file = File.new_for_uri(art_url);
         if (file.get_path() != null) {
@@ -526,20 +536,20 @@ public class AstalMpris.Player : Object {
                 File.new_for_path(COVER_CACHE).make_directory_with_parents(null);
 
             file.copy_async.begin(
-                File.new_for_path(path),
-                FileCopyFlags.OVERWRITE,
-                Priority.DEFAULT,
-                null,
-                null,
-                (_, res) => {
-                    try {
-                        file.copy_async.end(res);
-                        cover_art = path;
-                    } catch (Error err) {
-                        critical("Failed to cache cover art with url \"%s\": %s", art_url, err.message);
-                    }
+                                  File.new_for_path(path),
+                                  FileCopyFlags.OVERWRITE,
+                                  Priority.DEFAULT,
+                                  null,
+                                  null,
+                                  (_, res) => {
+                try {
+                    file.copy_async.end(res);
+                    cover_art = path;
+                } catch (Error err) {
+                    print("\nerror\n");
+                    // critical("Failed to cache cover art with url \"%s\": %s", art_url, err.message);
                 }
-            );
+            });
         } catch (Error err) {
             critical(err.message);
         }
@@ -553,7 +563,7 @@ public class AstalMpris.Player : Object {
         return str == null ? "" : str;
     }
 
-    private string? join_strv(string key, string sep) {
+    private string ? join_strv(string key, string sep) {
         if (metadata.get(key) == null)
             return null;
 
@@ -603,9 +613,9 @@ public class AstalMpris.Player : Object {
             return;
 
         proxy = Bus.get_proxy_sync(
-            BusType.SESSION,
-            bus_name,
-            "/org/mpris/MediaPlayer2"
+                                   BusType.SESSION,
+                                   bus_name,
+                                   "/org/mpris/MediaPlayer2"
         );
 
         if (proxy.g_name_owner != null) {
@@ -635,13 +645,13 @@ public enum AstalMpris.PlaybackStatus {
 
     internal static PlaybackStatus from_string(string? str) {
         switch (str) {
-            case "Playing":
-                return PLAYING;
-            case "Paused":
-                return PAUSED;
-            case "Stopped":
-            default:
-                return STOPPED;
+        case "Playing" :
+            return PLAYING;
+        case "Paused":
+            return PAUSED;
+        case "Stopped":
+        default:
+            return STOPPED;
         }
     }
 }
@@ -657,27 +667,27 @@ public enum AstalMpris.Loop {
 
     internal static Loop from_string(string? str) {
         switch (str) {
-            case "None":
-                return NONE;
-            case "Track":
-                return TRACK;
-            case "Playlist":
-                return PLAYLIST;
-            default:
-                return UNSUPPORTED;
+        case "None":
+            return NONE;
+        case "Track":
+            return TRACK;
+        case "Playlist":
+            return PLAYLIST;
+        default:
+            return UNSUPPORTED;
         }
     }
 
-    internal string? to_string() {
+    internal string ? to_string() {
         switch (this) {
-            case NONE:
-                return "None";
-            case TRACK:
-                return "Track";
-            case PLAYLIST:
-                return "Playlist";
-            default:
-                return "Unsupported";
+        case NONE:
+            return "None";
+        case TRACK:
+            return "Track";
+        case PLAYLIST:
+            return "Playlist";
+        default:
+            return "Unsupported";
         }
     }
 }
@@ -693,14 +703,14 @@ public enum AstalMpris.Shuffle {
         return b ? Shuffle.ON : Shuffle.OFF;
     }
 
-    internal string? to_string() {
+    internal string ? to_string() {
         switch (this) {
-            case OFF:
-                return "Off";
-            case ON:
-                return "On";
-            default:
-                return "Unsupported";
+        case OFF:
+            return "Off";
+        case ON:
+            return "On";
+        default:
+            return "Unsupported";
         }
     }
 }
