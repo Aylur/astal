@@ -12,9 +12,12 @@ namespace AstalSway {
         representation = rep.get_string();
       } else {
         representation = "";
-        print("aa");
       }
       base.sync(obj);
+    }
+
+    public override void focus() {
+      Sway.get_default().run_command(@"focus workspace $name");
     }
   }
 }

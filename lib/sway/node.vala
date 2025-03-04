@@ -40,6 +40,18 @@ namespace AstalSway {
     public weak Node parent;
 
     public List<weak Node> nodes;
+    public List<weak Window> windows { owned get {
+      var arr = new List<weak Window> ();
+      foreach (var node in nodes) {
+        if (node.node_type == NodeType.WINDOW) {
+          arr.append(node as Window);
+        } else {
+          arr.concat(node.windows);
+        }
+      }
+
+      return arr;
+    }}
     
     protected Json.Object data;
     
@@ -56,7 +68,15 @@ namespace AstalSway {
         case "workspace":
           var ws = new Workspace();
           return ws as Node;
-
+        case "con":
+        case "floating_con":
+          if (obj.get_member("pid") != null) {
+            var win = new Window();
+            return win as Node;
+          } else {
+            var con = new Container();
+            return con as Node;
+          }
         default:
           var node = new Node(); 
           return node;
@@ -115,12 +135,29 @@ namespace AstalSway {
           node = Node.build(obj);
         }
 
+       node.parent = this;
        new_nodes.append(node);
        _temp_nodes.insert(id, node);     
        node.sync(obj);
       }
 
       nodes = (owned) new_nodes;
+    }
+
+    public virtual void focus() {
+
+    }
+
+    public bool contain(Node node) {
+      parent = node.parent;
+      while (parent != null) {
+        if (id == parent.id) {
+          return true;
+        }
+        parent = parent.parent;
+      }
+
+      return false;
     }
   }
 }
