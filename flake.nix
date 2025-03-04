@@ -37,6 +37,7 @@
       river = mkPkg ./lib/river;
       tray = mkPkg ./lib/tray;
       wireplumber = mkPkg ./lib/wireplumber;
+      sway = mkPkg ./lib/sway;
 
       gjs = import ./lang/gjs {inherit self pkgs;};
     });
