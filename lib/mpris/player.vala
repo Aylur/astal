@@ -180,17 +180,17 @@ public class AstalMpris.Player : Object {
         }
 
         switch (loop_status) {
-        case Loop.NONE:
-            loop_status = Loop.TRACK;
-            break;
-        case Loop.TRACK:
-            loop_status = Loop.PLAYLIST;
-            break;
-        case Loop.PLAYLIST:
-            loop_status = Loop.NONE;
-            break;
-        default:
-            break;
+            case Loop.NONE:
+                loop_status = Loop.TRACK;
+                break;
+            case Loop.TRACK:
+                loop_status = Loop.PLAYLIST;
+                break;
+            case Loop.PLAYLIST:
+                loop_status = Loop.NONE;
+                break;
+            default:
+                break;
         }
     }
 
@@ -211,14 +211,14 @@ public class AstalMpris.Player : Object {
     private double _get_position() {
         try {
             var reply = proxy.call_sync(
-                                        "org.freedesktop.DBus.Properties.Get",
-                                        new Variant("(ss)",
-                                                    "org.mpris.MediaPlayer2.Player",
-                                                    "Position"
-                                        ),
-                                        DBusCallFlags.NONE,
-                                        -1,
-                                        null
+                "org.freedesktop.DBus.Properties.Get",
+                new Variant("(ss)",
+                    "org.mpris.MediaPlayer2.Player",
+                    "Position"
+                ),
+                DBusCallFlags.NONE,
+                -1,
+                null
             );
 
             var body = reply.get_child_value(0);
@@ -234,7 +234,7 @@ public class AstalMpris.Player : Object {
 
     private void _set_position(double pos) {
         try {
-            proxy.set_position((ObjectPath) trackid, (int64) (pos * 1000000));
+            proxy.set_position((ObjectPath)trackid, (int64)(pos * 1000000));
         } catch (Error error) {
             critical(error.message);
         }
@@ -337,7 +337,7 @@ public class AstalMpris.Player : Object {
      * In languages that cannot introspect this
      * use [method@AstalMpris.Player.get_meta].
      */
-    [CCode(notify = false)] // notified manually in sync
+    [CCode (notify = false)] // notified manually in sync
     public HashTable<string, Variant> metadata { owned get; private set; }
 
     /**
@@ -400,7 +400,7 @@ public class AstalMpris.Player : Object {
      * Lookup a key from [property@AstalMpris.Player:metadata].
      * This method is useful for languages that fail to introspect hashtables.
      */
-    public Variant ? get_meta(string key) {
+    public Variant? get_meta(string key) {
         return metadata.lookup(key);
     }
 
@@ -481,9 +481,9 @@ public class AstalMpris.Player : Object {
             if (metadata.get("mpris:length") != null) {
                 var v = metadata.get("mpris:length");
                 if (v.get_type_string() == "x") {
-                    length = (double) v.get_int64() / 1000000;
+                    length = (double)v.get_int64() / 1000000;
                 } else if (v.get_type_string() == "t") {
-                    length = (double) v.get_uint64() / 1000000;
+                    length = (double)v.get_uint64() / 1000000;
                 }
             } else {
                 length = -1;
@@ -514,6 +514,8 @@ public class AstalMpris.Player : Object {
             int commaIndex = art_url.index_of(",");
             string? baseType = art_url.substring(semicolonIndex + 1, commaIndex - semicolonIndex - 1);
             if (baseType == "base64") {
+                if (!FileUtils.test(COVER_CACHE, FileTest.IS_DIR))
+                    File.new_for_path(COVER_CACHE).make_directory_with_parents(null);
                 uint8[] raw = Base64.decode(art_url.substring(commaIndex + 1));
                 FileUtils.set_data(path, raw);
                 cover_art = path;
@@ -537,18 +539,17 @@ public class AstalMpris.Player : Object {
                 File.new_for_path(COVER_CACHE).make_directory_with_parents(null);
 
             file.copy_async.begin(
-                                  File.new_for_path(path),
-                                  FileCopyFlags.OVERWRITE,
-                                  Priority.DEFAULT,
-                                  null,
-                                  null,
-                                  (_, res) => {
+                File.new_for_path(path),
+                FileCopyFlags.OVERWRITE,
+                Priority.DEFAULT,
+                null,
+                null,
+                (_, res) => {
                 try {
                     file.copy_async.end(res);
                     cover_art = path;
                 } catch (Error err) {
-                    print("\nerror\n");
-                    // critical("Failed to cache cover art with url \"%s\": %s", art_url, err.message);
+                    critical("Failed to cache cover art with url \"%s\": %s", art_url, err.message);
                 }
             });
         } catch (Error err) {
