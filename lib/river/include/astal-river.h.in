@@ -56,7 +56,7 @@ gint astal_river_output_get_width(AstalRiverOutput* self);
 gint astal_river_output_get_height(AstalRiverOutput* self);
 gint astal_river_output_get_physical_width(AstalRiverOutput* self);
 gint astal_river_output_get_physical_height(AstalRiverOutput* self);
-gdouble astal_river_output_get_scale_factor(AstalRiverOutput* self);
+gint astal_river_output_get_scale_factor(AstalRiverOutput* self);
 gdouble astal_river_output_get_refresh_rate(AstalRiverOutput* self);
 
 

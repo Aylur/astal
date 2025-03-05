@@ -276,7 +276,7 @@ gint astal_river_output_get_physical_height(AstalRiverOutput* self) {
  *
  * the scale factor of the output
  */
-gdouble astal_river_output_get_scale_factor(AstalRiverOutput* self) { return self->scale_factor; }
+gint astal_river_output_get_scale_factor(AstalRiverOutput* self) { return self->scale_factor; }
 
 /**
  * astal_river_output_get_refresh_rate
