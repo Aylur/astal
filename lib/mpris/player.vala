@@ -226,7 +226,7 @@ public class AstalMpris.Player : Object {
                 return -1; // Position not supported
             }
 
-            return (double) body.get_variant().get_int64() / 1000000;
+            return (double)body.get_variant().get_int64() / 1000000;
         } catch (Error err) {
             return -1;
         }
@@ -545,13 +545,14 @@ public class AstalMpris.Player : Object {
                 null,
                 null,
                 (_, res) => {
-                try {
-                    file.copy_async.end(res);
-                    cover_art = path;
-                } catch (Error err) {
-                    critical("Failed to cache cover art with url \"%s\": %s", art_url, err.message);
+                    try {
+                        file.copy_async.end(res);
+                        cover_art = path;
+                    } catch (Error err) {
+                        critical("Failed to cache cover art with url \"%s\": %s", art_url, err.message);
+                    }
                 }
-            });
+            );
         } catch (Error err) {
             critical(err.message);
         }
@@ -615,9 +616,9 @@ public class AstalMpris.Player : Object {
             return;
 
         proxy = Bus.get_proxy_sync(
-                                   BusType.SESSION,
-                                   bus_name,
-                                   "/org/mpris/MediaPlayer2"
+            BusType.SESSION,
+            bus_name,
+            "/org/mpris/MediaPlayer2"
         );
 
         if (proxy.g_name_owner != null) {
@@ -647,13 +648,13 @@ public enum AstalMpris.PlaybackStatus {
 
     internal static PlaybackStatus from_string(string? str) {
         switch (str) {
-        case "Playing" :
-            return PLAYING;
-        case "Paused":
-            return PAUSED;
-        case "Stopped":
-        default:
-            return STOPPED;
+            case "Playing" :
+                return PLAYING;
+            case "Paused":
+                return PAUSED;
+            case "Stopped":
+            default:
+                return STOPPED;
         }
     }
 }
@@ -669,27 +670,27 @@ public enum AstalMpris.Loop {
 
     internal static Loop from_string(string? str) {
         switch (str) {
-        case "None":
-            return NONE;
-        case "Track":
-            return TRACK;
-        case "Playlist":
-            return PLAYLIST;
-        default:
-            return UNSUPPORTED;
+            case "None":
+                return NONE;
+            case "Track":
+                return TRACK;
+            case "Playlist":
+                return PLAYLIST;
+            default:
+                return UNSUPPORTED;
         }
     }
 
     internal string ? to_string() {
         switch (this) {
-        case NONE:
-            return "None";
-        case TRACK:
-            return "Track";
-        case PLAYLIST:
-            return "Playlist";
-        default:
-            return "Unsupported";
+            case NONE:
+                return "None";
+            case TRACK:
+                return "Track";
+            case PLAYLIST:
+                return "Playlist";
+            default:
+                return "Unsupported";
         }
     }
 }
@@ -707,12 +708,12 @@ public enum AstalMpris.Shuffle {
 
     internal string ? to_string() {
         switch (this) {
-        case OFF:
-            return "Off";
-        case ON:
-            return "On";
-        default:
-            return "Unsupported";
+            case OFF:
+                return "Off";
+            case ON:
+                return "On";
+            default:
+                return "Unsupported";
         }
     }
 }
