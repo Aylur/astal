@@ -247,8 +247,8 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
     if (strcmp(interface, wl_output_interface.name) == 0) {
         if (priv->river_status_manager == NULL) return;
         struct wl_output* wl_out = wl_registry_bind(registry, id, &wl_output_interface, 4);
-        AstalRiverOutput* output =
-            astal_river_output_new(id, wl_out, priv->river_status_manager, priv->river_control, priv->seat, priv->display);
+        AstalRiverOutput* output = astal_river_output_new(
+            id, wl_out, priv->river_status_manager, priv->river_control, priv->seat, priv->display);
 
         self->outputs = g_list_append(self->outputs, output);
         g_object_notify(G_OBJECT(self), "outputs");
