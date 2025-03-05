@@ -566,7 +566,7 @@ public class AstalMpris.Player : Object {
         return str == null ? "" : str;
     }
 
-    private string ? join_strv(string key, string sep) {
+    private string? join_strv(string key, string sep) {
         if (metadata.get(key) == null)
             return null;
 
@@ -648,7 +648,7 @@ public enum AstalMpris.PlaybackStatus {
 
     internal static PlaybackStatus from_string(string? str) {
         switch (str) {
-            case "Playing" :
+            case "Playing":
                 return PLAYING;
             case "Paused":
                 return PAUSED;
@@ -681,7 +681,7 @@ public enum AstalMpris.Loop {
         }
     }
 
-    internal string ? to_string() {
+    internal string? to_string() {
         switch (this) {
             case NONE:
                 return "None";
@@ -706,7 +706,7 @@ public enum AstalMpris.Shuffle {
         return b ? Shuffle.ON : Shuffle.OFF;
     }
 
-    internal string ? to_string() {
+    internal string? to_string() {
         switch (this) {
             case OFF:
                 return "Off";
