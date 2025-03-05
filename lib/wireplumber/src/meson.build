@@ -5,6 +5,7 @@ srcs = files(
   'endpoint.c',
   'stream.c',
   'profile.c',
+  'route.c',
   'video.c',
   'wireplumber.c',
 )

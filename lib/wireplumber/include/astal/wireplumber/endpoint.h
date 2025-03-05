@@ -16,7 +16,10 @@ guint astal_wp_endpoint_get_device_id(AstalWpEndpoint* self);
 AstalWpDevice* astal_wp_endpoint_get_device(AstalWpEndpoint* self);
 gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint* self);
 void astal_wp_endpoint_set_is_default(AstalWpEndpoint* self, gboolean is_default);
-
+guint astal_wp_endpoint_get_active_route_id(AstalWpEndpoint* self);
+AstalWpRoute* astal_wp_endpoint_get_active_route(AstalWpEndpoint* self);
+void astal_wp_endpoint_set_active_route(AstalWpEndpoint* self, AstalWpRoute* route);
+GList* astal_wp_endpoint_get_routes(AstalWpEndpoint* self);
 G_END_DECLS
 
 #endif  // !ASTAL_WIREPLUMBER_ENDPOINT_H

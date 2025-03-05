@@ -5,6 +5,7 @@ astal_wireplumber_subheaders = files(
   'endpoint.h',
   'stream.h',
   'profile.h',
+  'route.h',
   'video.h',
   'wp.h',
 )

@@ -6,6 +6,11 @@
 #include "glib-object.h"
 #include "glib.h"
 #include "profile.h"
+#include "route.h"
+#include "wp/iterator.h"
+#include "wp/port.h"
+#include "wp/spa-pod.h"
+#include "wp/spa-type.h"
 
 struct _AstalWpDevice {
     GObject parent_instance;
@@ -14,13 +19,16 @@ struct _AstalWpDevice {
     gchar *description;
     gchar *icon;
     gchar *from_factor;
-    gint active_profile;
+    gint active_profile_id;
+    gint input_route_id;
+    gint output_route_id;
     AstalWpDeviceType type;
 };
 
 typedef struct {
     WpDevice *device;
     GHashTable *profiles;
+    GHashTable *routes;
 } AstalWpDevicePrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpDevice, astal_wp_device, G_TYPE_OBJECT);
@@ -31,7 +39,12 @@ typedef enum {
     ASTAL_WP_DEVICE_PROP_DESCRIPTION,
     ASTAL_WP_DEVICE_PROP_ICON,
     ASTAL_WP_DEVICE_PROP_PROFILES,
-    ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE,
+    ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE_ID,
+    ASTAL_WP_DEVICE_PROP_ROUTES,
+    ASTAL_WP_DEVICE_PROP_INPUT_ROUTES,
+    ASTAL_WP_DEVICE_PROP_OUTPUT_ROUTES,
+    ASTAL_WP_DEVICE_PROP_INPUT_ROUTE_ID,
+    ASTAL_WP_DEVICE_PROP_OUTPUT_ROUTE_ID,
     ASTAL_WP_DEVICE_PROP_DEVICE_TYPE,
     ASTAL_WP_DEVICE_PROP_FORM_FACTOR,
     ASTAL_WP_DEVICE_N_PROPERTIES,
@@ -89,23 +102,23 @@ const gchar *astal_wp_device_get_icon(AstalWpDevice *self) {
 AstalWpDeviceType astal_wp_device_get_device_type(AstalWpDevice *self) { return self->type; }
 
 /**
- * astal_wp_device_get_active_profile
+ * astal_wp_device_get_active_profile_id
  * @self: the AstalWpDevice object
  *
  * gets the currently active profile of this device
  *
  */
-gint astal_wp_device_get_active_profile(AstalWpDevice *self) { return self->active_profile; }
+gint astal_wp_device_get_active_profile_id(AstalWpDevice *self) { return self->active_profile_id; }
 
 /**
- * astal_wp_device_set_active_profile
+ * astal_wp_device_set_active_profile_id
  * @self: the AstalWpDevice object
  * @profile_id: the id of the profile
  *
  * sets the profile for this device
  *
  */
-void astal_wp_device_set_active_profile(AstalWpDevice *self, int profile_id) {
+void astal_wp_device_set_active_profile_id(AstalWpDevice *self, int profile_id) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     WpSpaPodBuilder *builder =
@@ -146,6 +159,120 @@ GList *astal_wp_device_get_profiles(AstalWpDevice *self) {
     return g_hash_table_get_values(priv->profiles);
 }
 
+/**
+ * astal_wp_device_get_input_route_id
+ * @self: the AstalWpDevice object
+ *
+ * gets the currently active input route of this device
+ *
+ */
+gint astal_wp_device_get_input_route_id(AstalWpDevice *self) { return self->input_route_id; }
+
+/**
+ * astal_wp_device_get_output_route_id
+ * @self: the AstalWpDevice object
+ *
+ * gets the currently active output route of this device
+ *
+ */
+gint astal_wp_device_get_ouput_route_id(AstalWpDevice *self) { return self->output_route_id; }
+
+/**
+ * astal_wp_device_get_route:
+ * @self: the AstalWpDevice object
+ * @id: the id of the route
+ *
+ * gets the route with the given id
+ *
+ * Returns: (transfer none) (nullable)
+ */
+AstalWpRoute *astal_wp_device_get_route(AstalWpDevice *self, gint id) {
+    g_return_val_if_fail(self != NULL, NULL);
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+
+    return g_hash_table_lookup(priv->routes, GINT_TO_POINTER(id));
+}
+
+void astal_wp_device_set_route(AstalWpDevice *self, AstalWpRoute *route, guint card_device) {
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+    WpSpaPodBuilder *builder = wp_spa_pod_builder_new_object("Spa:Pod:Object:Param:Route", "Route");
+    wp_spa_pod_builder_add_property(builder, "index");
+    wp_spa_pod_builder_add_int(builder, astal_wp_route_get_index(route));
+    wp_spa_pod_builder_add_property(builder, "device");
+    wp_spa_pod_builder_add_int(builder, card_device);
+    wp_spa_pod_builder_add_property(builder, "save");
+    wp_spa_pod_builder_add_boolean(builder, TRUE);
+    WpSpaPod *pod = wp_spa_pod_builder_end(builder);
+    wp_pipewire_object_set_param(WP_PIPEWIRE_OBJECT(priv->device), "Route", 0, pod);
+
+    wp_spa_pod_builder_unref(builder);
+}
+
+/**
+ * astal_wp_device_get_routes:
+ * @self: the AstalWpDevice object
+ *
+ * gets a GList containing the routes
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
+ */
+GList *astal_wp_device_get_routes(AstalWpDevice *self) {
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+    return g_hash_table_get_values(priv->routes);
+}
+
+static void astal_wp_device_filter_by_direction(gpointer key, gpointer value, gpointer user_data) {
+    struct {
+        AstalWpDirection direction;
+        GList **list;
+    } *data = user_data;
+    if (astal_wp_route_get_direction(ASTAL_WP_ROUTE(value)) == data->direction) {
+        *(data->list) = g_list_append(*(data->list), ASTAL_WP_ROUTE(value));
+    }
+}
+
+/**
+ * astal_wp_device_get_input_routes:
+ * @self: the AstalWpDevice object
+ *
+ * gets a GList containing the input routes
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
+ */
+GList *astal_wp_device_get_input_routes(AstalWpDevice *self) {
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+
+    GList *routes = NULL;
+    struct {
+        AstalWpDirection direction;
+        GList **list;
+    } data = {ASTAL_WP_DIRECTION_INPUT, &routes};
+
+    g_hash_table_foreach(priv->routes, astal_wp_device_filter_by_direction, &data);
+    return routes;
+}
+
+/**
+ * astal_wp_device_get_output_routes:
+ * @self: the AstalWpDevice object
+ *
+ * gets a GList containing the output routes
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
+ */
+GList *astal_wp_device_get_output_routes(AstalWpDevice *self) {
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+
+    GList *routes = NULL;
+    struct {
+        AstalWpDirection direction;
+        GList **list;
+    } data = {ASTAL_WP_DIRECTION_OUTPUT, &routes};
+
+    g_hash_table_foreach(priv->routes, astal_wp_device_filter_by_direction, &data);
+    return routes;
+}
+
 static void astal_wp_device_get_property(GObject *object, guint property_id, GValue *value,
                                          GParamSpec *pspec) {
     AstalWpDevice *self = ASTAL_WP_DEVICE(object);
@@ -166,8 +293,23 @@ static void astal_wp_device_get_property(GObject *object, guint property_id, GVa
         case ASTAL_WP_DEVICE_PROP_DEVICE_TYPE:
             g_value_set_enum(value, astal_wp_device_get_device_type(self));
             break;
-        case ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE:
-            g_value_set_int(value, self->active_profile);
+        case ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE_ID:
+            g_value_set_int(value, self->active_profile_id);
+            break;
+        case ASTAL_WP_DEVICE_PROP_ROUTES:
+            g_value_set_pointer(value, astal_wp_device_get_routes(self));
+            break;
+        case ASTAL_WP_DEVICE_PROP_INPUT_ROUTES:
+            g_value_set_pointer(value, astal_wp_device_get_input_routes(self));
+            break;
+        case ASTAL_WP_DEVICE_PROP_OUTPUT_ROUTES:
+            g_value_set_pointer(value, astal_wp_device_get_output_routes(self));
+            break;
+        case ASTAL_WP_DEVICE_PROP_INPUT_ROUTE_ID:
+            g_value_set_int(value, self->input_route_id);
+            break;
+        case ASTAL_WP_DEVICE_PROP_OUTPUT_ROUTE_ID:
+            g_value_set_int(value, self->output_route_id);
             break;
         case ASTAL_WP_DEVICE_PROP_FORM_FACTOR:
             g_value_set_string(value, self->from_factor);
@@ -192,8 +334,8 @@ static void astal_wp_device_set_property(GObject *object, guint property_id, con
                 priv->device = g_object_ref(dev);
             }
             break;
-        case ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE:
-            astal_wp_device_set_active_profile(self, g_value_get_int(value));
+        case ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE_ID:
+            astal_wp_device_set_active_profile_id(self, g_value_get_int(value));
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -240,12 +382,70 @@ static void astal_wp_device_update_active_profile(AstalWpDevice *self) {
         gint index;
         wp_spa_pod_get_object(pod, NULL, "index", "i", &index, NULL);
 
-        self->active_profile = index;
+        self->active_profile_id = index;
         g_value_unset(&profile);
     }
     wp_iterator_unref(iter);
 
     g_object_notify(G_OBJECT(self), "active-profile-id");
+}
+
+static void astal_wp_device_update_routes(AstalWpDevice *self) {
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+    g_hash_table_remove_all(priv->routes);
+
+    WpIterator *iter =
+        wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "EnumRoute", NULL);
+    if (iter == NULL) return;
+    GValue route = G_VALUE_INIT;
+    while (wp_iterator_next(iter, &route)) {
+        WpSpaPod *pod = g_value_get_boxed(&route);
+
+        gint index, priority = 0;
+        gchar *description = NULL, *name = NULL;
+        AstalWpDirection direction = ASTAL_WP_DIRECTION_OUTPUT;
+        AstalWpAvailable available = ASTAL_WP_AVAILABLE_UNKNOWN;
+
+        wp_spa_pod_get_object(pod, NULL, "index", "i", &index, "name", "?s", &name, "description",
+                              "s", &description, "direction", "I", &direction, "priority", "?i",
+                              &priority, "available", "?I", &available, NULL);
+
+        g_hash_table_insert(priv->routes, GINT_TO_POINTER(index),
+                            g_object_new(ASTAL_WP_TYPE_ROUTE, "index", index, "description",
+                                         description, "name", name, "direction", direction,
+                                         "priority", priority, "available", available, NULL));
+        g_value_unset(&route);
+    }
+    wp_iterator_unref(iter);
+
+    g_object_notify(G_OBJECT(self), "routes");
+}
+
+static void astal_wp_device_update_active_routes(AstalWpDevice *self) {
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+
+    WpIterator *iter =
+        wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "Route", NULL);
+    if (iter == NULL) return;
+    GValue route = G_VALUE_INIT;
+    while (wp_iterator_next(iter, &route)) {
+        WpSpaPod *pod = g_value_get_boxed(&route);
+
+        gint index;
+        gint direction;
+        wp_spa_pod_get_object(pod, NULL, "index", "i", &index, "direction", "Id", &direction, NULL);
+
+        if (direction == 0) {
+            self->input_route_id = index;
+        } else if (direction == 1) {
+            self->output_route_id = index;
+        }
+        g_value_unset(&route);
+    }
+    wp_iterator_unref(iter);
+
+    g_object_notify(G_OBJECT(self), "input-route-id");
+    g_object_notify(G_OBJECT(self), "output-route-id");
 }
 
 static void astal_wp_device_update_properties(AstalWpDevice *self) {
@@ -307,6 +507,10 @@ static void astal_wp_device_params_changed(AstalWpDevice *self, const gchar *pro
         astal_wp_device_update_active_profile(self);
     } else if (!g_strcmp0(prop, "Props")) {
         astal_wp_device_update_properties(self);
+    } else if (!g_strcmp0(prop, "EnumRoute")) {
+        astal_wp_device_update_routes(self);
+    } else if (!g_strcmp0(prop, "Route")) {
+        astal_wp_device_update_active_routes(self);
     }
 
     g_object_thaw_notify(G_OBJECT(self));
@@ -322,6 +526,8 @@ void astal_wp_device_constructed(GObject *object) {
     astal_wp_device_params_changed(self, "Props");
     astal_wp_device_params_changed(self, "EnumProfile");
     astal_wp_device_params_changed(self, "Profile");
+    astal_wp_device_params_changed(self, "EnumRoute");
+    astal_wp_device_params_changed(self, "Route");
 
     G_OBJECT_CLASS(astal_wp_device_parent_class)->constructed(object);
 }
@@ -331,6 +537,7 @@ static void astal_wp_device_init(AstalWpDevice *self) {
     priv->device = NULL;
 
     priv->profiles = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+    priv->routes = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 
     self->description = NULL;
     self->icon = NULL;
@@ -342,6 +549,8 @@ static void astal_wp_device_dispose(GObject *object) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     g_clear_object(&priv->device);
+    g_hash_table_unref(priv->profiles);
+    g_hash_table_unref(priv->routes);
 
     G_OBJECT_CLASS(astal_wp_device_parent_class)->dispose(object);
 }
@@ -409,10 +618,46 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
      *
      * The id of the currently active profile.
      */
-    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE] =
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ACTIVE_PROFILE_ID] =
         g_param_spec_int("active-profile-id", "active-profile-id", "active-profile-id", G_MININT,
                          G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
-
+    /**
+     * AstalWpDevice:routes: (type GList(AstalWpRoute)) (transfer container)
+     *
+     * A list of available routes
+     */
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_ROUTES] =
+        g_param_spec_pointer("routes", "routes", "routes", G_PARAM_READABLE);
+    /**
+     * AstalWpDevice:input-routes: (type GList(AstalWpRoute)) (transfer container)
+     *
+     * A list of available input routes
+     */
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_INPUT_ROUTES] =
+        g_param_spec_pointer("input-routes", "input-routes", "input-routes", G_PARAM_READABLE);
+    /**
+     * AstalWpDevice:output-routes: (type GList(AstalWpRoute)) (transfer container)
+     *
+     * A list of available output routes
+     */
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_OUTPUT_ROUTES] =
+        g_param_spec_pointer("output-routes", "output-routes", "output-routes", G_PARAM_READABLE);
+    /**
+     * AstalWpDevice:input-route-id:
+     *
+     * The id of the currently active input route.
+     */
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_INPUT_ROUTE_ID] =
+        g_param_spec_int("input-route-id", "input-route-id", "input-route-id", G_MININT, G_MAXINT,
+                         0, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+    /**
+     * AstalWpDevice:output-route-id:
+     *
+     * The id of the currently active output route.
+     */
+    astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_OUTPUT_ROUTE_ID] =
+        g_param_spec_int("output-route-id", "output-route-id", "output-route-id", G_MININT,
+                         G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
     /**
      * AstalWpDevice:form-factor:
      *

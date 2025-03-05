@@ -8,6 +8,7 @@
 #include "glib.h"
 #include "node-private.h"
 #include "node.h"
+#include "route.h"
 #include "wp.h"
 
 struct _AstalWpEndpoint {
@@ -22,6 +23,7 @@ typedef struct {
     WpPlugin *default_plugin;
     gboolean is_default_node;
 
+    GSignalGroup *device_signal_group;
 } AstalWpEndpointPrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpEndpoint, astal_wp_endpoint, ASTAL_WP_TYPE_NODE);
@@ -32,6 +34,9 @@ typedef enum {
     ASTAL_WP_ENDPOINT_PROP_DEFAULT,
     ASTAL_WP_ENDPOINT_PROP_IS_DEFAULT_NODE,
     ASTAL_WP_ENDPOINT_PROP_DEFAULT_PLUGIN,
+    ASTAL_WP_ENDPOINT_PROP_ROUTES,
+    ASTAL_WP_ENDPOINT_PROP_ACTIVE_ROUTE,
+    ASTAL_WP_ENDPOINT_PROP_ACTIVE_ROUTE_ID,
     ASTAL_WP_ENDPOINT_N_PROPERTIES,
 } AstalWpEndpointProperties;
 
@@ -76,6 +81,78 @@ void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default
                           name, &ret);
 }
 
+guint astal_wp_endpoint_get_active_route_id(AstalWpEndpoint *self) {
+    AstalWpMediaClass media_class;
+    g_object_get(self, "media-class", &media_class, NULL);
+    AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
+
+    if (dev == NULL) return 0;
+
+    return media_class == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER
+               ? astal_wp_device_get_ouput_route_id(dev)
+               : astal_wp_device_get_input_route_id(dev);
+}
+
+/**
+ * astal_wp_endpoint_get_active_route:
+ *
+ * Return: (transfer none) (nullable)
+ */
+AstalWpRoute *astal_wp_endpoint_get_active_route(AstalWpEndpoint *self) {
+    AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
+    if (dev == NULL) return NULL;
+    return astal_wp_device_get_route(dev, astal_wp_endpoint_get_active_route_id(self));
+}
+
+void astal_wp_endpoint_set_active_route(AstalWpEndpoint *self, AstalWpRoute *route) {
+    AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
+    if (dev == NULL) return;
+    WpNode *node;
+    g_object_get(self, "node", &node, NULL);
+    const gchar *value =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "card.profile.device");
+    if (value == NULL) return;
+    gint card_device = g_ascii_strtoll(value, NULL, 10);
+
+    astal_wp_device_set_route(dev, route, card_device);
+}
+
+void astal_wp_endpoint_set_active_route_id(AstalWpEndpoint *self, gint route_id) {
+    AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
+    if (dev == NULL) return;
+    astal_wp_endpoint_set_active_route(self, astal_wp_device_get_route(dev, route_id));
+}
+
+/**
+ * astal_wp_endpoint_get_routes:
+ *
+ * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
+ */
+GList *astal_wp_endpoint_get_routes(AstalWpEndpoint *self) {
+    AstalWpMediaClass media_class;
+    g_object_get(self, "media-class", &media_class, NULL);
+    AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
+
+    if (dev == NULL) return NULL;
+
+    GList *routes = media_class == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER
+                        ? astal_wp_device_get_output_routes(dev)
+                        : astal_wp_device_get_input_routes(dev);
+
+    GList *iter = routes;
+
+    while (iter) {
+        GList *next = iter->next;
+        AstalWpRoute *route = ASTAL_WP_ROUTE(iter->data);
+        // TODO: also filter routes not available in currently active device profile
+        if (astal_wp_route_get_available(route) == ASTAL_WP_AVAILABLE_NO) {
+            routes = g_list_delete_link(routes, iter);
+        }
+        iter = next;
+    }
+    return routes;
+}
+
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
                                            GParamSpec *pspec) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
@@ -90,7 +167,15 @@ static void astal_wp_endpoint_get_property(GObject *object, guint property_id, G
         case ASTAL_WP_ENDPOINT_PROP_DEFAULT:
             g_value_set_boolean(value, self->is_default);
             break;
-
+        case ASTAL_WP_ENDPOINT_PROP_ROUTES:
+            g_value_set_pointer(value, astal_wp_endpoint_get_routes(self));
+            break;
+        case ASTAL_WP_ENDPOINT_PROP_ACTIVE_ROUTE_ID:
+            g_value_set_uint(value, astal_wp_endpoint_get_active_route_id(self));
+            break;
+        case ASTAL_WP_ENDPOINT_PROP_ACTIVE_ROUTE:
+            g_value_set_object(value, astal_wp_endpoint_get_active_route(self));
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -125,6 +210,8 @@ static void astal_wp_endpoint_set_property(GObject *object, guint property_id, c
 }
 
 static void astal_wp_endpoint_properties_changed(AstalWpEndpoint *self) {
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+
     WpNode *node;
     AstalWpMediaClass media_class;
     g_object_get(G_OBJECT(self), "node", &node, "media-class", &media_class, NULL);
@@ -140,6 +227,8 @@ static void astal_wp_endpoint_properties_changed(AstalWpEndpoint *self) {
         guint id = g_ascii_strtoull(value, NULL, 10);
         if (self->device_id != id) {
             self->device_id = id;
+            g_signal_group_set_target(priv->device_signal_group,
+                                      astal_wp_endpoint_get_device(self));
             g_object_notify(G_OBJECT(self), "device-id");
             g_object_notify(G_OBJECT(self), "device");
         }
@@ -254,17 +343,33 @@ AstalWpEndpoint *astal_wp_endpoint_new(WpNode *node, WpPlugin *mixer, WpPlugin *
     return self;
 }
 
+static void astal_wp_endpoint_reemit_route_signals(AstalWpEndpoint *self) {
+    g_object_notify(G_OBJECT(self), "routes");
+    g_object_notify(G_OBJECT(self), "active-route-id");
+    g_object_notify(G_OBJECT(self), "active-route");
+}
+
 static void astal_wp_endpoint_dispose(GObject *object) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
     g_signal_handler_disconnect(priv->default_plugin, priv->default_node_handler_signal_id);
     g_clear_object(&priv->default_plugin);
+    g_clear_object(&priv->device_signal_group);
 
     G_OBJECT_CLASS(astal_wp_endpoint_parent_class)->dispose(object);
 }
 
-static void astal_wp_endpoint_init(AstalWpEndpoint *self) {}
+static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
+    AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
+    priv->device_signal_group = g_signal_group_new(ASTAL_WP_TYPE_DEVICE);
+    g_signal_group_connect_swapped(priv->device_signal_group, "notify::routes",
+                                   G_CALLBACK(astal_wp_endpoint_reemit_route_signals), self);
+    g_signal_group_connect_swapped(priv->device_signal_group, "notify::ouput-route-id",
+                                   G_CALLBACK(astal_wp_endpoint_reemit_route_signals), self);
+    g_signal_group_connect_swapped(priv->device_signal_group, "notify::input-route-id",
+                                   G_CALLBACK(astal_wp_endpoint_reemit_route_signals), self);
+}
 
 static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
     GObjectClass *object_class = G_OBJECT_CLASS(class);
@@ -311,6 +416,30 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_IS_DEFAULT_NODE] =
         g_param_spec_boolean("is-default-node", "is-default-node", "is-default-node", FALSE,
                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
+    /**
+     * AstalWpEndpoint:active-route-id:
+     *
+     * The id of the currently active route
+     */
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_ACTIVE_ROUTE_ID] =
+        g_param_spec_uint("active-route-id", "active-route-id", "active-route-id", 0, UINT_MAX, 0,
+                          G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+
+    /**
+     * AstalWpEndpoint:active-route:
+     *
+     * The currently active route
+     */
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_ACTIVE_ROUTE] =
+        g_param_spec_object("active-route", "active-route", "active-route", ASTAL_WP_TYPE_ROUTE,
+                            G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+    /**
+     * AstalWpEndpoint:routes: (type GList(AstalWpRoute)) (transfer container)
+     *
+     * A list of available routes
+     */
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_ROUTES] =
+        g_param_spec_pointer("routes", "routes", "routes", G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);
