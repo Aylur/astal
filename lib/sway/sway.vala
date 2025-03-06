@@ -107,7 +107,9 @@ namespace AstalSway {
         switch (node.node_type) {
           case NodeType.WORKSPACE:
             var ws = node as Workspace;
-            new_workspaces.insert(ws.name, ws);
+            if (ws.name != "__i3_scratch") {
+              new_workspaces.insert(ws.name, ws);
+            }
             break;
           case NodeType.CONTAINER:
           case NodeType.WINDOW:
