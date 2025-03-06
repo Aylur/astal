@@ -2,6 +2,7 @@
 #define ASTAL_WP_PROFILE_H
 
 #include <glib-object.h>
+
 #include "enums.h"
 
 G_BEGIN_DECLS

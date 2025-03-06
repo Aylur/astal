@@ -65,6 +65,4 @@ typedef enum {
     ASTAL_WP_DIRECTION_OUTPUT /*< nick=Output >*/
 } AstalWpDirection;
 
-
-
-#endif // ASTAL_WIREPLUMBER_ENUMS_H
+#endif  // ASTAL_WIREPLUMBER_ENUMS_H

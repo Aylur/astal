@@ -1,6 +1,7 @@
 #include <string.h>
 #include <wp/wp.h>
 
+#include "astal-wp-enum-types.h"
 #include "audio.h"
 #include "device.h"
 #include "gio/gio.h"
@@ -12,7 +13,6 @@
 #include "wp-private.h"
 #include "wp.h"
 #include "wp/core.h"
-#include "astal-wp-enum-types.h"
 
 struct _AstalWpWp {
     GObject parent_instance;

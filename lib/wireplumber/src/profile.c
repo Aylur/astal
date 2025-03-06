@@ -2,8 +2,8 @@
 
 #include <wp/wp.h>
 
-#include "glib-object.h"
 #include "astal-wp-enum-types.h"
+#include "glib-object.h"
 
 struct _AstalWpProfile {
     GObject parent_instance;

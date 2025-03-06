@@ -53,12 +53,9 @@ GList *astal_wp_node_get_channel_volumes(AstalWpNode *self);
 
 gchar *astal_wp_node_get_pw_property(AstalWpNode *self, const gchar *key);
 
-
-
 void astal_wp_node_metadata_changed(AstalWpNode *self, const gchar *key, const gchar *type,
                                     const gchar *value);
 void astal_wp_node_params_changed(AstalWpNode *self, const gchar *id);
-
 
 G_END_DECLS
 

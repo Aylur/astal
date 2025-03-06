@@ -5,9 +5,9 @@
 
 #include "audio.h"
 #include "device.h"
+#include "enums.h"
 #include "node.h"
 #include "video.h"
-#include "enums.h"
 
 G_BEGIN_DECLS
 
@@ -35,8 +35,6 @@ AstalWpEndpoint* astal_wp_wp_get_default_microphone(AstalWpWp* self);
 
 AstalWpScale astal_wp_wp_get_scale(AstalWpWp* self);
 void astal_wp_wp_set_scale(AstalWpWp* self, AstalWpScale scale);
-
-
 
 G_END_DECLS
 

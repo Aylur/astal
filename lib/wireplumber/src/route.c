@@ -2,9 +2,9 @@
 
 #include <wp/wp.h>
 
+#include "astal-wp-enum-types.h"
 #include "glib-object.h"
 #include "glib.h"
-#include "astal-wp-enum-types.h"
 
 struct _AstalWpRoute {
     GObject parent_instance;
