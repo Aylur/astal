@@ -790,6 +790,11 @@ static void astal_wp_node_init(AstalWpNode *self) {
     priv->channel_volumes = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_object_unref);
 }
 
+static void astal_wp_node_constructed(GObject *obj) {
+    AstalWpNode *self = ASTAL_WP_NODE(obj);
+    astal_wp_node_params_changed(self, "Props");
+}
+
 static void astal_wp_node_dispose(GObject *object) {
     AstalWpNode *self = ASTAL_WP_NODE(object);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
@@ -828,6 +833,7 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
     object_class->finalize = astal_wp_node_finalize;
     object_class->get_property = astal_wp_node_get_property;
     object_class->set_property = astal_wp_node_set_property;
+    object_class->constructed = astal_wp_node_constructed;
 
     class->metadata_changed = astal_wp_node_real_metadata_changed;
     class->params_changed = astal_wp_node_real_params_changed;

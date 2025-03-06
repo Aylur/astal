@@ -1,7 +1,9 @@
+#include <string.h>
 #include <wp/wp.h>
 
 #include "audio.h"
 #include "device.h"
+#include "gio/gio.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
@@ -9,6 +11,7 @@
 #include "video.h"
 #include "wp-private.h"
 #include "wp.h"
+#include "wp/core.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
@@ -46,6 +49,7 @@ typedef enum {
     ASTAL_WP_WP_SIGNAL_NODE_REMOVED,
     ASTAL_WP_WP_SIGNAL_DEVICE_ADDED,
     ASTAL_WP_WP_SIGNAL_DEVICE_REMOVED,
+    ASTAL_WP_WP_SIGNAL_READY,
     ASTAL_WP_WP_N_SIGNALS
 } AstalWpWpSignals;
 
@@ -400,6 +404,10 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
     }
 }
 
+static void astal_wp_wp_roundtrip_cb(WpCore *core, GAsyncResult *result, AstalWpWp* self) {
+  g_signal_emit_by_name(self, "ready");
+}
+
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
@@ -407,6 +415,7 @@ static void astal_wp_wp_objm_installed(AstalWpWp *self) {
                                       ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
     astal_wp_endpoint_init_as_default(self->default_microphone, priv->mixer, priv->defaults,
                                       ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE);
+    wp_core_sync(priv->core, NULL, (GAsyncReadyCallback)astal_wp_wp_roundtrip_cb, self);
 }
 
 static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
@@ -430,7 +439,7 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
                                  G_CALLBACK(astal_wp_wp_object_removed), self);
 
         wp_core_install_object_manager(priv->core, priv->obj_manager);
-    }
+  }
 }
 
 static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
@@ -630,4 +639,5 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_DEVICE_REMOVED] =
         g_signal_new("device-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
+    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_READY] = g_signal_new("ready", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
 }
