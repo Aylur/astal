@@ -2,6 +2,7 @@ namespace AstalSway {
   public class Container : Node {
     public bool sticky;
     public bool floating;
+    public bool focused;
     public string border;
     public int border_width;
     public int fullscreen_mode;

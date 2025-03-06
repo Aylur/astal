@@ -43,6 +43,7 @@ deps = [
 
 sources = [config] + files(
   'node.vala',
+  'output.vala',
   'workspace.vala',
   'container.vala',
   'window.vala',

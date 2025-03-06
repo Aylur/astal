@@ -4,7 +4,8 @@ namespace AstalSway {
     WORKSPACE,
     CONTAINER,
     WINDOW,
-    OUTPUT
+    OUTPUT,
+    SCRATCHPAD
   }
 
   public struct Rectangle {
@@ -26,7 +27,6 @@ namespace AstalSway {
 
   public class Node : Object {
     public int id {get; private set; }
-    public bool focused { get; private set; }
     public bool urgent { get; private set; }
     public string name { get; private set; }
     public string layout { get; private set; }
@@ -77,8 +77,18 @@ namespace AstalSway {
             var con = new Container();
             return con as Node;
           }
+        case "output":
+          if (obj.get_string_member("name") == "__i3") {
+            var node = new Node();
+            node.node_type = NodeType.SCRATCHPAD;
+            return node;
+          } else {
+            var output = new Output();
+            return output as Node;
+          }
         default:
           var node = new Node(); 
+          node.node_type = NodeType.ROOT;
           return node;
           break;
 
@@ -110,7 +120,6 @@ namespace AstalSway {
       name = obj.get_string_member("name");
       orientation = obj.get_string_member("orientation");
       layout = obj.get_string_member("layout");
-      focused = obj.get_boolean_member("focused");
       urgent = obj.get_boolean_member("urgent");
       rect = Rectangle.from_json(obj.get_object_member("rect"));
       window_rect = Rectangle.from_json(obj.get_object_member("window_rect"));

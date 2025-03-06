@@ -1,6 +1,9 @@
 namespace AstalSway {
   public class Workspace : Node {
     public string representation;
+    public bool focused;
+    public bool visible;
+    public int num;
 
     public Workspace() {
       node_type = NodeType.WORKSPACE;
@@ -14,6 +17,13 @@ namespace AstalSway {
         representation = "";
       }
       base.sync(obj);
+
+    }
+
+    internal void sync_workspace(Json.Object obj) {
+      focused = obj.get_boolean_member("focused");
+      visible = obj.get_boolean_member("visible");
+      num = (int)obj.get_int_member("num");
     }
 
     public override void focus() {
