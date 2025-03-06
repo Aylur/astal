@@ -2,6 +2,7 @@
 
 #include <wp/wp.h>
 
+#include "astal-wp-enum-types.h"
 #include "endpoint.h"
 #include "glib-object.h"
 #include "glib.h"
@@ -14,6 +15,8 @@ struct _AstalWpStream {
     AstalWpNode parent_instance;
 
     gint target_serial;
+    AstalWpMediaRole media_role;
+    AstalWpMediaCategory media_category;
 };
 
 G_DEFINE_FINAL_TYPE(AstalWpStream, astal_wp_stream, ASTAL_WP_TYPE_NODE);
@@ -21,6 +24,8 @@ G_DEFINE_FINAL_TYPE(AstalWpStream, astal_wp_stream, ASTAL_WP_TYPE_NODE);
 typedef enum {
     ASTAL_WP_STREAM_PROP_TARGET_SERIAL = 1,
     ASTAL_WP_STREAM_PROP_TARGET_ENDPOINT,
+    ASTAL_WP_STREAM_PROP_MEDIA_CATEGORY,
+    ASTAL_WP_STREAM_PROP_MEDIA_ROLE,
     ASTAL_WP_STREAM_N_PROPERTIES,
 } AstalWpStreamProperties;
 
@@ -34,6 +39,7 @@ gint astal_wp_stream_get_target_serial(AstalWpStream *self) {
 }
 
 void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
+    g_return_if_fail(self != NULL);
     AstalWpWp *wp;
     guint id;
     gchar *serial_str = g_strdup_printf("%d", serial);
@@ -42,7 +48,15 @@ void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
     g_free(serial_str);
 }
 
+/**
+ * astal_wp_stream_get_target_endpoint
+ *
+ * get the target [class@AstalWp.Endpoint]
+ *
+ * Returns: (transfer none)
+ */
 AstalWpEndpoint *astal_wp_stream_get_target_endpoint(AstalWpStream *self) {
+    g_return_val_if_fail(self != NULL, NULL);
     AstalWpWp *wp;
     g_object_get(self, "wp", &wp, NULL);
 
@@ -52,10 +66,21 @@ AstalWpEndpoint *astal_wp_stream_get_target_endpoint(AstalWpStream *self) {
 }
 
 void astal_wp_stream_set_target_endpoint(AstalWpStream *self, AstalWpEndpoint *target) {
+    g_return_if_fail(self != NULL);
     if (target == NULL)
         astal_wp_stream_set_target_serial(self, -1);
     else
         astal_wp_stream_set_target_serial(self, astal_wp_node_get_serial(ASTAL_WP_NODE(target)));
+}
+
+AstalWpMediaRole astal_wp_stream_get_media_role(AstalWpStream *self) {
+    g_return_val_if_fail(self != NULL, ASTAL_WP_MEDIA_ROLE_UNKNOWN);
+    return self->media_role;
+}
+
+AstalWpMediaCategory astal_wp_stream_get_media_category(AstalWpStream *self) {
+    g_return_val_if_fail(self != NULL, ASTAL_WP_MEDIA_CATEGORY_UNKNOWN);
+    return self->media_category;
 }
 
 static void astal_wp_stream_get_property(GObject *object, guint property_id, GValue *value,
@@ -68,6 +93,12 @@ static void astal_wp_stream_get_property(GObject *object, guint property_id, GVa
             break;
         case ASTAL_WP_STREAM_PROP_TARGET_ENDPOINT:
             g_value_set_object(value, astal_wp_stream_get_target_endpoint(self));
+            break;
+        case ASTAL_WP_STREAM_PROP_MEDIA_ROLE:
+            g_value_set_enum(value, self->media_role);
+            break;
+        case ASTAL_WP_STREAM_PROP_MEDIA_CATEGORY:
+            g_value_set_enum(value, self->media_category);
             break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
@@ -125,6 +156,32 @@ static void astal_wp_stream_properties_changed(AstalWpStream *self) {
     if (value == NULL) value = wp_pipewire_object_get_property(pwo, "application.icon-name");
     if (value == NULL) value = "application-x-executable-symbolic";
     astal_wp_node_set_icon(ASTAL_WP_NODE(self), value);
+
+    AstalWpMediaRole role = ASTAL_WP_MEDIA_ROLE_UNKNOWN;
+    value = wp_pipewire_object_get_property(pwo, "media.role");
+    if (value != NULL) {
+        GEnumClass *media_role_enum = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_ROLE);
+        GEnumValue *media_role_value = g_enum_get_value_by_nick(media_role_enum, value);
+        g_type_class_unref(media_role_enum);
+        if (media_role_value != NULL) role = media_role_value->value;
+    }
+    if (role != self->media_role) {
+        self->media_role = role;
+        g_object_notify(G_OBJECT(self), "media-role");
+    }
+
+    AstalWpMediaCategory category = ASTAL_WP_MEDIA_CATEGORY_UNKNOWN;
+    value = wp_pipewire_object_get_property(pwo, "media.category");
+    if (value != NULL) {
+        GEnumClass *media_category_enum = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CATEGORY);
+        GEnumValue *media_category_value = g_enum_get_value_by_nick(media_category_enum, value);
+        g_type_class_unref(media_category_enum);
+        if (media_category_value != NULL) category = media_category_value->value;
+    }
+    if (category != self->media_category) {
+        self->media_category = category;
+        g_object_notify(G_OBJECT(self), "media-category");
+    }
 }
 
 void astal_wp_stream_real_params_changed(AstalWpNode *node, const gchar *id) {
@@ -169,6 +226,22 @@ static void astal_wp_stream_class_init(AstalWpStreamClass *class) {
     astal_wp_stream_properties[ASTAL_WP_STREAM_PROP_TARGET_ENDPOINT] =
         g_param_spec_object("target-endpoint", "target-endpoint", "target-endpoint",
                             ASTAL_WP_TYPE_ENDPOINT, G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY);
+    /**
+     * AstalWpStream:media-role: (type AstalWpMediaRole)
+     *
+     * the media role of this stream.
+     */
+    astal_wp_stream_properties[ASTAL_WP_STREAM_PROP_MEDIA_ROLE] =
+        g_param_spec_enum("media-role", "media-role", "media-role", ASTAL_WP_TYPE_MEDIA_ROLE,
+                          ASTAL_WP_MEDIA_ROLE_UNKNOWN, G_PARAM_READABLE);
+    /**
+     * AstalWpStream:media-category: (type AstalWpMediaCategory)
+     *
+     * the media category of this stream.
+     */
+    astal_wp_stream_properties[ASTAL_WP_STREAM_PROP_MEDIA_CATEGORY] = g_param_spec_enum(
+        "media-category", "media-category", "media-category", ASTAL_WP_TYPE_MEDIA_CATEGORY,
+        ASTAL_WP_MEDIA_CATEGORY_UNKNOWN, G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_STREAM_N_PROPERTIES,
                                       astal_wp_stream_properties);

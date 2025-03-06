@@ -3,24 +3,13 @@
 
 #include <glib-object.h>
 
-#include "astal-wp-enum-types.h"
+#include "enums.h"
 
 G_BEGIN_DECLS
 
 #define ASTAL_WP_TYPE_ROUTE (astal_wp_route_get_type())
 
 G_DECLARE_FINAL_TYPE(AstalWpRoute, astal_wp_route, ASTAL_WP, ROUTE, GObject)
-
-typedef enum {
-    ASTAL_WP_DIRECTION_INPUT, /*< nick=Input >*/
-    ASTAL_WP_DIRECTION_OUTPUT /*< nick=Output >*/
-} AstalWpDirection;
-
-typedef enum {
-    ASTAL_WP_AVAILABLE_UNKNOWN, /*< nick=unknown >*/
-    ASTAL_WP_AVAILABLE_NO,      /*< nick=no >*/
-    ASTAL_WP_AVAILABLE_YES,     /*< nick=yes >*/
-} AstalWpAvailable;
 
 gint astal_wp_route_get_index(AstalWpRoute *self);
 const gchar *astal_wp_route_get_description(AstalWpRoute *self);

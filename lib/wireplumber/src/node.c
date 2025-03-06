@@ -8,6 +8,7 @@
 #include "glib.h"
 #include "node-private.h"
 #include "wp.h"
+#include "wp/proxy-interfaces.h"
 
 struct _AstalWpChannelVolume {
     GObject parent_instance;
@@ -579,6 +580,20 @@ void astal_wp_node_set_mixer(AstalWpNode *self, WpPlugin *mixer) {
 void astal_wp_node_set_type(AstalWpNode *self, AstalWpMediaClass type) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
     priv->type = type;
+}
+
+/**
+ * astal_wp_node_get_pw_property
+ *
+ * Gets the pipewire property with the give key. You should use the GObject properties of this node
+ * whereever possible, as you can get notified on changes, which is not the case here.
+ *
+ * Returns: (transfer full)
+ */
+gchar *astal_wp_node_get_pw_property(AstalWpNode *self, const gchar *key) {
+    AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    const gchar *value = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), key);
+    return g_strdup(value);
 }
 
 static void astal_wp_node_get_property(GObject *object, guint property_id, GValue *value,

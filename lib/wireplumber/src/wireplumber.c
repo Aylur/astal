@@ -12,6 +12,7 @@
 #include "wp-private.h"
 #include "wp.h"
 #include "wp/core.h"
+#include "astal-wp-enum-types.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
@@ -404,8 +405,8 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
     }
 }
 
-static void astal_wp_wp_roundtrip_cb(WpCore *core, GAsyncResult *result, AstalWpWp* self) {
-  g_signal_emit_by_name(self, "ready");
+static void astal_wp_wp_roundtrip_cb(WpCore *core, GAsyncResult *result, AstalWpWp *self) {
+    g_signal_emit_by_name(self, "ready");
 }
 
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
@@ -439,7 +440,7 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
                                  G_CALLBACK(astal_wp_wp_object_removed), self);
 
         wp_core_install_object_manager(priv->core, priv->obj_manager);
-  }
+    }
 }
 
 static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, AstalWpWp *self) {
@@ -639,5 +640,6 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_DEVICE_REMOVED] =
         g_signal_new("device-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
-    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_READY] = g_signal_new("ready", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
+    astal_wp_wp_signals[ASTAL_WP_WP_SIGNAL_READY] = g_signal_new(
+        "ready", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
 }

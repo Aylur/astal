@@ -117,7 +117,7 @@ void astal_wp_endpoint_set_active_route(AstalWpEndpoint *self, AstalWpRoute *rou
     astal_wp_device_set_route(dev, route, card_device);
 }
 
-void astal_wp_endpoint_set_active_route_id(AstalWpEndpoint *self, gint route_id) {
+void astal_wp_endpoint_set_active_route_id(AstalWpEndpoint *self, guint route_id) {
     AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
     if (dev == NULL) return;
     astal_wp_endpoint_set_active_route(self, astal_wp_device_get_route(dev, route_id));

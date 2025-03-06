@@ -4,6 +4,7 @@
 
 #include "glib-object.h"
 #include "glib.h"
+#include "astal-wp-enum-types.h"
 
 struct _AstalWpRoute {
     GObject parent_instance;
@@ -109,6 +110,7 @@ static void astal_wp_route_init(AstalWpRoute *self) { self->description = NULL; 
 static void astal_wp_route_finalize(GObject *object) {
     AstalWpRoute *self = ASTAL_WP_ROUTE(object);
     g_free(self->description);
+    g_free(self->name);
 
     G_OBJECT_CLASS(astal_wp_route_parent_class)->finalize(object);
 }

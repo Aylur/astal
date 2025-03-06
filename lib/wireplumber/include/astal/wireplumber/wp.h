@@ -3,18 +3,13 @@
 
 #include <glib-object.h>
 
-#include "astal-wp-enum-types.h"
 #include "audio.h"
 #include "device.h"
 #include "node.h"
 #include "video.h"
+#include "enums.h"
 
 G_BEGIN_DECLS
-
-typedef enum {
-    ASTAL_WP_SCALE_LINEAR,
-    ASTAL_WP_SCALE_CUBIC,
-} AstalWpScale;
 
 #define ASTAL_WP_TYPE_WP (astal_wp_wp_get_type())
 
@@ -25,6 +20,8 @@ AstalWpWp* astal_wp_get_default();
 
 AstalWpAudio* astal_wp_wp_get_audio(AstalWpWp* self);
 AstalWpVideo* astal_wp_wp_get_video(AstalWpWp* self);
+AstalWpVideo* astal_wp_video_new(AstalWpWp* wp);
+AstalWpAudio* astal_wp_audio_new(AstalWpWp* wp);
 
 AstalWpNode* astal_wp_wp_get_node(AstalWpWp* self, guint id);
 GList* astal_wp_wp_get_nodes(AstalWpWp* self);
@@ -39,8 +36,7 @@ AstalWpEndpoint* astal_wp_wp_get_default_microphone(AstalWpWp* self);
 AstalWpScale astal_wp_wp_get_scale(AstalWpWp* self);
 void astal_wp_wp_set_scale(AstalWpWp* self, AstalWpScale scale);
 
-AstalWpVideo* astal_wp_video_new(AstalWpWp* wp);
-AstalWpAudio* astal_wp_audio_new(AstalWpWp* wp);
+
 
 G_END_DECLS
 
