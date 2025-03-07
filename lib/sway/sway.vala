@@ -29,7 +29,12 @@ public class Sway : Object {
     private void init() throws Error {
         ipc = new Ipc();
         ipc.init();
-        subscribe.begin(() => sync_tree.begin());
+        subscribe.begin();
+        sync_tree.begin(() => {
+            notify_property("outputs");
+            notify_property("workspaces");
+            notify_property("windows");
+        });
     }
 
     public Workspace focused_workspace;
@@ -95,7 +100,12 @@ public class Sway : Object {
     }
 
     public async void sync_tree() {
-        yield Node.sync_tree();
+        var str = yield message_async(MESSAGE_GET_TREE, "");
+        var obj = Json.from_string(str).get_object();
+        if (obj == null) {
+            return;
+        }
+        yield Node.sync_tree(obj);
         _nodes = Node._all_nodes;
         
         var new_workspaces = new HashTable<string, Workspace>(str_hash, str_equal);

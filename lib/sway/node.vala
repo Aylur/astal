@@ -66,13 +66,7 @@ public class Node : Object {
         }
     }
 
-    internal static async void sync_tree() {
-        var str = yield Sway.get_default().message_async(PayloadType.MESSAGE_GET_TREE, "");
-        var obj = Json.from_string(str).get_object();
-        if (obj == null) {
-            return;
-        }
-        
+    internal static async void sync_tree(Json.Object obj) {
         Node root = build(obj);
         _temp_nodes = new HashTable<int, Node>(i => i, (a,b) => a==b);
         root.sync(obj);
@@ -99,7 +93,8 @@ public class Node : Object {
         var arr2 = obj.get_array_member("floating_nodes");
         sync_nodes(arr);
         sync_nodes(arr2);
-
+        
+        notify_property("windows");
     }
 
     private void sync_nodes(Json.Array arr) {
