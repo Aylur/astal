@@ -14,13 +14,10 @@ namespace AstalSway {
         return _instance;
       }
      
-      var s = new Sway();
-      var ipc = new Ipc();
       
+      var s = new Sway();
       try {
-        ipc.init();
-        s.ipc = ipc;
-        s.subscribe.begin();
+        s.init();
         _instance = s;
         return s;
       } catch (Error err) {
@@ -28,6 +25,12 @@ namespace AstalSway {
         return null;
       }
 
+    }
+
+    private void init() throws Error {
+      ipc = new Ipc();
+      ipc.init();
+      subscribe.begin(() => sync_tree.begin());
     }
 
     public Workspace focused_workspace;
