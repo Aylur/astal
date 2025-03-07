@@ -1,33 +1,33 @@
 namespace AstalSway {
-  public class Workspace : Node {
+public class Workspace : Node {
     public string representation;
     public bool focused;
     public bool visible;
     public int num;
 
     public Workspace() {
-      node_type = NodeType.WORKSPACE;
+        node_type = NodeType.WORKSPACE;
     }
 
     internal override void sync(Json.Object obj) {
-      var rep = obj.get_member("representation");
-      if (rep != null) {
-        representation = rep.get_string();
-      } else {
-        representation = "";
-      }
-      base.sync(obj);
+        var rep = obj.get_member("representation");
+        if (rep != null) {
+            representation = rep.get_string();
+        } else {
+            representation = "";
+        }
+        base.sync(obj);
 
     }
 
     internal void sync_workspace(Json.Object obj) {
-      focused = obj.get_boolean_member("focused");
-      visible = obj.get_boolean_member("visible");
-      num = (int)obj.get_int_member("num");
+        focused = obj.get_boolean_member("focused");
+        visible = obj.get_boolean_member("visible");
+        num = (int)obj.get_int_member("num");
     }
 
     public override void focus() {
-      Sway.get_default().run_command(@"focus workspace $name");
+        Sway.get_default().run_command(@"focus workspace $name");
     }
-  }
+}
 }
