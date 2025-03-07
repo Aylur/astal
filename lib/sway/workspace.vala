@@ -27,7 +27,7 @@ public class Workspace : Node {
     }
 
     public override void focus() {
-        Sway.get_default().run_command(@"focus workspace $name");
+        Sway.get_default().run_command(@"workspace $name");
     }
 }
 }
