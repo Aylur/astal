@@ -1,11 +1,9 @@
 static bool help;
 static bool version;
-static bool test;
 
 const OptionEntry[] options = {
     { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref version, null, null },
     { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref help, null, null },
-    { "test", 't', OptionFlags.NONE, OptionArg.NONE, ref test, null, null },
     // { "monitor", 'm', OptionFlags.NONE, OptionArg.NONE, ref monitor, null, null },
     { null },
 };
@@ -22,10 +20,12 @@ int main(string[] argv) {
         return 1;
     }
 
-    if (test) {
-        var loop = new MainLoop();
-        AstalSway.get_default();
-        loop.run();
+    if (help) {
+        print("Usage:\n");
+        print("    %s [flags]\n\n", argv[0]);
+        print("Flags:\n");
+        print("    -h, --help        Print this help and exit\n");
+        print("    -v, --version     Print version number and exit\n");
         return 0;
     }
 

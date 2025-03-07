@@ -43,3 +43,4 @@ Reading their documentation will vary depending on the language they are used in
 - [River](https://aylur.github.io/libastal/river): Library and cli tool for getting status information of the river wayland compositor
 - [Tray](https://aylur.github.io/libastal/tray): A systemtray library and cli tool
 - [WirePlumber](https://aylur.github.io/libastal/wireplumber): A library for audio control using wireplumber
+- [Sway](https://aylur.github.io/libastal/hyprland): Library and cli tool for sway IPC socket
