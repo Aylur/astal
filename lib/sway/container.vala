@@ -1,11 +1,11 @@
 namespace AstalSway {
 public class Container : Node {
-    public bool sticky;
-    public bool floating;
-    public bool focused;
-    public string border;
-    public int border_width;
-    public int fullscreen_mode;
+    public bool sticky { get; private set; }
+    public bool floating { get; private set; }
+    public bool focused { get; private set; }
+    public string border { get; private set; }
+    public int border_width { get; private set; }
+    public int fullscreen_mode { get; private set; }
     public float percent { get; private set; }
 
     public Container() {

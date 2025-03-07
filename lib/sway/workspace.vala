@@ -1,9 +1,9 @@
 namespace AstalSway {
 public class Workspace : Node {
-    public string representation;
-    public bool focused;
-    public bool visible;
-    public int num;
+    public string representation { get; private set; }
+    public bool focused { get; private set; }
+    public bool visible { get; private set; }
+    public int num { get; private set; }
 
     public Workspace() {
         node_type = NodeType.WORKSPACE;

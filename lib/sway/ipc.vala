@@ -43,9 +43,6 @@ private class Ipc : Object {
         try {
             var header = stream.read_bytes(14);
             uint8 data[14] = header.get_data();
-            if (data == null) {
-                    return null;
-            }
             uint32 pl_length = *(uint32 *)&data[IPC_MAGIC.length];
             PayloadType pl_type = *(uint32 *)&data[IPC_MAGIC.length+4];
              

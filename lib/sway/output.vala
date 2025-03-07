@@ -1,15 +1,15 @@
 namespace AstalSway {
 public class Output : Node {
-    public string make;
-    public string model;
-    public string serial;
-    public bool active;
-    public bool power;
-    public bool focused;
-    public float scale;
-    public string subpixel_hinting;
-    public string transform;
-    public Workspace current_workspace;
+    public string make { get; private set; }
+    public string model { get; private set; }
+    public string serial { get; private set; }
+    public bool active { get; private set; }
+    public bool power { get; private set; }
+    public bool focused { get; private set; }
+    public float scale { get; private set; }
+    public string subpixel_hinting { get; private set; }
+    public string transform { get; private set; }
+    public Workspace current_workspace { get; private set; }
     public List<weak Workspace> workspaces { owned get {
         var arr = new List<weak Workspace> ();
         foreach (var node in nodes) {

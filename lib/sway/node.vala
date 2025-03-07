@@ -1,6 +1,6 @@
 namespace AstalSway {
 public class Node : Object {
-    public int id {get; private set; }
+    public int id { get; private set; }
     public bool urgent { get; private set; }
     public string name { get; private set; }
     public string layout { get; private set; }
@@ -8,7 +8,7 @@ public class Node : Object {
     public Rectangle rect { get; private set; }
     public Rectangle window_rect { get; private set; }
     public Rectangle deco_rect { get; private set; }
-    public NodeType node_type {get; protected set;}
+    public NodeType node_type { get; protected set;}
 
     public weak Node parent;
 

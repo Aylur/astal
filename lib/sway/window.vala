@@ -1,10 +1,10 @@
 namespace AstalSway {
 public class Window : Container {
-    public string app_id; 
-    public string shell; 
-    public int pid;
-    public bool visible;
-    public bool inhibit_idle;
+    public string app_id { get; private set; } 
+    public string shell { get; private set; } 
+    public int pid { get; private set; }
+    public bool visible { get; private set; }
+    public bool inhibit_idle { get; private set; }
         
     public Window() {
         node_type = NodeType.WINDOW;
