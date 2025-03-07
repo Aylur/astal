@@ -8,6 +8,7 @@ srcs = files(
   'route.c',
   'video.c',
   'wireplumber.c',
+  'channel.c'
 )
 
 deps = [

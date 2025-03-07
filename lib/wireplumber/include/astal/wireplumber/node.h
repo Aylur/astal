@@ -3,19 +3,10 @@
 
 #include <glib-object.h>
 
+#include "channel.h"
 #include "enums.h"
 
 G_BEGIN_DECLS
-
-#define ASTAL_WP_TYPE_CHANNEL_VOLUME (astal_wp_channel_volume_get_type())
-
-G_DECLARE_FINAL_TYPE(AstalWpChannelVolume, astal_wp_channel_volume, ASTAL_WP, CHANNEL_VOLUME,
-                     GObject)
-
-gdouble astal_wp_channel_volume_get_volume(AstalWpChannelVolume *self);
-void astal_wp_channel_volume_set_volume(AstalWpChannelVolume *self, gdouble volume);
-const gchar *astal_wp_channel_volume_get_name(AstalWpChannelVolume *self);
-const gchar *astal_wp_channel_volume_get_volume_icon(AstalWpChannelVolume *self);
 
 #define ASTAL_WP_TYPE_NODE (astal_wp_node_get_type())
 
@@ -49,7 +40,7 @@ gint astal_wp_node_get_serial(AstalWpNode *self);
 const gchar *astal_wp_node_get_path(AstalWpNode *self);
 AstalWpNodeState astal_wp_node_get_state(AstalWpNode *self);
 
-GList *astal_wp_node_get_channel_volumes(AstalWpNode *self);
+GList *astal_wp_node_get_channels(AstalWpNode *self);
 
 gchar *astal_wp_node_get_pw_property(AstalWpNode *self, const gchar *key);
 

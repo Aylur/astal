@@ -8,7 +8,8 @@ astal_wireplumber_subheaders = files(
   'route.h',
   'video.h',
   'wp.h',
-  'enums.h'
+  'enums.h',
+  'channel.h'
 )
 
 install_headers(astal_wireplumber_subheaders, subdir: 'astal/wireplumber')
