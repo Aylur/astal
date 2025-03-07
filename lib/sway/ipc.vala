@@ -19,17 +19,11 @@ private class Ipc : Object {
         }
     }
     
-    internal SocketConnection? connection() {
-        try {
-                SocketConnection socket = new SocketClient().connect(new UnixSocketAddress(SWAYSOCK), null);
-                return socket;
-        } catch (Error err) {
-                critical(err.message);
-                return null;
-        }
+    internal SocketConnection connection() throws Error {
+        return new SocketClient().connect(new UnixSocketAddress(SWAYSOCK), null);
     }
 
-    internal void send(OutputStream stream, PayloadType type, string payload) {
+    internal void send(OutputStream stream, PayloadType type, string payload) throws Error {
         Array<uint8> message = new Array<uint8> ();
 
         uint8[] magic_str = IPC_MAGIC.data;
@@ -46,7 +40,8 @@ private class Ipc : Object {
     }
 
     internal IpcReponse? receive(InputStream stream) {
-        var header = stream.read_bytes(14);
+        try {
+            var header = stream.read_bytes(14);
             uint8 data[14] = header.get_data();
             if (data == null) {
                     return null;
@@ -60,11 +55,15 @@ private class Ipc : Object {
             result += '\0';
             
             return {pl_type, (string)result};
-
+        } catch (Error err) {
+            critical("could not receive message: %s", err.message);
+            return null;
+        }
     }
 
     internal async IpcReponse? receive_async(InputStream stream) {
-        var header = yield stream.read_bytes_async(14, Priority.DEFAULT, null);
+        try {
+            var header = yield stream.read_bytes_async(14, Priority.DEFAULT, null);
             uint8 data[14] = header.get_data();
             if (data == null) {
                     return null;
@@ -78,32 +77,54 @@ private class Ipc : Object {
             result += '\0';
 
             return {pl_type, (string)result};
+        } catch (Error err) {
+            critical("could not receive message: %s", err.message);
+            return null;
+        }
     }
 
     public string message(PayloadType type, string payload) {
-        SocketConnection conn = connection();
-        if (conn == null) {
-            return "";
+        try {
+            SocketConnection conn = connection();
+            if (conn == null) {
+                return "";
+            }
+            
+            send(conn.output_stream, type, payload);
+            var result = receive(conn.input_stream);
+            conn.close(null);
+            
+            if (result == null) {
+                return "";
+            }
+         
+            return result.payload;
+        } catch (Error err) {
+           critical("message failed: %s", err.message);
+           return "";
         }
-        
-        send(conn.output_stream, type, payload);
-        var result = receive(conn.input_stream);
-        conn.close(null);
-     
-        return result.payload;
     }
     
     public async string message_async(PayloadType type, string payload) {
-        SocketConnection conn = connection();
-        if (conn == null) {
-            return "";
+        try {
+            SocketConnection conn = connection();
+            if (conn == null) {
+                return "";
+            }
+            
+            send(conn.output_stream, type, payload);
+            var result = yield receive_async(conn.input_stream);
+            conn.close(null);
+            
+            if (result == null) {
+                return "";
+            }
+         
+            return result.payload;
+        } catch (Error err) {
+           critical("message failed: %s", err.message);
+           return "";
         }
-        
-        send(conn.output_stream, type, payload);
-        var result = yield receive_async(conn.input_stream);
-        conn.close(null);
-     
-        return result.payload;
     }
 }
 }

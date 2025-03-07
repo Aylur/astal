@@ -63,10 +63,7 @@ public class Node : Object {
                 var node = new Node(); 
                 node.node_type = NodeType.ROOT;
                 return node;
-                break;
-
         }
-        return null;
     }
 
     internal static async void sync_tree() {

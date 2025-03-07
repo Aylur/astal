@@ -20,7 +20,7 @@ public class Sway : Object {
             _instance = s;
             return s;
         } catch (Error err) {
-            critical(err.message);
+            critical("could not initialize: %s", err.message);
             return null;
         }
 
@@ -164,7 +164,7 @@ public class Sway : Object {
         }
     } 
 
-    private async void subscribe() {
+    private async void subscribe() throws Error {
         if (subscribe_socket != null) {
             return;
         }
@@ -173,7 +173,7 @@ public class Sway : Object {
         ipc.send(subscribe_socket.output_stream, PayloadType.MESSAGE_SUBSCRIBE, "[ \"workspace\", \"window\" ]");
         while (true) {
             var result = yield ipc.receive_async(subscribe_socket.input_stream);
-            handle_event(result);
+            yield handle_event(result);
         }
     }
 
