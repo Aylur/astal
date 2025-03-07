@@ -1,30 +1,4 @@
 namespace AstalSway {
-public enum NodeType {
-    ROOT,
-    WORKSPACE,
-    CONTAINER,
-    WINDOW,
-    OUTPUT,
-    SCRATCHPAD
-}
-
-public struct Rectangle {
-    public static Rectangle from_json(Json.Object obj) {
-        return Rectangle() {
-            x = (int)obj.get_int_member("x"),
-            y = (int)obj.get_int_member("y"),
-            width = (int)obj.get_int_member("width"),
-            height = (int)obj.get_int_member("height"),
-        };
-
-    }
-
-    public int x;
-    public int y;
-    public int width;
-    public int height;
-}
-
 public class Node : Object {
     public int id {get; private set; }
     public bool urgent { get; private set; }

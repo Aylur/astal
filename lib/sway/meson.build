@@ -49,6 +49,7 @@ sources = [config] + files(
   'window.vala',
   'sway.vala',
   'ipc.vala',
+  'structs.vala',
 )
 
 if get_option('lib')

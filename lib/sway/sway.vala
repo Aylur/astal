@@ -3,7 +3,6 @@ public Sway get_default() {
     return Sway.get_default();
 }
 
-
 public class Sway : Object {
     private static Sway _instance;
     private Ipc ipc;
