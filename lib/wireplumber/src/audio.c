@@ -263,7 +263,7 @@ GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
  *
- * the endpoint with the given id
+ * the node with the given id
  *
  * Returns: (transfer none) (nullable)
  */
@@ -394,6 +394,13 @@ static void astal_wp_audio_object_removed(AstalWpAudio *self, gpointer object) {
     }
 }
 
+/**
+ * astal_wp_audio_new
+ *
+ * creates a new Audio object. You should use [property@AstalWp.Wp:audio] instead
+ *
+ * Returns: (transfer full)
+ */
 AstalWpAudio *astal_wp_audio_new(AstalWpWp *wp) {
     AstalWpAudio *self = g_object_new(ASTAL_WP_TYPE_AUDIO, NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);

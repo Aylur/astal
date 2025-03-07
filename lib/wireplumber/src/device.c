@@ -175,7 +175,7 @@ gint astal_wp_device_get_input_route_id(AstalWpDevice *self) { return self->inpu
  * gets the currently active output route of this device
  *
  */
-gint astal_wp_device_get_ouput_route_id(AstalWpDevice *self) { return self->output_route_id; }
+gint astal_wp_device_get_output_route_id(AstalWpDevice *self) { return self->output_route_id; }
 
 /**
  * astal_wp_device_get_route:
@@ -193,6 +193,14 @@ AstalWpRoute *astal_wp_device_get_route(AstalWpDevice *self, gint id) {
     return g_hash_table_lookup(priv->routes, GINT_TO_POINTER(id));
 }
 
+
+/**
+ * astal_wp_device_set_route:
+ * @self: The AstalWpDevice object
+ * @card_device: card device index
+ *
+ * sets the route for this device. You should use the [method@AstalWp.Endpoint.set_route] instead.
+ */
 void astal_wp_device_set_route(AstalWpDevice *self, AstalWpRoute *route, guint card_device) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
     WpSpaPodBuilder *builder = wp_spa_pod_builder_new_object("Spa:Pod:Object:Param:Route", "Route");

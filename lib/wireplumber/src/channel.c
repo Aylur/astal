@@ -25,6 +25,11 @@ static GParamSpec *astal_wp_channel_properties[ASTAL_WP_CHANNEL_N_PROPERTIES] = 
     NULL,
 };
 
+/**
+ * astal_wp_channel_set_volume:
+ *
+ * sets the volume for this channel. Note that if [property@AstalWp.Node:lock-channels] is true for the node this channel is associated with, this method will set the volume for all channels.
+ */
 void astal_wp_channel_set_volume(AstalWpChannel *self, gdouble volume) {
     astal_wp_node_set_channel_volume(self->node, self->name, volume);
 }
@@ -45,6 +50,11 @@ void astal_wp_channel_update_volume(AstalWpChannel *self, gdouble volume) {
  */
 const gchar *astal_wp_channel_get_name(AstalWpChannel *self) { return self->name; }
 
+/**
+ * astal_wp_channel_get_volume:
+ *
+ * the volume of the channel
+ */
 gdouble astal_wp_channel_get_volume(AstalWpChannel *self) { return self->volume; }
 
 const gchar *astal_wp_channel_get_volume_icon(AstalWpChannel *self) {

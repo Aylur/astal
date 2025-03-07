@@ -17,10 +17,10 @@ AstalWpDevice* astal_wp_endpoint_get_device(AstalWpEndpoint* self);
 gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint* self);
 void astal_wp_endpoint_set_is_default(AstalWpEndpoint* self, gboolean is_default);
 
-guint astal_wp_endpoint_get_active_route_id(AstalWpEndpoint* self);
-void astal_wp_endpoint_set_active_route_id(AstalWpEndpoint* self, guint route_id);
-AstalWpRoute* astal_wp_endpoint_get_active_route(AstalWpEndpoint* self);
-void astal_wp_endpoint_set_active_route(AstalWpEndpoint* self, AstalWpRoute* route);
+guint astal_wp_endpoint_get_route_id(AstalWpEndpoint* self);
+void astal_wp_endpoint_set_route_id(AstalWpEndpoint* self, guint route_id);
+AstalWpRoute* astal_wp_endpoint_get_route(AstalWpEndpoint* self);
+void astal_wp_endpoint_set_route(AstalWpEndpoint* self, AstalWpRoute* route);
 GList* astal_wp_endpoint_get_routes(AstalWpEndpoint* self);
 
 G_END_DECLS

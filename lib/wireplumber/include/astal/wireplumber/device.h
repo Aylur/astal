@@ -24,7 +24,7 @@ void astal_wp_device_set_active_profile_id(AstalWpDevice *self, int profile_id);
 gint astal_wp_device_get_active_profile_id(AstalWpDevice *self);
 
 gint astal_wp_device_get_input_route_id(AstalWpDevice *self);
-gint astal_wp_device_get_ouput_route_id(AstalWpDevice *self);
+gint astal_wp_device_get_output_route_id(AstalWpDevice *self);
 AstalWpRoute *astal_wp_device_get_route(AstalWpDevice *self, gint id);
 void astal_wp_device_set_route(AstalWpDevice *self, AstalWpRoute *route, guint card_device);
 GList *astal_wp_device_get_routes(AstalWpDevice *self);

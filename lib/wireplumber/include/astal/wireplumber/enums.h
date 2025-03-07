@@ -56,7 +56,7 @@ typedef enum {
     ASTAL_WP_MEDIA_ROLE_NOTIFICATION,  /*< nick=Notification >*/
     ASTAL_WP_MEDIA_ROLE_DSP,           /*< nick=DSP >*/
     ASTAL_WP_MEDIA_ROLE_PRODUCTION,    /*< nick=Production >*/
-    ASTAL_WP_MEDIA_ROLE_ACCESSABILITY, /*< nick=Accessability >*/
+    ASTAL_WP_MEDIA_ROLE_ACCESSIBILITY, /*< nick=Accessibility >*/
     ASTAL_WP_MEDIA_ROLE_TEST,          /*< nick=Test >*/
 } AstalWpMediaRole;
 

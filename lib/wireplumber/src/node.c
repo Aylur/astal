@@ -136,6 +136,11 @@ static void astal_wp_node_mixer_changed(AstalWpNode *self, guint node_id) {
 void astal_wp_node_set_channel_volume(AstalWpNode *self, const gchar *name, gdouble volume) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
+    if (priv->lock_channels) {
+        astal_wp_node_set_volume(self, volume);
+        return;
+    }
+
     gboolean ret;
     if (volume >= 1.5) volume = 1.5;
     if (volume <= 0) volume = 0;
@@ -356,6 +361,11 @@ gboolean astal_wp_node_get_lock_channels(AstalWpNode *self) {
     return priv->lock_channels;
 }
 
+/**
+ * astal_wp_node_set_lock_channels:
+ *
+ * Lock the channel volumes together. If set, all channels will always have the same volume.
+ */
 void astal_wp_node_set_lock_channels(AstalWpNode *self, gboolean lock_channels) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
     priv->lock_channels = lock_channels;
