@@ -530,7 +530,11 @@ static void astal_river_output_finalize(GObject* object) {
     wl_display_roundtrip(priv->wl_display);
 
     g_free(self->layout_name);
+    g_free(self->focused_view);
     g_free(self->name);
+    g_free(self->description);
+    g_free(self->make);
+    g_free(self->model);
 
     G_OBJECT_CLASS(astal_river_output_parent_class)->finalize(object);
 }
