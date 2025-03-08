@@ -52,5 +52,7 @@
       import ./nix/devshell.nix {
         inherit pkgs self;
       });
+
+    formatter = perSystem (pkgs: pkgs.alejandra);
   };
 }
