@@ -1,9 +1,6 @@
-{
-  self,
-  pkgs,
-}: let
+pkgs: let
   inherit (builtins) removeAttrs concatStringsSep map attrValues;
-  packages = attrValues (removeAttrs self.packages.${pkgs.system} ["default" "docs" "gjs"]);
+  packages = attrValues (removeAttrs pkgs.astalLibs ["default" "docs" "gjs"]);
 
   cp = pkg: ''
     doc="${pkg.doc}/share/doc"
