@@ -1,23 +1,30 @@
 {
+  inputs = {
+    systems.url = "github:nix-systems/default-linux";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  };
+
   outputs = {
     self,
+    systems,
     nixpkgs,
   }: let
-    forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux"];
+    perSystem = attrs:
+      nixpkgs.lib.genAttrs (import systems) (system:
+        attrs (import nixpkgs {inherit system;}));
   in {
     lib = {
       mkLuaPackage = import ./nix/lua.nix self;
     };
 
-    packages = forAllSystems (system: let
-      pkgs = nixpkgs.legacyPackages.${system};
+    packages = perSystem (pkgs: let
       mkPkg = src:
         import src {
           inherit self pkgs;
           mkAstalPkg = import ./nix/mkAstalPkg.nix pkgs;
         };
     in {
-      default = self.packages.${system}.io;
+      default = self.packages.${pkgs.system}.io;
       docs = import ./docs {inherit self pkgs;};
 
       io = mkPkg ./lib/astal/io;
@@ -41,14 +48,9 @@
       gjs = import ./lang/gjs {inherit self pkgs;};
     });
 
-    devShells = forAllSystems (system:
+    devShells = perSystem (pkgs:
       import ./nix/devshell.nix {
-        inherit self;
-        pkgs = nixpkgs.legacyPackages.${system};
+        inherit pkgs self;
       });
-  };
-
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 }
