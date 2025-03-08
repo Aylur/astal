@@ -1,12 +1,9 @@
-{
-  self,
-  pkgs,
-}: let
+pkgs: let
   lua = pkgs.lua.withPackages (ps: [
     ps.lgi
     (ps.luaPackages.toLuaModule (pkgs.stdenv.mkDerivation {
       name = "astal";
-      src = "${self}/lang/lua/astal";
+      src = ../lang/lua/astal;
       dontBuild = true;
       installPhase = ''
         mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
@@ -68,7 +65,11 @@ in {
       buildInputs
       ++ lsp
       ++ builtins.attrValues (
-        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
+        builtins.removeAttrs pkgs.astal [
+          "buildAstalModule"
+          "docs"
+          "source"
+        ]
       );
   };
 }
