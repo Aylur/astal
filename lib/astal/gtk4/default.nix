@@ -1,13 +1,13 @@
 {
   mkAstalPkg,
   pkgs,
-  self,
+  ...
 }:
 mkAstalPkg {
   pname = "astal4";
   src = ./.;
   packages = [
-    self.packages.${pkgs.system}.io
+    pkgs.astal.io
     pkgs.gtk4
     pkgs.gtk4-layer-shell
   ];
