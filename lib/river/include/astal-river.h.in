@@ -12,6 +12,7 @@
 
 G_BEGIN_DECLS
 
+GType astal_river_transform_get_type();
 #define ASTAL_RIVER_TYPE_TRANSFORM (astal_river_transform_get_type())
 
 typedef enum {
