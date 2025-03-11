@@ -8,7 +8,8 @@ srcs = files(
   'route.c',
   'video.c',
   'wireplumber.c',
-  'channel.c'
+  'channel.c',
+  'enums.c'
 )
 
 deps = [
@@ -53,7 +54,7 @@ pkg_config_name = 'astal-wireplumber-' + lib_so_version
 if get_option('introspection')
   gir = gnome.generate_gir(
     astal_wireplumber_lib,
-    sources: srcs + astal_wireplumber_headers + astal_wireplumber_subheaders,
+    sources: srcs + astal_wireplumber_headers + astal_wireplumber_subheaders + enums[1],
     nsversion: '0.1',
     namespace: 'AstalWp',
     symbol_prefix: 'astal_wp',

@@ -3,14 +3,11 @@
 #include <wp/wp.h>
 
 #include "astal-wp-enum-types.h"
+#include "enums.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "profile.h"
 #include "route.h"
-#include "wp/iterator.h"
-#include "wp/port.h"
-#include "wp/spa-pod.h"
-#include "wp/spa-type.h"
 
 struct _AstalWpDevice {
     GObject parent_instance;
@@ -192,7 +189,6 @@ AstalWpRoute *astal_wp_device_get_route(AstalWpDevice *self, gint id) {
 
     return g_hash_table_lookup(priv->routes, GINT_TO_POINTER(id));
 }
-
 
 /**
  * astal_wp_device_set_route:
@@ -489,12 +485,9 @@ static void astal_wp_device_update_properties(AstalWpDevice *self) {
     }
 
     const gchar *type = wp_pipewire_object_get_property(pwo, "media.class");
-    GEnumClass *media_class_enum = g_type_class_ref(ASTAL_WP_TYPE_DEVICE_TYPE);
-    GEnumValue *media_class_value = g_enum_get_value_by_nick(media_class_enum, type);
-    g_type_class_unref(media_class_enum);
-
-    if (media_class_value != NULL && (AstalWpDeviceType)media_class_value->value != self->type) {
-        self->type = media_class_value->value;
+    AstalWpDeviceType device_type = astal_wp_device_type_from_string(type);
+    if (device_type != self->type) {
+        self->type = device_type;
         g_object_notify(G_OBJECT(self), "device-type");
     }
 

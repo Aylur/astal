@@ -4,6 +4,7 @@
 
 #include "astal-wp-enum-types.h"
 #include "device.h"
+#include "enums.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
@@ -154,7 +155,8 @@ void astal_wp_endpoint_set_route_id(AstalWpEndpoint *self, guint route_id) {
  * astal_wp_endpoint_get_routes:
  *
  * Gets a list of available routes.
- * This list is filtered and contains only routes, that are actually available. You can get a full list of routes from [property@AstalWp.Device:routes]
+ * This list is filtered and contains only routes, that are actually available. You can get a full
+ * list of routes from [property@AstalWp.Device:routes]
  *
  * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
  */
@@ -302,11 +304,10 @@ static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) 
     AstalWpMediaClass media_class;
     g_object_get(self, "node", &node, "id", &id, "wp", &wp, "media-class", &media_class, NULL);
 
-    GEnumClass *enum_class = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
-    const gchar *media_class_nick = g_enum_get_value(enum_class, media_class)->value_nick;
+    gchar *media_class_nick = astal_wp_media_class_to_string(media_class);
     guint defaultId;
     g_signal_emit_by_name(priv->default_plugin, "get-default-node", media_class_nick, &defaultId);
-    g_type_class_unref(enum_class);
+    g_free(media_class_nick);
 
     if (defaultId != id) {
         AstalWpNode *default_node = astal_wp_wp_get_node(wp, defaultId);
@@ -375,6 +376,7 @@ AstalWpEndpoint *astal_wp_endpoint_new(WpNode *node, WpPlugin *mixer, WpPlugin *
 
     priv->default_node_handler_signal_id = g_signal_connect_swapped(
         priv->default_plugin, "changed", G_CALLBACK(astal_wp_endpoint_default_changed), self);
+    astal_wp_endpoint_default_changed(self);
 
     return self;
 }

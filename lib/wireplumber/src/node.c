@@ -6,11 +6,11 @@
 #include "astal-wp-enum-types.h"
 #include "channel-private.h"
 #include "channel.h"
+#include "enums.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
 #include "wp.h"
-#include "wp/proxy-interfaces.h"
 
 typedef struct {
     WpNode *node;
@@ -637,12 +637,9 @@ void astal_wp_node_properties_changed(AstalWpNode *self) {
     }
 
     value = wp_pipewire_object_get_property(pwo, "media.class");
-    GEnumClass *media_class_enum = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CLASS);
-    GEnumValue *media_class_value = g_enum_get_value_by_nick(media_class_enum, value);
-    g_type_class_unref(media_class_enum);
-
-    if (media_class_value != NULL && (AstalWpMediaClass)media_class_value->value != priv->type) {
-        priv->type = media_class_value->value;
+    AstalWpMediaClass media_class = astal_wp_media_class_from_string(value);
+    if (media_class != priv->type) {
+        priv->type = media_class;
         g_object_notify(G_OBJECT(self), "media-class");
     }
 

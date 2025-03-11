@@ -4,12 +4,12 @@
 
 #include "astal-wp-enum-types.h"
 #include "endpoint.h"
+#include "enums.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "node-private.h"
 #include "node.h"
 #include "wp-private.h"
-#include "wp/node.h"
 
 struct _AstalWpStream {
     AstalWpNode parent_instance;
@@ -157,27 +157,15 @@ static void astal_wp_stream_properties_changed(AstalWpStream *self) {
     if (value == NULL) value = "application-x-executable-symbolic";
     astal_wp_node_set_icon(ASTAL_WP_NODE(self), value);
 
-    AstalWpMediaRole role = ASTAL_WP_MEDIA_ROLE_UNKNOWN;
     value = wp_pipewire_object_get_property(pwo, "media.role");
-    if (value != NULL) {
-        GEnumClass *media_role_enum = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_ROLE);
-        GEnumValue *media_role_value = g_enum_get_value_by_nick(media_role_enum, value);
-        g_type_class_unref(media_role_enum);
-        if (media_role_value != NULL) role = media_role_value->value;
-    }
+    AstalWpMediaRole role = astal_wp_media_role_from_string(value);
     if (role != self->media_role) {
         self->media_role = role;
         g_object_notify(G_OBJECT(self), "media-role");
     }
 
-    AstalWpMediaCategory category = ASTAL_WP_MEDIA_CATEGORY_UNKNOWN;
     value = wp_pipewire_object_get_property(pwo, "media.category");
-    if (value != NULL) {
-        GEnumClass *media_category_enum = g_type_class_ref(ASTAL_WP_TYPE_MEDIA_CATEGORY);
-        GEnumValue *media_category_value = g_enum_get_value_by_nick(media_category_enum, value);
-        g_type_class_unref(media_category_enum);
-        if (media_category_value != NULL) category = media_category_value->value;
-    }
+    AstalWpMediaCategory category = astal_wp_media_category_from_string(value);
     if (category != self->media_category) {
         self->media_category = category;
         g_object_notify(G_OBJECT(self), "media-category");
