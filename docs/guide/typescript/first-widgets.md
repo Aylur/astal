@@ -353,9 +353,9 @@ return <box>
     {num(n => range(n).map(i => (
         <button>
             {i.toString()}
-        <button/>
+        </button>
     )))}
-<box>
+</box>
 ```
 
 :::tip
