@@ -35,7 +35,7 @@ This example shows you how to get a TypeScript+Blueprint+Sass project going.
 - developing
 
     ```sh
-    meson setup build --wipe --prefix "$pwd/result"
+    meson setup build --wipe --prefix "$(pwd)/result"
     meson install -C build
     ./result/bin/simple-bar
     ```
