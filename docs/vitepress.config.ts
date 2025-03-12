@@ -13,28 +13,44 @@ export default defineConfig({
     cleanUrls: true,
 
     lastUpdated: true,
-    ignoreDeadLinks: true, // FIXME:
 
     head: [
-        ["link", { rel: "icon", href: "/astal/favicon.ico" }],
+        ["link", { rel: "icon", href: "/astal/icon.svg" }],
     ],
 
     themeConfig: {
-        // logo: "",
-        //
+        logo: "/icon.svg",
+        outline: "deep",
 
-        nav: [{
-            text: "0.1.0",
-            items: [
-                { text: "Contributing", link: github("/blob/main/CONTRIBUTING.md") },
-                { text: "Changelog", link: github("/blob/main/CHANGELOG.md") },
-            ],
-        }],
+        footer: {
+            message: "Released under the LGPL v2.1 License",
+            copyright: "Logo is created by VDawg",
+        },
+
+        nav: [
+            {
+                text: "Showcases",
+                link: "/showcases",
+                activeMatch: "/showcases/",
+            },
+            {
+                text: "Guide",
+                link: "/guide/getting-started/installation",
+                activeMatch: "/guide/",
+            },
+            {
+                text: "0.1.0",
+                items: [
+                    { text: "Contributing", link: github("/blob/main/CONTRIBUTING.md") },
+                    { text: "Changelog", link: github("/blob/main/CHANGELOG.md") },
+                ],
+            },
+        ],
 
         sidebar: [
             {
                 text: "Getting Started",
-                base: "/getting-started",
+                base: "/guide/getting-started",
                 collapsed: false,
                 items: [
                     { text: "Introduction", link: "/introduction" },
@@ -43,38 +59,63 @@ export default defineConfig({
                 ],
             },
             {
-                text: "AGS",
-                base: "/ags",
-                collapsed: false,
+                text: "TypeScript",
+                base: "/guide/typescript",
+                collapsed: true,
                 items: [
                     { text: "Installation", link: "/installation" },
                     { text: "First Widgets", link: "/first-widgets" },
                     { text: "Theming", link: "/theming" },
                     { text: "CLI and App", link: "/cli-app" },
                     { text: "Widget", link: "/widget" },
-                    { text: "Utilities", link: "/utilities" },
                     { text: "Variable", link: "/variable" },
+                    { text: "Binding", link: "/binding" },
+                    { text: "GObject", link: "/gobject" },
+                    { text: "Utilities", link: "/utilities" },
                     { text: "FAQ", link: "/faq" },
+                    { text: "Examples", link: "/examples" },
+                ],
+            },
+            {
+                text: "Lua",
+                base: "/guide/lua",
+                collapsed: true,
+                items: [
+                    { text: "Installation", link: "/installation" },
+                    { text: "First Widgets", link: "/first-widgets" },
+                    { text: "Theming", link: "/theming" },
+                    { text: "CLI and App", link: "/cli-app" },
+                    { text: "Widget", link: "/widget" },
+                    { text: "Variable", link: "/variable" },
+                    { text: "Binding", link: "/binding" },
+                    // { text: "GObject", link: "/gobject" },
+                    { text: "Utilities", link: "/utilities" },
+                    // { text: "FAQ", link: "/faq" },
+                    { text: "Examples", link: "/examples" },
                 ],
             },
             {
                 text: "Libraries",
                 collapsed: true,
                 items: [
-                    { text: "References", link: "/libraries/references" },
-                    { text: "Astal", link: "https://aylur.github.io/libastal" },
-                    { text: "Apps", link: "/libraries/apps" },
-                    { text: "Auth", link: "/libraries/auth" },
-                    { text: "Battery", link: "/libraries/battery" },
-                    { text: "Bluetooth", link: "/libraries/bluetooth" },
-                    { text: "Hyprland", link: "/libraries/hyprland" },
-                    { text: "Mpris", link: "/libraries/mpris" },
-                    { text: "Network", link: "/libraries/network" },
-                    { text: "Notifd", link: "/libraries/notifd" },
-                    { text: "PowerProfiles", link: "/libraries/powerprofiles" },
-                    { text: "River", link: "/libraries/river" },
-                    { text: "Tray", link: "/libraries/tray" },
-                    { text: "WirePlumber", link: "/libraries/wireplumber" },
+                    { text: "References", link: "/guide/libraries/references" },
+                    { text: "IO", link: "https://aylur.github.io/libastal/io" },
+                    { text: "Astal3", link: "https://aylur.github.io/libastal/astal3" },
+                    // { text: "Astal4", link: "https://aylur.github.io/libastal/astal4" },
+                    { text: "Apps", link: "/guide/libraries/apps" },
+                    { text: "Auth", link: "/guide/libraries/auth" },
+                    { text: "Battery", link: "/guide/libraries/battery" },
+                    { text: "Bluetooth", link: "/guide/libraries/bluetooth" },
+                    { text: "Cava", link: "/guide/libraries/cava" },
+                    { text: "Greet", link: "/guide/libraries/greet" },
+                    { text: "Hyprland", link: "/guide/libraries/hyprland" },
+                    { text: "Mpris", link: "/guide/libraries/mpris" },
+                    { text: "Network", link: "/guide/libraries/network" },
+                    { text: "Notifd", link: "/guide/libraries/notifd" },
+                    { text: "PowerProfiles", link: "/guide/libraries/powerprofiles" },
+                    { text: "River", link: "/guide/libraries/river" },
+                    { text: "Tray", link: "/guide/libraries/tray" },
+                    { text: "WirePlumber", link: "/guide/libraries/wireplumber" },
                 ],
             },
         ],
@@ -95,6 +136,6 @@ export default defineConfig({
 
         search: {
             provider: "local",
-        }
+        },
     },
 })

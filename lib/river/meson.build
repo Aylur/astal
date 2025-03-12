@@ -13,6 +13,9 @@ lib_so_version = version_split[0] + '.' + version_split[1]
 pkg_config = import('pkgconfig')
 gnome = import('gnome')
 
+wayland_glib = subproject('wayland-glib')
+wayland_glib_dep = wayland_glib.get_variable('wayland_glib')
+
 subdir('protocols')
 subdir('include')
 subdir('src')

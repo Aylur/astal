@@ -158,43 +158,43 @@ public class Hyprland : Object {
         out DataInputStream stream
     ) throws Error {
         conn = connection("socket");
-        conn.output_stream.write(message.data, null);
-        stream = new DataInputStream(conn.input_stream);
+        if (conn != null) {
+            conn.output_stream.write(message.data, null);
+            stream = new DataInputStream(conn.input_stream);
+        } else {
+            stream = null;
+            critical("could not write to the Hyprland socket");
+        }
     }
 
     public string message(string message) {
-        SocketConnection conn;
-        DataInputStream stream;
+        SocketConnection? conn;
+        DataInputStream? stream;
         try {
             write_socket(message, out conn, out stream);
-            return stream.read_upto("\x04", -1, null, null);
+            if (stream != null && conn != null) {
+                var res = stream.read_upto("\x04", -1, null, null);
+                conn.close(null);
+                return res;
+            }
         } catch (Error err) {
             critical(err.message);
-        } finally {
-            try {
-                if (conn != null)
-                    conn.close(null);
-            } catch (Error err) {
-                critical(err.message);
-            }
         }
         return "";
     }
 
     public async string message_async(string message) {
-        SocketConnection conn;
-        DataInputStream stream;
+        SocketConnection? conn;
+        DataInputStream? stream;
         try {
             write_socket(message, out conn, out stream);
-            return yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, null);
+            if (stream != null && conn != null) {
+                var res = yield stream.read_upto_async("\x04", -1, Priority.DEFAULT, null, null);
+                conn.close(null);
+                return res;
+            }
         } catch (Error err) {
             critical(err.message);
-        } finally {
-            try {
-                conn.close(null);
-            } catch (Error err) {
-                critical(err.message);
-            }
         }
         return "";
     }
@@ -303,22 +303,35 @@ public class Hyprland : Object {
         }
     }
 
+    private async bool try_add_client(string addr) throws Error {
+        if (addr == "" || get_client(addr) != null) {
+            return true;
+        }
+
+        var client = new Client();
+        _clients.insert(addr, client);
+        yield sync_clients();
+        yield sync_workspaces();
+        client_added(client);
+        notify_property("clients");
+        return false;
+    }
+
     private async void handle_event(string line) throws Error {
         var args = line.split(">>");
 
         switch (args[0]) {
             case "workspacev2":
+                yield sync_workspaces();
+                yield sync_monitors();
                 focused_workspace = get_workspace(int.parse(args[1]));
                 break;
 
             case "focusedmon":
                 var argv = args[1].split(",", 2);
+                yield sync_monitors();
                 focused_monitor = get_monitor_by_name(argv[0]);
                 focused_workspace = get_workspace_by_name(argv[1]);
-                break;
-
-            case "activewindowv2":
-                focused_client = get_client(args[1]);
                 break;
 
             // TODO: nag vaxry for fullscreenv2 that passes address
@@ -363,6 +376,8 @@ public class Hyprland : Object {
             case "moveworkspacev2":
                 yield sync_workspaces();
                 yield sync_monitors();
+                focused_workspace = get_workspace(int.parse(args[1]));
+                notify_property("workspaces");
                 break;
 
             case "renameworkspace":
@@ -379,21 +394,25 @@ public class Hyprland : Object {
                 keyboard_layout(argv[0], argv[1]);
                 break;
 
+            // first event that signals a new client when it opens as an active window
+            case "activewindowv2":
+                yield try_add_client(args[1]);
+                focused_client = get_client(args[1]);
+                break;
+
             case "openwindow":
                 var addr = args[1].split(",")[0];
-                var client = new Client();
-                _clients.insert(addr, client);
-                yield sync_clients();
-                yield sync_workspaces();
-                client_added(client);
-                notify_property("clients");
+                if (yield try_add_client(addr)) {
+                    yield sync_clients();
+                    yield sync_workspaces();
+                }
                 break;
 
             case "closewindow":
                 _clients.get(args[1]).removed();
                 _clients.remove(args[1]);
-                client_removed(args[1]);
                 yield sync_workspaces();
+                client_removed(args[1]);
                 notify_property("clients");
                 break;
 
@@ -425,7 +444,7 @@ public class Hyprland : Object {
                 minimize(get_client(argv[0]), argv[1] == "0");
                 break;
 
-            case "windowtitle":
+            case "windowtitlev2":
                 yield sync_clients();
                 break;
 

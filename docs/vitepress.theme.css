@@ -3,7 +3,7 @@
  */
 
 .VPNavBar .VPNavBarTitle span {
-    font-size: 1.4em;
+    font-size: 1.2em;
     font-weight: bold;
     background: linear-gradient(120deg, var(--vp-c-brand-3), var(--vp-c-brand-1));
     -webkit-background-clip: text;

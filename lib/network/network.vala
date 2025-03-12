@@ -104,14 +104,14 @@ public enum AstalNetwork.Primary {
 
 // alias for NM.State
 public enum AstalNetwork.State {
-    UNKNOWN,
-    ASLEEP,
-    DISCONNECTED,
-    DISCONNECTING,
-    CONNECTING,
-    CONNECTED_LOCAL,
-    CONNECTED_SITE,
-    CONNECTED_GLOBAL;
+    UNKNOWN = 0,
+    ASLEEP = 10,
+    DISCONNECTED = 20,
+    DISCONNECTING = 30,
+    CONNECTING = 40,
+    CONNECTED_LOCAL = 50,
+    CONNECTED_SITE = 60,
+    CONNECTED_GLOBAL = 70;
 
     public string to_string() {
         switch (this) {
@@ -149,19 +149,19 @@ public enum AstalNetwork.Connectivity {
 
 // alias for NM.DeviceState
 public enum AstalNetwork.DeviceState {
-    UNKNOWN,
-    UNMANAGED,
-    UNAVAILABLE,
-    DISCONNECTED,
-    PREPARE,
-    CONFIG,
-    NEED_AUTH,
-    IP_CONFIG,
-    IP_CHECK,
-    SECONDARIES,
-    ACTIVATED,
-    DEACTIVATING,
-    FAILED;
+    UNKNOWN = 0,
+    UNMANAGED = 10,
+    UNAVAILABLE = 20,
+    DISCONNECTED = 30,
+    PREPARE = 40,
+    CONFIG = 50,
+    NEED_AUTH = 60,
+    IP_CONFIG = 70,
+    IP_CHECK = 80,
+    SECONDARIES = 90,
+    ACTIVATED = 100,
+    DEACTIVATING = 110,
+    FAILED = 120;
 
     public string to_string() {
         switch (this) {

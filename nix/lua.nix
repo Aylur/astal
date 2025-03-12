@@ -1,6 +1,6 @@
-defaults: {
-  pkgs ? defaults.pkgs,
-  astal ? defaults.astal,
+self: {
+  pkgs,
+  astal ? self,
   name ? "astal-lua",
   src,
   extraLuaPackages ? (ps: []),
@@ -12,11 +12,11 @@ defaults: {
       ps.lgi
       (ps.luaPackages.toLuaModule (pkgs.stdenvNoCC.mkDerivation {
         name = "astal";
-        src = "${astal}/core/lua";
+        src = "${astal}/lang/lua/astal";
         dontBuild = true;
         installPhase = ''
           mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
-          cp -r astal/* $out/share/lua/${ps.lua.luaversion}/astal
+          cp -r * $out/share/lua/${ps.lua.luaversion}/astal
         '';
       }))
       (ps.luaPackages.toLuaModule (pkgs.stdenvNoCC.mkDerivation {
@@ -46,7 +46,8 @@ in
       extraPackages
       ++ [
         lua
-        astal.packages.${pkgs.system}.default
+        astal.packages.${pkgs.system}.io
+        astal.packages.${pkgs.system}.astal3
       ];
 
     installPhase = ''

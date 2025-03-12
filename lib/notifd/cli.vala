@@ -47,7 +47,7 @@ int main(string[] argv) {
         return 0;
     }
 
-    var notifd = new AstalNotifd.Notifd();
+    var notifd = AstalNotifd.get_default();
 
     if (version) {
         print(AstalNotifd.VERSION);

@@ -30,6 +30,7 @@ typedef struct {
 
     GHashTable *endpoints;
     GHashTable *devices;
+    GHashTable *delayed_endpoints;
 } AstalWpWpPrivate;
 
 G_DEFINE_FINAL_TYPE_WITH_PRIVATE(AstalWpWp, astal_wp_wp, G_TYPE_OBJECT);
@@ -241,11 +242,46 @@ static void astal_wp_wp_set_property(GObject *object, guint property_id, const G
     }
 }
 
+static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+    GList *eps = g_hash_table_get_values(priv->delayed_endpoints);
+
+    for (GList *l = eps; l != NULL; l = l->next) {
+        const gchar *dev =
+            wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(l->data), "device.id");
+        if (dev != NULL) {
+            if (device_id == g_ascii_strtoull(dev, NULL, 10)) {
+                AstalWpEndpoint *endpoint =
+                    astal_wp_endpoint_create(l->data, priv->mixer, priv->defaults, self);
+
+                g_hash_table_insert(priv->endpoints,
+                                    GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(l->data))),
+                                    endpoint);
+                g_hash_table_remove(priv->delayed_endpoints,
+                                    GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(l->data))));
+                g_signal_emit_by_name(self, "endpoint-added", endpoint);
+                g_object_notify(G_OBJECT(self), "endpoints");
+            }
+        }
+    }
+    g_list_free(eps);
+}
+
 static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     if (WP_IS_NODE(object)) {
         WpNode *node = WP_NODE(object);
+        const gchar *dev = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "device.id");
+        if (dev != NULL) {
+            guint device_id = g_ascii_strtoull(dev, NULL, 10);
+            if (!g_hash_table_contains(priv->devices, GUINT_TO_POINTER(device_id))) {
+                g_hash_table_insert(priv->delayed_endpoints,
+                                    GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))), node);
+                return;
+            }
+        }
+
         AstalWpEndpoint *endpoint =
             astal_wp_endpoint_create(node, priv->mixer, priv->defaults, self);
 
@@ -261,6 +297,7 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
                             device);
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
+        astal_wp_wp_check_delayed_endpoints(self, wp_proxy_get_bound_id(WP_PROXY(node)));
     }
 }
 
@@ -390,6 +427,7 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     priv->endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+    priv->delayed_endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
     priv->devices = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 
     wp_init(7);

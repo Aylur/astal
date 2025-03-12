@@ -1,19 +1,18 @@
-namespace AstalMpris {
 [DBus (name="org.freedesktop.DBus")]
-internal interface DBusImpl : DBusProxy {
-    public abstract string[] list_names () throws GLib.Error;
-    public signal void name_owner_changed (string name, string old_owner, string new_owner);
+private interface AstalMpris.DBusImpl : DBusProxy {
+    public abstract string[] list_names() throws GLib.Error;
+    public signal void name_owner_changed(string name, string old_owner, string new_owner);
 }
 
 [DBus (name="org.freedesktop.DBus.Properties")]
-internal interface PropsIface : DBusProxy {
-    public abstract HashTable<string, Variant> get_all (string iface);
+private interface AstalMpris.PropsIface : DBusProxy {
+    public abstract HashTable<string, Variant> get_all(string iface);
 }
 
 [DBus (name="org.mpris.MediaPlayer2")]
-internal interface IMpris : PropsIface {
-    public abstract void raise () throws GLib.Error;
-    public abstract void quit () throws GLib.Error;
+private interface AstalMpris.IMpris : PropsIface {
+    public abstract void raise() throws GLib.Error;
+    public abstract void quit() throws GLib.Error;
 
     public abstract bool can_quit { get; }
     public abstract bool fullscreen { get; set; }
@@ -22,23 +21,23 @@ internal interface IMpris : PropsIface {
     public abstract bool has_track_list { get; }
     public abstract string identity { owned get; }
     public abstract string desktop_entry { owned get; }
-    public abstract string[] supported_uri_schemas { owned get; }
+    public abstract string[] supported_uri_schemes { owned get; }
     public abstract string[] supported_mime_types { owned get; }
 }
 
 [DBus (name="org.mpris.MediaPlayer2.Player")]
-internal interface IPlayer : IMpris {
-    public abstract void next () throws GLib.Error;
-    public abstract void previous () throws GLib.Error;
-    public abstract void pause () throws GLib.Error;
-    public abstract void play_pause () throws GLib.Error;
-    public abstract void stop () throws GLib.Error;
-    public abstract void play () throws GLib.Error;
-    public abstract void seek (int64 offset) throws GLib.Error;
-    public abstract void set_position (ObjectPath track_id, int64 position) throws GLib.Error;
-    public abstract void open_uri (string uri) throws GLib.Error;
+private interface AstalMpris.IPlayer : IMpris {
+    public abstract void next() throws GLib.Error;
+    public abstract void previous() throws GLib.Error;
+    public abstract void pause() throws GLib.Error;
+    public abstract void play_pause() throws GLib.Error;
+    public abstract void stop() throws GLib.Error;
+    public abstract void play() throws GLib.Error;
+    public abstract void seek(int64 offset) throws GLib.Error;
+    public abstract void set_position(ObjectPath track_id, int64 position) throws GLib.Error;
+    public abstract void open_uri(string uri) throws GLib.Error;
 
-    public signal void seeked (int64 position);
+    public signal void seeked(int64 position);
 
     public abstract string playback_status { owned get; }
     public abstract string loop_status { owned get; set; }
@@ -56,5 +55,4 @@ internal interface IPlayer : IMpris {
     public abstract bool can_pause { get; }
     public abstract bool can_seek { get; }
     public abstract bool can_control { get; }
-}
 }

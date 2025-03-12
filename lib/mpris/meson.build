@@ -25,6 +25,7 @@ config = configure_file(
   input: 'config.vala.in',
   output: 'config.vala',
   configuration: {
+    'API_VERSION': api_version,
     'VERSION': meson.project_version(),
     'MAJOR_VERSION': version_split[0],
     'MINOR_VERSION': version_split[1],
@@ -38,34 +39,40 @@ deps = [
   dependency('json-glib-1.0'),
 ]
 
-sources = [
-  config,
+sources = [config] + files(
   'ifaces.vala',
-  'player.vala',
   'mpris.vala',
-]
+  'player.vala',
+)
 
 if get_option('lib')
   lib = library(
     meson.project_name(),
     sources,
     dependencies: deps,
+    vala_args: ['--vapi-comments'],
     vala_header: meson.project_name() + '.h',
     vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-    vala_gir: gir,
     version: meson.project_version(),
     install: true,
-    install_dir: [true, true, true, true],
+    install_dir: [true, true, true],
   )
 
-  import('pkgconfig').generate(
-    lib,
-    name: meson.project_name(),
-    filebase: meson.project_name() + '-' + api_version,
-    version: meson.project_version(),
-    subdirs: meson.project_name(),
-    requires: deps,
-    install_dir: get_option('libdir') / 'pkgconfig',
+  pkgs = []
+  foreach dep : deps
+    pkgs += ['--pkg=' + dep.name()]
+  endforeach
+
+  gir_tgt = custom_target(
+    gir,
+    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
+    + pkgs
+    + sources,
+    input: sources,
+    depends: lib,
+    output: gir,
+    install: true,
+    install_dir: get_option('datadir') / 'gir-1.0',
   )
 
   custom_target(
@@ -78,9 +85,19 @@ if get_option('lib')
     ],
     input: lib,
     output: typelib,
-    depends: lib,
+    depends: [lib, gir_tgt],
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
+  )
+
+  import('pkgconfig').generate(
+    lib,
+    name: meson.project_name(),
+    filebase: meson.project_name() + '-' + api_version,
+    version: meson.project_version(),
+    subdirs: meson.project_name(),
+    requires: deps,
+    install_dir: get_option('libdir') / 'pkgconfig',
   )
 endif
 

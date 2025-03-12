@@ -15,6 +15,9 @@ struct _AstalWpEndpoint {
     gboolean mute;
     gchar *description;
     gchar *name;
+    guint serial;
+    gchar *path;
+
     AstalWpMediaClass type;
     gboolean is_default;
     gboolean lock_channels;
@@ -59,6 +62,8 @@ typedef enum {
     ASTAL_WP_ENDPOINT_PROP_ICON,
     ASTAL_WP_ENDPOINT_PROP_VOLUME_ICON,
     ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS,
+    ASTAL_WP_ENDPOINT_PROP_SERIAL,
+    ASTAL_WP_ENDPOINT_PROP_PATH,
     ASTAL_WP_ENDPOINT_N_PROPERTIES,
 } AstalWpEndpointProperties;
 
@@ -276,6 +281,22 @@ const gchar *astal_wp_endpoint_get_volume_icon(AstalWpEndpoint *self) {
     }
 }
 
+/**
+ * astal_wp_endpoint_get_serial:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the serial number of this endpoint
+ */
+guint astal_wp_endpoint_get_serial(AstalWpEndpoint *self) { return self->serial; }
+
+/**
+ * astal_wp_endpoint_get_path:
+ * @self: the AstalWpEndpoint instance.
+ *
+ * gets the object path of this endpoint
+ */
+const gchar *astal_wp_endpoint_get_path(AstalWpEndpoint *self) { return self->path; }
+
 static void astal_wp_endpoint_get_property(GObject *object, guint property_id, GValue *value,
                                            GParamSpec *pspec) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
@@ -311,6 +332,12 @@ static void astal_wp_endpoint_get_property(GObject *object, guint property_id, G
         case ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS:
             g_value_set_boolean(value, self->lock_channels);
             break;
+        case ASTAL_WP_ENDPOINT_PROP_SERIAL:
+            g_value_set_uint(value, self->serial);
+            break;
+        case ASTAL_WP_ENDPOINT_PROP_PATH:
+            g_value_set_string(value, self->path);
+            break;
         default:
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
@@ -345,7 +372,6 @@ static void astal_wp_endpoint_set_property(GObject *object, guint property_id, c
 }
 
 static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
-    
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
     if (priv->node == NULL) return;
     self->id = wp_proxy_get_bound_id(WP_PROXY(priv->node));
@@ -406,14 +432,28 @@ static void astal_wp_endpoint_update_properties(AstalWpEndpoint *self) {
         default:
             icon = "audio-card-symbolic";
     }
+
     g_free(self->icon);
     self->icon = g_strdup(icon);
+
+    const gchar *serial =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "object.serial");
+    if (serial != NULL) {
+        self->serial = g_ascii_strtoull(serial, NULL, 10);
+    }
+
+    const gchar *path =
+        wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), "object.path");
+    g_free(self->path);
+    self->path = g_strdup(path);
 
     g_object_notify(G_OBJECT(self), "id");
     g_object_notify(G_OBJECT(self), "description");
     g_object_notify(G_OBJECT(self), "name");
     g_object_notify(G_OBJECT(self), "icon");
     g_object_notify(G_OBJECT(self), "media-class");
+    g_object_notify(G_OBJECT(self), "serial");
+    g_object_notify(G_OBJECT(self), "path");
 }
 
 static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) {
@@ -426,7 +466,7 @@ static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) 
     g_type_class_unref(enum_class);
 
     if (defaultId != self->id) {
-        if (priv->node != NULL) g_object_unref(priv->node);
+        if (priv->node != NULL) g_clear_object(&priv->node);
         AstalWpEndpoint *default_endpoint = astal_wp_wp_get_endpoint(priv->wp, defaultId);
         if (default_endpoint != NULL &&
             astal_wp_endpoint_get_media_class(default_endpoint) == priv->media_class) {
@@ -515,6 +555,7 @@ static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
     self->mute = TRUE;
     self->description = NULL;
     self->name = NULL;
+    self->path = NULL;
 }
 
 static void astal_wp_endpoint_dispose(GObject *object) {
@@ -534,6 +575,7 @@ static void astal_wp_endpoint_finalize(GObject *object) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
     g_free(self->description);
     g_free(self->name);
+    g_free(self->path);
 }
 
 static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
@@ -615,6 +657,22 @@ static void astal_wp_endpoint_class_init(AstalWpEndpointClass *class) {
      */
     astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_LOCK_CHANNELS] = g_param_spec_boolean(
         "lock-channels", "lock-channels", "lock channels", FALSE, G_PARAM_READWRITE);
+
+    /**
+     * AstalWpEndpoint:serial:
+     *
+     * The object serial of this endpoint.
+     */
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_SERIAL] =
+        g_param_spec_uint("serial", "serial", "serial", 0, UINT_MAX, 0, G_PARAM_READABLE);
+
+    /**
+     * AstalWpEndpoint:path:
+     *
+     * The object path of this endpoint
+     */
+    astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_PROP_PATH] =
+        g_param_spec_string("path", "path", "path", NULL, G_PARAM_READABLE);
 
     g_object_class_install_properties(object_class, ASTAL_WP_ENDPOINT_N_PROPERTIES,
                                       astal_wp_endpoint_properties);
