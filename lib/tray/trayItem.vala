@@ -209,6 +209,8 @@ public class TrayItem : Object {
                 path
             );
 
+            proxy.g_default_timeout = 1000;
+
             connection_ids.append(proxy.NewStatus.connect(refresh_all_properties));
             connection_ids.append(proxy.NewToolTip.connect(refresh_all_properties));
             connection_ids.append(proxy.NewTitle.connect(refresh_all_properties));
