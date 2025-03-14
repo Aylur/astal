@@ -25,6 +25,7 @@ public class AstalHyprland.Monitor : Object {
     public bool vrr { get; private set; }
     public bool actively_tearing { get; private set; }
     public bool disabled { get; private set; }
+    public Monitor? mirror_of {get; private set; }
     public string current_format { get; private set; }
     public Array<string> available_modes { get; private set; }
 
@@ -61,6 +62,14 @@ public class AstalHyprland.Monitor : Object {
         foreach (var mode in obj.get_array_member("availableModes").get_elements())
             modes.append_val(mode.get_string());
 
+        // use "none" as default as hpyrland uses this for not mirrored
+        var mirror_id = obj.get_string_member_with_default("mirrorOf", "none");
+        if (mirror_id == "none") {
+            mirror_of = null;
+        }
+        else {
+            mirror_of = hyprland.get_monitor(int.parse(mirror_id));
+        }
         active_workspace = hyprland.get_workspace((int)obj.get_object_member("activeWorkspace").get_int_member("id"));
         special_workspace = hyprland.get_workspace((int)obj.get_object_member("specialWorkspace").get_int_member("id"));
     }
