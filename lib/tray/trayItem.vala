@@ -147,7 +147,7 @@ internal interface IItem : DBusProxy {
 
 public class TrayItem : Object {
     private IItem proxy;
-    private List<ulong> connection_ids;
+    private bool needs_update = false;
 
 
     /** The Title of the TrayItem */
@@ -267,7 +267,6 @@ public class TrayItem : Object {
     public signal void ready();
 
     internal TrayItem(string service, string path) {
-        connection_ids = new List<ulong>();
         item_id = service + path;
         setup_proxy.begin(service, path, (_, res) => setup_proxy.end(res));
     }
@@ -280,14 +279,7 @@ public class TrayItem : Object {
                 path
             );
 
-            connection_ids.append(proxy.g_signal.connect(handle_signal));
-
-            proxy.notify["g-name-owner"].connect(() => {
-                if (proxy.g_name_owner == null) {
-                    foreach (var id in connection_ids)
-                        SignalHandler.disconnect(proxy, id);
-                }
-            });
+            proxy.g_signal.connect(handle_signal);
 
             yield refresh_all_properties();
             ready();
@@ -302,9 +294,9 @@ public class TrayItem : Object {
                 gicon = new GLib.FileIcon(GLib.File.new_for_path(icon_name));
             }
             else if(icon_theme_path != null && icon_theme_path != "") {
-                gicon = new GLib.FileIcon(GLib.File.new_for_path(
-                    find_icon_in_theme(icon_name, icon_theme_path)
-                ));
+                string path = find_icon_in_theme(icon_name, icon_theme_path);
+                if(path != null) gicon = new GLib.FileIcon(GLib.File.new_for_path(path));
+                else gicon = new GLib.ThemedIcon(icon_name);
             } else {
                 gicon = new GLib.ThemedIcon(icon_name);
             }
@@ -318,79 +310,136 @@ public class TrayItem : Object {
     }
 
     private void handle_signal(DBusProxy proxy, string? sender_name, string signal_name, Variant parameters) {
-      //TODO debounce signals
-      refresh_all_properties();
+      if (needs_update) return;
+      needs_update = true;
+      GLib.Timeout.add_once(30, () => {
+          needs_update = false;
+          refresh_all_properties();
+      });
     }
+
 
     private void set_property(string prop_name, Variant prop_value) {
         try {
             switch(prop_name) {
-                case "Category":
-                    category = Category.from_string(prop_value.get_string());
-                    break;
-                case "Id":
-                    id = prop_value.get_string();
-                    break;
-                case "Title":
-                    title = prop_value.get_string();
-                    break;
-                case "Status":
-                    status = Status.from_string(prop_value.get_string());
-                    break;
-                case "ToolTip":
-                    tooltip = Tooltip.from_variant(prop_value);
-                    break;
-                case "IconThemePath":
-                    icon_theme_path = prop_value.get_string();
-                    break;
-                case "ItemIsMenu":
-                    is_menu = prop_value.get_boolean();
-                    break;
-                case "Menu":
-                    if(!prop_value.is_of_type(VariantType.OBJECT_PATH)) break;
-                    menu_path = (ObjectPath) prop_value.get_string();
-                    if (menu_path != null) { 
-                        this.menu_importer = new DBusMenu.Importer(proxy.get_name_owner(), menu_path);
-                        this.menu_importer.notify["model"].connect(() => {
-                            notify_property("menu-model");
-                            notify_property("action-group");
-                        });
-                    } else {
-                        this.menu_importer = null;
-                        notify_property("menu-model");
-                        notify_property("action-group");
+                case "Category": {
+                    var new_category = Category.from_string(prop_value.get_string());
+                    if (category != new_category) {
+                        category = new_category;
                     }
                     break;
-                case "IconName":
-                    IconName = prop_value.get_string();
-                    this.notify_property("icon-name");
+                }
+                case "Id": {
+                    var new_id = prop_value.get_string();
+                    if (id != new_id) {
+                        id = new_id;
+                    }
                     break;
-                case "IconPixmap":
+                }
+                case "Title": {
+                    var new_title = prop_value.get_string();
+                    if (title != new_title) {
+                        title = new_title;
+                    }
+                    break;
+                }
+                case "Status": {
+                    var new_status = Status.from_string(prop_value.get_string());
+                    if (status != new_status) {
+                        status = new_status;
+                        update_gicon();
+                    }
+                    break;
+                }
+                case "ToolTip": {
+                    tooltip = Tooltip.from_variant(prop_value);
+                    break;
+                }
+                case "IconThemePath": {
+                    var new_path = prop_value.get_string();
+                    if (icon_theme_path != new_path) {
+                        icon_theme_path = new_path;
+                    }
+                    break;
+                }
+                case "ItemIsMenu": {
+                    var new_is_menu = prop_value.get_boolean();
+                    if (is_menu != new_is_menu) {
+                        is_menu = new_is_menu;
+                    }
+                    break;
+                }
+                case "Menu": {
+                    if(!prop_value.is_of_type(VariantType.OBJECT_PATH)) break;
+                    var new_menu_path = (ObjectPath) prop_value.get_string();
+                    if (new_menu_path != menu_path) {
+                        menu_path = new_menu_path;
+                        if (menu_path != null) { 
+                            this.menu_importer = new DBusMenu.Importer(proxy.get_name_owner(), menu_path);
+                            this.menu_importer.notify["model"].connect(() => {
+                                notify_property("menu-model");
+                                notify_property("action-group");
+                            });
+                        } else {
+                            this.menu_importer = null;
+                            notify_property("menu-model");
+                            notify_property("action-group");
+                        }
+                    }
+                    break;
+                }
+                case "IconName": {
+                    var new_icon_name = prop_value.get_string();
+                    if (IconName != new_icon_name) {
+                        IconName = new_icon_name;
+                        notify_property("icon-name");
+                        update_gicon();
+                    }
+                    break;
+                }
+                case "IconPixmap": {
                     IconPixmap = Pixmap.array_from_variant(prop_value);
-                    this.notify_property("icon-name");
+                    update_gicon();
+                    notify_property("icon-pixbuf");
                     break;
-                case "AttentionIconName":
-                    AttentionIconName = prop_value.get_string();
-                    this.notify_property("icon-name");
+                }
+                case "AttentionIconName": {
+                    var new_attention_icon_name = prop_value.get_string();
+                    if (AttentionIconName != new_attention_icon_name) {
+                        AttentionIconName = new_attention_icon_name;
+                        update_gicon();
+                        notify_property("icon-name");
+                    }
                     break;
-                case "AttentionIconPixmap":
+                }
+                case "AttentionIconPixmap": {
                     AttentionIconPixmap = Pixmap.array_from_variant(prop_value);
-                    this.notify_property("icon-name");
+                    update_gicon();
+                    notify_property("icon-pixbuf");
                     break;
-                case "OverlayIconName":
-                    OverlayIconName = prop_value.get_string();
-                    this.notify_property("icon-name");
+                }
+                case "OverlayIconName": {
+                    var new_overlay_icon_name = prop_value.get_string();
+                    if (OverlayIconName != new_overlay_icon_name) {
+                        OverlayIconName = new_overlay_icon_name;
+                        update_gicon();
+                        notify_property("icon-name");
+                    }
                     break;
-                case "OverlayIconPixmap":
+                }
+                case "OverlayIconPixmap": {
                     OverlayIconPixmap = Pixmap.array_from_variant(prop_value);
-                    this.notify_property("icon-name");
+                    update_gicon();
+                    notify_property("icon-pixbuf");
                     break;
+                }
             }
         }
         catch(Error e) {
-          //silently ignore
+            //silently ignore
         }
     }
+
 
     private async void refresh_all_properties() {
       this.freeze_notify();
@@ -415,14 +464,12 @@ public class TrayItem : Object {
           while (prop_iter.next ("{sv}", out prop_key, out prop_value)) {
               set_property(prop_key, prop_value);
           }
-
-          update_gicon();
-
       }
       catch(Error e) {
         //silently ignode
       }
       this.thaw_notify();
+      this.changed();
     }
 
     /**
