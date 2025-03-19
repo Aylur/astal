@@ -1,0 +1,5 @@
+option(
+  'lib',
+  type: 'boolean',
+  value: true,
+)
