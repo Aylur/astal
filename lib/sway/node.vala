@@ -10,9 +10,9 @@ public class Node : Object {
     public Rectangle deco_rect { get; private set; }
     public NodeType node_type { get; protected set;}
 
-    public weak Node parent;
+    public weak Node parent { get; private set; }
 
-    public List<weak Node> nodes;
+    public unowned List<weak Node> nodes { get; private set; }
     public List<weak Window> windows { owned get {
         var arr = new List<weak Window> ();
         foreach (var node in nodes) {

@@ -37,14 +37,15 @@ public class Sway : Object {
         });
     }
 
-    public Workspace focused_workspace;
-    public Output focused_output;
-    public Container? focused_container;
+    public Workspace focused_workspace { get; private set; }
+    public Output focused_output { get; private set; }
+    public Container? focused_container { get; private set; }
 
     private static HashTable<int, Node> _nodes =
             new HashTable<int, Node>(i => i, (a,b) => a==b);
     
     public List<weak Node> nodes { owned get { return _nodes.get_values(); } }
+    public List<weak Node> node_test { owned get { return nodes; } }
     
     private HashTable<string, Workspace> _workspaces =
             new HashTable<string, Workspace>(str_hash, str_equal);
