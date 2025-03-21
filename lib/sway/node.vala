@@ -91,6 +91,7 @@ public class Node : Object {
 
         var arr = obj.get_array_member("nodes");
         var arr2 = obj.get_array_member("floating_nodes");
+        nodes = new List<weak Node>();
         sync_nodes(arr);
         sync_nodes(arr2);
         
@@ -115,7 +116,7 @@ public class Node : Object {
          node.sync(obj);
         }
 
-        nodes = (owned) new_nodes;
+        nodes.concat((owned) new_nodes);
     }
 
     public virtual void focus() {
