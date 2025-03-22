@@ -5,6 +5,8 @@
 #include "device.h"
 #include "endpoint.h"
 #include "glib-object.h"
+#include "node.h"
+#include "stream.h"
 #include "wp.h"
 
 struct _AstalWpAudio {
@@ -71,9 +73,9 @@ static GParamSpec *astal_wp_audio_properties[ASTAL_WP_AUDIO_N_PROPERTIES] = {
 AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER)
+        return ASTAL_WP_ENDPOINT(node);
     return NULL;
 }
 
@@ -89,9 +91,9 @@ AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id) {
 AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE)
+        return ASTAL_WP_ENDPOINT(node);
     return NULL;
 }
 
@@ -104,12 +106,12 @@ AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
  *
  * Returns: (transfer none) (nullable)
  */
-AstalWpEndpoint *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
+AstalWpStream *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER)
+        return ASTAL_WP_STREAM(node);
     return NULL;
 }
 
@@ -122,12 +124,12 @@ AstalWpEndpoint *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
  *
  * Returns: (transfer none) (nullable)
  */
-AstalWpEndpoint *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
+AstalWpStream *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM)
+        return ASTAL_WP_STREAM(node);
     return NULL;
 }
 
@@ -156,15 +158,15 @@ AstalWpDevice *astal_wp_audio_get_device(AstalWpAudio *self, guint id) {
  */
 GList *astal_wp_audio_get_microphones(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *mics = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
-            mics = g_list_append(mics, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
+            mics = g_list_append(mics, ASTAL_WP_ENDPOINT(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return mics;
 }
 
@@ -178,15 +180,15 @@ GList *astal_wp_audio_get_microphones(AstalWpAudio *self) {
  */
 GList *astal_wp_audio_get_speakers(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *speakers = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER) {
-            speakers = g_list_append(speakers, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER) {
+            speakers = g_list_append(speakers, ASTAL_WP_ENDPOINT(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return speakers;
 }
 
@@ -196,19 +198,19 @@ GList *astal_wp_audio_get_speakers(AstalWpAudio *self) {
  *
  * a GList containing the recorders
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
+ * Returns: (transfer container) (nullable) (type GList(AstalWpStream))
  */
 GList *astal_wp_audio_get_recorders(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *recorders = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER) {
-            recorders = g_list_append(recorders, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER) {
+            recorders = g_list_append(recorders, ASTAL_WP_STREAM(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return recorders;
 }
 
@@ -218,19 +220,19 @@ GList *astal_wp_audio_get_recorders(AstalWpAudio *self) {
  *
  * a GList containing the streams
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
+ * Returns: (transfer container) (nullable) (type GList(AstalWpStream))
  */
 GList *astal_wp_audio_get_streams(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *streams = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM) {
-            streams = g_list_append(streams, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM) {
+            streams = g_list_append(streams, ASTAL_WP_STREAM(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return streams;
 }
 
@@ -257,19 +259,19 @@ GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
 }
 
 /**
- * astal_wp_audio_get_endpoint:
+ * astal_wp_audio_get_node:
  * @self: the AstalWpAudio object
  * @id: the id of the endpoint
  *
- * the endpoint with the given id
+ * the node with the given id
  *
  * Returns: (transfer none) (nullable)
  */
-AstalWpEndpoint *astal_wp_audio_get_endpoint(AstalWpAudio *self, guint id) {
+AstalWpNode *astal_wp_audio_get_node(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    return node;
 }
 
 /**
@@ -345,22 +347,22 @@ static void astal_wp_audio_device_removed(AstalWpAudio *self, gpointer object) {
 }
 
 static void astal_wp_audio_object_added(AstalWpAudio *self, gpointer object) {
-    AstalWpEndpoint *endpoint = ASTAL_WP_ENDPOINT(object);
-    switch (astal_wp_endpoint_get_media_class(endpoint)) {
+    AstalWpNode *node = ASTAL_WP_NODE(object);
+    switch (astal_wp_node_get_media_class(node)) {
         case ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE:
-            g_signal_emit_by_name(self, "microphone-added", endpoint);
+            g_signal_emit_by_name(self, "microphone-added", node);
             g_object_notify(G_OBJECT(self), "microphones");
             break;
         case ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER:
-            g_signal_emit_by_name(self, "speaker-added", endpoint);
+            g_signal_emit_by_name(self, "speaker-added", node);
             g_object_notify(G_OBJECT(self), "speakers");
             break;
         case ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM:
-            g_signal_emit_by_name(self, "stream-added", endpoint);
+            g_signal_emit_by_name(self, "stream-added", node);
             g_object_notify(G_OBJECT(self), "streams");
             break;
         case ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER:
-            g_signal_emit_by_name(self, "recorder-added", endpoint);
+            g_signal_emit_by_name(self, "recorder-added", node);
             g_object_notify(G_OBJECT(self), "recorders");
             break;
         default:
@@ -369,22 +371,22 @@ static void astal_wp_audio_object_added(AstalWpAudio *self, gpointer object) {
 }
 
 static void astal_wp_audio_object_removed(AstalWpAudio *self, gpointer object) {
-    AstalWpEndpoint *endpoint = ASTAL_WP_ENDPOINT(object);
-    switch (astal_wp_endpoint_get_media_class(endpoint)) {
+    AstalWpNode *node = ASTAL_WP_NODE(object);
+    switch (astal_wp_node_get_media_class(node)) {
         case ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE:
-            g_signal_emit_by_name(self, "microphone-removed", endpoint);
+            g_signal_emit_by_name(self, "microphone-removed", node);
             g_object_notify(G_OBJECT(self), "microphones");
             break;
         case ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER:
-            g_signal_emit_by_name(self, "speaker-removed", endpoint);
+            g_signal_emit_by_name(self, "speaker-removed", node);
             g_object_notify(G_OBJECT(self), "speakers");
             break;
         case ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM:
-            g_signal_emit_by_name(self, "stream-removed", endpoint);
+            g_signal_emit_by_name(self, "stream-removed", node);
             g_object_notify(G_OBJECT(self), "streams");
             break;
         case ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER:
-            g_signal_emit_by_name(self, "recorder-removed", endpoint);
+            g_signal_emit_by_name(self, "recorder-removed", node);
             g_object_notify(G_OBJECT(self), "recorders");
             break;
         default:
@@ -392,15 +394,21 @@ static void astal_wp_audio_object_removed(AstalWpAudio *self, gpointer object) {
     }
 }
 
+/**
+ * astal_wp_audio_new
+ *
+ * creates a new Audio object. You should use [property@AstalWp.Wp:audio] instead
+ *
+ * Returns: (transfer full)
+ */
 AstalWpAudio *astal_wp_audio_new(AstalWpWp *wp) {
     AstalWpAudio *self = g_object_new(ASTAL_WP_TYPE_AUDIO, NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     priv->wp = g_object_ref(wp);
 
-    g_signal_connect_swapped(priv->wp, "endpoint-added", G_CALLBACK(astal_wp_audio_object_added),
+    g_signal_connect_swapped(priv->wp, "node-added", G_CALLBACK(astal_wp_audio_object_added), self);
+    g_signal_connect_swapped(priv->wp, "node-removed", G_CALLBACK(astal_wp_audio_object_removed),
                              self);
-    g_signal_connect_swapped(priv->wp, "endpoint-removed",
-                             G_CALLBACK(astal_wp_audio_object_removed), self);
     g_signal_connect_swapped(priv->wp, "device-added", G_CALLBACK(astal_wp_audio_device_added),
                              self);
     g_signal_connect_swapped(priv->wp, "device-removed", G_CALLBACK(astal_wp_audio_device_removed),
@@ -413,10 +421,12 @@ static void astal_wp_audio_dispose(GObject *object) {
     AstalWpAudio *self = ASTAL_WP_AUDIO(object);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     g_clear_object(&priv->wp);
+
+    G_OBJECT_CLASS(astal_wp_audio_parent_class)->dispose(object);
 }
 
 static void astal_wp_audio_init(AstalWpAudio *self) {
-    AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
+    // AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 }
 
 static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
@@ -439,16 +449,16 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_SPEAKERS] =
         g_param_spec_pointer("speakers", "speakers", "speakers", G_PARAM_READABLE);
     /**
-     * AstalWpAudio:recorders: (type GList(AstalWpEndpoint)) (transfer container)
+     * AstalWpAudio:recorders: (type GList(AstalWpStream)) (transfer container)
      *
-     * A list of AstalWpEndpoint objects
+     * A list of AstalWpStream objects
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_RECORDERS] =
         g_param_spec_pointer("recorders", "recorders", "recorders", G_PARAM_READABLE);
     /**
-     * AstalWpAudio:streams: (type GList(AstalWpEndpoint)) (transfer container)
+     * AstalWpAudio:streams: (type GList(AstalWpStream)) (transfer container)
      *
-     * A list of AstalWpEndpoint objects
+     * A list of AstalWpStream objects
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_STREAMS] =
         g_param_spec_pointer("streams", "streams", "streams", G_PARAM_READABLE);
@@ -493,16 +503,16 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_STREAM_ADDED] =
         g_signal_new("stream-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
-                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_STREAM_REMOVED] =
         g_signal_new("stream-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
-                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_RECORDER_ADDED] =
         g_signal_new("recorder-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
-                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_RECORDER_REMOVED] =
         g_signal_new("recorder-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
-                     NULL, NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_audio_signals[ASTAL_WP_AUDIO_SIGNAL_DEVICE_ADDED] =
         g_signal_new("device-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
