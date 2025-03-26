@@ -91,3 +91,8 @@ import('pkgconfig').generate(
   requires: deps,
   install_dir: get_option('libdir') / 'pkgconfig',
 )
+
+install_data(
+  '90-astal-brightness.rules',
+  install_dir: get_option('udevdir')
+)
