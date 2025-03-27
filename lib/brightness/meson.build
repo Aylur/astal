@@ -92,7 +92,12 @@ import('pkgconfig').generate(
   install_dir: get_option('libdir') / 'pkgconfig',
 )
 
+udevdir = get_option('udevdir')
+if udevdir == ''
+  udevdir = get_option('prefix') / get_option('libdir') / 'udev' / 'rules.d'
+endif
+
 install_data(
   '90-astal-brightness.rules',
-  install_dir: get_option('udevdir')
+  install_dir: udevdir
 )

@@ -1,5 +1,5 @@
 option(
   'udevdir',
   type: 'string',
-  value: get_option('prefix') / get_option('libdir') / 'udev' / 'rules.d',
+  value: '',
 )
