@@ -312,14 +312,14 @@ public class TrayItem : Object {
     private void handle_signal(DBusProxy proxy, string? sender_name, string signal_name, Variant parameters) {
       if (needs_update) return;
       needs_update = true;
-      GLib.Timeout.add_once(30, () => {
+      GLib.Timeout.add_once(10, () => {
           needs_update = false;
-          refresh_all_properties();
+          refresh_all_properties.begin();
       });
     }
 
 
-    private void set_property(string prop_name, Variant prop_value) {
+    private void set_dbus_property(string prop_name, Variant prop_value) {
         try {
             switch(prop_name) {
                 case "Category": {
@@ -359,6 +359,7 @@ public class TrayItem : Object {
                     var new_path = prop_value.get_string();
                     if (icon_theme_path != new_path) {
                         icon_theme_path = new_path;
+                        update_gicon();
                     }
                     break;
                 }
@@ -462,7 +463,7 @@ public class TrayItem : Object {
           Variant prop_value;
 
           while (prop_iter.next ("{sv}", out prop_key, out prop_value)) {
-              set_property(prop_key, prop_value);
+              set_dbus_property(prop_key, prop_value);
           }
       }
       catch(Error e) {
