@@ -33,4 +33,4 @@ if __name__ == "__main__":
         app.acquire_socket()
         app.run(None)
     except Exception as e:
-        print(AstalIO.send_message(instance_name, "".join(sys.argv[1:])))
+        print(AstalIO.send_request(instance_name, "".join(sys.argv[1:])))

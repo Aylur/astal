@@ -122,7 +122,11 @@ public class TrayItem : Object {
     * If set, this only supports the menu, so showing the menu should be prefered
     * over calling [method@AstalTray.TrayItem.activate].
     */
-    public bool is_menu { get { return proxy.ItemIsMenu ;} }
+    public bool is_menu {
+        get {
+            return proxy.ItemIsMenu || proxy.get_cached_property("ItemIsMenu") == null;
+        }
+    }
 
     /**
     * The icon theme path, where to look for the [property@AstalTray.TrayItem:icon-name].
@@ -204,6 +208,8 @@ public class TrayItem : Object {
                 service,
                 path
             );
+
+            proxy.g_default_timeout = 1000;
 
             connection_ids.append(proxy.NewStatus.connect(refresh_all_properties));
             connection_ids.append(proxy.NewToolTip.connect(refresh_all_properties));

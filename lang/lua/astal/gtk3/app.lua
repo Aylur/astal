@@ -77,7 +77,7 @@ function Astal.Application:start(config)
     local _, err = app:acquire_socket()
     if err ~= nil then
         return config.client(function(msg)
-            return AstalIO.send_message(self.instance_name, msg)
+            return AstalIO.send_request(self.instance_name, msg)
         end, table.unpack(arg))
     end
 

@@ -12,6 +12,21 @@
 
 G_BEGIN_DECLS
 
+GType astal_river_transform_get_type();
+#define ASTAL_RIVER_TYPE_TRANSFORM (astal_river_transform_get_type())
+
+typedef enum {
+    ASTAL_RIVER_TRANSFORM_NORMAL,
+    ASTAL_RIVER_TRANSFORM_ROTATE_90_DEG,
+    ASTAL_RIVER_TRANSFORM_ROTATE_180_DEG,
+    ASTAL_RIVER_TRANSFORM_ROTATE_270_DEG,
+    ASTAL_RIVER_TRANSFORM_FLIPPED,
+    ASTAL_RIVER_TRANSFORM_FLIPPED_ROTATE_90_DEG,
+    ASTAL_RIVER_TRANSFORM_FLIPPED_ROTATE_180_DEG,
+    ASTAL_RIVER_TRANSFORM_FLIPPED_ROTATE_270_DEG
+} AstalRiverTransform;
+
+
 #define ASTAL_RIVER_TYPE_OUTPUT (astal_river_output_get_type())
 
 G_DECLARE_FINAL_TYPE(AstalRiverOutput, astal_river_output, ASTAL_RIVER, OUTPUT, GObject)
@@ -31,6 +46,20 @@ void astal_river_output_set_focused_tags(AstalRiverOutput* self, guint tags);
 guint astal_river_output_get_urgent_tags(AstalRiverOutput *self);
 
 guint astal_river_output_get_occupied_tags(AstalRiverOutput *self);
+
+const gchar* astal_river_output_get_description(AstalRiverOutput* self);
+const gchar* astal_river_output_get_make(AstalRiverOutput* self);
+const gchar* astal_river_output_get_model(AstalRiverOutput* self);
+
+gint astal_river_output_get_x(AstalRiverOutput* self);
+gint astal_river_output_get_y(AstalRiverOutput* self);
+gint astal_river_output_get_width(AstalRiverOutput* self);
+gint astal_river_output_get_height(AstalRiverOutput* self);
+gint astal_river_output_get_physical_width(AstalRiverOutput* self);
+gint astal_river_output_get_physical_height(AstalRiverOutput* self);
+gint astal_river_output_get_scale_factor(AstalRiverOutput* self);
+gdouble astal_river_output_get_refresh_rate(AstalRiverOutput* self);
+
 
 #define ASTAL_RIVER_TYPE_RIVER (astal_river_river_get_type())
 

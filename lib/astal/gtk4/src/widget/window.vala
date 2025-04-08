@@ -79,7 +79,12 @@ public class Astal.Window : Gtk.Window {
      */
     public string namespace {
         get { return get_namespace(this); }
-        set { set_namespace(this, value); }
+        set {
+            if(check("set namespace"))
+                return;
+
+            set_namespace(this, value);
+        }
     }
 
     /**

@@ -22,11 +22,11 @@ public class AstalIO.Daemon : GLib.Application, AstalIO.Application {
     /**
      * Handler for an incoming request.
      *
-     * @param msg Body of the message
+     * @param request Body of the request
      * @param conn The connection which expects the response.
      */
     [DBus (visible=false)]
-    public virtual void request(string msg, SocketConnection conn) {
+    public virtual void request(string request, SocketConnection conn) {
         AstalIO.write_sock.begin(conn, @"missing response implementation on $application_id");
     }
 
