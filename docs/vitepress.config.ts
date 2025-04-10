@@ -114,6 +114,7 @@ export default defineConfig({
                     { text: "Notifd", link: "/guide/libraries/notifd" },
                     { text: "PowerProfiles", link: "/guide/libraries/powerprofiles" },
                     { text: "River", link: "/guide/libraries/river" },
+                    { text: "Sway", link: "/guide/libraries/sway" },
                     { text: "Tray", link: "/guide/libraries/tray" },
                     { text: "WirePlumber", link: "/guide/libraries/wireplumber" },
                 ],
