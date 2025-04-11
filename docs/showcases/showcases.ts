@@ -50,8 +50,8 @@ export default [
     {
         image: "/astal/showcase/unnamed-shell.webp",
         url: "https://codeberg.org/bunbun/unnamed-shell",
-        icon: "decion-vala-plain",
-        title: "unnamed-shell"
+        icon: "devicon-vala-plain",
+        title: "unnamed-shell",
         author: "bunbun",
     },
 
