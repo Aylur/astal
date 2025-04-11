@@ -157,6 +157,8 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
 
         if (FileUtils.test(style, FileTest.EXISTS)) {
             provider.load_from_path(style);
+        } else if (style.has_prefix("resource://")) {
+            provider.load_from_resource(style.replace("resource://", ""));
         } else {
             provider.load_from_string(style);
         }
@@ -180,11 +182,11 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     /**
      * Handler for an incoming request.
      *
-     * @param msg Body of the message
+     * @param request Body of the request
      * @param conn The connection which expects the response.
      */
     [DBus (visible=false)]
-    public virtual void request(string msg, SocketConnection conn) {
+    public virtual void request(string request, SocketConnection conn) {
         AstalIO.write_sock.begin(conn, @"missing response implementation on $application_id");
     }
 

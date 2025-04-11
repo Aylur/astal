@@ -41,8 +41,9 @@
     wayland
     blueprint-compiler
     libadwaita
-
+    wayland-scanner
     dart-sass
+    esbuild
     lua
     python
     gjs
@@ -55,6 +56,8 @@
     vtsls
     vscode-langservers-extracted
     markdownlint-cli2
+    pyright
+    ruff
   ];
 in {
   default = pkgs.mkShell {

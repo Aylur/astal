@@ -9,12 +9,12 @@ function M.src(path)
 end
 
 ---@generic T, R
----@param arr T[]
----@param func fun(T, integer): R
+---@param array T[]
+---@param func fun(T, i: integer): R
 ---@return R[]
-function M.map(arr, func)
+function M.map(array, func)
 	local new_arr = {}
-	for i, v in ipairs(arr) do
+	for i, v in ipairs(array) do
 		new_arr[i] = func(v, i)
 	end
 	return new_arr

@@ -43,9 +43,8 @@ internal class AstalNotifd.DaemonProxy : Object {
     private List<ulong> ids = new List<ulong>();
 
     public void stop() {
-        if (ids.length() > 0) {
-            foreach (var id in ids)
-                SignalHandler.disconnect(proxy, id);
+        foreach (var id in ids) {
+            SignalHandler.disconnect(proxy, id);
         }
     }
 
@@ -94,8 +93,15 @@ internal class AstalNotifd.DaemonProxy : Object {
             add_notification(id);
 
         ids.append(proxy.prop_changed.connect((prop) => {
-            if (prop == "ignore-timeout" || prop == "dont-disturb")
+            if (prop == "dont-disturb") {
+                proxy.set_cached_property("DontDisturb", null);
                 notify_property(prop);
+            }
+
+            if (prop == "ignore-timeout") {
+                proxy.set_cached_property("IgnoreTimeout", null);
+                notify_property(prop);
+            }
         }));
 
         ids.append(proxy.notified.connect((id, replaced) => {

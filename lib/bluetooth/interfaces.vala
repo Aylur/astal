@@ -44,3 +44,8 @@ private interface AstalBluetooth.IDevice : DBusProxy {
     public abstract uint32 class { get; }
 }
 
+[DBus (name = "org.bluez.Battery1")]
+private interface AstalBluetooth.IBattery : DBusProxy {
+    public abstract uint8 percentage { get; }
+    public abstract string source { owned get; }
+}

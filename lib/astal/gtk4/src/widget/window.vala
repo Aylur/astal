@@ -47,6 +47,13 @@ public enum Astal.Keymode {
  * Subclass of [class@Gtk.Window] which integrates GtkLayerShell as class fields.
  */
 public class Astal.Window : Gtk.Window {
+    /**
+     * Get the current [class@Gdk.Monitor] this window resides in.
+     */
+    public Gdk.Monitor get_current_monitor() {
+        return Gdk.Display.get_default().get_monitor_at_surface(base.get_surface());
+    }
+
     private bool check(string action) {
         if (!is_supported()) {
             critical(@"can not $action on window: layer shell not supported");
@@ -72,7 +79,12 @@ public class Astal.Window : Gtk.Window {
      */
     public string namespace {
         get { return get_namespace(this); }
-        set { set_namespace(this, value); }
+        set {
+            if(check("set namespace"))
+                return;
+
+            set_namespace(this, value);
+        }
     }
 
     /**
@@ -92,7 +104,7 @@ public class Astal.Window : Gtk.Window {
             set_anchor(this, Edge.RIGHT, WindowAnchor.RIGHT in value);
         }
         get {
-            var a = WindowAnchor.NONE;
+            var a = 0;
             if (get_anchor(this, Edge.TOP))
                 a = a | WindowAnchor.TOP;
 
@@ -104,6 +116,9 @@ public class Astal.Window : Gtk.Window {
 
             if (get_anchor(this, Edge.BOTTOM))
                 a = a | WindowAnchor.BOTTOM;
+
+            if (a == 0)
+                return WindowAnchor.NONE;
 
             return a;
         }

@@ -38,6 +38,7 @@ sources = [config] + files(
   'adapter.vala',
   'bluetooth.vala',
   'device.vala',
+  'battery.vala',
   'interfaces.vala',
   'utils.vala',
 )

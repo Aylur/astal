@@ -1,75 +1,15 @@
-import { App, Astal, Gdk, Gtk } from "astal/gtk3"
+import { App, Astal, Gtk } from "astal/gtk3"
+import { Variable } from "astal"
+import Popover from "./Popover"
+import Popover2 from "./Popover2"
+const { TOP, RIGHT, LEFT } = Astal.WindowAnchor
 
-const { TOP, RIGHT, BOTTOM, LEFT } = Astal.WindowAnchor
-
-type PopupProps = {
-    child?: unknown
-    marginBottom?: number
-    marginTop?: number
-    marginLeft?: number
-    marginRight?: number
-    halign?: Gtk.Align
-    valign?: Gtk.Align
-}
-
-function Popup({
-    child,
-    marginBottom,
-    marginTop,
-    marginLeft,
-    marginRight,
-    halign = Gtk.Align.CENTER,
-    valign = Gtk.Align.CENTER,
-}: PopupProps) {
-    return (
-        <window
-            visible={false}
-            css="background-color: transparent"
-            keymode={Astal.Keymode.EXCLUSIVE}
-            anchor={TOP | RIGHT | BOTTOM | LEFT}
-            exclusivity={Astal.Exclusivity.IGNORE}
-            // close when click occurs otside of child
-            onButtonPressEvent={(self, event) => {
-                const [, _x, _y] = event.get_coords()
-                const { x, y, width, height } = self
-                    .get_child()!
-                    .get_allocation()
-
-                const xOut = _x < x || _x > x + width
-                const yOut = _y < y || _y > y + height
-
-                // clicked outside
-                if (xOut || yOut) self.hide()
-            }}
-            // close when hitting Escape
-            onKeyPressEvent={(self, event: Gdk.Event) => {
-                if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-                    self.hide()
-                }
-            }}
-        >
-            <box
-                className="Popup"
-                onButtonPressEvent={() => true} // make sure click event does not bubble up
-                // child can be positioned with `halign` `valign` and margins
-                expand
-                halign={halign}
-                valign={valign}
-                marginBottom={marginBottom}
-                marginTop={marginTop}
-                marginStart={marginLeft}
-                marginEnd={marginRight}
-            >
-                {child}
-            </box>
-        </window>
-    )
-}
+const lorem = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean quis semper risus."
 
 App.start({
     instanceName: "popup-example",
     css: `
-        .Popup {
+        .popup {
             background-color: @theme_bg_color;
             box-shadow: 2px 3px 7px 0 rgba(0,0,0,0.4);
             border-radius: 12px;
@@ -77,27 +17,55 @@ App.start({
         }
     `,
     main() {
-        const popup = (
-            <Popup
-                marginTop={36}
-                marginRight={60}
-                valign={Gtk.Align.START}
-                halign={Gtk.Align.END}
-            >
-                <button onClicked={() => popup.hide()}>
+        const visible1 = Variable(false);
+        const visible2 = Variable(false);
+
+        const _popover1 = <Popover
+            className="Popup"
+            onClose={() => visible1.set(false)}
+            visible={visible1()}
+            marginTop={36}
+            marginRight={60}
+            valign={Gtk.Align.START}
+            halign={Gtk.Align.END}
+        >
+            <box className="popup" vertical>
+                {/* maxWidthChars is needed to make wrap work */}
+                <label label={lorem} wrap maxWidthChars={8} />
+                <button onClicked={() => visible1.set(false)}>
                     Click me to close the popup
                 </button>
-            </Popup>
-        )
+            </box>
+        </Popover>
+
+
+        const _popover2 = <Popover2
+            className="Popup"
+            onClose={() => visible2.set(false)}
+            visible={visible2()}
+        >
+            <box className="popup" vertical>
+                {/* maxWidthChars is needed, wrap will work as intended */}
+                <label label={lorem} wrap />
+                <button onClicked={() => visible2.set(false)}>
+                    Click me to close the popup
+                </button>
+            </box>
+        </Popover2>
 
         return (
             <window
                 anchor={TOP | LEFT | RIGHT}
                 exclusivity={Astal.Exclusivity.EXCLUSIVE}
             >
-                <button onClicked={() => popup.show()} halign={Gtk.Align.END}>
-                    Click to open popup
-                </button>
+                <box halign={Gtk.Align.END}>
+                    <button onClicked={() => visible2.set(true)} halign={Gtk.Align.END}>
+                        Click to open popover2
+                    </button>
+                    <button onClicked={() => visible1.set(true)} halign={Gtk.Align.END}>
+                        Click to open popover
+                    </button>
+                </box>
             </window>
         )
     },

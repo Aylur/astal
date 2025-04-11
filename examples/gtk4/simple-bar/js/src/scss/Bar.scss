@@ -1,0 +1,19 @@
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-4-16/gtk/theme/Default/_colors-public.scss
+$fg-color: #{"@theme_fg_color"};
+$bg-color: #{"@theme_bg_color"};
+
+window.Bar {
+    > box {
+        background: $bg-color;
+        color: $fg-color;
+        font-weight: bold;
+    }
+
+    button {
+        min-height: 0;
+        min-width: 0;
+        border-radius: 8px;
+        margin: 4px;
+        padding: 4px 8px;
+    }
+}

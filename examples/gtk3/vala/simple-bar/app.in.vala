@@ -24,7 +24,7 @@ class App : Astal.Application {
             App.instance.acquire_socket();
             App.instance.run(null);
         } catch (Error err) {
-            print(AstalIO.send_message(instance_name, string.joinv(" ", args)));
+            print(AstalIO.send_request(instance_name, string.joinv(" ", args)));
         }
     }
 }

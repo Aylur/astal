@@ -10,7 +10,7 @@ private interface AstalBattery.IUPower : DBusProxy {
     public abstract string daemon_version { owned get; }
     public abstract bool on_battery { get; }
     public abstract bool lid_is_closed { get; }
-    public abstract bool lis_is_present { get; }
+    public abstract bool lid_is_present { get; }
 }
 
 [DBus (name = "org.freedesktop.UPower.Device")]

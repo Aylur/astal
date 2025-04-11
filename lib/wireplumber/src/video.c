@@ -398,7 +398,7 @@ static void astal_wp_video_class_init(AstalWpVideoClass *class) {
         g_param_spec_pointer("sinks", "sinks", "sinks", G_PARAM_READABLE);
 
     /**
-     * AstalWpVideo:recorder: (type GList(AstalWpEndpoint)) (transfer container)
+     * AstalWpVideo:recorders: (type GList(AstalWpEndpoint)) (transfer container)
      *
      * A list of AstalWpEndpoint objects
      */
