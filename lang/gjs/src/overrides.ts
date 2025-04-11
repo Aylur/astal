@@ -60,6 +60,12 @@ await suppress(import("gi://AstalNetwork"), ({ Wifi }) => {
     patch(Wifi.prototype, "accessPoints")
 })
 
+await suppress(import("gi://AstalNiri"), ({ Niri }) => {
+    patch(Niri.prototype, "workspaces")
+    patch(Niri.prototype, "windows")
+    patch(Niri.prototype, "outputs")
+})
+
 await suppress(import("gi://AstalNotifd"), ({ Notifd, Notification }) => {
     patch(Notifd.prototype, "notifications")
     patch(Notification.prototype, "actions")
