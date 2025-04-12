@@ -195,6 +195,7 @@ public class Niri : Object {
             }
         }
         workspaces_changed(workspaces);
+        notify_property("workspaces");
     }
 
     private void on_workspace_activated(Json.Object event) {
@@ -252,6 +253,7 @@ public class Niri : Object {
             if (window.is_focused) focused_window_id = window.id;
         }
         windows_changed(windows);
+        notify_property("windows");
     }
 
     private void on_window_opened_or_changed(Json.Object event) {
@@ -267,6 +269,7 @@ public class Niri : Object {
             window = new Window.from_json(window_object);
             _windows.insert(window_id, window);
             window_opened(window);
+            notify_property("windows");
         }
 
         if (window.is_focused) {
@@ -286,6 +289,7 @@ public class Niri : Object {
 
         window_closed(id);
         window.closed();
+        notify_property("windows");
     }
 
     private void on_window_focus_changed(Json.Object event) {
