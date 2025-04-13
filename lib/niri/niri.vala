@@ -358,8 +358,12 @@ public class Niri : Object {
 
         focused_window_id = id;
         var new_focused = _windows.get(focused_window_id);
-        new_focused.is_focused = true;
-        focused_window = new_focused;
+        if (new_focused != null) {
+            new_focused.is_focused = true;
+            focused_window = new_focused;
+        } else {
+          focused_window = null;
+        }
 
         window_focus_changed(focused_window_id);
     }
