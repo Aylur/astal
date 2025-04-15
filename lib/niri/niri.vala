@@ -250,7 +250,7 @@ public class Niri : Object {
         foreach (var element in windows_arr.get_elements()) {
             var window = new Window.from_json(element.get_object());
             _windows.insert(window.id, window);
-            if (window.is_focused) focused_window_id = window.id;
+            if (window.is_focused) update_focused_window(window.id);
         }
         windows_changed(windows);
         notify_property("windows");
@@ -346,11 +346,6 @@ public class Niri : Object {
     private void update_focused_window(int64? _id) {
         int64 id = -1;
         if(_id != null) id = _id;
-        if (focused_window_id == -1) {
-            focused_window_id = id;
-            window_focus_changed(focused_window_id);
-            return;
-        }
 
         // remove focused state from previous window
         var prev = _windows.get(focused_window_id);
@@ -358,8 +353,15 @@ public class Niri : Object {
 
         focused_window_id = id;
         var new_focused = _windows.get(focused_window_id);
-        new_focused.is_focused = true;
-        focused_window = new_focused;
+        if (new_focused != null) {
+            new_focused.is_focused = true;
+            focused_window = new_focused;
+            if (new_focused.id == id) {
+                notify_property("focused_window");
+            }
+        } else {
+          focused_window = null;
+        }
 
         window_focus_changed(focused_window_id);
     }
