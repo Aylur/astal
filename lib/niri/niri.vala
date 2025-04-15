@@ -349,16 +349,19 @@ public class Niri : Object {
 
         // remove focused state from previous window
         var prev = _windows.get(focused_window_id);
-        if (prev != null) prev.is_focused = focused_window_id == id;
+        if (prev != null) {
+            prev.is_focused = focused_window_id == id;
+            if (prev.id == id) {
+                notify_property("focused_window");
+                return;
+            }
+        }
 
         focused_window_id = id;
         var new_focused = _windows.get(focused_window_id);
         if (new_focused != null) {
             new_focused.is_focused = true;
             focused_window = new_focused;
-            if (new_focused.id == id) {
-                notify_property("focused_window");
-            }
         } else {
           focused_window = null;
         }
