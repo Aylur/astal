@@ -28,6 +28,10 @@ public class Workspace : Object {
     public signal void active_window_changed(int64? id);
 
     internal Workspace.from_json(Json.Object object) {
+        sync(object);
+    }
+
+    internal void sync(Json.Object object) {
         id = object.get_int_member("id");
         idx = (uint8) object.get_int_member("idx");
         var _name = object.get_member("name");

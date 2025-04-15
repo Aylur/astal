@@ -327,31 +327,45 @@ public class Niri : Object {
     public unowned Workspace? get_workspace(int64 id) {
         return _workspaces.get(id);
     }
+
+    // on_workspaces_changed
+    // on_workspace_activated
     private unowned void update_focused_workspace(int64? _id) {
         int64 id = -1;
         if(_id != null) id = _id;
-        if (focused_workspace_id == -1) {
-            focused_workspace_id = id;
-            return;
-        }
 
-        var prev = _workspaces.get(focused_workspace_id);
-        if(prev != null) prev.is_focused = focused_workspace_id == id;
+        if(focused_workspace_id != -1) {
+            var prev = _workspaces.get(focused_workspace_id);
+            prev.is_focused = focused_workspace_id == id;
+            if (prev.is_focused) {
+                notify_property("focused_workspace");
+                return;
+            }
+        }
 
         focused_workspace_id = id;
         var new_focused = _workspaces.get(focused_workspace_id);
-        new_focused.is_focused = true;
-        focused_workspace = new_focused;
+        if (new_focused != null) {
+            new_focused.is_focused = true;
+            focused_workspace = new_focused;
+        } else {
+            focused_workspace = null;
+            notify_property("focused_workspace");
+        }
     }
-    private void update_focused_window(int64? _id) {
+
+    // on_window_opened_or_changed
+    // on_window_focus_changed
+    // on_windows_changed
+    private unowned void update_focused_window(int64? _id) {
         int64 id = -1;
         if(_id != null) id = _id;
 
         // remove focused state from previous window
-        var prev = _windows.get(focused_window_id);
-        if (prev != null) {
+        if (focused_window_id != -1) {
+            var prev = _windows.get(focused_window_id);
             prev.is_focused = focused_window_id == id;
-            if (prev.id == id) {
+            if (prev.is_focused) {
                 notify_property("focused_window");
                 return;
             }
@@ -365,7 +379,6 @@ public class Niri : Object {
         } else {
           focused_window = null;
         }
-
         window_focus_changed(focused_window_id);
     }
 }
