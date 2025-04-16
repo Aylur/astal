@@ -1,14 +1,14 @@
 namespace AstalNiri {
 public class Window : Object {
     /** unique id of window*/
-    public int64 id { get; private set; }
+    public uint64 id { get; private set; }
     /** name of the window, if available */
     public string? title { get; private set; }
     /** app_id of the window, if available  */
     public string? app_id { get; private set; }
     // TODO: move window to new workspace on set */
     /** workspace_id of the window, if available  */
-    public int64 workspace_id {get; private set; }
+    public uint64 workspace_id {get; private set; }
     /** if this is the current Focused Window */
     public bool is_focused { get; internal set; }
 
@@ -20,8 +20,7 @@ public class Window : Object {
     }
 
     public unowned Workspace? get_workspace() {
-        if (workspace_id == -1) return null;
-        return Niri.get_default().get_workspace(workspace_id);
+        return Niri.get_default()._workspaces.get(workspace_id);
     }
 
     internal void sync(Json.Object object) {
