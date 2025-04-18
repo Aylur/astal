@@ -15,7 +15,7 @@ public class Niri : Object {
     internal HashTable<string?, Output> _outputs =
         new HashTable<string?, Output>(str_hash, str_equal);
 
-    string[] keyboard_layouts { get; private set; }
+    Array<string> keyboard_layouts { get; private set; }
 
     public uint8 keyboard_layout_idx { get; private set; }
     // representing Optional uint64 as -1 due to: `warning: Type `uint64?' can not be used for a GLib.Object property`. 
@@ -61,7 +61,7 @@ public class Niri : Object {
     /** A window has been focused. */
     public signal void window_focus_changed(int64 window_id);
 
-    public signal void keyboard_layouts_changed(string[] keyboard_layouts);
+    public signal void keyboard_layouts_changed(Array<string> keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
 
     static Niri _instance;
@@ -310,11 +310,9 @@ public class Niri : Object {
         var layouts = event.get_object_member("keyboard_layouts");
         var names = layouts.get_array_member("names");
 
-        var builder = new StrvBuilder();
         foreach (var element in names.get_elements()) {
-            builder.add(element.get_string());
+            keyboard_layouts.append_val(element.get_string());
         }
-        keyboard_layouts = builder.end();
 
         keyboard_layout_idx = (uint8) layouts.get_int_member("current_idx");
         keyboard_layouts_changed(keyboard_layouts);
