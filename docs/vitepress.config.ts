@@ -88,7 +88,7 @@ export default defineConfig({
                     { text: "Widget", link: "/widget" },
                     { text: "Variable", link: "/variable" },
                     { text: "Binding", link: "/binding" },
-                    // { text: "GObject", link: "/gobject" },
+                    { text: "GObject", link: "/gobject" },
                     { text: "Utilities", link: "/utilities" },
                     // { text: "FAQ", link: "/faq" },
                     { text: "Examples", link: "/examples" },
