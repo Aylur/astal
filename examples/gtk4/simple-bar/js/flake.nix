@@ -42,11 +42,11 @@
       name = "simple-bar";
       src = ./.;
       inherit nativeBuildInputs;
-      buildInputs = astalPackages ++ [pkgs.gjs];
+      buildInputs = astalPackages ++ [pkgs.gjs pkgs.libgee];
     };
 
     devShells.${system}.default = pkgs.mkShell {
-      packages = nativeBuildInputs ++ astalPackages ++ [pkgs.gjs];
+      packages = nativeBuildInputs ++ astalPackages ++ [pkgs.gjs pkgs.libgee];
     };
   };
 }
