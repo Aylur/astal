@@ -63,7 +63,7 @@ export default defineConfig({
                 base: "/guide/typescript",
                 collapsed: true,
                 items: [
-                    { text: "Installation", link: "/installation" },
+                    { text: "Setting up a Project", link: "/init" },
                     { text: "First Widgets", link: "/first-widgets" },
                     { text: "Theming", link: "/theming" },
                     { text: "CLI and App", link: "/cli-app" },
