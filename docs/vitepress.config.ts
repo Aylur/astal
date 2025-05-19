@@ -101,7 +101,7 @@ export default defineConfig({
                     { text: "References", link: "/guide/libraries/references" },
                     { text: "IO", link: "https://aylur.github.io/libastal/io" },
                     { text: "Astal3", link: "https://aylur.github.io/libastal/astal3" },
-                    // { text: "Astal4", link: "https://aylur.github.io/libastal/astal4" },
+                    { text: "Astal4", link: "https://aylur.github.io/libastal/astal4" },
                     { text: "Apps", link: "/guide/libraries/apps" },
                     { text: "Auth", link: "/guide/libraries/auth" },
                     { text: "Battery", link: "/guide/libraries/battery" },
