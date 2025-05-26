@@ -78,8 +78,8 @@ public class Niri : Object {
         event_handlers.insert("WindowOpenedOrChanged",        (EventHandler) on_window_opened_or_changed);
         event_handlers.insert("WindowClosed",                 (EventHandler) on_window_closed);
         event_handlers.insert("WindowFocusChanged",           (EventHandler) on_window_focus_changed);
-        event_handlers.insert("WindowUrgencyChanged",           (EventHandler) on_window_urgency_changed);
-        event_handlers.insert("WorkspaceUrgencyChanged",           (EventHandler) on_workspace_urgency_changed);
+        event_handlers.insert("WindowUrgencyChanged",         (EventHandler) on_window_urgency_changed);
+        event_handlers.insert("WorkspaceUrgencyChanged",      (EventHandler) on_workspace_urgency_changed);
         event_handlers.insert("KeyboardLayoutsChanged",       (EventHandler) on_keyboard_layouts_changed);
         event_handlers.insert("KeyboardLayoutSwitched",       (EventHandler) on_keyboard_layout_switched);
     }
