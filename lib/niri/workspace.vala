@@ -9,6 +9,8 @@ public class Workspace : Object {
     // TODO: move workspace to new output on set */
     /** nome of the output the workspace is on */
     public string? output { get; internal set; }
+    /** if a window on the workspace is urgent */
+    public bool is_urgent { get; internal set; }
     /** if the workspace is active on its outpput */
     public bool is_active { get; internal set; }
     /** if this is the current Focused Workspace */
@@ -36,6 +38,7 @@ public class Workspace : Object {
         idx = (uint8) object.get_int_member("idx");
         var _name = object.get_member("name");
         var _output = object.get_member("output");
+        is_urgent = object.get_boolean_member("is_urgent");
         is_active = object.get_boolean_member("is_active");
         is_focused = object.get_boolean_member("is_focused");
         var _active_window_id = object.get_member("active_window_id");

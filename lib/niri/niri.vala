@@ -60,7 +60,10 @@ public class Niri : Object {
     public signal void window_closed(int64 id);
     /** A window has been focused. */
     public signal void window_focus_changed(int64 window_id);
-
+    /** Window urgency changed */
+    public signal void window_urgency_changed(int64 id, bool urgent);
+    /** Workspace urgency changed */
+    public signal void workspace_urgency_changed(int64 id, bool urgent);
     public signal void keyboard_layouts_changed(Array<string> keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
 
@@ -75,6 +78,8 @@ public class Niri : Object {
         event_handlers.insert("WindowOpenedOrChanged",        (EventHandler) on_window_opened_or_changed);
         event_handlers.insert("WindowClosed",                 (EventHandler) on_window_closed);
         event_handlers.insert("WindowFocusChanged",           (EventHandler) on_window_focus_changed);
+        event_handlers.insert("WindowUrgencyChanged",           (EventHandler) on_window_urgency_changed);
+        event_handlers.insert("WorkspaceUrgencyChanged",           (EventHandler) on_workspace_urgency_changed);
         event_handlers.insert("KeyboardLayoutsChanged",       (EventHandler) on_keyboard_layouts_changed);
         event_handlers.insert("KeyboardLayoutSwitched",       (EventHandler) on_keyboard_layout_switched);
     }
@@ -304,6 +309,29 @@ public class Niri : Object {
         if (!_id.is_null())  id = _id.get_int();
         
         update_focused_window(id);
+    }
+
+    private void on_window_urgency_changed(Json.Object event) {
+        var id = event.get_int_member("id");
+        var urgent = event.get_boolean_member("urgent");
+
+        var window = get_window(id);
+        if(window != null) {
+            window.is_urgent = urgent;
+        }
+
+        window_urgency_changed(id, urgent);
+    }
+
+    private void on_workspace_urgency_changed(Json.Object event) {
+        var id = event.get_int_member("id");
+        var urgent = event.get_boolean_member("urgent");
+
+        var workspace = get_workspace(id);
+        if(workspace != null) {
+            workspace.is_urgent = urgent;
+        }
+        workspace_urgency_changed(id, urgent);
     }
 
     private void on_keyboard_layouts_changed(Json.Object event) {

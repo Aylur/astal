@@ -9,6 +9,8 @@ public class Window : Object {
     // TODO: move window to new workspace on set */
     /** workspace_id of the window, if available  */
     public uint64 workspace_id {get; private set; }
+    /** if the window is requesting attention */
+    public bool is_urgent { get; internal set; }
     /** if this is the current Focused Window */
     public bool is_focused { get; internal set; }
 
@@ -28,6 +30,7 @@ public class Window : Object {
         var _title = object.get_member("title");
         var _app_id = object.get_member("app_id");
         var _workspace_id = object.get_member("workspace_id");
+        is_urgent = object.get_boolean_member("is_urgent");
         is_focused = object.get_boolean_member("is_focused");
 
         if (_title.is_null()) { title = null;}
