@@ -46,6 +46,7 @@ sources = [
   'workspace.vala',
   'output.vala',
   'structs.vala',
+  'overview.vala',
 ]
 
 if get_option('lib')

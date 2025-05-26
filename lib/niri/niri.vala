@@ -29,6 +29,7 @@ public class Niri : Object {
         return (int64)focused_window.id; 
     } private set {} }
     public string focused_output_name { get; private set; }
+    public Overview overview { get; private set; }
 
     public Workspace? focused_workspace { get; private set; }
     public Window? focused_window { get; private set; }
@@ -64,6 +65,7 @@ public class Niri : Object {
     public signal void window_urgency_changed(int64 id, bool urgent);
     /** Workspace urgency changed */
     public signal void workspace_urgency_changed(int64 id, bool urgent);
+    public signal void overview_opened_or_closed(bool is_open);
     public signal void keyboard_layouts_changed(Array<string> keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
 
@@ -82,6 +84,8 @@ public class Niri : Object {
         event_handlers.insert("WorkspaceUrgencyChanged",      (EventHandler) on_workspace_urgency_changed);
         event_handlers.insert("KeyboardLayoutsChanged",       (EventHandler) on_keyboard_layouts_changed);
         event_handlers.insert("KeyboardLayoutSwitched",       (EventHandler) on_keyboard_layout_switched);
+        event_handlers.insert("OverviewOpenedOrClosed",       (EventHandler) on_overview_opened_or_closed);
+
     }
 
     private Niri(IPC ipc) {
@@ -350,6 +354,12 @@ public class Niri : Object {
         keyboard_layout_idx = (uint8) event.get_int_member("idx");
 
         keyboard_layout_switched(keyboard_layout_idx);
+    }
+
+    private void on_overview_opened_or_closed(Json.Object event) {
+        var is_open = event.get_boolean_member("is_open");
+        overview.is_open = is_open;
+        overview_opened_or_closed(is_open);
     }
 
     public unowned Window? get_window(int64 id) {
