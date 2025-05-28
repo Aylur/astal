@@ -47,8 +47,6 @@ AstalWpMediaCategory astal_wp_media_category_from_string(const gchar *string) {
     return val ? val->value : ASTAL_WP_MEDIA_CATEGORY_UNKNOWN;
 }
 
-
-
 gchar *astal_wp_media_class_to_string(AstalWpMediaClass media_class) {
     return astal_wp_enum_to_string(ASTAL_WP_TYPE_MEDIA_CLASS, media_class);
 }
