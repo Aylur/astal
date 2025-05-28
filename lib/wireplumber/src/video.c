@@ -4,6 +4,7 @@
 
 #include "device.h"
 #include "endpoint.h"
+#include "glib-object.h"
 #include "wp.h"
 
 struct _AstalWpVideo {
@@ -68,9 +69,9 @@ static GParamSpec *astal_wp_video_properties[ASTAL_WP_VIDEO_N_PROPERTIES] = {
 AstalWpEndpoint *astal_wp_video_get_source(AstalWpVideo *self, guint id) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE)
+        return ASTAL_WP_ENDPOINT(node);
     return NULL;
 }
 
@@ -86,9 +87,9 @@ AstalWpEndpoint *astal_wp_video_get_source(AstalWpVideo *self, guint id) {
 AstalWpEndpoint *astal_wp_video_get_sink(AstalWpVideo *self, guint id) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_VIDEO_SINK)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_SINK)
+        return ASTAL_WP_ENDPOINT(node);
     return NULL;
 }
 
@@ -101,12 +102,12 @@ AstalWpEndpoint *astal_wp_video_get_sink(AstalWpVideo *self, guint id) {
  *
  * Returns: (transfer none) (nullable): the stream with the given id
  */
-AstalWpEndpoint *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
+AstalWpStream *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM)
+        return ASTAL_WP_STREAM(node);
     return NULL;
 }
 
@@ -119,12 +120,12 @@ AstalWpEndpoint *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
  *
  * Returns: (transfer none) (nullable): the recorder with the given id
  */
-AstalWpEndpoint *astal_wp_video_get_recorder(AstalWpVideo *self, guint id) {
+AstalWpStream *astal_wp_video_get_recorder(AstalWpVideo *self, guint id) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
-    AstalWpEndpoint *endpoint = astal_wp_wp_get_endpoint(priv->wp, id);
-    if (astal_wp_endpoint_get_media_class(endpoint) == ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER)
-        return endpoint;
+    AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER)
+        return ASTAL_WP_STREAM(node);
     return NULL;
 }
 
@@ -156,15 +157,15 @@ AstalWpDevice *astal_wp_video_get_device(AstalWpVideo *self, guint id) {
  */
 GList *astal_wp_video_get_sources(AstalWpVideo *self) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE) {
-            list = g_list_append(list, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE) {
+            list = g_list_append(list, ASTAL_WP_ENDPOINT(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return list;
 }
 
@@ -179,15 +180,15 @@ GList *astal_wp_video_get_sources(AstalWpVideo *self) {
  */
 GList *astal_wp_video_get_sinks(AstalWpVideo *self) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_SINK) {
-            list = g_list_append(list, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_SINK) {
+            list = g_list_append(list, ASTAL_WP_ENDPOINT(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return list;
 }
 
@@ -197,20 +198,20 @@ GList *astal_wp_video_get_sinks(AstalWpVideo *self) {
  *
  * a list containing the video recorders
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
+ * Returns: (transfer container) (nullable) (type GList(AstalWpStream)): a GList containing the
  * video recorders
  */
 GList *astal_wp_video_get_recorders(AstalWpVideo *self) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER) {
-            list = g_list_append(list, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER) {
+            list = g_list_append(list, ASTAL_WP_STREAM(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return list;
 }
 
@@ -220,20 +221,20 @@ GList *astal_wp_video_get_recorders(AstalWpVideo *self) {
  *
  * a list containing the video streams
  *
- * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint)): a GList containing the
+ * Returns: (transfer container) (nullable) (type GList(AstalWpStream)): a GList containing the
  * video streams
  */
 GList *astal_wp_video_get_streams(AstalWpVideo *self) {
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
-    GList *eps = astal_wp_wp_get_endpoints(priv->wp);
+    GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
 
-    for (GList *l = eps; l != NULL; l = l->next) {
-        if (astal_wp_endpoint_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM) {
-            list = g_list_append(list, l->data);
+    for (GList *l = nodes; l != NULL; l = l->next) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM) {
+            list = g_list_append(list, ASTAL_WP_STREAM(l->data));
         }
     }
-    g_list_free(eps);
+    g_list_free(nodes);
     return list;
 }
 
@@ -303,22 +304,22 @@ static void astal_wp_video_device_removed(AstalWpVideo *self, gpointer object) {
 }
 
 static void astal_wp_video_object_added(AstalWpVideo *self, gpointer object) {
-    AstalWpEndpoint *endpoint = ASTAL_WP_ENDPOINT(object);
-    switch (astal_wp_endpoint_get_media_class(endpoint)) {
+    AstalWpNode *node = ASTAL_WP_NODE(object);
+    switch (astal_wp_node_get_media_class(node)) {
         case ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE:
-            g_signal_emit_by_name(self, "source-added", endpoint);
+            g_signal_emit_by_name(self, "source-added", node);
             g_object_notify(G_OBJECT(self), "sources");
             break;
         case ASTAL_WP_MEDIA_CLASS_VIDEO_SINK:
-            g_signal_emit_by_name(self, "sink-added", endpoint);
+            g_signal_emit_by_name(self, "sink-added", node);
             g_object_notify(G_OBJECT(self), "sinks");
             break;
         case ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM:
-            g_signal_emit_by_name(self, "stream-added", endpoint);
+            g_signal_emit_by_name(self, "stream-added", node);
             g_object_notify(G_OBJECT(self), "streams");
             break;
         case ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER:
-            g_signal_emit_by_name(self, "recorder-added", endpoint);
+            g_signal_emit_by_name(self, "recorder-added", node);
             g_object_notify(G_OBJECT(self), "recorders");
             break;
         default:
@@ -327,22 +328,22 @@ static void astal_wp_video_object_added(AstalWpVideo *self, gpointer object) {
 }
 
 static void astal_wp_video_object_removed(AstalWpAudio *self, gpointer object) {
-    AstalWpEndpoint *endpoint = ASTAL_WP_ENDPOINT(object);
-    switch (astal_wp_endpoint_get_media_class(endpoint)) {
+    AstalWpNode *node = ASTAL_WP_NODE(object);
+    switch (astal_wp_node_get_media_class(node)) {
         case ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE:
-            g_signal_emit_by_name(self, "source-removed", endpoint);
+            g_signal_emit_by_name(self, "source-removed", node);
             g_object_notify(G_OBJECT(self), "sources");
             break;
         case ASTAL_WP_MEDIA_CLASS_VIDEO_SINK:
-            g_signal_emit_by_name(self, "sink-removed", endpoint);
+            g_signal_emit_by_name(self, "sink-removed", node);
             g_object_notify(G_OBJECT(self), "sinks");
             break;
         case ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM:
-            g_signal_emit_by_name(self, "stream-removed", endpoint);
+            g_signal_emit_by_name(self, "stream-removed", node);
             g_object_notify(G_OBJECT(self), "streams");
             break;
         case ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER:
-            g_signal_emit_by_name(self, "recorder-removed", endpoint);
+            g_signal_emit_by_name(self, "recorder-removed", node);
             g_object_notify(G_OBJECT(self), "recorders");
             break;
         default:
@@ -354,10 +355,9 @@ AstalWpVideo *astal_wp_video_new(AstalWpWp *wp) {
     AstalWpVideo *self = g_object_new(ASTAL_WP_TYPE_VIDEO, NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     priv->wp = g_object_ref(wp);
-    g_signal_connect_swapped(priv->wp, "endpoint-added", G_CALLBACK(astal_wp_video_object_added),
+    g_signal_connect_swapped(priv->wp, "node-added", G_CALLBACK(astal_wp_video_object_added), self);
+    g_signal_connect_swapped(priv->wp, "node-removed", G_CALLBACK(astal_wp_video_object_removed),
                              self);
-    g_signal_connect_swapped(priv->wp, "endpoint-removed",
-                             G_CALLBACK(astal_wp_video_object_removed), self);
     g_signal_connect_swapped(priv->wp, "device-added", G_CALLBACK(astal_wp_video_device_added),
                              self);
     g_signal_connect_swapped(priv->wp, "device-removed", G_CALLBACK(astal_wp_video_device_removed),
@@ -370,10 +370,12 @@ static void astal_wp_video_dispose(GObject *object) {
     AstalWpVideo *self = ASTAL_WP_VIDEO(object);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     g_clear_object(&priv->wp);
+
+    G_OBJECT_CLASS(astal_wp_video_parent_class)->dispose(object);
 }
 
 static void astal_wp_video_init(AstalWpVideo *self) {
-    AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
+    // AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 }
 
 static void astal_wp_video_class_init(AstalWpVideoClass *class) {
@@ -438,16 +440,16 @@ static void astal_wp_video_class_init(AstalWpVideoClass *class) {
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
     astal_wp_video_signals[ASTAL_WP_VIDEO_SIGNAL_STREAM_ADDED] =
         g_signal_new("stream-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
-                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_video_signals[ASTAL_WP_VIDEO_SIGNAL_SOURCE_REMOVED] =
         g_signal_new("stream-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
-                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_video_signals[ASTAL_WP_VIDEO_SIGNAL_RECORDER_ADDED] =
         g_signal_new("recorder-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
-                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_video_signals[ASTAL_WP_VIDEO_SIGNAL_RECORDER_REMOVED] =
         g_signal_new("recorder-removed", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL,
-                     NULL, NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_ENDPOINT);
+                     NULL, NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_STREAM);
     astal_wp_video_signals[ASTAL_WP_VIDEO_SIGNAL_DEVICE_ADDED] =
         g_signal_new("device-added", G_TYPE_FROM_CLASS(class), G_SIGNAL_RUN_FIRST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_WP_TYPE_DEVICE);
