@@ -22,7 +22,7 @@ public class AstalApps.Apps : Object {
     /**
      * The minimum score the application has to meet in order to be included in queries.
      */
-    public double min_score { get; set; default = 0; }
+    public double min_score { get; set; default = 0.5; }
 
     /**
      * Extra multiplier to apply when matching the `name` of an application.

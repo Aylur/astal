@@ -73,7 +73,9 @@ public class AstalMpris.Mpris : Object {
         var p = new Player(busname);
         _players.set(busname, p);
 
-        p.closed.connect(() => {
+        ulong id = 0;
+        id = p.closed.connect(() => {
+            if (id > 0) p.disconnect(id);
             player_closed(p);
             _players.remove(busname);
             notify_property("players");
