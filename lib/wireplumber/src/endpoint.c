@@ -2,7 +2,6 @@
 
 #include <wp/wp.h>
 
-#include "astal-wp-enum-types.h"
 #include "device.h"
 #include "enums.h"
 #include "glib-object.h"

@@ -1,6 +1,5 @@
 #include "node.h"
 
-#include <stdio.h>
 #include <wp/wp.h>
 
 #include "astal-wp-enum-types.h"

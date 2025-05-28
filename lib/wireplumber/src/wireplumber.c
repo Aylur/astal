@@ -1,4 +1,3 @@
-#include <string.h>
 #include <wp/wp.h>
 
 #include "astal-wp-enum-types.h"
