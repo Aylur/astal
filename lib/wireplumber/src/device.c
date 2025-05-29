@@ -517,6 +517,10 @@ static void astal_wp_device_params_changed(AstalWpDevice *self, const gchar *pro
     g_object_thaw_notify(G_OBJECT(self));
 }
 
+static void astal_wp_device_pw_properties_changed(AstalWpDevice *self) {
+    astal_wp_device_params_changed(self, "Props");
+}
+
 void astal_wp_device_constructed(GObject *object) {
     AstalWpDevice *self = ASTAL_WP_DEVICE(object);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
@@ -524,6 +528,8 @@ void astal_wp_device_constructed(GObject *object) {
     g_signal_connect_swapped(priv->device, "params-changed",
                              G_CALLBACK(astal_wp_device_params_changed), self);
 
+    g_signal_connect_swapped(priv->device, "notify::properties",
+                             G_CALLBACK(astal_wp_device_pw_properties_changed), self);
     astal_wp_device_params_changed(self, "Props");
     astal_wp_device_params_changed(self, "EnumProfile");
     astal_wp_device_params_changed(self, "Profile");

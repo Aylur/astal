@@ -20,6 +20,7 @@ typedef struct {
 
     gulong mixer_signal_handler_id;
     gulong params_signal_handler_id;
+    gulong properties_signal_handler_id;
     gulong state_change_handler_id;
 
     guint id;
@@ -69,6 +70,8 @@ typedef enum {
 static GParamSpec *astal_wp_node_properties[ASTAL_WP_NODE_N_PROPERTIES] = {
     NULL,
 };
+
+static void astal_wp_node_pw_properties_changed(AstalWpNode *self);
 
 void astal_wp_node_update_volume(AstalWpNode *self) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
@@ -436,12 +439,16 @@ void astal_wp_node_set_node(AstalWpNode *self, WpNode *node) {
     if (node != NULL && WP_IS_NODE(node)) {
         if (priv->node != NULL) {
             g_signal_handler_disconnect(priv->node, priv->params_signal_handler_id);
+            g_signal_handler_disconnect(priv->node, priv->properties_signal_handler_id);
             g_signal_handler_disconnect(priv->node, priv->state_change_handler_id);
         }
         g_clear_object(&priv->node);
         priv->node = g_object_ref(node);
         priv->params_signal_handler_id = g_signal_connect_swapped(
             priv->node, "params-changed", G_CALLBACK(astal_wp_node_params_changed), self);
+        priv->properties_signal_handler_id =
+            g_signal_connect_swapped(priv->node, "notify::properties",
+                                     G_CALLBACK(astal_wp_node_pw_properties_changed), self);
         priv->state_change_handler_id = g_signal_connect_swapped(
             priv->node, "state-changed", G_CALLBACK(astal_wp_node_state_changed), self);
     }
@@ -668,6 +675,10 @@ static void astal_wp_node_real_params_changed(AstalWpNode *self, const gchar *id
 void astal_wp_node_params_changed(AstalWpNode *self, const gchar *id) {
     AstalWpNodeClass *klass = ASTAL_WP_NODE_GET_CLASS(self);
     (*klass->params_changed)(self, id);
+}
+
+static void astal_wp_node_pw_properties_changed(AstalWpNode *self) {
+    astal_wp_node_params_changed(self, "Props");
 }
 
 static void astal_wp_node_init(AstalWpNode *self) {
