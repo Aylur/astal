@@ -38,7 +38,7 @@ int main(string[] argv) {
     if (help) {
         print("Client for Astal.Application instances\n\n");
         print("Usage:\n");
-        print("    %s [flags] requet\n\n", argv[0]);
+        print("    %s [flags] request\n\n", argv[0]);
         print("Flags:\n");
         print("    -h, --help            Print this help and exit\n");
         print("    -v, --version         Print version number and exit\n");
