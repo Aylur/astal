@@ -35,6 +35,7 @@
       notifd = mkPkg ./lib/notifd;
       powerprofiles = mkPkg ./lib/powerprofiles;
       river = mkPkg ./lib/river;
+      sway = mkPkg ./lib/sway;
       tray = mkPkg ./lib/tray;
       wireplumber = mkPkg ./lib/wireplumber;
 
