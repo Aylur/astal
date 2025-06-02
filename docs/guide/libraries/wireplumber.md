@@ -16,14 +16,21 @@ wpctl --help
 
 ### Library
 
+The AstalWp library is initialized asynchronously; therefore, all lists (e.g. `audio.speakers`) are initially empty, and the properties have default values.
+This is usually not an issue. When you bind to these values, your widget will receive updates as soon as the library has loaded the data.
+However, this means that you won't get the correct data when accessing the library's properties at the top level. To accommodate this, it emits the `ready` signal once, as soon as the initial data has been loaded.
+
 :::code-group
 
 ```js [<i class="devicon-javascript-plain"></i> JavaScript]
 import Wp from "gi://AstalWp"
 
-const audio = Wp.get_default().audio
+const wp = Wp.get_default()
+const default_speaker = wp.audio.default_speaker;
 
-print(audio.default_speaker.volume)
+wp.connect("ready", () => {
+    print(default_speaker.volume)
+}
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
