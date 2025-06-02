@@ -102,6 +102,8 @@ void astal_wp_node_update_volume(AstalWpNode *self) {
         while (g_variant_iter_loop(channels, "{&sv}", &key, &varvol)) {
             g_variant_lookup(varvol, "volume", "d", &channel_volume);
             g_variant_lookup(varvol, "channel", "&s", &channel_str);
+
+            if(channel_str == NULL) continue;
             if (channel_volume > volume) volume = channel_volume;
 
             AstalWpChannel *cv = g_hash_table_lookup(priv->channels, channel_str);
