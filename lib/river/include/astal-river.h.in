@@ -3,14 +3,24 @@
 
 #include <glib-object.h>
 
-
 #define ASTAL_RIVER_MAJOR_VERSION @MAJOR_VERSION@
 #define ASTAL_RIVER_MINOR_VERSION @MINOR_VERSION@
 #define ASTAL_RIVER_MICRO_VERSION @MICRO_VERSION@
 #define ASTAL_RIVER_VERSION "@VERSION@"
 
-
 G_BEGIN_DECLS
+
+#define ASTAL_RIVER_TYPE_GEOMETRY (astal_river_geometry_get_type())
+
+typedef struct {
+    guint x, y, width, height;
+} AstalRiverGeometry;
+
+GType astal_river_geometry_get_type(void);
+
+AstalRiverGeometry *astal_river_geometry_copy(AstalRiverGeometry *geometry);
+
+void astal_river_geometry_free(AstalRiverGeometry *geometry);
 
 GType astal_river_transform_get_type();
 #define ASTAL_RIVER_TYPE_TRANSFORM (astal_river_transform_get_type())
@@ -26,6 +36,9 @@ typedef enum {
     ASTAL_RIVER_TRANSFORM_FLIPPED_ROTATE_270_DEG
 } AstalRiverTransform;
 
+#define ASTAL_RIVER_TYPE_LAYOUT (astal_river_layout_get_type())
+
+G_DECLARE_FINAL_TYPE(AstalRiverLayout, astal_river_layout, ASTAL_RIVER, LAYOUT, GObject)
 
 #define ASTAL_RIVER_TYPE_OUTPUT (astal_river_output_get_type())
 
@@ -41,25 +54,24 @@ gchar *astal_river_output_get_focused_view(AstalRiverOutput *self);
 
 guint astal_river_output_get_focused_tags(AstalRiverOutput *self);
 
-void astal_river_output_set_focused_tags(AstalRiverOutput* self, guint tags);
+void astal_river_output_set_focused_tags(AstalRiverOutput *self, guint tags);
 
 guint astal_river_output_get_urgent_tags(AstalRiverOutput *self);
 
 guint astal_river_output_get_occupied_tags(AstalRiverOutput *self);
 
-const gchar* astal_river_output_get_description(AstalRiverOutput* self);
-const gchar* astal_river_output_get_make(AstalRiverOutput* self);
-const gchar* astal_river_output_get_model(AstalRiverOutput* self);
+const gchar *astal_river_output_get_description(AstalRiverOutput *self);
+const gchar *astal_river_output_get_make(AstalRiverOutput *self);
+const gchar *astal_river_output_get_model(AstalRiverOutput *self);
 
-gint astal_river_output_get_x(AstalRiverOutput* self);
-gint astal_river_output_get_y(AstalRiverOutput* self);
-gint astal_river_output_get_width(AstalRiverOutput* self);
-gint astal_river_output_get_height(AstalRiverOutput* self);
-gint astal_river_output_get_physical_width(AstalRiverOutput* self);
-gint astal_river_output_get_physical_height(AstalRiverOutput* self);
-gint astal_river_output_get_scale_factor(AstalRiverOutput* self);
-gdouble astal_river_output_get_refresh_rate(AstalRiverOutput* self);
-
+gint astal_river_output_get_x(AstalRiverOutput *self);
+gint astal_river_output_get_y(AstalRiverOutput *self);
+gint astal_river_output_get_width(AstalRiverOutput *self);
+gint astal_river_output_get_height(AstalRiverOutput *self);
+gint astal_river_output_get_physical_width(AstalRiverOutput *self);
+gint astal_river_output_get_physical_height(AstalRiverOutput *self);
+gint astal_river_output_get_scale_factor(AstalRiverOutput *self);
+gdouble astal_river_output_get_refresh_rate(AstalRiverOutput *self);
 
 #define ASTAL_RIVER_TYPE_RIVER (astal_river_river_get_type())
 
@@ -80,6 +92,8 @@ gchar *astal_river_river_get_focused_output(AstalRiverRiver *self);
 
 gchar *astal_river_river_get_mode(AstalRiverRiver *self);
 
+AstalRiverLayout *astal_river_river_new_layout(AstalRiverRiver *self, const gchar *namespace);
+
 /**
  * AstalRiverCommandCallback:
  * @success: a #gboolean indicating whether the command was executed successfully
@@ -91,6 +105,34 @@ typedef void (*AstalRiverCommandCallback)(gboolean success, const gchar *msg);
 
 void astal_river_river_run_command_async(AstalRiverRiver *self, gint length, const gchar **cmd,
                                          AstalRiverCommandCallback callback);
+
+/**
+ * AstalRiverLayoutDemandCallback:
+ * @self: an #AstalRiverLayout instance
+ * @output: an #AstalRiverOutput instance for which the layout is being demanded
+ * @view_count: the number of views currently on the output
+ * @usable_width: the usable width of the output for layout
+ * @usable_height: the usable height of the output for layout
+ * @layout_name: (out) (transfer full): the name for the the layout provided by this callback
+ * @geometries: (out) (transfer full) (element-type AstalRiverGeometry): a list of
+ * #AstalRiverGeometry that will be used for the layout for of the views
+ * @user_data: user data passed to the callback
+ *
+ * A callback function that is called when the layout manager needs to determine the layout for a
+ * given output.
+ *
+ */
+typedef void (*AstalRiverLayoutDemandCallback)(AstalRiverLayout *self, AstalRiverOutput *output,
+                                               guint view_count, guint usable_width,
+                                               guint usable_height, gchar **layout_name,
+                                               GList **geometries, gpointer user_data);
+
+const gchar *astal_river_layout_get_namespace(AstalRiverLayout *self);
+
+void astal_river_layout_set_layout_demand_callback(AstalRiverLayout *self,
+                                                   AstalRiverLayoutDemandCallback callback,
+                                                   gpointer user_data,
+                                                   GDestroyNotify destroy_notify);
 
 G_END_DECLS
 

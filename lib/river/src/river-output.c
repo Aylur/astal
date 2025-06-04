@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
-#include "astal-river.h.in"
+#include "astal-river.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "river-private.h"

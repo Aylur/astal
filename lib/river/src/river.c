@@ -2,12 +2,12 @@
 #include <json-glib/json-glib.h>
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
+#include <wayland-glib.h>
 
 #include "river-control-unstable-v1-client.h"
+#include "river-layout-v3-client.h"
 #include "river-private.h"
 #include "river-status-unstable-v1-client.h"
-// #include "wayland-source.h"
-#include <wayland-glib.h>
 
 struct _AstalRiverRiver {
     GObject parent_instance;
@@ -27,6 +27,7 @@ typedef struct {
     struct zriver_status_manager_v1* river_status_manager;
     struct zriver_control_v1* river_control;
     struct zriver_seat_status_v1* river_seat_status;
+    struct river_layout_manager_v3* river_layout_manager;
 } AstalRiverRiverPrivate;
 
 static JsonSerializableIface* serializable_iface = NULL;
@@ -178,6 +179,20 @@ static void astal_river_river_get_property(GObject* object, guint property_id, G
     }
 }
 
+/**
+ * astal_river_river_new_layout:
+ * @self: the AstalRiverRiver object
+ * @namespace: the namespace of the layout
+ *
+ * creates a new AstalRiverLayout object for this river instance.
+ *
+ * Returns: (transfer full): a newly created AstalRiverLayout object
+ */
+AstalRiverLayout* astal_river_river_new_layout(AstalRiverRiver* self, const gchar* namespace) {
+    AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
+    return astal_river_layout_new(self, priv->river_layout_manager, priv->display, namespace);
+}
+
 static JsonNode* astal_river_river_serialize_property(JsonSerializable* serializable,
                                                       const gchar* name, const GValue* value,
                                                       GParamSpec* pspec) {
@@ -266,6 +281,9 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
             wl_registry_bind(registry, id, &zriver_status_manager_v1_interface, 4);
     } else if (strcmp(interface, zriver_control_v1_interface.name) == 0) {
         priv->river_control = wl_registry_bind(registry, id, &zriver_control_v1_interface, 1);
+    } else if (strcmp(interface, river_layout_manager_v3_interface.name) == 0) {
+        priv->river_layout_manager =
+            wl_registry_bind(registry, id, &river_layout_manager_v3_interface, 2);
     }
 }
 
@@ -447,6 +465,8 @@ static void astal_river_river_finalize(GObject* object) {
     if (priv->river_status_manager != NULL)
         zriver_status_manager_v1_destroy(priv->river_status_manager);
     if (priv->river_seat_status != NULL) zriver_seat_status_v1_destroy(priv->river_seat_status);
+    if (priv->river_layout_manager != NULL)
+        river_layout_manager_v3_destroy(priv->river_layout_manager);
     if (priv->seat != NULL) wl_seat_destroy(priv->seat);
     if (priv->display != NULL) wl_display_flush(priv->display);
 
