@@ -66,6 +66,7 @@ typedef enum {
 
 typedef enum {
     ASTAL_RIVER_LAYOUT_SIGNAL_NAMESPACE_IN_USE,
+    ASTAL_RIVER_LAYOUT_SIGNAL_USER_COMMAND,
     ASTAL_RIVER_LAYOUT_N_SIGNALS
 } AstalRiverLayoutSignals;
 
@@ -201,12 +202,19 @@ exit:
     g_free(layout_name);
 }
 
+static void astal_river_layout_handle_user_command(void* data, struct river_layout_v3* layout,
+                                                   const char* command) {
+    struct river_layout_data* layout_data = data;
+
+    g_signal_emit_by_name(layout_data->layout, "user-command", command, layout_data->output);
+}
+
 static void noop() {}
 
 static const struct river_layout_v3_listener river_layout_listener = {
     .namespace_in_use = astal_river_layout_handle_namespace_in_use,
     .layout_demand = astal_river_layout_handle_layout_demand,
-    .user_command = noop,
+    .user_command = astal_river_layout_handle_user_command,
     .user_command_tags = noop};
 
 void astal_river_layout_on_output_added(AstalRiverLayout* self, gchar* output_name) {
@@ -304,4 +312,16 @@ static void astal_river_layout_class_init(AstalRiverLayoutClass* class) {
     astal_river_layout_signals[ASTAL_RIVER_LAYOUT_SIGNAL_NAMESPACE_IN_USE] =
         g_signal_new("namespace-in-use", ASTAL_RIVER_TYPE_LAYOUT, G_SIGNAL_RUN_LAST, 0, NULL, NULL,
                      NULL, G_TYPE_NONE, 1, ASTAL_RIVER_TYPE_OUTPUT);
+
+    /**
+     * AstalRiverLayout::user-command:
+     * @self: the AstalRiverLayout object
+     * @command: the command send by the user
+     * @output: the currently focused output
+     *
+     * Emitted when a user command is requested for this layout.
+     */
+    astal_river_layout_signals[ASTAL_RIVER_LAYOUT_SIGNAL_USER_COMMAND] =
+        g_signal_new("user_command", ASTAL_RIVER_TYPE_LAYOUT, G_SIGNAL_RUN_LAST, 0, NULL, NULL,
+                     NULL, G_TYPE_NONE, 2, G_TYPE_STRING, ASTAL_RIVER_TYPE_OUTPUT);
 }
