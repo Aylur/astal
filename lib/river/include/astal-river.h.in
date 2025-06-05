@@ -3,10 +3,12 @@
 
 #include <glib-object.h>
 
+// clang-format off
 #define ASTAL_RIVER_MAJOR_VERSION @MAJOR_VERSION@
 #define ASTAL_RIVER_MINOR_VERSION @MINOR_VERSION@
 #define ASTAL_RIVER_MICRO_VERSION @MICRO_VERSION@
 #define ASTAL_RIVER_VERSION "@VERSION@"
+// clang-format on
 
 G_BEGIN_DECLS
 

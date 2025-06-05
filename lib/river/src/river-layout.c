@@ -179,6 +179,15 @@ static void astal_river_layout_handle_layout_demand(void* data, struct river_lay
                                  usable_height, &layout_name, &geometries,
                                  priv->layout_demand_user_data);
 
+    if (g_list_length(geometries) != view_count) {
+        g_critical("Invalid layout demand result: received %u geometries but expected %u.",
+                   g_list_length(geometries), view_count);
+        goto exit;
+    }
+    if (layout_name == NULL) {
+        g_critical("Invalid layout demand result: received NULL layout name.");
+        goto exit;
+    }
     for (GList* l = geometries; l != NULL; l = l->next) {
         AstalRiverGeometry* geometry = (AstalRiverGeometry*)(l->data);
         river_layout_v3_push_view_dimensions(layout_data->river_layout, geometry->x, geometry->y,
@@ -187,6 +196,7 @@ static void astal_river_layout_handle_layout_demand(void* data, struct river_lay
 
     river_layout_v3_commit(layout_data->river_layout, layout_name, serial);
 
+exit:
     g_list_free_full(geometries, (GDestroyNotify)astal_river_geometry_free);
     g_free(layout_name);
 }
