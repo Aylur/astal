@@ -69,6 +69,7 @@ public class Niri : Object {
     public signal void keyboard_layouts_changed(Array<string> keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
 
+    private IPC? event_socket;
     static Niri _instance;
 
     // https://yalter.github.io/niri/niri_ipc/enum.Event.html
@@ -88,19 +89,15 @@ public class Niri : Object {
 
     }
 
-    private Niri(IPC ipc) {
-        watch_socket.begin(ipc);
-    }
-
     public static Niri? get_default() {
         if (_instance != null)
             return _instance;
 
-        var ipc = IPC.connect();
-        if (ipc == null)
-            return null;
+        var instance = new Niri();
+        instance.event_socket = IPC.connect();
+        instance.watch_events.begin();
 
-        _instance = new Niri(ipc);
+        _instance = instance;
         return _instance;
     }
 
@@ -120,23 +117,18 @@ public class Niri : Object {
         return (int) (a.idx > b.idx) - (int) (a.idx < b.idx);
     }
 
-    private async void watch_socket(IPC ipc) {
+    private async void watch_events() {
         try {
-            var event_stream = new Json.Node.alloc();
-            event_stream.init_string("EventStream");
-            yield ipc.send_async(event_stream);
-            event_stream = null;
-
-            var ev = yield ipc.recv_async();
-            var line = Json.to_string(ev, false);
+            var istream = event_socket.send_str("\"EventStream\"\n");
+            var line = yield istream.read_line_async();
             if (line != "{\"Ok\":\"Handled\"}") {
-                critical("%s", line);
+                critical("Event Stream Error: %s", line);
                 return;
             }
             line = null;
 
             while (true) {
-                ev = yield ipc.recv_async();
+                var ev = Json.from_string(yield istream.read_line_async());
                 event.emit(ev);
 
                 var obj = ev.get_object();
@@ -159,38 +151,40 @@ public class Niri : Object {
             critical("%s", err.message);
             return;
         } finally {
-            yield ipc.close_async();
+            event_socket.close();
         }
     }
-
-    private Json.Node? message(Json.Node message) {
-        var ipc = IPC.connect();
-        if (ipc == null) return null;
+    public string? message(string message) {
+        IPC ipc;
 
         try {
-            ipc.send(message);
-            return ipc.recv();
+            ipc = IPC.connect();
+            if (ipc == null ) return null;
+            var istream = ipc.send(Json.from_string(message));
+            var line = istream.read_line();
+            return line;
         } catch (Error err) {
-            critical("%s", err.message);
-            return null;
+            critical("command Error: %s", err.message);
         } finally {
             ipc.close();
         }
+        return null;
     }
 
-    private async Json.Node? message_async(Json.Node message) {
-        var ipc = IPC.connect();
-        if (ipc == null) return null;
-
+    public async string? message_async(string message) {
+        IPC ipc;
         try {
-            yield ipc.send_async(message);
-            return yield ipc.recv_async();
+            ipc = IPC.connect();
+            if (ipc == null ) return null;
+            var istream = ipc.send(Json.from_string(message));
+            var line = yield istream.read_line_async();
+            return line;
         } catch (Error err) {
-            critical("%s", err.message);
-            return null;
+            critical("command Error: %s", err.message);
         } finally {
-            yield ipc.close_async();
+            ipc.close();
         }
+        return null;
     }
 
     private void on_workspaces_changed(Json.Object event) {
