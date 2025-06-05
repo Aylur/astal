@@ -1,3 +1,4 @@
+[CCode (gir_namespace = "AstalNiri", gir_version = "@API_VERSION@")]
 namespace AstalNiri {
     public const int MAJOR_VERSION = @MAJOR_VERSION@;
     public const int MINOR_VERSION = @MINOR_VERSION@;
