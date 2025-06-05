@@ -306,6 +306,7 @@ static void astal_river_layout_class_init(AstalRiverLayoutClass* class) {
     /**
      * AstalRiverLayout::namespace-in-use:
      * @self: the AstalRiverLayout object
+     * @output: the AstalRiverOutput object that is using the namespace
      *
      * Emitted when the namespace of this layout is already in use on an output.
      */
