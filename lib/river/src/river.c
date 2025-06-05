@@ -184,7 +184,7 @@ static void astal_river_river_get_property(GObject* object, guint property_id, G
  * @self: the AstalRiverRiver object
  * @namespace: the namespace of the layout
  *
- * creates a new AstalRiverLayout object for this river instance.
+ * creates a new [class@AstalRiver.Layout] object for this river instance.
  *
  * Returns: (transfer full): a newly created AstalRiverLayout object
  */
