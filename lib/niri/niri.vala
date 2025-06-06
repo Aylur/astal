@@ -94,7 +94,10 @@ public class Niri : Object {
             return _instance;
 
         var instance = new Niri();
+        instance.keyboard_layouts = new Array<string>();
+        instance.overview = new Overview();
         instance.event_socket = IPC.connect();
+
         instance.watch_events.begin();
 
         _instance = instance;
