@@ -157,38 +157,6 @@ public class Niri : Object {
             event_socket.close();
         }
     }
-    public string? message(string message) {
-        IPC ipc;
-
-        try {
-            ipc = IPC.connect();
-            if (ipc == null ) return null;
-            var istream = ipc.send(Json.from_string(message));
-            var line = istream.read_line();
-            return line;
-        } catch (Error err) {
-            critical("command Error: %s", err.message);
-        } finally {
-            ipc.close();
-        }
-        return null;
-    }
-
-    public async string? message_async(string message) {
-        IPC ipc;
-        try {
-            ipc = IPC.connect();
-            if (ipc == null ) return null;
-            var istream = ipc.send(Json.from_string(message));
-            var line = yield istream.read_line_async();
-            return line;
-        } catch (Error err) {
-            critical("command Error: %s", err.message);
-        } finally {
-            ipc.close();
-        }
-        return null;
-    }
 
     private void on_workspaces_changed(Json.Object event) {
         var workspaces_arr = event.get_array_member("workspaces");

@@ -48,6 +48,7 @@ sources = [
   'output.vala',
   'structs.vala',
   'overview.vala',
+  'msg.vala'
 ]
 
 if get_option('lib')
