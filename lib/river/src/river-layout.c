@@ -105,7 +105,10 @@ void astal_river_layout_data_free(struct river_layout_data* data) {
  *
  * Returns: (transfer none) (nullable): the namespace of the layout
  */
-const gchar* astal_river_layout_get_namespace(AstalRiverLayout* self) { return self->namespace; }
+const gchar* astal_river_layout_get_namespace(AstalRiverLayout* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_LAYOUT(self), NULL);
+    return self->namespace;
+}
 
 /**
  * astal_river_layout_set_layout_demand_callback
@@ -120,6 +123,8 @@ void astal_river_layout_set_layout_demand_callback(AstalRiverLayout* self,
                                                    AstalRiverLayoutDemandCallback callback,
                                                    gpointer user_data,
                                                    GDestroyNotify destroy_notify) {
+    g_return_if_fail(ASTAL_RIVER_IS_LAYOUT(self));
+
     AstalRiverLayoutPrivate* priv = astal_river_layout_get_instance_private(self);
     if (priv->layout_demand_destroy) {
         priv->layout_demand_destroy(priv->layout_demand_user_data);

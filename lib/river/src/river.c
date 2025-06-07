@@ -67,6 +67,8 @@ static void reemit_changed(AstalRiverOutput* output, AstalRiverRiver* self) {
 }
 
 static AstalRiverOutput* find_output_by_id(AstalRiverRiver* self, uint32_t id) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
     GList* output = self->outputs;
     while (output != NULL) {
         AstalRiverOutput* river_output = output->data;
@@ -77,6 +79,8 @@ static AstalRiverOutput* find_output_by_id(AstalRiverRiver* self, uint32_t id) {
 }
 
 static AstalRiverOutput* find_output_by_output(AstalRiverRiver* self, struct wl_output* wl_output) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
     GList* output = self->outputs;
     while (output != NULL) {
         AstalRiverOutput* river_output = output->data;
@@ -87,6 +91,8 @@ static AstalRiverOutput* find_output_by_output(AstalRiverRiver* self, struct wl_
 }
 
 static AstalRiverOutput* find_output_by_name(AstalRiverRiver* self, gchar* name) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
     GList* output = self->outputs;
     while (output != NULL) {
         AstalRiverOutput* river_output = output->data;
@@ -111,7 +117,10 @@ static AstalRiverOutput* find_output_by_name(AstalRiverRiver* self, gchar* name)
  * Returns: (transfer none) (element-type AstalRiver.Output): a list of all outputs
  *
  */
-GList* astal_river_river_get_outputs(AstalRiverRiver* self) { return self->outputs; }
+GList* astal_river_river_get_outputs(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->outputs;
+}
 
 /**
  * astal_river_river_get_output
@@ -123,6 +132,7 @@ GList* astal_river_river_get_outputs(AstalRiverRiver* self) { return self->outpu
  * Returns: (transfer none) (nullable): the output with the given name or null
  */
 AstalRiverOutput* astal_river_river_get_output(AstalRiverRiver* self, gchar* name) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
     return find_output_by_name(self, name);
 }
 
@@ -134,7 +144,10 @@ AstalRiverOutput* astal_river_river_get_output(AstalRiverRiver* self, gchar* nam
  *
  * Returns: (transfer none) (nullable): the currently focused view
  */
-gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) { return self->focused_view; }
+gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->focused_view;
+}
 
 /**
  * astal_river_river_get_focused_output
@@ -144,7 +157,10 @@ gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) { return self->
  *
  * Returns: (transfer none) (nullable): the name of the currently focused output
  */
-gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) { return self->focused_output; }
+gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->focused_output;
+}
 
 /**
  * astal_river_river_get_mode
@@ -154,7 +170,10 @@ gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) { return self
  *
  * Returns: (transfer none) (nullable): the currently active mode
  */
-gchar* astal_river_river_get_mode(AstalRiverRiver* self) { return self->mode; }
+gchar* astal_river_river_get_mode(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->mode;
+}
 
 static void astal_river_river_get_property(GObject* object, guint property_id, GValue* value,
                                            GParamSpec* pspec) {
@@ -189,6 +208,8 @@ static void astal_river_river_get_property(GObject* object, guint property_id, G
  * Returns: (transfer full): a newly created AstalRiverLayout object
  */
 AstalRiverLayout* astal_river_river_new_layout(AstalRiverRiver* self, const gchar* namespace) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
     return astal_river_layout_new(self, priv->river_layout_manager, priv->display, namespace);
 }
@@ -234,7 +255,7 @@ static void river_seat_status_handle_focused_view(void* data,
     g_free(self->focused_view);
     self->focused_view = g_strdup(focused_view);
     AstalRiverOutput* output = find_output_by_name(self, self->focused_output);
-    astal_river_output_set_focused_view(output, focused_view);
+    if (output != NULL) astal_river_output_set_focused_view(output, focused_view);
     g_object_notify(G_OBJECT(self), "focused-view");
     g_signal_emit(self, astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_CHANGED], 0);
 }
@@ -313,6 +334,8 @@ const struct zriver_command_callback_v1_listener cb_listener = {
  */
 void astal_river_river_run_command_async(AstalRiverRiver* self, gint length, const gchar** cmd,
                                          AstalRiverCommandCallback callback) {
+    g_return_if_fail(ASTAL_RIVER_IS_RIVER(self));
+
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
 
     for (gint i = 0; i < length; ++i) {
