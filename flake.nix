@@ -27,6 +27,7 @@
       auth = mkPkg ./lib/auth;
       battery = mkPkg ./lib/battery;
       bluetooth = mkPkg ./lib/bluetooth;
+      brightness = mkPkg ./lib/brightness;
       cava = mkPkg ./lib/cava;
       greet = mkPkg ./lib/greet;
       hyprland = mkPkg ./lib/hyprland;
