@@ -20,7 +20,7 @@ App.start({
 
 :::
 
-After your [bundle step](./installation.md) run `gjs -m app.js`, and that's it!
+After your [bundle step](./init.md) run `gjs -m app.js`, and that's it!
 Now you have an Astal instance running written in TypeScript.
 
 ## Root of every shell component: Window
