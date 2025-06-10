@@ -171,7 +171,7 @@ void astal_river_output_set_focused_tags(AstalRiverOutput* self, guint tags) {
     g_return_if_fail(ASTAL_RIVER_IS_OUTPUT(self));
 
     AstalRiverOutputPrivate* priv = astal_river_output_get_instance_private(self);
-    gchar* tagstring = g_strdup_printf("%i", tags);
+    gchar* tagstring = g_strdup_printf("%u", tags);
 
     zriver_control_v1_add_argument(priv->river_control, "set-focused-tags");
     zriver_control_v1_add_argument(priv->river_control, tagstring);
