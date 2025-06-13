@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <wayland-client-protocol.h>
 
-#include "astal-river.h.in"
+#include "astal-river.h"
 #include "glib-object.h"
 #include "glib.h"
 #include "river-private.h"
@@ -106,7 +106,10 @@ static GParamSpec* astal_river_output_properties[ASTAL_RIVER_OUTPUT_N_PROPERTIES
  *
  * Returns: the id of the underlying wl_output object
  */
-guint astal_river_output_get_id(AstalRiverOutput* self) { return self->id; }
+guint astal_river_output_get_id(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->id;
+}
 
 /**
  * astal_river_output_get_name
@@ -116,7 +119,10 @@ guint astal_river_output_get_id(AstalRiverOutput* self) { return self->id; }
  *
  * Returns: (transfer none) (nullable): the name of the output
  */
-gchar* astal_river_output_get_name(AstalRiverOutput* self) { return self->name; }
+gchar* astal_river_output_get_name(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
+    return self->name;
+}
 
 /**
  * astal_river_output_get_layout_name
@@ -126,7 +132,10 @@ gchar* astal_river_output_get_name(AstalRiverOutput* self) { return self->name; 
  *
  * Returns: (transfer none) (nullable): the currently used layout name of the output
  */
-gchar* astal_river_output_get_layout_name(AstalRiverOutput* self) { return self->layout_name; }
+gchar* astal_river_output_get_layout_name(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
+    return self->layout_name;
+}
 
 /**
  * astal_river_output_get_focused_view
@@ -136,9 +145,14 @@ gchar* astal_river_output_get_layout_name(AstalRiverOutput* self) { return self-
  *
  * Returns: (transfer none) (nullable): the focused view on the output
  */
-gchar* astal_river_output_get_focused_view(AstalRiverOutput* self) { return self->focused_view; }
+gchar* astal_river_output_get_focused_view(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
+    return self->focused_view;
+}
 
 void astal_river_output_set_focused_view(AstalRiverOutput* self, const gchar* focused_view) {
+    g_return_if_fail(ASTAL_RIVER_IS_OUTPUT(self));
+
     g_free(self->focused_view);
     self->focused_view = g_strdup(focused_view);
     g_object_notify(G_OBJECT(self), "focused-view");
@@ -154,8 +168,10 @@ void astal_river_output_set_focused_view(AstalRiverOutput* self, const gchar* fo
  *
  */
 void astal_river_output_set_focused_tags(AstalRiverOutput* self, guint tags) {
+    g_return_if_fail(ASTAL_RIVER_IS_OUTPUT(self));
+
     AstalRiverOutputPrivate* priv = astal_river_output_get_instance_private(self);
-    gchar* tagstring = g_strdup_printf("%i", tags);
+    gchar* tagstring = g_strdup_printf("%u", tags);
 
     zriver_control_v1_add_argument(priv->river_control, "set-focused-tags");
     zriver_control_v1_add_argument(priv->river_control, tagstring);
@@ -172,7 +188,10 @@ void astal_river_output_set_focused_tags(AstalRiverOutput* self, guint tags) {
  *
  * Returns: the focused tags of the output
  */
-guint astal_river_output_get_focused_tags(AstalRiverOutput* self) { return self->focused_tags; }
+guint astal_river_output_get_focused_tags(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->focused_tags;
+}
 
 /**
  * astal_river_output_get_urgent_tags
@@ -182,7 +201,10 @@ guint astal_river_output_get_focused_tags(AstalRiverOutput* self) { return self-
  *
  * Returns: the urgent tags of the output
  */
-guint astal_river_output_get_urgent_tags(AstalRiverOutput* self) { return self->urgent_tags; }
+guint astal_river_output_get_urgent_tags(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->urgent_tags;
+}
 
 /**
  * astal_river_output_get_occupied_tags
@@ -192,15 +214,21 @@ guint astal_river_output_get_urgent_tags(AstalRiverOutput* self) { return self->
  *
  * Returns: the occupied tags of the output
  */
-guint astal_river_output_get_occupied_tags(AstalRiverOutput* self) { return self->occupied_tags; }
+guint astal_river_output_get_occupied_tags(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->occupied_tags;
+}
 
 /**
  * astal_river_output_get_description
  * @self: the AstalRiverOutput object
  *
  * the description of the output
+ *
+ * Returns: (transfer none) (nullable):
  */
 const gchar* astal_river_output_get_description(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
     return self->description;
 }
 
@@ -209,16 +237,26 @@ const gchar* astal_river_output_get_description(AstalRiverOutput* self) {
  * @self: the AstalRiverOutput object
  *
  * the make of the output
+ *
+ * Returns: (transfer none) (nullable): 
  */
-const gchar* astal_river_output_get_make(AstalRiverOutput* self) { return self->make; }
+const gchar* astal_river_output_get_make(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
+    return self->make;
+}
 
 /**
  * astal_river_output_get_model
  * @self: the AstalRiverOutput object
  *
  * the model of the output
+ *
+ * Returns: (transfer none) (nullable):
  */
-const gchar* astal_river_output_get_model(AstalRiverOutput* self) { return self->model; }
+const gchar* astal_river_output_get_model(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
+    return self->model;
+}
 
 /**
  * astal_river_output_get_x
@@ -226,7 +264,10 @@ const gchar* astal_river_output_get_model(AstalRiverOutput* self) { return self-
  *
  * the x coordinate of the outputs position
  */
-gint astal_river_output_get_x(AstalRiverOutput* self) { return self->x; }
+gint astal_river_output_get_x(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->x;
+}
 
 /**
  * astal_river_output_get_y
@@ -234,7 +275,10 @@ gint astal_river_output_get_x(AstalRiverOutput* self) { return self->x; }
  *
  * the y coordinate of the outputs position
  */
-gint astal_river_output_get_y(AstalRiverOutput* self) { return self->y; }
+gint astal_river_output_get_y(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->y;
+}
 
 /**
  * astal_river_output_get_width
@@ -242,7 +286,10 @@ gint astal_river_output_get_y(AstalRiverOutput* self) { return self->y; }
  *
  * the width of the output
  */
-gint astal_river_output_get_width(AstalRiverOutput* self) { return self->width; }
+gint astal_river_output_get_width(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->width;
+}
 
 /**
  * astal_river_output_get_height
@@ -250,7 +297,10 @@ gint astal_river_output_get_width(AstalRiverOutput* self) { return self->width; 
  *
  * the height of the output
  */
-gint astal_river_output_get_height(AstalRiverOutput* self) { return self->height; }
+gint astal_river_output_get_height(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->height;
+}
 
 /**
  * astal_river_output_get_physical_width
@@ -258,7 +308,10 @@ gint astal_river_output_get_height(AstalRiverOutput* self) { return self->height
  *
  * the physical width of the output
  */
-gint astal_river_output_get_physical_width(AstalRiverOutput* self) { return self->physical_width; }
+gint astal_river_output_get_physical_width(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->physical_width;
+}
 
 /**
  * astal_river_output_get_physical_height
@@ -267,6 +320,7 @@ gint astal_river_output_get_physical_width(AstalRiverOutput* self) { return self
  * the physical height of the output
  */
 gint astal_river_output_get_physical_height(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
     return self->physical_height;
 }
 
@@ -276,7 +330,10 @@ gint astal_river_output_get_physical_height(AstalRiverOutput* self) {
  *
  * the scale factor of the output
  */
-gint astal_river_output_get_scale_factor(AstalRiverOutput* self) { return self->scale_factor; }
+gint astal_river_output_get_scale_factor(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 1);
+    return self->scale_factor;
+}
 
 /**
  * astal_river_output_get_refresh_rate
@@ -284,7 +341,10 @@ gint astal_river_output_get_scale_factor(AstalRiverOutput* self) { return self->
  *
  * the refresh rate of the output
  */
-gdouble astal_river_output_get_refresh_rate(AstalRiverOutput* self) { return self->refresh_rate; }
+gdouble astal_river_output_get_refresh_rate(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
+    return self->refresh_rate;
+}
 
 /**
  * astal_river_output_get_transform
@@ -293,10 +353,12 @@ gdouble astal_river_output_get_refresh_rate(AstalRiverOutput* self) { return sel
  * the transform of the output
  */
 AstalRiverTransform astal_river_output_get_transform(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), 0);
     return self->transform;
 }
 
 struct wl_output* astal_river_output_get_wl_output(AstalRiverOutput* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
     AstalRiverOutputPrivate* priv = astal_river_output_get_instance_private(self);
     return priv->wl_output;
 }

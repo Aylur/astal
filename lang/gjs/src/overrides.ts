@@ -36,6 +36,10 @@ await suppress(import("gi://AstalBluetooth"), ({ Adapter, Bluetooth, Device }) =
     patch(Device.prototype, "uuids")
 })
 
+await suppress(import("gi://AstalCava"), ({ Cava }) => {
+    patch(Cava.prototype, "values")
+})
+
 await suppress(import("gi://AstalHyprland"), ({ Hyprland, Monitor, Workspace }) => {
     patch(Hyprland.prototype, "binds")
     patch(Hyprland.prototype, "monitors")
@@ -75,8 +79,16 @@ await suppress(import("gi://AstalPowerProfiles"), ({ PowerProfiles }) => {
     patch(PowerProfiles.prototype, "actions")
 })
 
-await suppress(import("gi://AstalWp"), ({ Wp, Audio, Video }) => {
-    patch(Wp.prototype, "endpoints")
+await suppress(import("gi://AstalRiver"), ({ River }) => {
+  patch(River.prototype, "outputs")
+})
+
+await suppress(import("gi://AstalTray"), ({ Tray }) => {
+  patch(Tray.prototype, "items")
+})
+
+await suppress(import("gi://AstalWp"), ({ Wp, Audio, Video, Node, Endpoint, Device }) => {
+    patch(Wp.prototype, "nodes")
     patch(Wp.prototype, "devices")
     patch(Audio.prototype, "streams")
     patch(Audio.prototype, "recorders")
@@ -88,4 +100,12 @@ await suppress(import("gi://AstalWp"), ({ Wp, Audio, Video }) => {
     patch(Video.prototype, "sinks")
     patch(Video.prototype, "sources")
     patch(Video.prototype, "devices")
+    patch(Endpoint.prototype, "routes")
+    patch(Node.prototype, "channels")
+    patch(Device.prototype, "profiles")
+    patch(Device.prototype, "routes")
+    patch(Device.prototype, "input_routes")
+    patch(Device.prototype, "inputRoutes")
+    patch(Device.prototype, "output_routes")
+    patch(Device.prototype, "outputRoutes")
 })

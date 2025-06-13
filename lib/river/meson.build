@@ -5,7 +5,11 @@ project(
   default_options: ['c_std=gnu11', 'warning_level=3', 'prefix=/usr'],
 )
 
-add_project_arguments(['-Wno-pedantic', '-Wno-unused-parameter'], language: 'c')
+add_project_arguments([
+  '-Wno-pedantic',
+  '-Wno-unused-parameter',
+  '-DG_LOG_DOMAIN="AstalRiver"',
+], language: 'c')
 
 version_split = meson.project_version().split('.')
 lib_so_version = version_split[0] + '.' + version_split[1]
