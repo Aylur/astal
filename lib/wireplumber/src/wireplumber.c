@@ -594,9 +594,9 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
     /**
-     * AstalWpWp:endpoints: (type GList(AstalWpEndpoint)) (transfer container)
+     * AstalWpWp:nodes: (type GList(AstalWpNode)) (transfer container)
      *
-     * A list of [class@AstalWp.Endpoint] objects
+     * A list of [class@AstalWp.Node] objects
      */
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_NODES] =
         g_param_spec_pointer("nodes", "nodes", "nodes", G_PARAM_READABLE);
