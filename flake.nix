@@ -5,10 +5,6 @@
   }: let
     forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux"];
   in {
-    lib = {
-      mkLuaPackage = import ./nix/lua.nix self;
-    };
-
     packages = forAllSystems (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       mkPkg = src:
@@ -37,8 +33,6 @@
       river = mkPkg ./lib/river;
       tray = mkPkg ./lib/tray;
       wireplumber = mkPkg ./lib/wireplumber;
-
-      gjs = import ./lang/gjs {inherit self pkgs;};
     });
 
     devShells = forAllSystems (system:
