@@ -47,4 +47,31 @@ public struct Mode {
         is_preferred = object.get_boolean_member("is_preferred");
     }
 }
+
+public enum WorkspaceReferenceArgTag {
+  Id,
+  Index,
+  Name,
 }
+
+public enum ColumnDisplayTag {
+  Normal,
+  Tabbed
+}
+
+public enum SizeChangeTag {
+  SetFixed,
+  SetProportion,
+  AdjustFixed,
+  AdjustProportion,
+}
+
+public enum LayoutSwitchTargetTag {
+  Next,
+  Prev,
+  Index,
+}
+
+}
+
+
