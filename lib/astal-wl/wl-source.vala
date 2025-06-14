@@ -1,5 +1,5 @@
-namespace WlGlib {
-public class WlSource : Source {
+namespace AstalWl {
+public class Source : GLib.Source {
 
     public Wl.Display display;
     public void* fd;
@@ -10,13 +10,13 @@ public class WlSource : Source {
         if (this.error > 0 || (revents & (IOCondition.ERR | IOCondition.HUP)) != 0) {
             errno = this.error;
             if(callback != null) return callback();
-            return Source.REMOVE;
+            return GLib.Source.REMOVE;
         }
         if (((revents & IOCondition.IN) != 0) && this.display.dispatch() < 0) {
             if(callback != null) return callback();
-            return Source.REMOVE;
+            return GLib.Source.REMOVE;
         }
-        return Source.CONTINUE;
+        return GLib.Source.CONTINUE;
     }
 
     public override bool check() {
@@ -31,7 +31,7 @@ public class WlSource : Source {
         return false;
     }
 
-    public WlSource() {
+    public Source() {
         base();
         this.display = new Wl.Display.connect(null);
         if(this.display == null) return;
