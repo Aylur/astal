@@ -1,9 +1,12 @@
 #include <gio/gio.h>
 #include <json-glib/json-glib.h>
+#include <stdint.h>
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
-#include <wayland-glib.h>
+#include <astal-wl.h>
 
+#include "astal-river.h"
+#include "glib-object.h"
 #include "river-control-unstable-v1-client.h"
 #include "river-layout-v3-client.h"
 #include "river-private.h"
@@ -20,10 +23,11 @@ struct _AstalRiverRiver {
 typedef struct {
     GHashTable* signal_ids;
     gboolean init;
-    struct wl_registry* wl_registry;
     struct wl_seat* seat;
     struct wl_display* display;
-    WlGlibWlSource* wl_source;
+
+    AstalWlRegistry *registry;
+
     struct zriver_status_manager_v1* river_status_manager;
     struct zriver_control_v1* river_control;
     struct zriver_seat_status_v1* river_seat_status;
@@ -276,10 +280,17 @@ static const struct zriver_seat_status_v1_listener river_seat_status_listener = 
     .mode = river_seat_status_handle_mode,
 };
 
-static void global_registry_handler(void* data, struct wl_registry* registry, uint32_t id,
-                                    const char* interface, uint32_t version) {
-    AstalRiverRiver* self = ASTAL_RIVER_RIVER(data);
+// static void global_registry_handler(void* data, struct wl_registry* registry, uint32_t id,
+//                                     const char* interface, uint32_t version) {
+static void global_registry_handler(gpointer data, gpointer user_data) {
+    AstalRiverRiver* self = ASTAL_RIVER_RIVER(user_data);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
+
+    AstalWlGlobal * global = (AstalWlGlobal*) data;
+    const char* interface = global->interface;
+    struct wl_registry* registry = astal_wl_registry_get_registry(priv->registry);
+    uint32_t id = global->name;
+
     if (strcmp(interface, wl_output_interface.name) == 0) {
         if (priv->river_status_manager == NULL) return;
         struct wl_output* wl_out = wl_registry_bind(registry, id, &wl_output_interface, 4);
@@ -306,6 +317,10 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
         priv->river_layout_manager =
             wl_registry_bind(registry, id, &river_layout_manager_v3_interface, 2);
     }
+}
+
+static void global_registry_handler_cb(AstalWlRegistry *registry, AstalWlGlobal *global, AstalRiverRiver *self) {
+  global_registry_handler(global, self);
 }
 
 static void astal_river_river_callback_success(void* data, struct zriver_command_callback_v1* cb,
@@ -347,8 +362,10 @@ void astal_river_river_run_command_async(AstalRiverRiver* self, gint length, con
     if (callback != NULL) zriver_command_callback_v1_add_listener(cb, &cb_listener, callback);
 }
 
-static void global_registry_remover(void* data, struct wl_registry* registry, uint32_t id) {
-    AstalRiverRiver* self = ASTAL_RIVER_RIVER(data);
+static void global_registry_remover(gpointer data, gpointer user_data) {
+    AstalWlGlobal* global = (AstalWlGlobal*)data;
+    uint32_t id = global->name;
+    AstalRiverRiver *self = ASTAL_RIVER_RIVER(user_data);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
     AstalRiverOutput* output = find_output_by_id(self, id);
     if (output != NULL) {
@@ -367,8 +384,9 @@ static void global_registry_remover(void* data, struct wl_registry* registry, ui
     g_signal_emit(self, astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_CHANGED], 0);
 }
 
-static const struct wl_registry_listener registry_listener = {global_registry_handler,
-                                                              global_registry_remover};
+static void global_registry_remover_cb(AstalWlRegistry *registry, AstalWlGlobal *global, AstalRiverRiver *self) {
+  global_registry_remover(global, self);
+}
 
 static void astal_river_river_json_serializable_iface_init(JsonSerializableIface* iface) {
     iface->serialize_property = astal_river_river_serialize_property;
@@ -382,18 +400,23 @@ static gboolean astal_river_river_initable_init(GInitable* initable, GCancellabl
 
     if (priv->init) return TRUE;
 
-    priv->wl_source = wl_glib_wl_source_new();
+    priv->registry = g_object_ref(astal_wl_registry_get_default());
 
-    if (priv->wl_source == NULL) {
-        g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_FAILED,
-                            "Can not connect to wayland display");
-        return FALSE;
-    }
+    // if (priv->wl_source == NULL) {
+    //     g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_FAILED,
+    //                         "Can not connect to wayland display");
+    //     return FALSE;
+    // }
 
-    priv->display = priv->wl_source->display;
+    priv->display = astal_wl_registry_get_display(priv->registry);
 
-    priv->wl_registry = wl_display_get_registry(priv->display);
-    wl_registry_add_listener(priv->wl_registry, &registry_listener, self);
+    // priv->wl_registry = wl_display_get_registry(priv->display);
+    // wl_registry_add_listener(priv->wl_registry, &registry_listener, self);
+
+    g_signal_connect(priv->registry, "global-added", G_CALLBACK(global_registry_handler_cb), self);
+    g_signal_connect(priv->registry, "global-removed", G_CALLBACK(global_registry_remover_cb), self);
+
+    g_list_foreach(astal_wl_registry_find_globals(priv->registry, NULL), global_registry_handler, self);
 
     wl_display_roundtrip(priv->display);
 
@@ -481,10 +504,12 @@ static void astal_river_river_finalize(GObject* object) {
 
     if (priv->display != NULL) wl_display_roundtrip(priv->display);
 
+    g_clear_object(&priv->registry);
+
     g_clear_list(&self->outputs, g_object_unref);
     self->outputs = NULL;
 
-    if (priv->wl_registry != NULL) wl_registry_destroy(priv->wl_registry);
+    // if (priv->wl_registry != NULL) wl_registry_destroy(priv->wl_registry);
     if (priv->river_status_manager != NULL)
         zriver_status_manager_v1_destroy(priv->river_status_manager);
     if (priv->river_seat_status != NULL) zriver_seat_status_v1_destroy(priv->river_seat_status);
@@ -494,7 +519,7 @@ static void astal_river_river_finalize(GObject* object) {
     if (priv->display != NULL) wl_display_flush(priv->display);
 
     // if (priv->wl_source != NULL) wl_source_free(priv->wl_source);
-    if (priv->wl_source != NULL) g_source_unref((GSource*)(priv->wl_source));
+    // if (priv->wl_source != NULL) g_source_unref((GSource*)(priv->wl_source));
 
     g_free(self->focused_view);
     g_free(self->focused_output);
