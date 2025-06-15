@@ -36,7 +36,7 @@ deps = [
   dependency('wayland-client'),
 ]
 
-sources = [config] + files('registry.vala', 'wl-source.vala')
+sources = [config] + files('wl_display.c', 'registry.vala', 'wl-source.vala')
 
 lib = library(
   meson.project_name(),

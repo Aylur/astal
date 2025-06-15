@@ -1,4 +1,9 @@
+
+
+
 namespace AstalWl {
+
+extern unowned Wl.Display get_wl_display();
 
 public struct Global {
   uint32 name;
@@ -20,10 +25,11 @@ public class Registry : Object {
 
     private Source source;
     private Wl.Registry _registry;
+    private unowned Wl.Display _display;
     private List<Global?> globals;
 
     public Wl.Registry registry { get { return this._registry; } }
-    public Wl.Display display { get { return this.source.display; } }
+    public Wl.Display display { get { return this._display; } }
    
     public signal void global_added(Global global);
     public signal void global_removed(Global global);
@@ -59,13 +65,18 @@ public class Registry : Object {
     };
 
     construct {
-
         this.globals = new List<Global?>();
-        this.source = new Source();
+
+        this._display = get_wl_display();
+
+        if(this._display == null) {
+          this.source = new Source();
+          this._display = this.source.display;
+        }
         
-        this._registry = this.source.display.get_registry ();
+        this._registry = this.display.get_registry ();
         this._registry.add_listener (registry_listener, this);
-        this.source.display.roundtrip();
+        this._display.roundtrip();
     }
 }
 }
