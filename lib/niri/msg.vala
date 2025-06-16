@@ -699,8 +699,6 @@ public class msg : Object {
       return send_act("ScreenshotWindow", serialize_fields({ int_member("id", id), bool_member("write_to_disk", write_to_disk) }));
     }
 
-    }
-
     public static bool set_column_display(ColumnDisplayTag display) {
       string display_field;
       switch (display) {
