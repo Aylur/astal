@@ -1,8 +1,0 @@
-import "./overrides.js"
-export { default as AstalIO } from "gi://AstalIO?version=0.1"
-export * from "./process.js"
-export * from "./time.js"
-export * from "./file.js"
-export * from "./gobject.js"
-export { Binding, bind } from "./binding.js"
-export { Variable, derive } from "./variable.js"
