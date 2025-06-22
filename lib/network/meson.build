@@ -34,14 +34,13 @@ deps = [
   dependency('libnm'),
 ]
 
-sources = [
-  config,
+sources = [config] + files(
   'network.vala',
   'wifi.vala',
   'wired.vala',
   'wired.vala',
   'accesspoint.vala',
-]
+)
 
 lib = library(
   meson.project_name(),
@@ -49,10 +48,9 @@ lib = library(
   dependencies: deps,
   vala_header: meson.project_name() + '.h',
   vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-  vala_gir: gir,
   version: meson.project_version(),
   install: true,
-  install_dir: [true, true, true, true],
+  install_dir: [true, true, true],
 )
 
 import('pkgconfig').generate(
@@ -65,6 +63,23 @@ import('pkgconfig').generate(
   install_dir: get_option('libdir') / 'pkgconfig',
 )
 
+pkgs = []
+foreach dep : deps
+  pkgs += ['--pkg=' + dep.name()]
+endforeach
+
+gir_tgt = custom_target(
+  gir,
+  command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
+  + pkgs
+  + sources,
+  input: sources,
+  depends: lib,
+  output: gir,
+  install: true,
+  install_dir: get_option('datadir') / 'gir-1.0',
+)
+
 custom_target(
   typelib,
   command: [
@@ -75,7 +90,7 @@ custom_target(
   ],
   input: lib,
   output: typelib,
-  depends: lib,
+  depends: [lib, gir_tgt],
   install: true,
   install_dir: get_option('libdir') / 'girepository-1.0',
 )

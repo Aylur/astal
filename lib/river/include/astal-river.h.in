@@ -24,6 +24,10 @@ AstalRiverGeometry *astal_river_geometry_copy(AstalRiverGeometry *geometry);
 
 void astal_river_geometry_free(AstalRiverGeometry *geometry);
 
+AstalRiverGeometry *astal_river_geometry_new(guint x, guint y, guint width, guint height);
+
+AstalRiverGeometry *astal_river_geometry_new_zero();
+
 GType astal_river_transform_get_type();
 #define ASTAL_RIVER_TYPE_TRANSFORM (astal_river_transform_get_type())
 

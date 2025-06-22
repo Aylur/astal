@@ -37,6 +37,31 @@ AstalRiverGeometry* astal_river_geometry_copy(AstalRiverGeometry* geometry) {
  */
 void astal_river_geometry_free(AstalRiverGeometry* geometry) { g_free(geometry); }
 
+/**
+ * astal_river_geometry_new
+ * @geometry: the AstalRiverGeometry to copy
+ *
+ * Creates a new  AstalRiverGeometry instance.
+ *
+ */
+AstalRiverGeometry* astal_river_geometry_new(guint x, guint y, guint width, guint height) {
+    AstalRiverGeometry* new_geometry = g_new(AstalRiverGeometry, 1);
+    new_geometry->x = x;
+    new_geometry->y = y;
+    new_geometry->width = width;
+    new_geometry->height = height;
+    return new_geometry;
+}
+
+/**
+ * astal_river_geometry_new_zero
+ * @geometry: the AstalRiverGeometry to copy
+ *
+ * Creates a new  AstalRiverGeometry instance.
+ *
+ */
+AstalRiverGeometry* astal_river_geometry_new_zero() { return g_new(AstalRiverGeometry, 1); }
+
 struct _AstalRiverLayout {
     GObject parent_instance;
 
