@@ -238,7 +238,7 @@ const gchar* astal_river_output_get_description(AstalRiverOutput* self) {
  *
  * the make of the output
  *
- * Returns: (transfer none) (nullable): 
+ * Returns: (transfer none) (nullable):
  */
 const gchar* astal_river_output_get_make(AstalRiverOutput* self) {
     g_return_val_if_fail(ASTAL_RIVER_IS_OUTPUT(self), NULL);
