@@ -43,8 +43,8 @@ public class Registry : Object {
     private void registry_handle_global_removed(Wl.Registry wl_registry, uint32 name) {
         foreach (var global in this.globals) {
             if(global.name == name) {
-              this.globals.remove(global);
-              global_removed(global);
+                this.globals.remove(global);
+                global_removed(global);
             }
         }
     }
@@ -70,8 +70,14 @@ public class Registry : Object {
         this._display = get_wl_display();
 
         if(this._display == null) {
-          this.source = new Source();
-          this._display = this.source.display;
+            debug("Could not find Gdk Wayland Display, falling back to creating a new Wayland Display");
+            this.source = new Source();
+            this._display = this.source.display;
+        }
+
+        if(this._display == null) {
+            critical("Could not connect to wayland.");
+            return;
         }
         
         this._registry = this.display.get_registry ();
