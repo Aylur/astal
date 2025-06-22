@@ -56,6 +56,8 @@ static GParamSpec *astal_wp_device_properties[ASTAL_WP_DEVICE_N_PROPERTIES] = {
  * @self: the AstalWpDevice object
  *
  * gets the form factor of this device.
+ *
+ * Returns: (nullable):
  */
 const gchar *astal_wp_device_get_form_factor(AstalWpDevice *self) { return self->from_factor; }
 
@@ -74,6 +76,7 @@ guint astal_wp_device_get_id(AstalWpDevice *self) { return self->id; }
  *
  * gets the description of this device
  *
+ * Returns: (nullable):
  */
 const gchar *astal_wp_device_get_description(AstalWpDevice *self) { return self->description; }
 
@@ -275,6 +278,20 @@ GList *astal_wp_device_get_output_routes(AstalWpDevice *self) {
 
     g_hash_table_foreach(priv->routes, astal_wp_device_filter_by_direction, &data);
     return routes;
+}
+
+/**
+ * astal_wp_device_get_pw_property
+ *
+ * Gets the pipewire property with the give key. You should use the GObject properties of this node
+ * whereever possible, as you can get notified on changes, which is not the case here.
+ *
+ * Returns: (transfer full) (nullable)
+ */
+gchar *astal_wp_device_get_pw_property(AstalWpDevice *self, const gchar *key) {
+    AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+    const gchar *value = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->device), key);
+    return g_strdup(value);
 }
 
 static void astal_wp_device_get_property(GObject *object, guint property_id, GValue *value,
@@ -592,7 +609,7 @@ static void astal_wp_device_class_init(AstalWpDeviceClass *class) {
     astal_wp_device_properties[ASTAL_WP_DEVICE_PROP_DEVICE] = g_param_spec_object(
         "device", "device", "device", WP_TYPE_DEVICE, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY);
     /*
-     * AstalWpDevice:description:
+     * AstalWpDevice:description: (nullable)
      *
      * The description of this device.
      */
