@@ -43,6 +43,7 @@ sources = [config] + files(
   'file.vala',
   'process.vala',
   'time.vala',
+  'variable.vala',
 )
 
 lib = library(
