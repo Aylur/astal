@@ -54,7 +54,7 @@ git clone https://github.com/aylur/astal.git /tmp/astal
 
 ```sh
 cd /tmp/astal/lib/astal/io
-meson setup --prefix /usr build
+meson setup build
 meson install -C build
 ```
 
@@ -62,6 +62,6 @@ meson install -C build
 
 ```sh
 cd /tmp/astal/lib/astal/gtk3
-meson setup --prefix /usr build
+meson setup build
 meson install -C build
 ```
