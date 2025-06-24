@@ -47,6 +47,13 @@ export default [
         title: "HyprPanel",
         author: "Jas",
     },
+    {
+        image: "/astal/showcase/unnamed-shell.webp",
+        url: "https://codeberg.org/bunbun/unnamed-shell",
+        icon: "devicon-vala-plain",
+        title: "unnamed-shell",
+        author: "bunbun",
+    },
 
     // add more showcases here~
 ] satisfies Array<Grid<Showcase>>
