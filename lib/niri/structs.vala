@@ -2,9 +2,9 @@ namespace AstalNiri {
 public struct PhysicalSize {
    public uint32 x;
    public uint32 y;
-   public PhysicalSize.from_json(Json.Object object) {
-        x = (uint32)object.get_int_member("x");
-        y = (uint32)object.get_int_member("y");
+   public PhysicalSize.from_json(Json.Array size) {
+        x = (uint32)size.get_int_element(0);
+        y = (uint32)size.get_int_element(1);
    }
 }
 // public enum Transform {

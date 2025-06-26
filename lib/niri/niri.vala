@@ -33,7 +33,12 @@ public class Niri : Object {
 
     public Workspace? focused_workspace { get; private set; }
     public Window? focused_window { get; private set; }
-    public Output? focused_output { get; private set; }
+    public Output? focused_output { get {
+        if (focused_workspace == null ) return null;
+        unowned var output = _outputs.get(focused_workspace.output); 
+        if (output == null ) return null;
+        return output;
+    } }
 
     public List<weak Window> windows { owned get { return _windows.get_values().copy(); } }
     public List<weak Output> outputs { owned get { return _outputs.get_values().copy(); } }
@@ -42,7 +47,6 @@ public class Niri : Object {
         res.sort(sort_workspaces);
         return res;
     } }
-    //TODO: public Output? focused_output {get; private set; }
 
     /** An event has been received. */
     public signal void event(Json.Node event);
@@ -161,21 +165,43 @@ public class Niri : Object {
     private void on_workspaces_changed(Json.Object event) {
         var workspaces_arr = event.get_array_member("workspaces");
 
-        _outputs.remove_all();
         _workspaces.remove_all();
+        update_outputs.begin();
         foreach (var element in workspaces_arr.get_elements()) {
             var workspace = new Workspace.from_json(element.get_object());
             _workspaces.insert(workspace.id, workspace);
-            // if (_outputs.get(workspace.output) == null) {
-                // requeres additional message to retrieve output data
-                // _outputs.insert(workspace.output, )
-            // }
             if(workspace.is_focused) {
                 update_focused_workspace(workspace.id);
             }
         }
         workspaces_changed(workspaces);
         notify_property("workspaces");
+    }
+
+    private async void update_outputs() {
+        // Niri does not send any output events so the list is recreated on WorkspaceChanged 
+        // This should be fine as the physical properties of a monitor are unlikely to change
+        _outputs.remove_all();
+        Json.Node node;
+        try {
+            node = Json.from_string(yield msg.send_async("\"Outputs\""));
+            if(node == null) return;
+        } catch (Error err) {
+            critical("msg %s", err.message);
+            return;
+        }
+        var ok = node.get_object().get_object_member("Ok");
+        if(ok == null) {
+            critical("Error retrieving outputs");
+            return;
+        }
+        var outputs = ok.get_object_member("Outputs");
+        var output_members = outputs.get_members();
+        foreach (var name in output_members) {
+            var output = new Output.from_json(outputs.get_member(name).get_object());
+            _outputs.insert(name, output);
+        }
+        notify_property("outputs");
     }
 
     private void on_workspace_activated(Json.Object event) {
