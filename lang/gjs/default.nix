@@ -1,8 +1,4 @@
-{
-  pkgs,
-  self,
-  ...
-}:
+pkgs:
 pkgs.stdenvNoCC.mkDerivation {
   src = ./.;
   name = "astal-gjs";
@@ -10,7 +6,7 @@ pkgs.stdenvNoCC.mkDerivation {
     pkgs.meson
     pkgs.ninja
     pkgs.pkg-config
-    self.packages.${pkgs.system}.io
-    self.packages.${pkgs.system}.astal3
+    pkgs.astal.io
+    pkgs.astal.astal3
   ];
 }
