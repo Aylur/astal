@@ -4,6 +4,11 @@ Using Astal on Nix will require you to write a derivation for your project. You
 can either copy and build off of these example flakes or you can incorporate the
 derivations into your existing flake/configuration.
 
+> [!WARNING]
+>
+> This page expects you to know what a nix derivation is and how to use/install
+> them.
+
 ## Installing libraries versus installing executables
 
 In case you did not know already, you can't install libraries globally on Nix as
@@ -83,7 +88,7 @@ In which case you can omit `installPhase` and just include meson in
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
   in {
-    packages.${system}. default = pkgs.stdenvNoCC.mkDerivation { # [!code focus:29]
+    packages.${system}.default = pkgs.stdenvNoCC.mkDerivation { # [!code focus:29]
       name = "my-shell";
       src = ./.;
 
@@ -105,11 +110,11 @@ In which case you can omit `installPhase` and just include meson in
         mkdir -p $out/bin
 
         esbuild \
-            --bundle src/app.js \
-            --outfile=$out/bin/my-shell \
-            --format=esm \
-            --sourcemap=inline \
-            --external:gi://\*
+          --bundle src/app.js \
+          --outfile=$out/bin/my-shell \
+          --format=esm \
+          --sourcemap=inline \
+          --external:gi://\*
       '';
     };
   };

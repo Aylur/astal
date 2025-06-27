@@ -38,17 +38,12 @@ export default defineConfig({
     ],
 
     sidebar: [
+      { text: "Introduction", link: "/guide/introduction" },
+      { text: "Installation", link: "/guide/installation" },
+      { text: "Nix", link: "/guide/nix" },
       {
-        text: "Introduction",
-        link: "/guide/introduction",
-      },
-      {
-        text: "Installation",
-        link: "/guide/installation",
-      },
-      {
-        text: "Nix",
-        link: "/guide/nix",
+        text: "Legacy Documentation",
+        link: "https://aylur.github.io/astal-legacy-docs/",
       },
       {
         text: "Libraries",
