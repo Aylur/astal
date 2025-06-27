@@ -26,27 +26,27 @@ This example shows you how to get a TypeScript+Blueprint+Sass project going.
 
 - generate types with `ts-for-gir`
 
-    ```sh
-    # might take a while
-    # also, don't worry about warning and error logs
-    npx @ts-for-gir/cli generate --ignoreVersionConflicts
-    ```
+  ```sh
+  # might take a while
+  # also, don't worry about warning and error logs
+  npx @ts-for-gir/cli generate --ignoreVersionConflicts
+  ```
 
 - developing
 
-    ```sh
-    meson setup build --wipe --prefix "$(pwd)/result"
-    meson install -C build
-    ./result/bin/simple-bar
-    ```
+  ```sh
+  meson setup build --wipe --prefix "$(pwd)/result"
+  meson install -C build
+  ./result/bin/simple-bar
+  ```
 
 - installing
 
-    ```sh
-    meson setup build --wipe --prefix /usr
-    meson install -C build
-    simple-bar
-    ```
+  ```sh
+  meson setup build --wipe
+  meson install -C build
+  simple-bar
+  ```
 
 - adding new typescript files requires no additional steps
 - adding new scss files requires no additional steps as long as they are imported from `main.scss`
