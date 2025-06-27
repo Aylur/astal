@@ -50,37 +50,37 @@ lib = library(
   install_dir: [true, true, true],
 )
 
-pkgs = []
-foreach dep : deps
-  pkgs += ['--pkg=' + dep.name()]
-endforeach
-
-gir_tgt = custom_target(
-  gir,
-  command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-  + pkgs
-  + sources,
-  input: sources,
-  depends: lib,
-  output: gir,
-  install: true,
-  install_dir: get_option('datadir') / 'gir-1.0',
-)
-
-custom_target(
-  typelib,
-  command: [
-    find_program('g-ir-compiler'),
-    '--output', '@OUTPUT@',
-    '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
-    meson.current_build_dir() / gir,
-  ],
-  input: lib,
-  output: typelib,
-  depends: [lib, gir_tgt],
-  install: true,
-  install_dir: get_option('libdir') / 'girepository-1.0',
-)
+# pkgs = []
+# foreach dep : deps
+#   pkgs += ['--pkg=' + dep.name()]
+# endforeach
+#
+# gir_tgt = custom_target(
+#   gir,
+#   command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
+#   + pkgs
+#   + sources,
+#   input: sources,
+#   depends: lib,
+#   output: gir,
+#   install: true,
+#   install_dir: get_option('datadir') / 'gir-1.0',
+# )
+#
+# custom_target(
+#   typelib,
+#   command: [
+#     find_program('g-ir-compiler'),
+#     '--output', '@OUTPUT@',
+#     '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
+#     meson.current_build_dir() / gir,
+#   ],
+#   input: lib,
+#   output: typelib,
+#   depends: [lib, gir_tgt],
+#   install: true,
+#   install_dir: get_option('libdir') / 'girepository-1.0',
+# )
 
 import('pkgconfig').generate(
   lib,
