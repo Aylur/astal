@@ -55,8 +55,8 @@ you need.
 ### AGS
 
 [AGS](https://aylur.github.io/ags/) is a scaffolding tool for Astal + Gnim
-projects written in TypeScript. [Gnim](github.com/aylur/gnim) is a library which
-brings JSX to GJS.
+projects written in TypeScript. [Gnim](https://github.com/aylur/gnim) is a
+library which brings JSX to GJS.
 
 ### Eww
 
