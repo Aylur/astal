@@ -492,6 +492,7 @@ void astal_wp_node_set_type(AstalWpNode *self, AstalWpMediaClass type) {
  */
 gchar *astal_wp_node_get_pw_property(AstalWpNode *self, const gchar *key) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    if(priv->node == NULL) return NULL;
     const gchar *value = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), key);
     return g_strdup(value);
 }

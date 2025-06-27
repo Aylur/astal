@@ -290,6 +290,7 @@ GList *astal_wp_device_get_output_routes(AstalWpDevice *self) {
  */
 gchar *astal_wp_device_get_pw_property(AstalWpDevice *self, const gchar *key) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+    if(priv->device == NULL) return NULL;
     const gchar *value = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->device), key);
     return g_strdup(value);
 }
