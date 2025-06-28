@@ -440,7 +440,7 @@ public class AstalMpris.Player : Object {
                 _loop_status = Loop.from_string(proxy.loop_status);
                 notify_property("loop-status");
             }
-        } else {
+        } else if (loop_status != Loop.UNSUPPORTED) {
             _loop_status = Loop.UNSUPPORTED;
             notify_property("loop-status");
         }
@@ -455,7 +455,7 @@ public class AstalMpris.Player : Object {
                 _shuffle_status = Shuffle.from_bool(proxy.shuffle);
                 notify_property("shuffle-status");
             }
-        } else {
+        } else if (shuffle_status != Shuffle.UNSUPPORTED) {
             _shuffle_status = Shuffle.UNSUPPORTED;
             notify_property("shuffle-status");
         }

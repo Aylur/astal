@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/">
+        <file>index.js</file>
+        <file>main.css</file>
+        <file>ui/Bar.ui</file>
+    </gresource>
+</gresources>

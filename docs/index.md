@@ -5,30 +5,34 @@ pageClass: home-page
 hero:
   name: "Astal"
   text: "Create Beautiful Widgets With Ease"
-  tagline: "The Linux Suite and Framework to Craft Desktop Shells and <i>beautiful</i> <i>functional</i> Wayland Widgets with GTK!"
+  tagline: "The Linux Suite to Craft Desktop Shells and Widgets with GTK!"
   image: /icon.svg
   actions:
     - theme: brand
-      text: What is Astal?
-      link: /guide/getting-started/introduction
-    - theme: alt
-      text: Get Started
-      link: /guide/getting-started/installation
+      text: Introduction
+      link: /guide/introduction
     - theme: alt
       text: References
       link: /guide/libraries/references
 
 features:
   - title: Use Your Preferred Language
-    icon: <i style="color:var(--vp-c-brand-3)" class="devicon-typescript-plain"></i>
-    details: The main focus of Astal is TypeScript+JSX. But you can use the libraries in any language that supports <a href="https://en.wikipedia.org/wiki/List_of_language_bindings_for_GTK">Gobject Introspection</a>.
+    icon: <i style="color:var(--vp-c-brand-3)" class="devicon-c-plain"></i>
+    details:
+      Astal is written with GLib and it supports languages that support GObject
+      introspection.
   - title: No bash scripts needed
     icon: <i style="color:var(--vp-c-brand-3)" class="devicon-bash-plain"></i>
-    details: Includes modules to work with Network, Bluetooth, Battery, Audio and <a href="/astal/guide/libraries/references#astal-libraries">more</a>.
+    details:
+      Includes modules to work with Network, Bluetooth, Battery, Audio and <a
+      href="/astal/guide/libraries/references#astal-libraries">more</a>.
   - title: Use any Gtk widget
     icon: <i style="color:var(--vp-c-brand-3)" class="fl-gtk"></i>
-    details: With Astal you work with Gtk directly. You are not limited to only a set of them.
+    details:
+      With Astal you work with Gtk directly. You are not limited to only a set
+      of them.
 ---
+
 <!--TODO: add icons for buttons https://github.com/vuejs/vitepress/pull/3795-->
 
 <style>

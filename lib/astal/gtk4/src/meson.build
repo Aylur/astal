@@ -26,6 +26,7 @@ deps = [
 ]
 
 sources = [config] + files(
+  'widget/bin.vala',
   'widget/box.vala',
   'widget/slider.vala',
   'widget/window.vala',

@@ -13,7 +13,8 @@ void print_json(AstalRiverRiver* river) {
 
     gchar* json_str = json_to_string(json, FALSE);
     g_print("%s\n", json_str);
-    g_free(json);
+    json_node_free(json);
+    g_free(json_str);
 }
 
 int main(int argc, char** argv) {
