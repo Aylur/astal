@@ -1,11 +1,13 @@
 static bool help;
 static bool version;
 static bool monitor;
+static bool pretty;
 
 const OptionEntry[] options = {
     { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref version, null, null },
     { "help", 'h', OptionFlags.NONE, OptionArg.NONE, ref help, null, null },
     { "monitor", 'm', OptionFlags.NONE, OptionArg.NONE, ref monitor, null, null },
+    { "pretty", 'p', OptionFlags.NONE, OptionArg.NONE, ref pretty, null, null },
     { null },
 };
 
@@ -28,6 +30,7 @@ int main(string[] argv) {
         print("    -h, --help        Print this help and exit\n");
         print("    -v, --version     Print version number and exit\n");
         print("    -m, --monitor     Monitor property changes\n");
+        print("    -p, --pretty      Pretty print json output\n");
         return 0;
     }
 
@@ -37,14 +40,17 @@ int main(string[] argv) {
     }
 
     var battery = AstalBattery.get_default();
-    print("%s\n", Json.gobject_to_data(battery, null));
+    print_state(battery);
 
     if (monitor) {
-        battery.notify.connect(() => {
-            print("%s\n", Json.gobject_to_data(battery, null));
-        });
+        battery.notify.connect(() => { print_state(battery); });
         new GLib.MainLoop(null, false).run();
     }
 
     return 0;
+}
+
+void print_state(AstalBattery.Device battery) {
+    stdout.printf("%s\n", Json.to_string(Json.gobject_serialize(battery), pretty));
+    stdout.flush();
 }
