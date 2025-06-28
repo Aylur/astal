@@ -1,3 +1,5 @@
+import GObject from "gi://GObject";
+
 export const snakeify = (str: string) => str
     .replace(/([a-z])([A-Z])/g, "$1_$2")
     .replaceAll("-", "_")
@@ -116,7 +118,8 @@ export class Binding<Value> implements Subscribable<Value> {
                 callback(this.get())
             })
             return () => {
-                (this.#emitter.disconnect as Connectable["disconnect"])(id)
+                if (GObject.signal_handler_is_connected(this.#emitter, id))
+                    (this.#emitter.disconnect as Connectable["disconnect"])(id)
             }
         }
         throw Error(`${this.#emitter} is not bindable`)
