@@ -80,7 +80,7 @@ export class Binding<Value> {
                 callback(this.get())
             })
             return () => {
-                if(GObject.signal_handler_is_connected(this.#emitter, id))
+                if (GObject.signal_handler_is_connected(this.#emitter, id))
                     (this.#emitter.disconnect as Connectable["disconnect"])(id)
             }
         }
