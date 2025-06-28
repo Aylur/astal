@@ -23,6 +23,7 @@ struct _AstalWpWp {
     AstalWpVideo *video;
 
     AstalWpScale scale;
+    gboolean connected;
 };
 
 typedef struct {
@@ -65,6 +66,7 @@ typedef enum {
     ASTAL_WP_WP_PROP_DEFAULT_SPEAKER,
     ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE,
     ASTAL_WP_WP_PROP_SCALE,
+    ASTAL_WP_WP_PROP_CONNECTED,
     ASTAL_WP_WP_N_PROPERTIES,
 } AstalWpWpProperties;
 
@@ -145,7 +147,7 @@ GList *astal_wp_wp_get_devices(AstalWpWp *self) {
  *
  * gets the [class@AstalWp.Audio] object
  *
- * Returns: (nullable) (transfer none): gets the audio object
+ * Returns: (transfer none): gets the audio object
  */
 AstalWpAudio *astal_wp_wp_get_audio(AstalWpWp *self) { return self->audio; }
 
@@ -154,7 +156,7 @@ AstalWpAudio *astal_wp_wp_get_audio(AstalWpWp *self) { return self->audio; }
  *
  * gets the video object
  *
- * Returns: (nullable) (transfer none): gets the video object
+ * Returns: (transfer none): gets the video object
  */
 AstalWpVideo *astal_wp_wp_get_video(AstalWpWp *self) { return self->video; }
 
@@ -163,7 +165,7 @@ AstalWpVideo *astal_wp_wp_get_video(AstalWpWp *self) { return self->video; }
  *
  * gets the default speaker object
  *
- * Returns: (nullable) (transfer none): gets the default speaker object
+ * Returns: (transfer none): gets the default speaker object
  */
 AstalWpEndpoint *astal_wp_wp_get_default_speaker(AstalWpWp *self) { return self->default_speaker; }
 
@@ -172,7 +174,7 @@ AstalWpEndpoint *astal_wp_wp_get_default_speaker(AstalWpWp *self) { return self-
  *
  * gets the default microphone object
  *
- * Returns: (nullable) (transfer none): gets the default microphone object
+ * Returns: (transfer none): gets the default microphone object
  */
 AstalWpEndpoint *astal_wp_wp_get_default_microphone(AstalWpWp *self) {
     return self->default_microphone;
@@ -461,7 +463,7 @@ static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, Astal
  *
  * gets the default wireplumber object.
  *
- * Returns: (nullable) (transfer none): gets the default wireplumber object.
+ * Returns: (transfer none): gets the default wireplumber object.
  */
 AstalWpWp *astal_wp_wp_get_default() {
     static AstalWpWp *self = NULL;
@@ -476,54 +478,23 @@ AstalWpWp *astal_wp_wp_get_default() {
  *
  * gets the default wireplumber object.
  *
- * Returns: (nullable) (transfer none): gets the default wireplumber object.
+ * Returns: (transfer none): gets the default wireplumber object.
  */
 AstalWpWp *astal_wp_get_default() { return astal_wp_wp_get_default(); }
 
-static void astal_wp_wp_dispose(GObject *object) {
-    AstalWpWp *self = ASTAL_WP_WP(object);
+static gboolean astal_wp_wp_try_reconnect(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
-
-    if (priv->metadata) {
-        g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);
+    g_debug("Trying to connect to pipewire.");
+    if (!wp_core_connect(priv->core)) {
+        g_timeout_add(1000, (GSourceFunc)astal_wp_wp_try_reconnect, self);
     }
-
-    g_clear_object(&self->video);
-    g_clear_object(&self->audio);
-
-    wp_core_disconnect(priv->core);
-    g_clear_object(&self->default_speaker);
-    g_clear_object(&self->default_microphone);
-    g_clear_object(&priv->mixer);
-    g_clear_object(&priv->defaults);
-    g_clear_object(&priv->metadata_manager);
-    g_clear_object(&priv->metadata);
-    g_clear_object(&priv->obj_manager);
-    g_clear_object(&priv->core);
-    g_clear_object(&priv->metadata);
-
-    if (priv->nodes != NULL) {
-        g_hash_table_destroy(priv->nodes);
-        priv->nodes = NULL;
-    }
-
-    G_OBJECT_CLASS(astal_wp_wp_parent_class)->dispose(object);
+    return G_SOURCE_REMOVE;
 }
 
-static void astal_wp_wp_init(AstalWpWp *self) {
+static void astal_wp_wp_core_connected(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    priv->nodes = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
-    priv->delayed_endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
-    priv->devices = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
-
-    wp_init(7);
-    priv->core = wp_core_new(NULL, NULL, NULL);
-
-    if (!wp_core_connect(priv->core)) {
-        g_critical("could not connect to PipeWire\n");
-        return;
-    }
+    g_debug("Sucessfully connected to pipewire.");
 
     priv->metadata_manager = wp_object_manager_new();
     wp_object_manager_request_object_features(priv->metadata_manager, WP_TYPE_GLOBAL_PROXY,
@@ -560,18 +531,106 @@ static void astal_wp_wp_init(AstalWpWp *self) {
     g_signal_connect_swapped(priv->obj_manager, "installed", (GCallback)astal_wp_wp_objm_installed,
                              self);
 
-    self->default_speaker = astal_wp_endpoint_new_default(self);
-    self->default_microphone = astal_wp_endpoint_new_default(self);
-
-    self->audio = astal_wp_audio_new(self);
-    self->video = astal_wp_video_new(self);
-
     priv->pending_plugins = 2;
     wp_core_load_component(priv->core, "libwireplumber-module-default-nodes-api", "module", NULL,
                            "default-nodes-api", NULL,
                            (GAsyncReadyCallback)astal_wp_wp_plugin_loaded, self);
     wp_core_load_component(priv->core, "libwireplumber-module-mixer-api", "module", NULL,
                            "mixer-api", NULL, (GAsyncReadyCallback)astal_wp_wp_plugin_loaded, self);
+
+    self->connected = TRUE;
+    g_object_notify(G_OBJECT(self), "connected");
+}
+
+static void astal_wp_wp_core_disconnected(AstalWpWp *self) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    g_debug("Connection to pipewire lost.");
+
+    if (priv->metadata) {
+        g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);
+    }
+
+    g_clear_object(&priv->mixer);
+    g_clear_object(&priv->defaults);
+    g_clear_object(&priv->metadata_manager);
+    g_clear_object(&priv->metadata);
+    g_clear_object(&priv->obj_manager);
+    g_clear_object(&priv->metadata);
+
+    if (priv->nodes != NULL) {
+        g_hash_table_remove_all(priv->nodes);
+    }
+
+    if (priv->devices != NULL) {
+        g_hash_table_remove_all(priv->devices);
+    }
+
+    self->connected = FALSE;
+    g_object_notify(G_OBJECT(self), "connected");
+
+    astal_wp_wp_try_reconnect(self);
+}
+
+static void astal_wp_wp_init(AstalWpWp *self) {
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    wp_init(7);
+
+    self->connected = FALSE;
+
+    priv->core = wp_core_new(NULL, NULL, NULL);
+
+    g_signal_connect_swapped(priv->core, "connected", (GCallback)astal_wp_wp_core_connected, self);
+    g_signal_connect_swapped(priv->core, "disconnected", (GCallback)astal_wp_wp_core_disconnected,
+                             self);
+
+    priv->nodes = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+    priv->delayed_endpoints = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, NULL);
+    priv->devices = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+
+    self->default_speaker = astal_wp_endpoint_new_default(self);
+    self->default_microphone = astal_wp_endpoint_new_default(self);
+
+    self->audio = astal_wp_audio_new(self);
+    self->video = astal_wp_video_new(self);
+
+    astal_wp_wp_try_reconnect(self);
+}
+
+static void astal_wp_wp_dispose(GObject *object) {
+    AstalWpWp *self = ASTAL_WP_WP(object);
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    if (priv->metadata) {
+        g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);
+    }
+
+    g_clear_object(&self->video);
+    g_clear_object(&self->audio);
+
+    wp_core_disconnect(priv->core);
+    g_clear_object(&self->default_speaker);
+    g_clear_object(&self->default_microphone);
+    g_clear_object(&priv->mixer);
+    g_clear_object(&priv->defaults);
+    g_clear_object(&priv->metadata_manager);
+    g_clear_object(&priv->metadata);
+    g_clear_object(&priv->obj_manager);
+    g_clear_object(&priv->core);
+    g_clear_object(&priv->metadata);
+
+    if (priv->nodes != NULL) {
+        g_hash_table_destroy(priv->nodes);
+        priv->nodes = NULL;
+    }
+
+    if (priv->devices != NULL) {
+        g_hash_table_destroy(priv->devices);
+        priv->devices = NULL;
+    }
+
+    G_OBJECT_CLASS(astal_wp_wp_parent_class)->dispose(object);
 }
 
 static void astal_wp_wp_class_init(AstalWpWpClass *class) {
@@ -592,6 +651,14 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_SCALE] =
         g_param_spec_enum("scale", "scale", "scale", ASTAL_WP_TYPE_SCALE, ASTAL_WP_SCALE_CUBIC,
                           G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+
+    /**
+     * AstalWpWp:connected:
+     *
+     * The connection status to the pipewire daemon
+     */
+    astal_wp_wp_properties[ASTAL_WP_WP_PROP_CONNECTED] =
+        g_param_spec_boolean("connected", "connected", "connected", FALSE, G_PARAM_READABLE);
 
     /**
      * AstalWpWp:nodes: (type GList(AstalWpNode)) (transfer container)
@@ -618,7 +685,7 @@ static void astal_wp_wp_class_init(AstalWpWpClass *class) {
     /**
      * AstalWpWp:default-microphone:
      *
-     * The [class@AstalWp.Endpoint] representing the default speaker
+     * The [class@AstalWp.Endpoint] representing the default micophone
      */
     astal_wp_wp_properties[ASTAL_WP_WP_PROP_DEFAULT_MICROPHONE] =
         g_param_spec_object("default-microphone", "default-microphone", "default-microphone",

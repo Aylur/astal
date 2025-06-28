@@ -53,7 +53,7 @@ void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
  *
  * get the target [class@AstalWp.Endpoint]
  *
- * Returns: (transfer none)
+ * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_stream_get_target_endpoint(AstalWpStream *self) {
     g_return_val_if_fail(self != NULL, NULL);
@@ -65,6 +65,13 @@ AstalWpEndpoint *astal_wp_stream_get_target_endpoint(AstalWpStream *self) {
     return NULL;
 }
 
+/**
+ * astal_wp_stream_set_target_endpoint
+ * @target: (transfer none) (nullable)
+ *
+ * set the target [class@AstalWp.Endpoint]
+ *
+ */
 void astal_wp_stream_set_target_endpoint(AstalWpStream *self, AstalWpEndpoint *target) {
     g_return_if_fail(self != NULL);
     if (target == NULL)

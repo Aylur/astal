@@ -400,7 +400,7 @@ static void astal_wp_video_class_init(AstalWpVideoClass *class) {
         g_param_spec_pointer("sinks", "sinks", "sinks", G_PARAM_READABLE);
 
     /**
-     * AstalWpVideo:recorders: (type GList(AstalWpEndpoint)) (transfer container)
+     * AstalWpVideo:recorders: (type GList(AstalWpStream)) (transfer container)
      *
      * A list of AstalWpEndpoint objects
      */
@@ -408,7 +408,7 @@ static void astal_wp_video_class_init(AstalWpVideoClass *class) {
         g_param_spec_pointer("recorders", "recorders", "recorders", G_PARAM_READABLE);
 
     /**
-     * AstalWpVideo:streams: (type GList(AstalWpEndpoint)) (transfer container)
+     * AstalWpVideo:streams: (type GList(AstalWpStream)) (transfer container)
      *
      * A list of AstalWpEndpoint objects
      */
@@ -416,7 +416,7 @@ static void astal_wp_video_class_init(AstalWpVideoClass *class) {
         g_param_spec_pointer("streams", "streams", "streams", G_PARAM_READABLE);
 
     /**
-     * AstalWpVideo:devices: (type GList(AstalWpEndpoint)) (transfer container)
+     * AstalWpVideo:devices: (type GList(AstalWpDevice)) (transfer container)
      *
      * A list of AstalWpEndpoint objects
      */

@@ -103,7 +103,7 @@ void astal_wp_node_update_volume(AstalWpNode *self) {
             g_variant_lookup(varvol, "volume", "d", &channel_volume);
             g_variant_lookup(varvol, "channel", "&s", &channel_str);
 
-            if(channel_str == NULL) continue;
+            if (channel_str == NULL) continue;
             if (channel_volume > volume) volume = channel_volume;
 
             AstalWpChannel *cv = g_hash_table_lookup(priv->channels, channel_str);
@@ -320,6 +320,8 @@ gdouble astal_wp_node_get_volume(AstalWpNode *self) {
  * @self: the AstalWpNode instance.
  *
  * gets the description of this node
+ *
+ * Returns: (nullable):
  */
 const gchar *astal_wp_node_get_description(AstalWpNode *self) {
     g_return_val_if_fail(self != NULL, NULL);
@@ -335,6 +337,8 @@ const gchar *astal_wp_node_get_description(AstalWpNode *self) {
  * @self: the AstalWpNode instance.
  *
  * gets the name of this node
+ *
+ * Returns: (nullable):
  */
 const gchar *astal_wp_node_get_name(AstalWpNode *self) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
@@ -410,6 +414,8 @@ gint astal_wp_node_get_serial(AstalWpNode *self) {
  * @self: the AstalWpNode instance.
  *
  * gets the object path of this node
+ *
+ * Returns: (nullable):
  */
 const gchar *astal_wp_node_get_path(AstalWpNode *self) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
@@ -482,10 +488,11 @@ void astal_wp_node_set_type(AstalWpNode *self, AstalWpMediaClass type) {
  * Gets the pipewire property with the give key. You should use the GObject properties of this node
  * whereever possible, as you can get notified on changes, which is not the case here.
  *
- * Returns: (transfer full)
+ * Returns: (transfer full) (nullable)
  */
 gchar *astal_wp_node_get_pw_property(AstalWpNode *self, const gchar *key) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    if(priv->node == NULL) return NULL;
     const gchar *value = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), key);
     return g_strdup(value);
 }

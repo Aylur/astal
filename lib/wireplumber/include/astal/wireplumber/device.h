@@ -31,6 +31,7 @@ GList *astal_wp_device_get_routes(AstalWpDevice *self);
 GList *astal_wp_device_get_input_routes(AstalWpDevice *self);
 GList *astal_wp_device_get_output_routes(AstalWpDevice *self);
 
+gchar *astal_wp_device_get_pw_property(AstalWpDevice *self, const gchar *key);
 G_END_DECLS
 
 #endif  // !ASTAL_WP_DEVICE_H

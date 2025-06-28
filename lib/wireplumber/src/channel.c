@@ -46,8 +46,6 @@ void astal_wp_channel_update_volume(AstalWpChannel *self, gdouble volume) {
  * astal_wp_channel_get_name:
  *
  * the name of the channel
- *
- * Returns: (nullable)
  */
 const gchar *astal_wp_channel_get_name(AstalWpChannel *self) { return self->name; }
 
