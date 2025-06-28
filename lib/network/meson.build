@@ -36,7 +36,6 @@ deps = [
 
 sources = [config] + files(
   'accesspoint.vala',
-  'accesspoint_profile.vala',
   'network.vala',
   'wifi.vala',
   'wired.vala',
