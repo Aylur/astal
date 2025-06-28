@@ -33,7 +33,13 @@ cava.connect("notify::values", () => {
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
--- Not yet documented
+local Cava = require("lgi").require("AstalCava")
+
+local cava = Cava.get_default()
+
+cava.on_notify.values = function()
+    print(cava.values)
+end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
