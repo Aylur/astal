@@ -8,27 +8,16 @@ public class Niri : Object {
     private static HashTable<string, EventHandler> event_handlers =
         new HashTable<string, EventHandler>(str_hash, str_equal);
 
-    internal HashTable<uint64?, Workspace> _workspaces =
-        new HashTable<uint64?, Workspace>(int64_hash, int64_equal);
-    internal HashTable<uint64?, Window> _windows =
-        new HashTable<uint64?, Window>(int64_hash, int64_equal);
-    internal HashTable<string?, Output> _outputs =
-        new HashTable<string?, Output>(str_hash, str_equal);
+    internal HashTable<uint64?, Workspace>  _workspaces =
+        new HashTable<uint64?,  Workspace> (int64_hash, int64_equal);
+    internal HashTable<uint64?, Window>     _windows =
+        new HashTable<uint64?,  Window>    (int64_hash, int64_equal);
+    internal HashTable<string?, Output>     _outputs =
+        new HashTable<string?,  Output>    (str_hash, str_equal);
 
     Array<string> keyboard_layouts { get; private set; }
 
     public uint8 keyboard_layout_idx { get; private set; }
-    // representing Optional uint64 as -1 due to: `warning: Type `uint64?' can not be used for a GLib.Object property`. 
-    // Will overflow if niri ever uses full uint64 values or someone opens 9 quintillion windows
-    public int64 focused_workspace_id { get {
-        if(focused_workspace == null) return -1;
-        return (int64)focused_workspace.id; 
-    } private set {} }
-    public int64 focused_window_id { get {
-        if(focused_window == null) return -1;
-        return (int64)focused_window.id; 
-    } private set {} }
-    public string focused_output_name { get; private set; }
     public Overview overview { get; private set; }
 
     public Workspace? focused_workspace { get; private set; }
