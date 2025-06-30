@@ -43,7 +43,7 @@ public class Workspace : Object {
         is_focused = object.get_boolean_member("is_focused");
         var _active_window_id = object.get_member("active_window_id");
 
-        if (_active_window_id.is_null()) { active_window_id = -1;}
+        if (_active_window_id.is_null()) { active_window_id = 0;}
         else { active_window_id = _active_window_id.get_int(); }
 
         if (_name.is_null()) { name = null;}
@@ -54,7 +54,7 @@ public class Workspace : Object {
     }
 
     public unowned Window? get_active_window() {
-        if (active_window_id == -1) return null;
+        if (active_window_id == 0) return null;
         return Niri.get_default()._windows.get(active_window_id);
     }
 }

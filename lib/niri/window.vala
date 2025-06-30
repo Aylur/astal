@@ -39,7 +39,7 @@ public class Window : Object {
         if (_app_id.is_null()) { app_id = null;}
         else { app_id = _app_id.get_string(); }
 
-        if (_workspace_id.is_null()) { workspace_id = -1; }
+        if (_workspace_id.is_null()) { workspace_id = 0; }
         else { workspace_id = _workspace_id.get_int(); }
     }
 }

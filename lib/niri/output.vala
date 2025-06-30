@@ -15,7 +15,7 @@ public class Output : Object {
     public bool vrr_enabled { get; private set; }
     public LogicalOutput? logical { get; private set; }
 
-    public int64 active_workspace_id { get; private set; }
+    public uint64 active_workspace_id { get; private set; }
     // private List<weak Workspace> _workspaces = new List<weak Workspace>();
     // public List<weak Workspace> workspaces { owned get { return _workspaces.copy(); } }
 
@@ -61,7 +61,7 @@ public class Output : Object {
     }
 
     public unowned Workspace? get_active_workspace() {
-        if (active_workspace_id == -1) return null;
+        if (active_workspace_id == 0) return null;
         return Niri.get_default().get_workspace(active_workspace_id);
     }
 }
