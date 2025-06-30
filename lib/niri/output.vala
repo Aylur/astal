@@ -16,8 +16,17 @@ public class Output : Object {
     public LogicalOutput? logical { get; private set; }
 
     public uint64 active_workspace_id { get; private set; }
-    // private List<weak Workspace> _workspaces = new List<weak Workspace>();
-    // public List<weak Workspace> workspaces { owned get { return _workspaces.copy(); } }
+
+    public List<weak Workspace> workspaces { owned get {
+        var list = new List<weak Workspace>();
+        Niri.get_default().workspaces.foreach((val) => {
+            if(val.output == name) {
+                list.append(val);
+            }
+        });
+        return list.copy();
+    } }
+
 
     /** Emitted when an output is activated. */
     public signal void focused(int id);

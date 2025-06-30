@@ -7,7 +7,7 @@ public class Workspace : Object {
     /** optional name of the workspace */
     public string? name { get; private set; }
     // TODO: move workspace to new output on set */
-    /** nome of the output the workspace is on */
+    /** name of the output the workspace is on */
     public string? output { get; internal set; }
     /** if a window on the workspace is urgent */
     public bool is_urgent { get; internal set; }
