@@ -361,10 +361,6 @@ public class Niri : Object {
     private unowned void update_focused_workspace(uint64? id) {
         if(focused_workspace != null) {
             focused_workspace.is_focused = focused_workspace.id == id;
-            if (focused_workspace.is_focused) {
-                notify_property("focused_workspace");
-                return;
-            }
         }
 
         var new_focused = _workspaces.get(id);
@@ -382,10 +378,6 @@ public class Niri : Object {
     private unowned void update_focused_window(uint64? id) {
         if (focused_window != null) {
             focused_window.is_focused = focused_window.id == id;
-            if (focused_window.is_focused) {
-                notify_property("focused_window");
-                return;
-            }
         }
 
         var new_focused = _windows.get(id);
