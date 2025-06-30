@@ -17,12 +17,16 @@ public class Workspace : Object {
     public bool is_focused { get; internal set; }
     /** id of the active window on the workspace */
     public uint64 active_window_id {get; internal set;}
-    /* public List<weak Window> windows { owned get {
-     return Niri._windows.get_values().copy(); 
-    } } */
 
-    // private List<weak Window> _windows = new List<weak Window>();
-    // public List<weak Window> windows { owned get { return _windows.copy(); } }
+    public List<weak Window> windows { owned get {
+        var list = new List<weak Window>();
+        Niri.get_default().windows.foreach((val) => {
+            if(val.workspace_id == id) {
+                list.append(val);
+            }
+        });
+        return list.copy();
+    } }
 
     /** Emitted when a workspace was activated on an output. */
     public signal void activated();

@@ -265,6 +265,8 @@ public class Niri : Object {
             _windows.insert(window_id, window);
             window_opened(window);
             notify_property("windows");
+            var workspace = _workspaces.get(window.workspace_id);
+            if (workspace != null) workspace.notify_property("windows");
         }
 
         if (window.is_focused) {
@@ -285,6 +287,8 @@ public class Niri : Object {
         window_closed(id);
         window.closed();
         notify_property("windows");
+        var workspace = get_workspace(window.workspace_id);
+        if (workspace != null) workspace.notify_property("windows");
     }
 
     private void on_window_focus_changed(Json.Object event) {
