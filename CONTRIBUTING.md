@@ -15,14 +15,3 @@ You can contribute by:
 ## Adding new libraries
 
 Write libraries preferably in Vala. Only choose C if some dependency is only available in C e.g wayland.
-
-## Todo
-
-Planned features, you could help with:
-
-- [niri ipc library](https://github.com/Aylur/astal/issues/8)
-- sway ipc library
-- http request library abstraction over libsoup (mostly to be used in gjs and lua)
-- notification sending libnotify clone [#26](https://github.com/Aylur/astal/issues/26)
-- setting up [uncrustify](https://github.com/uncrustify/uncrustify) for Vala
-- bluetooth custom errordomains, currently every error is simply Error
