@@ -6,11 +6,9 @@ public class Overview : Object {
         sync(object);
     }
 
-    // finish after merging messages
-    // public async bool toggle() {
-    //     Niri.get_default().msg("toggle-overview");
-    //     return is_open;
-    // }
+    public async bool toggle() {
+        return AstalNiri.msg.toggle_overview();
+    }
 
     internal void sync(Json.Object object) {
         is_open = object.get_boolean_member("is_open");

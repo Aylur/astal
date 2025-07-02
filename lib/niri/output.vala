@@ -65,6 +65,9 @@ public class Output : Object {
         if (_logical.is_null())  logical = null;
         else logical = LogicalOutput.from_json(_logical.get_object());
     }
+    public bool focus() {
+       return msg.focus_monitor(name);
+    }
 
 }
 

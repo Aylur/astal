@@ -6,7 +6,6 @@ public class Window : Object {
     public string? title { get; private set; }
     /** app_id of the window, if available  */
     public string? app_id { get; private set; }
-    // TODO: move window to new workspace on set */
     /** workspace_id of the window, if available  */
     public uint64 workspace_id {get; private set; }
     /** if the window is requesting attention */
@@ -41,6 +40,23 @@ public class Window : Object {
 
         if (_workspace_id.is_null()) { workspace_id = 0; }
         else { workspace_id = _workspace_id.get_int(); }
+    }
+
+    // public bool focus(string app_id) {
+    // no focus_window_by_id in ipc. needs wlr-toplevel protocol
+    // }
+
+    public bool set_urgency(bool new_urgency) {
+        if (is_urgent == new_urgency) return true;
+        return msg.toggle_window_urgent((int) id);
+    }
+
+    public bool move_to_workspace(int workspace_id, bool? focus = false) {
+        return msg.move_window_to_workspace_by_id((int) id, workspace_id, focus);
+    }
+
+    public bool move_to_monitor(string output) {
+        return msg.move_window_to_monitor((int) id, output);
     }
 }
 }

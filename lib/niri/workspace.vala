@@ -6,7 +6,6 @@ public class Workspace : Object {
     public uint8 idx { get; private set; }
     /** optional name of the workspace */
     public string? name { get; private set; }
-    // TODO: move workspace to new output on set */
     /** name of the output the workspace is on */
     public string? output { get; internal set; }
     /** if a window on the workspace is urgent */
@@ -17,6 +16,10 @@ public class Workspace : Object {
     public bool is_focused { get; internal set; }
     /** id of the active window on the workspace */
     public uint64 active_window_id {get; internal set;}
+
+    public unowned Window? active_window { get {
+        return Niri.get_default().get_window(active_window_id);
+    } }
 
     public List<weak Window> windows { owned get {
         var list = new List<weak Window>();
@@ -57,9 +60,14 @@ public class Workspace : Object {
         else { output = _output.get_string(); }
     }
 
-    public unowned Window? get_active_window() {
-        if (active_window_id == 0) return null;
-        return Niri.get_default()._windows.get(active_window_id);
+    public bool focus() {
+       return msg.focus_workspace_by_id((int) id);
+    }
+    public bool rename(string name) {
+        return msg.set_workspace_name_by_id((int) id, name);
+    }
+    public bool move_to_monitor(string output) {
+        return msg.move_workspace_to_monitor_by_id(output, (int) id);
     }
 }
 }
