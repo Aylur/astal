@@ -203,13 +203,8 @@ public class Niri : Object {
             return;
         }
 
-        // could get the activated workspace faster by tracking outputs
-        var output = activated_workspace.output;
         foreach (var workspace in _workspaces.get_values()) {
-            if (workspace.output != output) continue;
-
-            bool activated = workspace == activated_workspace;
-            workspace.is_active = activated;
+            workspace.is_active = workspace == activated_workspace;
         }
         if (focused) update_focused_workspace(id);
 

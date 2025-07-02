@@ -15,8 +15,6 @@ public class Output : Object {
     public bool vrr_enabled { get; private set; }
     public LogicalOutput? logical { get; private set; }
 
-    public uint64 active_workspace_id { get; private set; }
-
     public List<weak Workspace> workspaces { owned get {
         var list = new List<weak Workspace>();
         Niri.get_default().workspaces.foreach((val) => {
@@ -26,7 +24,6 @@ public class Output : Object {
         });
         return list.copy();
     } }
-
 
     /** Emitted when an output is activated. */
     public signal void focused(int id);
@@ -69,10 +66,6 @@ public class Output : Object {
         else logical = LogicalOutput.from_json(_logical.get_object());
     }
 
-    public unowned Workspace? get_active_workspace() {
-        if (active_workspace_id == 0) return null;
-        return Niri.get_default().get_workspace(active_workspace_id);
-    }
 }
 
 }
