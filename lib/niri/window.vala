@@ -17,14 +17,14 @@ public class Window : Object {
     public signal void closed();
 
     internal Window.from_json(Json.Object object) {
-        sync(object);
+        sync(object, true);
     }
 
-    public unowned Workspace? get_workspace() {
-        return Niri.get_default()._workspaces.get(workspace_id);
-    }
+    public unowned Workspace? workspace { get {
+        return Niri.get_default().get_workspace(workspace_id);
+    } }
 
-    internal void sync(Json.Object object) {
+    internal void sync(Json.Object object, bool init = false) {
         id = object.get_int_member("id");
         var _title = object.get_member("title");
         var _app_id = object.get_member("app_id");
@@ -39,9 +39,24 @@ public class Window : Object {
         else { app_id = _app_id.get_string(); }
 
         if (_workspace_id.is_null()) { workspace_id = 0; }
-        else { workspace_id = _workspace_id.get_int(); }
+        else {
+            var new_workspace_id = _workspace_id.get_int();
+            if (init) {
+                workspace_id = new_workspace_id;
+            } else if (workspace_id != new_workspace_id) {
+                workspace_id = id;
+                notify_workspace(new_workspace_id);
+            }
+        }
     }
 
+    private void notify_workspace(int64 id) {
+        var workspace = Niri.get_default().get_workspace(id);
+        
+        // may be null at start of event stream
+        if(workspace == null) return;
+        workspace.notify_property("windows");
+    }
     // public bool focus(string app_id) {
     // no focus_window_by_id in ipc. needs wlr-toplevel protocol
     // }
