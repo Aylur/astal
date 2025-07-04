@@ -44,15 +44,13 @@ public class Window : Object {
             if (init) {
                 workspace_id = new_workspace_id;
             } else if (workspace_id != new_workspace_id) {
-                workspace_id = id;
+                workspace_id = new_workspace_id;
                 notify_workspace(new_workspace_id);
             }
         }
     }
 
     private void notify_workspace(int64 id) {
-        var workspace = Niri.get_default().get_workspace(id);
-        
         // may be null at start of event stream
         if(workspace == null) return;
         workspace.notify_property("windows");
