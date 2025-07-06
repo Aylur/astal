@@ -49,7 +49,9 @@ public class Niri : Object {
     /** A new window has been opened. */
     public signal void window_opened(Window window);
     /** An existing window has changed. */
-    public signal void window_changed(Window window);
+    public signal void window_changed(Window window) {
+        window.changed();
+    }
     /** A window has closed. */
     public signal void window_closed(uint64 id);
     /** A window has been focused. */
@@ -253,20 +255,16 @@ public class Niri : Object {
         var window = _windows.get(window_id);
         if (window != null) {
             window.sync(window_object);
-            window.changed();
             window_changed(window);
         } else {
             window = new Window.from_json(window_object);
             _windows.insert(window_id, window);
             window_opened(window);
             notify_property("windows");
-            var workspace = _workspaces.get(window.workspace_id);
-            if (workspace != null) workspace.notify_property("windows");
+            get_workspace(window.workspace_id)?.notify_property("windows");
         }
 
-        if (window.is_focused) {
-            update_focused_window(window.id);
-        }
+        if (window.is_focused) update_focused_window(window.id); 
         window_opened_or_changed(window);
     }
 

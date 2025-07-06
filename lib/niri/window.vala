@@ -13,18 +13,19 @@ public class Window : Object {
     /** if this is the current Focused Window */
     public bool is_focused { get; internal set; }
 
-    public signal void changed();
+    public signal void changed(); 
+
     public signal void closed();
 
     internal Window.from_json(Json.Object object) {
-        sync(object, true);
+        sync(object);
     }
 
     public unowned Workspace? workspace { get {
         return Niri.get_default().get_workspace(workspace_id);
     } }
 
-    internal void sync(Json.Object object, bool init = false) {
+    internal void sync(Json.Object object) {
         id = object.get_int_member("id");
         var _title = object.get_member("title");
         var _app_id = object.get_member("app_id");
@@ -33,28 +34,23 @@ public class Window : Object {
         is_focused = object.get_boolean_member("is_focused");
 
         if (_title.is_null()) { title = null;}
-        else { title = _title.get_string(); }
+        else if(title != _title.get_string()) { title = _title.get_string(); }
 
         if (_app_id.is_null()) { app_id = null;}
-        else { app_id = _app_id.get_string(); }
+        else if(app_id != _app_id.get_string()) { app_id = _app_id.get_string(); }
 
         if (_workspace_id.is_null()) { workspace_id = 0; }
         else {
             var new_workspace_id = _workspace_id.get_int();
-            if (init) {
+            if(workspace_id != new_workspace_id) {
+                var prev_workspace = workspace;
                 workspace_id = new_workspace_id;
-            } else if (workspace_id != new_workspace_id) {
-                workspace_id = new_workspace_id;
-                notify_workspace(new_workspace_id);
+                prev_workspace?.notify_property("windows");
+                workspace?.notify_property("windows");
             }
         }
     }
 
-    private void notify_workspace(int64 id) {
-        // may be null at start of event stream
-        if(workspace == null) return;
-        workspace.notify_property("windows");
-    }
     // public bool focus(string app_id) {
     // no focus_window_by_id in ipc. needs wlr-toplevel protocol
     // }
