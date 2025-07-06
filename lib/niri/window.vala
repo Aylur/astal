@@ -51,9 +51,9 @@ public class Window : Object {
         }
     }
 
-    // public bool focus(string app_id) {
-    // no focus_window_by_id in ipc. needs wlr-toplevel protocol
-    // }
+    public bool focus(int id) {
+        return msg.focus_window(id);
+    }
 
     public bool set_urgency(bool new_urgency) {
         if (is_urgent == new_urgency) return true;
