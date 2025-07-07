@@ -57,7 +57,7 @@ static GParamSpec *astal_wp_audio_properties[ASTAL_WP_AUDIO_N_PROPERTIES] = {
  *
  *  is instanciated by [class@AstalWp.Wp]. An instance of class can only be received there.
  *
- *  This is a convinience class and acts as a filter for [class@AstalWp.Wp] to filter for audio
+ *  This is a convenience class and acts as a filter for [class@AstalWp.Wp] to filter for audio
  * endpoints and devices.
  */
 
@@ -472,7 +472,7 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     /**
      * AstalWpAudio:default-speaker:
      *
-     * The AstalWndpoint object representing the default speaker
+     * The AstalEndpoint object representing the default speaker
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEFAULT_SPEAKER] =
         g_param_spec_object("default-speaker", "default-speaker", "default-speaker",
@@ -480,7 +480,7 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     /**
      * AstalWpAudio:default-microphone:
      *
-     * The AstalWndpoint object representing the default speaker
+     * The AstalEndpoint object representing the default speaker
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE] =
         g_param_spec_object("default-microphone", "default-microphone", "default-microphone",
