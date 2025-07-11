@@ -1,8 +1,8 @@
 # Astal
 
-> [!NOTE] 
-> The [language bindings](https://github.com/Aylur/astal/tree/main/lang) part of Astal is going to be migrated out of this repo and only the Vala/C libs will be the focus of this project.
->
-> See the [AGS v3 PR](https://github.com/Aylur/ags/pull/685) for more details.
+Astal is a collection of libraries written in Vala and C, designed to serve as
+the foundation for both lightweight widgets and fully-featured desktop shells.
+It handles the backend logic, so you can focus entirely on building the
+frontend.
 
 To get started read the [wiki](https://aylur.github.io/astal/)

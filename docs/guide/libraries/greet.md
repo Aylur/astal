@@ -1,6 +1,7 @@
 # Greet
 
-Library and CLI tool for sending requests to [greetd](https://sr.ht/~kennylevinsen/greetd/).
+Library and CLI tool for sending requests to
+[greetd](https://sr.ht/~kennylevinsen/greetd/).
 
 ## Usage
 
@@ -20,11 +21,11 @@ astal-greet --help
 import Greet from "gi://AstalGreet"
 
 Greet.login("username", "password", "compositor", (_, res) => {
-    try {
-        Greet.login_finish(res)
-    } catch (err) {
-        printerr(err)
-    }
+  try {
+    Greet.login_finish(res)
+  } catch (err) {
+    printerr(err)
+  }
 })
 ```
 
@@ -58,37 +59,39 @@ try {
 
 1. install dependencies
 
-:::code-group
+   :::code-group
 
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
-```
+   ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+   sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
+   ```
 
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
-```
+   ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+   sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
+   ```
 
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
-```
+   ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+   sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
+   ```
 
-:::
+   :::
 
-::: info
-Although `greetd` is not a direct build dependency,
-it should be self-explanatory that the daemon is required to be available at runtime.
-:::
+   ::: info
+
+   Although `greetd` is not a direct build dependency, it should be
+   self-explanatory that the daemon is required to be available at runtime.
+
+   :::
 
 2. clone repo
 
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/greet
-```
+   ```sh
+   git clone https://github.com/aylur/astal.git
+   cd astal/lib/greet
+   ```
 
 3. install
 
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
+   ```sh
+   meson setup build
+   meson install -C build
+   ```

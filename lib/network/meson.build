@@ -35,11 +35,11 @@ deps = [
 ]
 
 sources = [config] + files(
+  'accesspoint.vala',
   'network.vala',
   'wifi.vala',
   'wired.vala',
   'wired.vala',
-  'accesspoint.vala',
 )
 
 lib = library(
