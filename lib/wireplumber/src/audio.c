@@ -480,7 +480,7 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     /**
      * AstalWpAudio:default-microphone:
      *
-     * The AstalEndpoint object representing the default speaker
+     * The AstalEndpoint object representing the default microphone
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE] =
         g_param_spec_object("default-microphone", "default-microphone", "default-microphone",
