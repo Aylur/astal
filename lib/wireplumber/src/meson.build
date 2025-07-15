@@ -1,10 +1,15 @@
 srcs = files(
   'audio.c',
   'device.c',
+  'node.c',
   'endpoint.c',
+  'stream.c',
   'profile.c',
+  'route.c',
   'video.c',
   'wireplumber.c',
+  'channel.c',
+  'enums.c'
 )
 
 deps = [
@@ -13,9 +18,18 @@ deps = [
   dependency('wireplumber-0.5'),
 ]
 
+enums = gnome.mkenums_simple(
+  'astal-wp-enum-types',
+  identifier_prefix: 'AstalWp',
+  symbol_prefix: 'astal_wp',
+  sources: astal_wireplumber_subheaders,
+  install_header: true,
+  install_dir: join_paths(get_option('includedir'), 'astal/wireplumber')
+)
+
 astal_wireplumber_lib = library(
   'astal-wireplumber',
-  sources: srcs,
+  sources: srcs + enums,
   include_directories: astal_wireplumber_inc,
   dependencies: deps,
   version: meson.project_version(),
@@ -40,7 +54,7 @@ pkg_config_name = 'astal-wireplumber-' + lib_so_version
 if get_option('introspection')
   gir = gnome.generate_gir(
     astal_wireplumber_lib,
-    sources: srcs + astal_wireplumber_headers + astal_wireplumber_subheaders,
+    sources: srcs + astal_wireplumber_headers + astal_wireplumber_subheaders + enums[1],
     nsversion: '0.1',
     namespace: 'AstalWp',
     symbol_prefix: 'astal_wp',

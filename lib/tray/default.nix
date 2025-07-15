@@ -6,13 +6,13 @@
   vala-panel-appmenu = pkgs.fetchFromGitLab {
     owner = "vala-panel-project";
     repo = "vala-panel-appmenu";
-    rev = "24.05";
-    hash = "sha256-8GWauw7r3zKhvGF2TNOI8GDVctUFDhtG/Vy1cNUpsVo=";
+    rev = "25.04";
+    hash = "sha256-v5J3nwViNiSKRPdJr+lhNUdKaPG82fShPDlnmix5tlY=";
   };
 
   appmenu-glib-translator = pkgs.stdenv.mkDerivation {
     pname = "appmenu-glib-translator";
-    version = "24.05";
+    version = "25.04";
 
     src = "${vala-panel-appmenu}/subprojects/appmenu-glib-translator";
 
