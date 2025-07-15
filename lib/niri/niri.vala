@@ -24,7 +24,7 @@ public class Niri : Object {
     public Window? focused_window { get; private set; }
     public Output? focused_output { get {
         if (focused_workspace == null ) return null;
-        unowned var output = _outputs.get(focused_workspace.output); 
+        unowned var output = _outputs.get(focused_workspace.output);
         if (output == null ) return null;
         return output;
     } }
@@ -170,7 +170,7 @@ public class Niri : Object {
     }
 
     private async void update_outputs() {
-        // Niri does not send any output events so the list is recreated on WorkspaceChanged 
+        // Niri does not send any output events so the list is recreated on WorkspaceChanged
         // This should be fine as the physical properties of a monitor are unlikely to change
         _outputs.remove_all();
         Json.Node node;
@@ -206,7 +206,9 @@ public class Niri : Object {
         }
 
         foreach (var workspace in _workspaces.get_values()) {
-            workspace.is_active = workspace == activated_workspace;
+            if (workspace.output == activated_workspace.output) {
+              workspace.is_active = workspace == activated_workspace;
+            }
         }
         if (focused) update_focused_workspace(id);
 
@@ -264,7 +266,7 @@ public class Niri : Object {
             get_workspace(window.workspace_id)?.notify_property("windows");
         }
 
-        if (window.is_focused) update_focused_window(window.id); 
+        if (window.is_focused) update_focused_window(window.id);
         window_opened_or_changed(window);
     }
 
@@ -288,7 +290,7 @@ public class Niri : Object {
         var _id = event.get_member("id");
         uint64 id = 0;
         if (!_id.is_null())  id = _id.get_int();
-        
+
         update_focused_window(id);
     }
 
