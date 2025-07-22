@@ -3,21 +3,22 @@
 #define WP_H
 
 #include "astal/wireplumber/audio.h"
-#include "astal/wireplumber/video.h"
-#include "astal/wireplumber/device.h"
-#include "astal/wireplumber/profile.h"
-#include "astal/wireplumber/node.h"
-#include "astal/wireplumber/stream.h"
-#include "astal/wireplumber/endpoint.h"
-#include "astal/wireplumber/wp.h"
-#include "astal/wireplumber/enums.h"
 #include "astal/wireplumber/channel.h"
+#include "astal/wireplumber/device.h"
+#include "astal/wireplumber/endpoint.h"
+#include "astal/wireplumber/enums.h"
+#include "astal/wireplumber/node.h"
+#include "astal/wireplumber/profile.h"
 #include "astal/wireplumber/route.h"
+#include "astal/wireplumber/stream.h"
+#include "astal/wireplumber/video.h"
+#include "astal/wireplumber/wp.h"
 
-
+// clang-format off
 #define ASTAL_WP_MAJOR_VERSION @MAJOR_VERSION@
 #define ASTAL_WP_MINOR_VERSION @MINOR_VERSION@
 #define ASTAL_WP_MICRO_VERSION @MICRO_VERSION@
 #define ASTAL_WP_VERSION "@VERSION@"
+// clang-format on
 
-#endif // WP_H
+#endif  // WP_H
