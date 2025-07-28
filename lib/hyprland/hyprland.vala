@@ -345,7 +345,7 @@ public class Hyprland : Object {
                 _monitors.remove(id);
                 monitor_removed(id);
                 notify_property("monitors");
-                sync_clients(); // Clients' monitor property may change, so sync them.
+                yield sync_clients(); // Clients' monitor property may change, so sync them.
                 break;
 
             case "monitoraddedv2":
@@ -355,7 +355,7 @@ public class Hyprland : Object {
                 yield sync_monitors();
                 monitor_added(mon);
                 notify_property("monitors");
-                sync_clients(); // Clients' monitor property may change, so sync them.
+                yield sync_clients(); // Clients' monitor property may change, so sync them.
                 break;
 
             case "createworkspacev2":
