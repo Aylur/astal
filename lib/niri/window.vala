@@ -39,15 +39,13 @@ public class Window : Object {
         if (_app_id.is_null()) { app_id = null;}
         else if(app_id != _app_id.get_string()) { app_id = _app_id.get_string(); }
 
-        if (_workspace_id.is_null()) { workspace_id = 0; }
-        else {
-            var new_workspace_id = _workspace_id.get_int();
-            if(workspace_id != new_workspace_id) {
-                var prev_workspace = workspace;
-                workspace_id = new_workspace_id;
-                prev_workspace?.notify_property("windows");
-                workspace?.notify_property("windows");
-            }
+        int64 new_workspace_id = 0;
+        if (!_workspace_id.is_null()) new_workspace_id = _workspace_id.get_int();
+        if(workspace_id != new_workspace_id) {
+            var prev_workspace = workspace;
+            workspace_id = new_workspace_id;
+            prev_workspace?.notify_property("windows");
+            workspace?.notify_property("windows");
         }
     }
 
