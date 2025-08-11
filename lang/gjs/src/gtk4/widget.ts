@@ -42,7 +42,19 @@ export const CenterBox = astalify<Gtk.CenterBox, Gtk.CenterBox.ConstructorProps>
     },
 })
 
-// TODO: CircularProgress
+// CircularProgress
+export type CircularProgressProps = ConstructProps<Astal.CircularProgressBar, Astal.CircularProgressBar.ConstructorProps>
+export const CircularProgress = astalify<Astal.CircularProgressBar, Astal.CircularProgressBar.ConstructorProps>(
+    Astal.CircularProgressBar,
+    {
+        getChildren(self) { 
+            return self.child ? [self.child] : [] 
+        },
+        setChildren(self, children) {
+            self.child = filter(children)[0] || null
+        },
+    }
+)
 // TODO: DrawingArea
 
 // Entry
