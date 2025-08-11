@@ -100,7 +100,26 @@ public class AstalBluetooth.Bluetooth : Object {
             );
 
             foreach (var object in manager.get_objects()) {
-                foreach (var iface in object.get_interfaces()) {
+                var interfaces = object.get_interfaces();
+                interfaces.sort((a, b) => {
+                    int a_rank = 1;
+                    if (a is IAdapter) {
+                        a_rank = 3;
+                    } else if (a is IDevice) {
+                        a_rank = 2;
+                    }
+
+                    int b_rank = 1;
+                    if (b is IAdapter) {
+                        b_rank = 3;
+                    } else if (b is IDevice) {
+                        b_rank = 2;
+                    }
+
+                    return b_rank - a_rank;
+                });
+
+                foreach (var iface in interfaces) {
                     on_interface_added(object, iface);
                 }
             }
