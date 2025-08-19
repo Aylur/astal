@@ -6,11 +6,39 @@ internal class IPC {
     private SocketConnection conn;
     private DataInputStream istream;
     private DataOutputStream ostream;
+    public signal void event_stream(string event_type, Json.Node payload);
 
     private IPC(SocketConnection _conn) {
         conn = _conn;
         istream = new DataInputStream(conn.input_stream);
         ostream = new DataOutputStream(conn.output_stream);
+    }
+
+    public async void stream() {
+        try {
+            var istream = this.send_str("\"EventStream\"\n");
+            var line = yield istream.read_line_async();
+            if (line != "{\"Ok\":\"Handled\"}") {
+                critical("Event Stream Error: %s", line);
+                return;
+            }
+            line = null;
+            while (true) {
+                var ev = Json.from_string(yield istream.read_line_async());
+                var obj = ev.get_object();
+                if (obj == null || obj.get_size() != 1U) {
+                    critical("Invalid event '%s'", Json.to_string(ev, false));
+                    continue;
+                }
+
+                this.event_stream.emit(obj.get_members().data, ev);
+            }
+        } catch (Error err) {
+            critical("%s", err.message);
+            return;
+        } finally {
+            this.close();
+        }
     }
 
     public static IPC? connect() {

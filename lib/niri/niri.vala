@@ -3,10 +3,6 @@ public Niri get_default() {
     return Niri.get_default();
 }
 public class Niri : Object {
-    [CCode(has_target = false)]
-    private delegate void EventHandler(Niri self, Json.Object object);
-    private static HashTable<string, EventHandler> event_handlers =
-        new HashTable<string, EventHandler>(str_hash, str_equal);
 
     internal HashTable<uint64?, Workspace>  _workspaces =
         new HashTable<uint64?,  Workspace> (int64_hash, int64_equal);
@@ -38,7 +34,7 @@ public class Niri : Object {
     } }
 
     /** An event has been received. */
-    public signal void event(Json.Node event);
+    public signal void event_stream(string event, string payload);
     /** The list of workspaces changed. */
     public signal void workspaces_changed(List<weak Workspace> workspaces);
     public signal void workspace_activated(uint64 workspace, bool focused);
@@ -64,25 +60,8 @@ public class Niri : Object {
     public signal void keyboard_layouts_changed(Array<string> keyboard_layouts);
     public signal void keyboard_layout_switched(uint8 idx);
 
-    private IPC? event_socket;
+    private IPC? stream_socket;
     static Niri _instance;
-
-    // https://yalter.github.io/niri/niri_ipc/enum.Event.html
-    static construct {
-        event_handlers.insert("WorkspacesChanged",            (EventHandler) on_workspaces_changed);
-        event_handlers.insert("WorkspaceActivated",           (EventHandler) on_workspace_activated);
-        event_handlers.insert("WorkspaceActiveWindowChanged", (EventHandler) on_workspace_active_window_changed);
-        event_handlers.insert("WindowsChanged",               (EventHandler) on_windows_changed);
-        event_handlers.insert("WindowOpenedOrChanged",        (EventHandler) on_window_opened_or_changed);
-        event_handlers.insert("WindowClosed",                 (EventHandler) on_window_closed);
-        event_handlers.insert("WindowFocusChanged",           (EventHandler) on_window_focus_changed);
-        event_handlers.insert("WindowUrgencyChanged",         (EventHandler) on_window_urgency_changed);
-        event_handlers.insert("WorkspaceUrgencyChanged",      (EventHandler) on_workspace_urgency_changed);
-        event_handlers.insert("KeyboardLayoutsChanged",       (EventHandler) on_keyboard_layouts_changed);
-        event_handlers.insert("KeyboardLayoutSwitched",       (EventHandler) on_keyboard_layout_switched);
-        event_handlers.insert("OverviewOpenedOrClosed",       (EventHandler) on_overview_opened_or_closed);
-
-    }
 
     public static Niri? get_default() {
         if (_instance != null)
@@ -91,9 +70,9 @@ public class Niri : Object {
         var instance = new Niri();
         instance.keyboard_layouts = new Array<string>();
         instance.overview = new Overview();
-        instance.event_socket = IPC.connect();
-
-        instance.watch_events.begin();
+        instance.stream_socket = IPC.connect();
+        instance.stream_socket.event_stream.connect(instance.handle_events);
+        instance.stream_socket.stream.begin();
 
         _instance = instance;
         return _instance;
@@ -115,58 +94,161 @@ public class Niri : Object {
         return (int) (a.idx > b.idx) - (int) (a.idx < b.idx);
     }
 
-    private async void watch_events() {
-        try {
-            var istream = event_socket.send_str("\"EventStream\"\n");
-            var line = yield istream.read_line_async();
-            if (line != "{\"Ok\":\"Handled\"}") {
-                critical("Event Stream Error: %s", line);
-                return;
-            }
-            line = null;
+    // https://yalter.github.io/niri/niri_ipc/enum.Event.html
+    private async void handle_events(string event_type, Json.Node node) {
+        event_stream(event_type, Json.to_string(node, false));
+        var payload = node.get_object().get_object_member(event_type);
+        switch (event_type) {
+            case "WorkspacesChanged":
+                var workspaces_arr = payload.get_array_member("workspaces");
 
-            while (true) {
-                var ev = Json.from_string(yield istream.read_line_async());
-                event.emit(ev);
+                _workspaces.remove_all();
+                update_outputs.begin();
+                foreach (var element in workspaces_arr.get_elements()) {
+                    var workspace = new Workspace.from_json(element.get_object());
+                    _workspaces.insert(workspace.id, workspace);
+                    if(workspace.is_focused) {
+                        update_focused_workspace(workspace.id);
+                    }
+                }
+                workspaces_changed(workspaces);
+                notify_property("workspaces");
+                break;
+            case "WorkspaceActivated":
+                var id = payload.get_int_member("id");
+                var focused = payload.get_boolean_member("focused");
 
-                var obj = ev.get_object();
-                if (obj == null || obj.get_size() != 1U) {
-                    critical("Invalid event '%s'", Json.to_string(ev, false));
-                    continue;
+                var activated_workspace = get_workspace(id);
+                if (activated_workspace == null) {
+                    unknown_workspace(id);
+                    return;
                 }
 
-                var event_type = obj.get_members().data;
-                var event = obj.get_object_member(event_type);
-                var handler = event_handlers.get(event_type);
-                if (handler == null) {
-                    warning("Unhandled event %s", event_type);
-                    continue;
+                foreach (var workspace in _workspaces.get_values()) {
+                    if (workspace.output == activated_workspace.output) {
+                      workspace.is_active = workspace == activated_workspace;
+                    }
+                }
+                if (focused) update_focused_workspace(id);
+
+                workspace_activated(id, focused);
+                activated_workspace.activated();
+                break;
+            case "WorkspaceActiveWindowChanged":
+                var workspace_id = payload.get_int_member("workspace_id");
+                var _active_window_id = payload.get_member("active_window_id");
+
+                var workspace = get_workspace(workspace_id);
+                if (workspace == null) {
+                    unknown_workspace(workspace_id);
+                    return;
                 }
 
-                handler(this, event);
-            }
-        } catch (Error err) {
-            critical("%s", err.message);
-            return;
-        } finally {
-            event_socket.close();
-        }
-    }
+                if (_active_window_id.is_null()) {
+                    workspace.active_window_id = 0;
+                    workspace_active_window_changed(workspace_id, 0);
+                } else {
+                    var active_window_id = _active_window_id.get_int();
+                    workspace.active_window_id = active_window_id;
+                    workspace_active_window_changed(workspace_id, active_window_id);
+                }
+                workspace.active_window_changed(workspace.active_window_id);
+                break;
+            case "WindowsChanged":
+                var windows_arr = payload.get_array_member("windows");
 
-    private void on_workspaces_changed(Json.Object event) {
-        var workspaces_arr = event.get_array_member("workspaces");
+                _windows.remove_all();
+                foreach (var element in windows_arr.get_elements()) {
+                    var window = new Window.from_json(element.get_object());
+                    _windows.insert(window.id, window);
+                    if (window.is_focused) update_focused_window(window.id);
+                }
+                windows_changed(windows);
+                notify_property("windows");
+                break;
+            case "WindowOpenedOrChanged":
+                var window_object = payload.get_object_member("window");
+                var window_id = window_object.get_int_member("id");
 
-        _workspaces.remove_all();
-        update_outputs.begin();
-        foreach (var element in workspaces_arr.get_elements()) {
-            var workspace = new Workspace.from_json(element.get_object());
-            _workspaces.insert(workspace.id, workspace);
-            if(workspace.is_focused) {
-                update_focused_workspace(workspace.id);
-            }
+                var window = _windows.get(window_id);
+                if (window != null) {
+                    window.sync(window_object);
+                    window_changed(window);
+                } else {
+                    window = new Window.from_json(window_object);
+                    _windows.insert(window_id, window);
+                    window_opened(window);
+                    notify_property("windows");
+                    get_workspace(window.workspace_id)?.notify_property("windows");
+                }
+
+                if (window.is_focused) update_focused_window(window.id);
+                window_opened_or_changed(window);
+                break;
+            case "WindowClosed":
+                var id = payload.get_int_member("id");
+
+                var window = _windows.take(id);
+                if (window == null) {
+                    unknown_window(id);
+                    return;
+                }
+
+                window_closed(id);
+                window.closed();
+                notify_property("windows");
+                var workspace = get_workspace(window.workspace_id);
+                if (workspace != null) workspace.notify_property("windows");
+                break;
+            case "WindowFocusChanged":
+                var _id = payload.get_member("id");
+                uint64 id = 0;
+                if (!_id.is_null())  id = _id.get_int();
+
+                update_focused_window(id);
+                break;
+            case "WindowUrgencyChanged":
+                var id = payload.get_int_member("id");
+                var urgent = payload.get_boolean_member("urgent");
+
+                var window = get_window(id);
+                if(window != null) {
+                    window.is_urgent = urgent;
+                }
+
+                window_urgency_changed(id, urgent);
+                break;
+            case "WorkspaceUrgencyChanged":
+                var id = payload.get_int_member("id");
+                var urgent = payload.get_boolean_member("urgent");
+
+                var workspace = get_workspace(id);
+                if(workspace != null) {
+                    workspace.is_urgent = urgent;
+                }
+                workspace_urgency_changed(id, urgent);
+                break;
+            case "KeyboardLayoutsChanged":
+                var layouts = payload.get_object_member("keyboard_layouts");
+                var names = layouts.get_array_member("names");
+
+                foreach (var element in names.get_elements()) {
+                    keyboard_layouts.append_val(element.get_string());
+                }
+
+                keyboard_layout_idx = (uint8) layouts.get_int_member("current_idx");
+                keyboard_layouts_changed(keyboard_layouts);
+                break;
+            case "KeyboardLayoutSwitched":
+                keyboard_layout_idx = (uint8) payload.get_int_member("idx");
+                keyboard_layout_switched(keyboard_layout_idx);
+                break;
+            case "OverviewOpenedOrClosed":
+                var is_open = payload.get_boolean_member("is_open");
+                overview.is_open = is_open;
+                overview_opened_or_closed(is_open);
+                break;
         }
-        workspaces_changed(workspaces);
-        notify_property("workspaces");
     }
 
     private async void update_outputs() {
@@ -193,152 +275,6 @@ public class Niri : Object {
             _outputs.insert(name, output);
         }
         notify_property("outputs");
-    }
-
-    private void on_workspace_activated(Json.Object event) {
-        var id = event.get_int_member("id");
-        var focused = event.get_boolean_member("focused");
-
-        var activated_workspace = get_workspace(id);
-        if (activated_workspace == null) {
-            unknown_workspace(id);
-            return;
-        }
-
-        foreach (var workspace in _workspaces.get_values()) {
-            if (workspace.output == activated_workspace.output) {
-              workspace.is_active = workspace == activated_workspace;
-            }
-        }
-        if (focused) update_focused_workspace(id);
-
-        workspace_activated(id, focused);
-        activated_workspace.activated();
-    }
-
-    private void on_workspace_active_window_changed(Json.Object event) {
-        var workspace_id = event.get_int_member("workspace_id");
-        var _active_window_id = event.get_member("active_window_id");
-
-        var workspace = get_workspace(workspace_id);
-        if (workspace == null) {
-            unknown_workspace(workspace_id);
-            return;
-        }
-
-        if (_active_window_id.is_null()) {
-            workspace.active_window_id = 0;
-            workspace_active_window_changed(workspace_id, 0);
-        } else {
-            var active_window_id = _active_window_id.get_int();
-            workspace.active_window_id = active_window_id;
-            workspace_active_window_changed(workspace_id, active_window_id);
-        }
-            workspace.active_window_changed(workspace.active_window_id);
-    }
-
-    private void on_windows_changed(Json.Object event) {
-        var windows_arr = event.get_array_member("windows");
-
-        _windows.remove_all();
-        foreach (var element in windows_arr.get_elements()) {
-            var window = new Window.from_json(element.get_object());
-            _windows.insert(window.id, window);
-            if (window.is_focused) update_focused_window(window.id);
-        }
-        windows_changed(windows);
-        notify_property("windows");
-    }
-
-    private void on_window_opened_or_changed(Json.Object event) {
-        var window_object = event.get_object_member("window");
-        var window_id = window_object.get_int_member("id");
-
-        var window = _windows.get(window_id);
-        if (window != null) {
-            window.sync(window_object);
-            window_changed(window);
-        } else {
-            window = new Window.from_json(window_object);
-            _windows.insert(window_id, window);
-            window_opened(window);
-            notify_property("windows");
-            get_workspace(window.workspace_id)?.notify_property("windows");
-        }
-
-        if (window.is_focused) update_focused_window(window.id);
-        window_opened_or_changed(window);
-    }
-
-    private void on_window_closed(Json.Object event) {
-        var id = event.get_int_member("id");
-
-        var window = _windows.take(id);
-        if (window == null) {
-            unknown_window(id);
-            return;
-        }
-
-        window_closed(id);
-        window.closed();
-        notify_property("windows");
-        var workspace = get_workspace(window.workspace_id);
-        if (workspace != null) workspace.notify_property("windows");
-    }
-
-    private void on_window_focus_changed(Json.Object event) {
-        var _id = event.get_member("id");
-        uint64 id = 0;
-        if (!_id.is_null())  id = _id.get_int();
-
-        update_focused_window(id);
-    }
-
-    private void on_window_urgency_changed(Json.Object event) {
-        var id = event.get_int_member("id");
-        var urgent = event.get_boolean_member("urgent");
-
-        var window = get_window(id);
-        if(window != null) {
-            window.is_urgent = urgent;
-        }
-
-        window_urgency_changed(id, urgent);
-    }
-
-    private void on_workspace_urgency_changed(Json.Object event) {
-        var id = event.get_int_member("id");
-        var urgent = event.get_boolean_member("urgent");
-
-        var workspace = get_workspace(id);
-        if(workspace != null) {
-            workspace.is_urgent = urgent;
-        }
-        workspace_urgency_changed(id, urgent);
-    }
-
-    private void on_keyboard_layouts_changed(Json.Object event) {
-        var layouts = event.get_object_member("keyboard_layouts");
-        var names = layouts.get_array_member("names");
-
-        foreach (var element in names.get_elements()) {
-            keyboard_layouts.append_val(element.get_string());
-        }
-
-        keyboard_layout_idx = (uint8) layouts.get_int_member("current_idx");
-        keyboard_layouts_changed(keyboard_layouts);
-    }
-
-    private void on_keyboard_layout_switched(Json.Object event) {
-        keyboard_layout_idx = (uint8) event.get_int_member("idx");
-
-        keyboard_layout_switched(keyboard_layout_idx);
-    }
-
-    private void on_overview_opened_or_closed(Json.Object event) {
-        var is_open = event.get_boolean_member("is_open");
-        overview.is_open = is_open;
-        overview_opened_or_closed(is_open);
     }
 
     public unowned Window? get_window(uint64 id) {

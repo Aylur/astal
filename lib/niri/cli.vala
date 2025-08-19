@@ -33,8 +33,8 @@ int main(string[] argv) {
         return 0;
     }
 
-    AstalNiri.get_default().event.connect((event) => {
-        print("%s\n", Json.to_string(event, false));
+    AstalNiri.get_default().event_stream.connect((_, payload) => {
+        print("%s\n", payload );
     });
 
     new MainLoop(null, false).run();
