@@ -1,6 +1,5 @@
 import math
 from gi.repository import (
-    AstalIO,
     Astal,
     Gtk,
     Gdk,
@@ -32,7 +31,9 @@ class Workspaces(Gtk.Box):
             child.destroy()
 
         for ws in hypr.get_workspaces():
-            if not (ws.get_id() >= -99 and ws.get_id() <= -2): # filter out special workspaces
+            if not (
+                ws.get_id() >= -99 and ws.get_id() <= -2
+            ):  # filter out special workspaces
                 self.add(self.button(ws))
 
     def button(self, ws):
@@ -197,12 +198,13 @@ class Time(Astal.Label):
     def __init__(self, format="%H:%M - %A %e."):
         super().__init__()
         self.format = format
-        self.interval = AstalIO.Time.interval(1000, self.sync)
-        self.connect("destroy", self.interval.cancel)
+        self.interval = GLib.timeout_add(1000, self.sync, GLib.PRIORITY_DEFAULT)
+        self.connect("destroy", lambda *_: GLib.Source.remove(self.interval))
         Astal.widget_set_class_names(self, ["Time"])
 
-    def sync(self):
+    def sync(self, *_):
         self.set_label(GLib.DateTime.new_now_local().format(self.format))
+        return GLib.SOURCE_CONTINUE
 
 
 class Left(Gtk.Box):
@@ -229,12 +231,11 @@ class Right(Gtk.Box):
 
 
 class Bar(Astal.Window):
-    def __init__(self, monitor: Gdk.Monitor):
+    def __init__(self):
         super().__init__(
             anchor=Astal.WindowAnchor.LEFT
             | Astal.WindowAnchor.RIGHT
             | Astal.WindowAnchor.TOP,
-            gdkmonitor=monitor,
             exclusivity=Astal.Exclusivity.EXCLUSIVE,
         )
 

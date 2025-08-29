@@ -1,3 +1,0 @@
-#!/bin/sh
-
-LD_PRELOAD="/nix/store/9f2p1l7lp5xv36islyai8cvrld3v07zm-gtk4-layer-shell-1.2.0/lib/libgtk4-layer-shell.so" "/home/demeter/Projects/astal/examples/gtk4/simple-bar/js/dist/share/simple-bar/main.js" $@

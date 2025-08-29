@@ -143,7 +143,7 @@ class SysTray : Gtk.Box {
 class Wifi : Astal.Icon {
     public Wifi() {
         Astal.widget_set_class_names(this, {"Wifi"});
-        var wifi = AstalNetwork.get_default().get_wifi();
+        var wifi = AstalNetwork.get_default().wifi;
         if (wifi != null) {
             wifi.bind_property("ssid", this, "tooltip-text", BindingFlags.SYNC_CREATE);
             wifi.bind_property("icon-name", this, "icon", BindingFlags.SYNC_CREATE);
@@ -190,17 +190,17 @@ class Battery : Gtk.Box {
 
 class Time : Astal.Label {
     string format;
-    AstalIO.Time interval;
+    uint interval;
 
-    void sync() {
+    bool sync() {
         label = new DateTime.now_local().format(format);
+        return Source.CONTINUE;
     }
 
     public Time(string format = "%H:%M - %A %e.") {
         this.format = format;
-        interval = AstalIO.Time.interval(1000, null);
-        interval.now.connect(sync);
-        destroy.connect(interval.cancel);
+        interval = Timeout.add(1000, sync, Priority.DEFAULT);
+        destroy.connect(() => Source.remove(interval));
         Astal.widget_set_class_names(this, {"Time"});
     }
 }
@@ -231,13 +231,12 @@ class Right : Gtk.Box {
 }
 
 class Bar : Astal.Window {
-    public Bar(Gdk.Monitor monitor) {
+    public Bar() {
         Object(
             anchor: Astal.WindowAnchor.TOP
                 | Astal.WindowAnchor.LEFT
                 | Astal.WindowAnchor.RIGHT,
-            exclusivity: Astal.Exclusivity.EXCLUSIVE,
-            gdkmonitor: monitor
+            exclusivity: Astal.Exclusivity.EXCLUSIVE
         );
 
         Astal.widget_set_class_names(this, {"Bar"});

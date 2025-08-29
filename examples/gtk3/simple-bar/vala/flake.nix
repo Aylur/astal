@@ -27,7 +27,6 @@
         ];
 
         buildInputs = [
-          astal.packages.${system}.io
           astal.packages.${system}.astal3
           astal.packages.${system}.battery
           astal.packages.${system}.wireplumber
