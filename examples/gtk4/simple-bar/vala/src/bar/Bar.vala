@@ -1,4 +1,4 @@
-[GtkTemplate(ui="/ui/Bar.ui")]
+[GtkTemplate(ui="/bar/Bar.ui")]
 class Bar : Astal.Window {
     public string clock { get; set; }
     public string volume_icon { get; set; }
@@ -13,7 +13,7 @@ class Bar : Astal.Window {
     public string power_profile_icon { get; set; }
     public bool bluetooth_visible { get; set; }
 
-    AstalIO.Time timer;
+    uint interval;
     AstalMpris.Player player;
     HashTable<string, TrayButton> tray_items;
 
@@ -28,11 +28,13 @@ class Bar : Astal.Window {
         present();
 
         // clock
-        timer = AstalIO.Time.interval(1000, null);
-        timer.now.connect(() => {
+        clock = new DateTime.now_local().format("%H:%M:%S");
+        interval = Timeout.add(1000, () => {
             clock = new DateTime.now_local().format("%H:%M:%S");
-        });
-
+            return Source.CONTINUE;
+        }, Priority.DEFAULT);
+        
+        
         // everytime popover is opened, select current day
         popover.notify["visible"].connect(() => {
             if (popover.visible) {
@@ -147,8 +149,7 @@ class Bar : Astal.Window {
             button.dispose();
         }
 
-        timer.cancel();
-        timer.dispose();
+        Source.remove(interval);
         player.dispose();
         base.dispose();
     }

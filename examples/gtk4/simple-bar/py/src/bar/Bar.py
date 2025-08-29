@@ -1,7 +1,6 @@
 import math
 from gi.repository import (
     Astal,
-    AstalIO,
     GObject,
     GLib,
     Gtk,
@@ -18,7 +17,7 @@ from gi.repository import (
 SYNC = GObject.BindingFlags.SYNC_CREATE
 
 
-@Gtk.Template(resource_path="/ui/Bar.ui")
+@Gtk.Template(resource_path="/bar/Bar.ui")
 class Bar(Astal.Window):
     __gtype_name__ = "Bar"
 
@@ -50,8 +49,8 @@ class Bar(Astal.Window):
         )
 
         # clock
-        timer = AstalIO.Time.interval(1000, self.set_clock)
-        self.connect("destroy", lambda _: timer.cancel())
+        self.on_interval()
+        GLib.timeout_add(1000, self.on_interval, GLib.PRIORITY_DEFAULT)
 
         # everytime popover is opened, select current day
         self.popover.connect("notify::visible", self.on_popover_visible)
@@ -176,8 +175,9 @@ class Bar(Astal.Window):
             case _:
                 return "network-idle-symbolic"
 
-    def set_clock(self):
+    def on_interval(self, *_args):
         self.clock = GLib.DateTime.new_now_local().format("%H:%M:%S")
+        return GLib.SOURCE_CONTINUE
 
     @Gtk.Template.Callback()
     def change_volume(self, _scale, _type, value):

@@ -1,5 +1,4 @@
 import Astal from "gi://Astal?version=4.0"
-import AstalIO from "gi://AstalIO"
 import GLib from "gi://GLib"
 import Gtk from "gi://Gtk?version=4.0"
 import GObject from "gi://GObject?version=2.0"
@@ -10,7 +9,49 @@ import AstalMpris from "gi://AstalMpris"
 import AstalPowerProfiles from "gi://AstalPowerProfiles"
 import AstalTray from "gi://AstalTray"
 import AstalBluetooth from "gi://AstalBluetooth"
-import { string, number, boolean } from "./props"
+
+function string(name: string, defaultValue = "") {
+    return {
+        [name]: GObject.ParamSpec.string(
+            name,
+            null,
+            null,
+            GObject.ParamFlags.READWRITE,
+            defaultValue,
+        ),
+    }
+}
+
+function number(
+    name: string,
+    min = -Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+    defaultValue = 0,
+) {
+    return {
+        [name]: GObject.ParamSpec.double(
+            name,
+            null,
+            null,
+            GObject.ParamFlags.READWRITE,
+            min,
+            max,
+            defaultValue,
+        ),
+    }
+}
+
+function boolean(name: string, defaultValue = false) {
+    return {
+        [name]: GObject.ParamSpec.boolean(
+            name,
+            null,
+            null,
+            GObject.ParamFlags.READWRITE,
+            defaultValue,
+        ),
+    }
+}
 
 const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
 const SYNC = GObject.BindingFlags.SYNC_CREATE
@@ -20,7 +61,7 @@ export default class Bar extends Astal.Window {
         GObject.registerClass(
             {
                 GTypeName: "Bar",
-                Template: "resource:///ui/Bar.ui",
+                Template: "resource:///bar/Bar.ui",
                 InternalChildren: ["popover", "calendar", "traybox"],
                 Properties: {
                     ...string("clock"),
@@ -59,10 +100,12 @@ export default class Bar extends Astal.Window {
         })
 
         // clock
-        const timer = AstalIO.Time.interval(1000, () => {
+        this.clock = GLib.DateTime.new_now_local().format("%H:%M:%S")!
+        const interval = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
             this.clock = GLib.DateTime.new_now_local().format("%H:%M:%S")!
+            return GLib.SOURCE_CONTINUE
         })
-        this.connect("destroy", () => timer.cancel())
+        this.connect("destroy", () => GLib.Source.remove(interval))
 
         // everytime popover is opened, select current day
         this._popover.connect("notify::visible", ({ visible }) => {
@@ -75,7 +118,6 @@ export default class Bar extends Astal.Window {
         const nw = AstalNetwork.get_default()
         let networkBinding: GObject.Binding
 
-        // @ts-expect-error mistyped
         nw.bind_property_full(
             "primary",
             this,
