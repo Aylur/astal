@@ -339,11 +339,14 @@ public class Hyprland : Object {
                 yield sync_clients();
                 break;
 
-            case "monitorremoved":
-                var id = get_monitor_by_name(args[1]).id;
-                _monitors.get(id).removed();
-                _monitors.remove(id);
-                monitor_removed(id);
+            case "monitorremovedv2":
+                var argv = args[1].split(",", 2);
+                var monitor = get_monitor(int.parse(argv[0]));
+                if (monitor == null)
+                    break;
+                monitor.removed();
+                _monitors.remove(monitor.id);
+                monitor_removed(monitor.id);
                 notify_property("monitors");
                 break;
 
