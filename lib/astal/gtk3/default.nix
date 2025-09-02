@@ -7,7 +7,7 @@ mkAstalPkg {
   pname = "astal3";
   src = ./.;
   packages = [
-    self.packages.${pkgs.system}.io
+    self.packages.io
     pkgs.gtk3
     pkgs.gtk-layer-shell
   ];
