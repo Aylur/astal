@@ -47,6 +47,13 @@ export default [
     title: "HyprPanel",
     author: "Jas",
   },
+  {
+    image: "/astal/showcase/retrozinndev-colorshell.webp",
+    url: "https://github.com/retrozinndev/colorshell",
+    icon: "devicon-typescript-plain",
+    title: "colorshell",
+    author: "retrozinndev",
+  },
 
   // add more showcases here~
 ] satisfies Grid<Showcase>[]
