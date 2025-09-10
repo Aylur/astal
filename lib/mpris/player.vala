@@ -4,7 +4,7 @@
  * but [class@AstalMpris.Player] can be constructed for a dedicated players too.
  */
 public class AstalMpris.Player : Object {
-    private static string COVER_CACHE = Environment.get_user_cache_dir() + "/astal/mpris";
+    private static string COVER_CACHE = "/tmp/astal/mpris";
 
     private IPlayer proxy;
     private uint pollid; // periodically notify position
@@ -508,6 +508,20 @@ public class AstalMpris.Player : Object {
             cover_art = null;
             return;
         }
+        string path = COVER_CACHE + "/" + Checksum.compute_for_string(ChecksumType.SHA1, art_url, -1);
+        if (art_url.index_of(",") != -1) {
+            int semicolonIndex = art_url.index_of(";");
+            int commaIndex = art_url.index_of(",");
+            string? baseType = art_url.substring(semicolonIndex + 1, commaIndex - semicolonIndex - 1);
+            if (baseType == "base64") {
+                if (!FileUtils.test(COVER_CACHE, FileTest.IS_DIR))
+                    File.new_for_path(COVER_CACHE).make_directory_with_parents(null);
+                uint8[] raw = Base64.decode(art_url.substring(commaIndex + 1));
+                FileUtils.set_data(path, raw);
+                cover_art = path;
+                return;
+            }
+        }
 
         var file = File.new_for_uri(art_url);
         if (file.get_path() != null) {
@@ -515,7 +529,6 @@ public class AstalMpris.Player : Object {
             return;
         }
 
-        var path = COVER_CACHE + "/" + Checksum.compute_for_string(ChecksumType.SHA1, art_url, -1);
         if (FileUtils.test(path, FileTest.EXISTS)) {
             cover_art = path;
             return;
