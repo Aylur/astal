@@ -1,4 +1,5 @@
 [DBus (name="io.Astal.Application")]
+[Version (deprecated = true)]
 public class Astal.Application : Gtk.Application, AstalIO.Application {
     private List<Gtk.CssProvider> css_providers = new List<Gtk.CssProvider>();
     private SocketService service;
@@ -230,6 +231,14 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     }
 
     construct {
+        activate.connect(() => {
+            var mons = Gdk.Display.get_default().get_monitors();
+
+            mons.items_changed.connect(() => {
+                notify_property("monitors");
+            });
+        });
+
         window_added.connect((window) => {
             ulong id1, id2;
             id1 = window.notify["visible"].connect(() => window_toggled(window));

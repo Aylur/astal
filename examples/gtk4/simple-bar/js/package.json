@@ -1,0 +1,6 @@
+{
+    "prettier": {
+        "semi": false,
+        "tabWidth": 4
+    }
+}

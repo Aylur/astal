@@ -25,20 +25,20 @@ This example shows you how to get a Vala+Blueprint+Sass project going.
 
 - developing
 
-    ```sh
-    meson setup build --wipe --prefix "$(pwd)/result"
-    meson install -C build
-    ./result/bin/simple-bar
-    ```
+  ```sh
+  meson setup build --wipe --prefix "$(pwd)/result"
+  meson install -C build
+  ./result/bin/simple-bar
+  ```
 
 - installing
 
-    ```sh
-    meson setup build --wipe --prefix /usr
-    meson install -C build
-    simple-bar
-    ```
+  ```sh
+  meson setup build --wipe
+  meson install -C build
+  simple-bar
+  ```
 
 - adding new vala files will also have to be listed in `meson.build`
-- adding new scss files requires no additional steps as long as they are imported from `main.scss`
+- adding new scss files requires no additional steps as long as they are imported from `style.scss`
 - adding new ui (blueprint) files will also have to be listed in `meson.build` and in `gresource.xml`

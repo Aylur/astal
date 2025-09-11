@@ -102,6 +102,15 @@ public class AstalNetwork.Wifi : Object {
         });
     }
 
+    public async void deactivate_connection() throws Error {
+        if (device.active_connection == null) {
+            return;
+        }
+
+        yield device.client.deactivate_connection_async(device.active_connection, null);
+    }
+
+
     private void on_active_connection() {
         if (connection_handler > 0 && active_connection != null) {
             active_connection.disconnect(connection_handler);

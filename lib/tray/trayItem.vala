@@ -171,6 +171,23 @@ public class TrayItem : Object {
             if (tooltip == null)
                 return "";
 
+            var tt = GLib.Markup.escape_text(tooltip.title);
+            if (tooltip.description != "")
+                tt += "\n" + tooltip.description;
+
+            return tt;
+        }
+    }
+
+    /**
+    * A text representation of the tooltip. This is basically equvivalent
+    * to `tooltip.title \n tooltip.description.`
+    */
+    public string tooltip_text {
+        owned get {
+            if (tooltip == null)
+                return "";
+
             var tt = tooltip.title;
             if (tooltip.description != "")
                 tt += "\n" + tooltip.description;

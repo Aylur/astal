@@ -1,5 +1,3 @@
-*.mjs linguist-language=TypeScript
-*.js linguist-language=TypeScript
-*.vue linguist-vendored
-*.h linguist-vendored
 examples/** linguist-vendored
+lang/** linguist-vendored
+docs/** linguist-vendored

@@ -2,7 +2,7 @@
 <gresources>
     <gresource prefix="/">
         <file>index.js</file>
-        <file>main.css</file>
-        <file>ui/Bar.ui</file>
+        <file>style.css</file>
+        <file>bar/Bar.ui</file>
     </gresource>
 </gresources>

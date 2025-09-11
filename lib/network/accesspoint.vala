@@ -14,6 +14,23 @@ public class AstalNetwork.AccessPoint : Object {
     public NM.80211ApSecurityFlags rsn_flags { get { return ap.rsn_flags; } }
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
 
+    public GenericArray<NM.RemoteConnection> get_connections() {
+        return (GenericArray<NM.RemoteConnection>)ap.filter_connections(
+            wifi.device.client.connections
+        );
+    }
+
+    public string get_path() {
+        return ap.get_path();
+    }
+
+    public bool requires_password {
+        get {
+            return wpa_flags != NM.80211ApSecurityFlags.NONE ||
+                rsn_flags != NM.80211ApSecurityFlags.NONE;
+        }
+    }
+
     public string? ssid {
         owned get {
             if (ap.ssid == null)
@@ -26,13 +43,60 @@ public class AstalNetwork.AccessPoint : Object {
     internal AccessPoint(Wifi wifi, NM.AccessPoint ap) {
         this.wifi = wifi;
         this.ap = ap;
+
         ap.notify.connect((pspec) => {
             if (get_class().find_property(pspec.name) != null)
                 notify_property(pspec.name);
             if (pspec.name == "strength")
                 icon_name = _icon();
         });
+
         icon_name = _icon();
+    }
+
+    /**
+     * Activates the first connection associated with this AccessPoint
+     * or creates a new SimpleConnection using "wpa-psk" and activates it.
+     * Returns whether the connection is the new active connection. 
+     */
+    public async void activate(string? password = null) throws Error {
+        var conns = get_connections();
+
+        if (conns.length > 0) {
+            var first_conn = conns.get(0);
+
+            if (password != null) {
+                var security = first_conn.get_setting_wireless_security();
+                security.psk = password;
+                yield first_conn.commit_changes_async(true, null);
+            }
+
+            yield ap.client.activate_connection_async(
+                first_conn,
+                wifi.device,
+                get_path(),
+                null
+            );
+        } else {
+            var connection = NM.SimpleConnection.new();
+
+            connection.add_setting(new NM.SettingWireless() {
+                ssid = this.ap.ssid,
+                bssid = this.bssid,
+            });
+
+            connection.add_setting(new NM.SettingWirelessSecurity() {
+                key_mgmt = "wpa-psk",
+                psk = password,
+            });
+
+            yield ap.client.add_and_activate_connection_async(
+                connection,
+                wifi.device,
+                get_path(),
+                null
+            );
+        }
     }
 
     private string _icon() {
@@ -43,7 +107,4 @@ public class AstalNetwork.AccessPoint : Object {
         return Wifi.ICON_NONE;
     }
 
-    // TODO: connect to ap
-    // public signal void auth();
-    // public void try_connect(string? password) { }
 }

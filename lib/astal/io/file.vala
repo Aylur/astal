@@ -2,6 +2,7 @@ namespace AstalIO {
 /**
  * Read the contents of a file synchronously.
  */
+[Version (deprecated = true)]
 public string read_file(string path) {
     var str = "";
     try {
@@ -15,6 +16,7 @@ public string read_file(string path) {
 /**
  * Read the contents of a file asynchronously.
  */
+[Version (deprecated = true)]
 public async string read_file_async(string path) throws Error {
     uint8[] content;
     yield File.new_for_path(path).load_contents_async(null, out content, null);
@@ -24,6 +26,7 @@ public async string read_file_async(string path) throws Error {
 /**
  * Write content to a file synchronously.
  */
+[Version (deprecated = true)]
 public void write_file(string path, string content) {
     try {
         var dir = Path.get_dirname(path);
@@ -47,6 +50,7 @@ public void write_file(string path, string content) {
 /**
  * Write content to a file asynchronously.
  */
+[Version (deprecated = true)]
 public async void write_file_async(string path, string content) throws Error {
     var dir = Path.get_dirname(path);
     if (!FileUtils.test(dir, FileTest.IS_DIR)) {
@@ -68,6 +72,7 @@ public async void write_file_async(string path, string content) throws Error {
  * The callback will be called passed two parameters: the path of the file
  * that changed and an [enum@Gio.FileMonitorEvent] indicating the reason.
  */
+[Version (deprecated = true)]
 public FileMonitor? monitor_file(string path, Closure callback) {
     try {
         var file = File.new_for_path(path);
