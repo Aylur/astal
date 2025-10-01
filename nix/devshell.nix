@@ -1,18 +1,21 @@
 {
   self,
   pkgs,
-}: let
+}:
+let
   lua = pkgs.lua.withPackages (ps: [
     ps.lgi
-    (ps.luaPackages.toLuaModule (pkgs.stdenv.mkDerivation {
-      name = "astal";
-      src = "${self}/lang/lua/astal";
-      dontBuild = true;
-      installPhase = ''
-        mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
-        cp -r * $out/share/lua/${ps.lua.luaversion}/astal
-      '';
-    }))
+    (ps.luaPackages.toLuaModule (
+      pkgs.stdenv.mkDerivation {
+        name = "astal";
+        src = "${self.src}/lang/lua/astal";
+        dontBuild = true;
+        installPhase = ''
+          mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
+          cp -r * $out/share/lua/${ps.lua.luaversion}/astal
+        '';
+      }
+    ))
   ]);
 
   python = pkgs.python3.withPackages (ps: [
@@ -59,16 +62,13 @@
     pyright
     ruff
   ];
-in {
+in
+{
   default = pkgs.mkShell {
     packages = buildInputs ++ lsp;
   };
   astal = pkgs.mkShell {
     packages =
-      buildInputs
-      ++ lsp
-      ++ builtins.attrValues (
-        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
-      );
+      buildInputs ++ lsp ++ builtins.attrValues (builtins.removeAttrs self.packages [ "docs" ]);
   };
 }
