@@ -49,7 +49,7 @@
     gjs
   ];
 
-  lsp = with pkgs; [
+  dev = with pkgs; [
     nodejs
     mesonlsp
     vala-language-server
@@ -58,15 +58,16 @@
     markdownlint-cli2
     pyright
     ruff
+    uncrustify
   ];
 in {
   default = pkgs.mkShell {
-    packages = buildInputs ++ lsp;
+    packages = buildInputs ++ dev;
   };
   astal = pkgs.mkShell {
     packages =
       buildInputs
-      ++ lsp
+      ++ dev
       ++ builtins.attrValues (
         builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
       );
