@@ -617,7 +617,7 @@ public class AstalMpris.Player : Object {
 
         var meta = props.lookup_value("Metadata", new VariantType("a{sv}"));
         if (meta != null) {
-            var _id = meta.lookup_value("mpris:trackid", VariantType.STRING);
+            var _id = meta.lookup_value("mpris:trackid", VariantType.OBJECT_PATH);
             trackid = (_id != null) ? _id.get_string(null) : "";
 
             var _art_url = meta.lookup_value("mpris:artUrl", VariantType.STRING);
