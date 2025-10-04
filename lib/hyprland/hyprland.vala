@@ -345,6 +345,7 @@ public class Hyprland : Object {
                 _monitors.remove(id);
                 monitor_removed(id);
                 notify_property("monitors");
+                yield sync_clients(); // Clients' monitor property may change, so sync them.
                 break;
 
             case "monitoraddedv2":
@@ -354,6 +355,7 @@ public class Hyprland : Object {
                 yield sync_monitors();
                 monitor_added(mon);
                 notify_property("monitors");
+                yield sync_clients(); // Clients' monitor property may change, so sync them.
                 break;
 
             case "createworkspacev2":
@@ -397,7 +399,18 @@ public class Hyprland : Object {
             // first event that signals a new client when it opens as an active window
             case "activewindowv2":
                 yield try_add_client(args[1]);
+                var previous_focused_client = focused_client;
                 focused_client = get_client(args[1]);
+                // activewindowv2 is also triggered on window resize or floating window move,
+                // so sync all clients to get new positions in case the window position changed.
+                //
+                // We cannot compare x/y/width/height positions before sync_clients() as the
+                // positions are not updated yet. Well we could get the new position from hyprland via
+                // `activewindow`, but why bother as if it changed we will need to access hyprland
+                // again for all positions.
+                if (previous_focused_client == focused_client) {
+                  yield sync_clients();
+                }
                 break;
 
             case "openwindow":
@@ -411,6 +424,9 @@ public class Hyprland : Object {
             case "closewindow":
                 _clients.get(args[1]).removed();
                 _clients.remove(args[1]);
+                // recalculate all positions via sync_clients as on removal adjacent
+                // clients are also affected.
+                yield sync_clients();
                 yield sync_workspaces();
                 client_removed(args[1]);
                 notify_property("clients");
@@ -448,10 +464,14 @@ public class Hyprland : Object {
                 yield sync_clients();
                 break;
 
-            // TODO:
+            // TODO: add group field to client.
             case "togglegroup":
             case "moveintogroup":
             case "moveoutofgroup":
+                yield sync_clients();
+                break;
+
+            // TODO:
             case "ignoregrouplock":
             case "lockgroups":
                 break;
