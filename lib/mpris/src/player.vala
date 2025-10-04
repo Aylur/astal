@@ -7,8 +7,8 @@ public class AstalMpris.Player : Object {
     private static string COVER_CACHE = Environment.get_user_cache_dir() + "/astal/mpris";
 
     private string _busname = "";
-    private PlayerProxy proxy;
-    private uint pollid; // periodically notify position
+    private PlayerProxy? proxy;
+    private uint pollid = 0; // periodically notify position
 
     /**
      * Full dbus nama of this player.
@@ -39,6 +39,7 @@ public class AstalMpris.Player : Object {
      * In this case, the [property@AstalMpris.Player:can_raise] is `false` and this method does nothing.
      */
     public void raise() {
+        return_if_fail(proxy != null);
         proxy.raise.begin((_, res) => {
             try {
                 proxy.raise.end(res);
@@ -54,6 +55,7 @@ public class AstalMpris.Player : Object {
      * In this case, the [property@AstalMpris.Player:can_quit] property is false and this method does nothing.
      */
     public void quit() {
+        return_if_fail(proxy != null);
         proxy.quit.begin((_, res) => {
             try {
                 proxy.quit.end(res);
@@ -114,6 +116,7 @@ public class AstalMpris.Player : Object {
      * Toggle [property@AstalMpris.Player:fullscreen] state.
      */
     public void toggle_fullscreen() {
+        return_if_fail(proxy != null);
         if (!can_set_fullscreen) critical(@"can not set fullscreen on $bus_name");
 
         proxy.set.begin(
@@ -130,6 +133,7 @@ public class AstalMpris.Player : Object {
      * If [property@AstalMpris.Player:can_go_next] is `false` this method has no effect.
      */
     public void next() {
+        return_if_fail(proxy != null);
         proxy.next.begin((_, res) => {
             try {
                 proxy.next.end(res);
@@ -145,6 +149,7 @@ public class AstalMpris.Player : Object {
      * If [property@AstalMpris.Player:can_go_previous] is `false` this method has no effect.
      */
     public void previous() {
+        return_if_fail(proxy != null);
         proxy.previous.begin((_, res) => {
             try {
                 proxy.previous.end(res);
@@ -160,6 +165,7 @@ public class AstalMpris.Player : Object {
      * If [property@AstalMpris.Player:can_pause] is `false` this method has no effect.
      */
     public void pause() {
+        return_if_fail(proxy != null);
         proxy.pause.begin((_, res) => {
             try {
                 proxy.pause.end(res);
@@ -175,6 +181,7 @@ public class AstalMpris.Player : Object {
      * If playback is stopped, starts playback.
      */
     public void play_pause() {
+        return_if_fail(proxy != null);
         proxy.play_pause.begin((_, res) => {
             try {
                 proxy.play_pause.end(res);
@@ -190,6 +197,7 @@ public class AstalMpris.Player : Object {
      * If [property@AstalMpris.Player:can_control] is `false` this method has no effect.
      */
     public void stop() {
+        return_if_fail(proxy != null);
         proxy.stop.begin((_, res) => {
             try {
                 proxy.stop.end(res);
@@ -206,6 +214,7 @@ public class AstalMpris.Player : Object {
      * If [property@AstalMpris.Player:can_play] is `false` this method has no effect.
      */
     public void play() {
+        return_if_fail(proxy != null);
         proxy.play.begin((_, res) => {
             try {
                 proxy.play.end(res);
@@ -222,6 +231,7 @@ public class AstalMpris.Player : Object {
      * @param uri Uri of the track to load.
      */
     public void open_uri(string uri) {
+        return_if_fail(proxy != null);
         proxy.open_uri.begin(uri, (_, res) => {
             try {
                 proxy.open_uri.end(res);
@@ -236,23 +246,23 @@ public class AstalMpris.Player : Object {
      * from track to playlist, from playlist to none.
      */
     public void loop() {
+        return_if_fail(proxy != null);
         if (loop_status == Loop.UNSUPPORTED) {
             critical(@"loop is unsupported by $bus_name");
             return;
         }
 
-        switch (loop_status) {
-            case Loop.NONE:
-                loop_status = Loop.TRACK;
-                break;
-            case Loop.TRACK:
-                loop_status = Loop.PLAYLIST;
-                break;
-            case Loop.PLAYLIST:
-                loop_status = Loop.NONE;
-                break;
-            default:
-                break;
+        if (loop_status == Loop.NONE) {
+            loop_status = Loop.TRACK;
+            return;
+        }
+        if (loop_status == Loop.TRACK) {
+            loop_status = Loop.PLAYLIST;
+            return;
+        }
+        if (loop_status == Loop.PLAYLIST) {
+            loop_status = Loop.NONE;
+            return;
         }
     }
 
@@ -260,6 +270,7 @@ public class AstalMpris.Player : Object {
      * Toggle [property@AstalMpris.Player:shuffle_status].
      */
     public void shuffle() {
+        return_if_fail(proxy != null);
         if (shuffle_status == Shuffle.UNSUPPORTED) {
             critical(@"shuffle is unsupported by $bus_name");
             return;
@@ -280,6 +291,7 @@ public class AstalMpris.Player : Object {
 
     private Loop _loop_status = Loop.UNSUPPORTED;
     private void _set_loop_status(Loop loop) {
+        return_if_fail(proxy != null);
         if (loop != Loop.UNSUPPORTED) {
             proxy.set.begin(
                 PlayerProxy.NAME,
@@ -300,6 +312,7 @@ public class AstalMpris.Player : Object {
 
     private Shuffle _shuffle_status = Shuffle.UNSUPPORTED;
     private void _set_shuffle_status(Shuffle status) {
+        return_if_fail(proxy != null);
         proxy.set.begin(
             PlayerProxy.NAME,
             "Shuffle",
@@ -318,6 +331,7 @@ public class AstalMpris.Player : Object {
 
     private double _rate = 0;
     private void _set_rate(double rate) {
+        return_if_fail(proxy != null);
         proxy.set.begin(
             PlayerProxy.NAME,
             "Rate",
@@ -336,6 +350,7 @@ public class AstalMpris.Player : Object {
 
     private double _volume = -1;
     private void _set_volume(double volume) {
+        return_if_fail(proxy != null);
         proxy.set.begin(
             PlayerProxy.NAME,
             "Volume",
@@ -355,6 +370,7 @@ public class AstalMpris.Player : Object {
 
     private double _position = -1;
     private void _set_position(double pos) {
+        return_if_fail(proxy != null);
         proxy.set_position.begin(trackid, (int64)(pos * 1000000), (_, res) => {
             try {
                 proxy.set_position.end(res);

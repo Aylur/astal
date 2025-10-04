@@ -11,8 +11,8 @@ public Mpris get_default() {
  * Manager object that monitors the session DBus for Mpris players to appear and disappear.
  */
 public class AstalMpris.Mpris : Object, ListModel {
-    private static Mpris instance;
-    private BusProxy proxy;
+    private static Mpris? instance;
+    private BusProxy? proxy;
 
     /**
      * Gets the default singleton Mpris instance.
@@ -100,8 +100,7 @@ public class AstalMpris.Mpris : Object, ListModel {
     }
 
     public Object? get_item(uint position) {
-        // realistically there will be at max 3-4 players at a time
-        // so iterating shuold be fine? if not we should use a table lookup instead
+        // realistically there will be at max 3-4 players at a time so iterating shuold be fine
         var i = 0;
         foreach (var player in player_list) {
             if (i++ == position) {
@@ -112,7 +111,7 @@ public class AstalMpris.Mpris : Object, ListModel {
         return null;
     }
 
-    public GLib.Type get_item_type() {
+    public Type get_item_type() {
         return typeof(Player);
     }
 
