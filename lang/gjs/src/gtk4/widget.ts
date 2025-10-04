@@ -112,6 +112,10 @@ export const Overlay = astalify<Gtk.Overlay, Gtk.Overlay.ConstructorProps>(Gtk.O
 export type RevealerProps = ConstructProps<Gtk.Revealer, Gtk.Revealer.ConstructorProps>
 export const Revealer = astalify<Gtk.Revealer, Gtk.Revealer.ConstructorProps>(Gtk.Revealer)
 
+// Scroller
+export type ScrollerProps = ConstructProps<Astal.Scroller, Astal.Scroller.ConstructorProps>
+export const Scroller = astalify<Astal.Scroller, Astal.Scroller.ConstructorProps>(Astal.Scroller)
+
 // Slider
 type SliderSignals = {
     onChangeValue: []
