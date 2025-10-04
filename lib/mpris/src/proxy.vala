@@ -43,7 +43,7 @@ interface AstalMpris.PlayerProxy : MediaPlayerProxy {
     public abstract async void stop() throws GLib.Error;
     public abstract async void play() throws GLib.Error;
     public abstract async void seek(int64 offset) throws GLib.Error;
-    public abstract async void set_position(string track_id, int64 position) throws GLib.Error;
+    public abstract async void set_position(ObjectPath track_id, int64 position) throws GLib.Error;
     public abstract async void open_uri(string uri) throws GLib.Error;
 
     public static async PlayerProxy new(string name) throws Error {

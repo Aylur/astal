@@ -380,7 +380,7 @@ public class AstalMpris.Player : Object {
     private double _position = -1;
     private void _set_position(double pos) {
         if (check_available()) return;
-        proxy.set_position.begin(trackid, (int64)(pos * 1000000), (_, res) => {
+        proxy.set_position.begin((ObjectPath)trackid, (int64)(pos * 1000000), (_, res) => {
             try {
                 proxy.set_position.end(res);
             } catch (Error error) {
