@@ -3,12 +3,17 @@ project(
   'vala',
   'c',
   version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
-  meson_version: '>= 0.62.0',
+  meson_version: '>= 1.1.0',
   default_options: [
     'warning_level=2',
     'werror=false',
     'c_std=gnu11',
   ],
+)
+
+assert(
+  get_option('lib') or get_option('cli'),
+  'Either lib or cli option must be set to true.',
 )
 
 version = meson.project_version()
@@ -43,68 +48,72 @@ sources = [config] + files(
   'src/proxy.vala',
 )
 
-lib = library(
-  name,
-  sources,
-  dependencies: deps,
-  vala_args: ['--vapi-comments'],
-  vala_header: name + '.h',
-  vala_vapi: name + '-' + api_version + '.vapi',
-  version: version,
-  install: true,
-  install_dir: [true, true, true],
-)
-
-pkg_flags = []
-foreach dep : deps
-  pkg_flags += ['--pkg=' + dep.name()]
-endforeach
-
-gir = custom_target(
-  gir_name,
-  command: [
-    find_program('python3'),
-    files('gir.py'),
+if get_option('lib')
+  lib = library(
     name,
-    gir_name,
-    pkg_flags,
     sources,
-  ],
-  input: sources,
-  depends: lib,
-  output: gir_name,
-  install: true,
-  install_dir: get_option('datadir') / 'gir-1.0',
-)
+    dependencies: deps,
+    vala_args: ['--vapi-comments'],
+    vala_header: name + '.h',
+    vala_vapi: name + '-' + api_version + '.vapi',
+    version: version,
+    install: true,
+    install_dir: [true, true, true],
+  )
 
-custom_target(
-  typelib_name,
-  command: [
-    find_program('g-ir-compiler'),
-    '--output', '@OUTPUT@',
-    '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
-    meson.current_build_dir() / gir_name,
-  ],
-  input: lib,
-  output: typelib_name,
-  depends: [lib, gir],
-  install: true,
-  install_dir: get_option('libdir') / 'girepository-1.0',
-)
+  pkg_flags = []
+  foreach dep : deps
+    pkg_flags += ['--pkg=' + dep.name()]
+  endforeach
 
-import('pkgconfig').generate(
-  lib,
-  name: name,
-  filebase: name + '-' + api_version,
-  version: version,
-  subdirs: name,
-  requires: deps,
-  install_dir: get_option('libdir') / 'pkgconfig',
-)
+  gir = custom_target(
+    gir_name,
+    command: [
+      find_program('python3'),
+      files('gir.py'),
+      name,
+      gir_name,
+      pkg_flags,
+      sources,
+    ],
+    input: sources,
+    depends: lib,
+    output: gir_name,
+    install: true,
+    install_dir: get_option('datadir') / 'gir-1.0',
+  )
 
-executable(
-  name,
-  ['src/cli.vala', sources],
-  dependencies: deps,
-  install: true,
-)
+  custom_target(
+    typelib_name,
+    command: [
+      find_program('g-ir-compiler'),
+      '--output', '@OUTPUT@',
+      '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
+      meson.current_build_dir() / gir_name,
+    ],
+    input: lib,
+    output: typelib_name,
+    depends: [lib, gir],
+    install: true,
+    install_dir: get_option('libdir') / 'girepository-1.0',
+  )
+
+  import('pkgconfig').generate(
+    lib,
+    name: name,
+    filebase: name + '-' + api_version,
+    version: version,
+    subdirs: name,
+    requires: deps,
+    install_dir: get_option('libdir') / 'pkgconfig',
+  )
+endif
+
+if get_option('cli')
+  executable(
+    name,
+    ['src/cli.vala', sources],
+    dependencies: deps,
+    install: true,
+  )
+endif
