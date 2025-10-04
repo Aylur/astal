@@ -33,7 +33,7 @@ public class AstalMpris.Player : Object {
     public bool available { get; private set; default = false; }
 
     private bool check_available() {
-        if (available) {
+        if (!available) {
             warning(@"$bus_name is not available \n");
             return true;
         }
