@@ -63,16 +63,17 @@ import('pkgconfig').generate(
   install_dir: get_option('libdir') / 'pkgconfig',
 )
 
-pkgs = []
-foreach dep : deps
-  pkgs += ['--pkg=' + dep.name()]
-endforeach
-
 gir_tgt = custom_target(
   gir,
-  command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-  + pkgs
-  + sources,
+  command: [
+    find_program('python3'),
+    files('gir.py'),
+    '--name', meson.project_name(),
+    '--gir', gir,
+    '--pkgs', 'libnm',
+    '--property', 'Wifi.access_points',
+    sources,
+  ],
   input: sources,
   depends: lib,
   output: gir,

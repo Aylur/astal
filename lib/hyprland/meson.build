@@ -42,8 +42,8 @@ deps = [
 ]
 
 sources = [config] + files(
-  'client.vala',
   'cli.vala',
+  'client.vala',
   'hyprland.vala',
   'monitor.vala',
   'structs.vala',
@@ -72,22 +72,29 @@ if get_option('lib')
     install_dir: get_option('libdir') / 'pkgconfig',
   )
 
-  pkgs = []
-  foreach dep : deps
-    pkgs += ['--pkg=' + dep.name()]
-  endforeach
-
   gir_tgt = custom_target(
     gir,
-    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-    + pkgs
-    + sources,
+    command: [
+      find_program('python3'),
+      files('gir.py'),
+      '--name', meson.project_name(),
+      '--gir', gir,
+      '--pkgs', 'json-glib-1.0:gio-unix-2.0',
+      '--property', ':'.join(
+        'Hyprland.binds',
+        'Hyprland.monitors',
+        'Hyprland.workspaces',
+        'Hyprland.clients',
+      ),
+      sources,
+    ],
     input: sources,
     depends: lib,
     output: gir,
     install: true,
     install_dir: get_option('datadir') / 'gir-1.0',
   )
+
   custom_target(
     typelib,
     command: [

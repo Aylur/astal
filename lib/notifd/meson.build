@@ -62,16 +62,20 @@ if get_option('lib')
     install_dir: [true, true, true],
   )
 
-  pkgs = []
-  foreach dep : deps
-    pkgs += ['--pkg=' + dep.name()]
-  endforeach
-
   gir_tgt = custom_target(
     gir,
-    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-    + pkgs
-    + sources,
+    command: [
+      find_program('python3'),
+      files('gir.py'),
+      '--name', meson.project_name(),
+      '--gir', gir,
+      '--pkgs', 'json-glib-1.0:gdk-pixbuf-2.0',
+      '--property', ':'.join(
+        'Notifd.notifications',
+        'Notification.actions',
+      ),
+      sources,
+    ],
     input: sources,
     depends: lib,
     output: gir,

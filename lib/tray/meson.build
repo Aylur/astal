@@ -40,10 +40,14 @@ deps = [
   dependency('gio-2.0'),
   dependency('json-glib-1.0'),
   dependency('gdk-pixbuf-2.0'),
-  dependency('appmenu-glib-translator')
+  dependency('appmenu-glib-translator'),
 ]
 
-sources = [config] + files('tray.vala', 'watcher.vala', 'trayItem.vala')
+sources = [config] + files(
+  'tray.vala',
+  'trayItem.vala',
+  'watcher.vala',
+)
 
 if get_option('lib')
   lib = library(
@@ -55,19 +59,24 @@ if get_option('lib')
     vala_args: ['--vapi-comments'],
     version: meson.project_version(),
     install: true,
-    install_dir: [true, true, true]
+    install_dir: [true, true, true],
   )
-
-  pkgs = []
-  foreach dep : deps
-    pkgs += ['--pkg=' + dep.name()]
-  endforeach
 
   gir_tgt = custom_target(
     gir,
-    command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-    + pkgs
-    + sources,
+    command: [
+      find_program('python3'),
+      files('gir.py'),
+      '--name', meson.project_name(),
+      '--gir', gir,
+      '--pkgs', ':'.join(
+        'json-glib-1.0',
+        'gdk-pixbuf-2.0',
+        'appmenu-glib-translator',
+      ),
+      '--property', 'Tray.items',
+      sources,
+    ],
     input: sources,
     depends: lib,
     output: gir,
@@ -99,7 +108,7 @@ if get_option('lib')
     requires: deps,
     install_dir: get_option('libdir') / 'pkgconfig',
   )
-  endif
+endif
 
 if get_option('cli')
   executable(

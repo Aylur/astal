@@ -61,19 +61,14 @@ if get_option('lib')
     install_dir: [true, true, true],
   )
 
-  pkg_flags = []
-  foreach dep : deps
-    pkg_flags += ['--pkg=' + dep.name()]
-  endforeach
-
   gir = custom_target(
     gir_name,
     command: [
       find_program('python3'),
       files('gir.py'),
-      name,
-      gir_name,
-      pkg_flags,
+      '--name', name,
+      '--gir', gir_name,
+      '--property', 'Mpris.players',
       sources,
     ],
     input: sources,
