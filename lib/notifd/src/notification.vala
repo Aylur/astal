@@ -249,6 +249,10 @@ public class AstalNotifd.Notification : Object {
             return this;
         }
 
+        if (_hints == null) {
+            _hints = new Variant.array(new VariantType("{sv}"), {});
+        }
+
         var dict = new VariantDict(_hints);
         dict.insert_value(name, value);
         _hints = dict.end();
