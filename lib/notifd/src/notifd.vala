@@ -31,7 +31,6 @@ public class AstalNotifd.Notifd : Object {
 
     /**
      * Ignore the timeout specified by incoming notifications.
-     *
      * By default notifications can specify a timeout in milliseconds
      * after which the daemon will resolve them even without user input.
      */
@@ -42,13 +41,21 @@ public class AstalNotifd.Notifd : Object {
 
     /**
      * Indicate to frontends to not show popups to the user.
-     *
      * This property does not have any effect on its own, its merely
      * a value to use between the daemon process and proxies for frontends to use.
      */
     public bool dont_disturb {
         get { return Notifd.settings.get_boolean("dont-disturb"); }
         set { Notifd.settings.set_boolean("dont-disturb", value); }
+    }
+
+    /**
+     * Timeout used for notifications that do not specify a timeout and let
+     * the server decide. Negative values result in no timeout. By default this is -1.
+     */
+    public int default_timeout {
+        get { return Notifd.settings.get_int("default-timeout"); }
+        set { Notifd.settings.set_int("default-timeout", value); }
     }
 
     /**
@@ -104,6 +111,10 @@ public class AstalNotifd.Notifd : Object {
 
         Notifd.settings.changed["dont-disturb"].connect(() => {
             notify_property("dont-disturb");
+        });
+
+        Notifd.settings.changed["default-timeout"].connect(() => {
+            notify_property("default-timeout");
         });
 
         // hack to make it synchronous

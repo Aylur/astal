@@ -67,17 +67,6 @@ internal class AstalNotifd.Daemon : Object {
         n.state = State.RECEIVED;
         notifs.set(n.id, n);
         notification_list = notifs.get_values().copy();
-
-        var ignore_timeout = Notifd.settings.get_boolean("ignore-timeout");
-
-        if (!ignore_timeout && (n.expire_timeout > 0)) {
-            Timeout.add(n.expire_timeout, () => {
-                if (!ignore_timeout) {
-                    resolve(n.id, ClosedReason.EXPIRED);
-                }
-                return Source.REMOVE;
-            }, Priority.DEFAULT);
-        }
     }
 
     // spec
@@ -100,6 +89,9 @@ internal class AstalNotifd.Daemon : Object {
             }
         }
 
+        var default_timeout = Notifd.settings.get_int("default-timeout");
+        var timeout = (expire_timeout < 0) ? default_timeout : expire_timeout;
+
         // deprecated hints, removing them to avoid littering cache with binary data
         hints.remove("image_data");
         hints.remove("icon_data");
@@ -113,7 +105,7 @@ internal class AstalNotifd.Daemon : Object {
             app_icon = app_icon,
             summary = summary,
             body = body,
-            expire_timeout = expire_timeout,
+            expire_timeout = timeout,
             hints = hints,
             time = new DateTime.now_local().to_unix(),
         };
@@ -124,6 +116,18 @@ internal class AstalNotifd.Daemon : Object {
         add_notification(n);
         notified(id, replaced);
         write_state();
+
+        var ignore_timeout = Notifd.settings.get_boolean("ignore-timeout");
+
+        if (!ignore_timeout && (n.expire_timeout > 0)) {
+            Timeout.add(n.expire_timeout, () => {
+                if (!ignore_timeout) {
+                    resolve(n.id, ClosedReason.EXPIRED);
+                }
+                return Source.REMOVE;
+            }, Priority.DEFAULT);
+        }
+
         return id;
     }
 
