@@ -11,7 +11,7 @@ public enum AstalNotifd.ClosedReason {
     UNDEFINED = 4,
 }
 
-private enum AstalNotifd.State {
+public enum AstalNotifd.State {
     DRAFT,
     SENT,
     RECEIVED

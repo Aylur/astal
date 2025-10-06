@@ -18,6 +18,14 @@ internal interface NotificationsProxy : DBusProxy {
     public signal void action_invoked(uint id, string action);
 }
 
+/**
+ * Send a notification.
+ * This function does not depend on Notifd and can be used with any notification server.
+ * The [class@AstalNotifd.Notification] passed to this function is never the
+ * same instance that [method@AstalNotifd.Notifd.get_notification] returns.
+ * This function will set the state of the passed notification from `DRAFT` to `SENT`
+ * after which the notification can no longer be mutated.
+ */
 public async void send_notification(Notification notification) throws IOError, DBusError {
     var n = notification;
 
@@ -63,7 +71,9 @@ public async void send_notification(Notification notification) throws IOError, D
         n.expire_timeout
     );
 
-    ulong closed_handler = 0, invoked_handler = 0;
+    ulong closed_handler = 0;
+    ulong invoked_handler = 0;
+
     closed_handler = proxy.notification_closed.connect((id, reason) => {
             if (id == n_id) n.resolved(reason);
         });

@@ -13,7 +13,7 @@ public class AstalNotifd.Notification : Object {
     List<weak Action> actions_copy;
 
     /** State of the notification. */
-    internal State state { set; get; default = State.DRAFT; }
+    public State state { internal set; get; default = State.DRAFT; }
 
     /** Unix time of when the notification was sent or received. */
     public int64 time { internal set; get; default = 0; }
@@ -67,7 +67,7 @@ public class AstalNotifd.Notification : Object {
 
     /**
      * Hints of the notification. Hints are a way to provide extra data to servers.
-     * To set hints on a [enum@AstalNotifd.State.DRAFT] Notification use [method@AstalNotifd.Notification.set_hint]
+     * To set hints on a `DRAFT` Notification use [method@AstalNotifd.Notification.set_hint]
      * or the property setters for standard hints.
      */
     public Variant hints {
@@ -257,7 +257,7 @@ public class AstalNotifd.Notification : Object {
     }
 
     public Variant? get_hint(string name) {
-        return new VariantDict(_hints).lookup_value(name, VariantType.VARIANT);
+        return new VariantDict(_hints).lookup_value(name, VariantType.ANY);
     }
 
     private string get_str_hint(string name) {
