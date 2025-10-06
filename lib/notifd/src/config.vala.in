@@ -1,4 +1,4 @@
-[CCode (gir_namespace = "AstalNotifd", gir_version = "@API_VERSION@")]
+[CCode(gir_namespace = "AstalNotifd", gir_version = "@API_VERSION@")]
 namespace AstalNotifd {
     public const int MAJOR_VERSION = @MAJOR_VERSION@;
     public const int MINOR_VERSION = @MINOR_VERSION@;

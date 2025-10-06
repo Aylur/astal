@@ -1,10 +1,10 @@
+namespace AstalNotifd {
 /**
  * Get the singleton instance of [class@AstalNotifd.Notifd]
  */
-namespace AstalNotifd {
-    public Notifd get_default() {
-        return Notifd.get_default();
-    }
+public Notifd get_default() {
+    return Notifd.get_default();
+}
 }
 
 /**
@@ -13,22 +13,21 @@ namespace AstalNotifd {
  * This class queues up to become the next daemon, while acting as a proxy in the meantime.
  */
 public class AstalNotifd.Notifd : Object {
+    internal static Settings settings;
+
+    private List<weak Notification> fallback_list = new List<weak Notification>();
     private static Notifd _instance;
 
     /**
      * Get the singleton instance
      */
     public static Notifd get_default() {
-        if (_instance == null)
-            _instance = new Notifd();
-
+        if (_instance == null) _instance = new Notifd();
         return _instance;
     }
 
     private Daemon daemon;
-    private DaemonProxy proxy;
-
-    internal signal void active(ActiveType type);
+    private Proxy proxy;
 
     /**
      * Ignore the timeout specified by incoming notifications.
@@ -37,15 +36,8 @@ public class AstalNotifd.Notifd : Object {
      * after which the daemon will resolve them even without user input.
      */
     public bool ignore_timeout {
-        get {
-            return proxy != null ? proxy.ignore_timeout : daemon.ignore_timeout;
-        }
-        set {
-            if (proxy != null)
-                proxy.ignore_timeout = value;
-            else
-                daemon.ignore_timeout = value;
-        }
+        get { return Notifd.settings.get_boolean("ignore-timeout"); }
+        set { Notifd.settings.set_boolean("ignore-timeout", value); }
     }
 
     /**
@@ -55,33 +47,28 @@ public class AstalNotifd.Notifd : Object {
      * a value to use between the daemon process and proxies for frontends to use.
      */
     public bool dont_disturb {
-        get {
-            return proxy != null ? proxy.dont_disturb : daemon.dont_disturb;
-        }
-        set {
-            if (proxy != null)
-                proxy.dont_disturb = value;
-            else
-                daemon.dont_disturb = value;
-        }
+        get { return Notifd.settings.get_boolean("dont-disturb"); }
+        set { Notifd.settings.set_boolean("dont-disturb", value); }
     }
 
     /**
      * List of currently unresolved notifications.
      */
     public List<weak Notification> notifications {
-        owned get { return proxy != null ? proxy.notifications : daemon.notifications; }
+        get {
+            if (proxy != null) return proxy.notifications;
+            if (daemon != null) return daemon.notifications;
+            return fallback_list;
+        }
     }
 
     /**
      * Gets the [class@AstalNotifd.Notification] with id or null if there is no such Notification.
      */
-    public Notification get_notification(uint id) {
-        return proxy != null ? proxy.get_notification(id) : daemon.get_notification(id);
-    }
-
-    internal string get_notification_json(uint id) {
-        return get_notification(id).to_json_string();
+    public Notification? get_notification(uint id) {
+        if (proxy != null) return proxy.get_notif(id);
+        if (daemon != null) return daemon.get_notif(id);
+        return null;
     }
 
     /**
@@ -90,7 +77,9 @@ public class AstalNotifd.Notifd : Object {
      * @param id The ID of the Notification.
      * @param replaced Indicates if an existing Notification was replaced.
      */
-    public signal void notified(uint id, bool replaced);
+    public signal void notified(uint id, bool replaced) {
+        notify_property("notifications");
+    }
 
     /**
      * Emitted when a [class@AstalNotifd.Notification] is resolved.
@@ -98,9 +87,25 @@ public class AstalNotifd.Notifd : Object {
      * @param id The ID of the Notification.
      * @param reason The reason how the Notification was resolved.
      */
-    public signal void resolved(uint id, ClosedReason reason);
+    public signal void resolved(uint id, ClosedReason reason) {
+        notify_property("notifications");
+    }
+
+    class construct {
+        Notifd.settings = new Settings("io.astal.notifd");
+    }
+
+    internal signal void active();
 
     construct {
+        Notifd.settings.changed["ignore-timeout"].connect(() => {
+            notify_property("ignore-timeout");
+        });
+
+        Notifd.settings.changed["dont-disturb"].connect(() => {
+            notify_property("dont-disturb");
+        });
+
         // hack to make it synchronous
         MainLoop? loop = null;
 
@@ -121,7 +126,7 @@ public class AstalNotifd.Notifd : Object {
 
         active.connect(() => {
             done = true;
-            if (loop != null && loop.is_running()) {
+            if ((loop != null) && loop.is_running()) {
                 loop.quit();
             }
         });
@@ -136,7 +141,7 @@ public class AstalNotifd.Notifd : Object {
     }
 
     private void acquire_daemon(DBusConnection conn) {
-        daemon = new Daemon().register(conn);
+        daemon = new Daemon(conn);
     }
 
     private void on_daemon_acquired() {
@@ -146,34 +151,13 @@ public class AstalNotifd.Notifd : Object {
         }
         daemon.notified.connect((id, replaced) => notified(id, replaced));
         daemon.resolved.connect((id, reason) => resolved(id, reason));
-        daemon.notify.connect((prop) => {
-            if (get_class().find_property(prop.name) != null) {
-                notify_property(prop.name);
-            }
-        });
-        active(ActiveType.DAEMON);
+        active();
     }
 
     private void make_proxy() {
-        proxy = new DaemonProxy();
-
-        if (proxy.start()) {
-            active(ActiveType.PROXY);
-        } else {
-            return;
-        }
-
+        proxy = new Proxy();
         proxy.notified.connect((id, replaced) => notified(id, replaced));
         proxy.resolved.connect((id, reason) => resolved(id, reason));
-        proxy.notify.connect((prop) => {
-            if (get_class().find_property(prop.name) != null) {
-                notify_property(prop.name);
-            }
-        });
+        active();
     }
-}
-
-internal enum AstalNotifd.ActiveType {
-    DAEMON,
-    PROXY,
 }
