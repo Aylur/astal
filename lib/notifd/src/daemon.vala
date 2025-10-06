@@ -63,6 +63,7 @@ internal class AstalNotifd.Daemon : Object {
             if (!n.resident) resolve(n.id, ClosedReason.CLOSED);
         });
         n.dismissed.connect(() => resolve(n.id, ClosedReason.DISMISSED_BY_USER));
+        n.expired.connect(() => resolve(n.id, ClosedReason.EXPIRED));
         n.state = State.RECEIVED;
         notifs.set(n.id, n);
         notification_list = notifs.get_values().copy();

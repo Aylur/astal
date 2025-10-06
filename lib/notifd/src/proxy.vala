@@ -111,6 +111,7 @@ internal class AstalNotifd.Proxy : Object {
             if (!n.resident) proxy.emit_resolved.begin(n.id, ClosedReason.CLOSED);
         });
         n.dismissed.connect(() => proxy.emit_resolved.begin(n.id, ClosedReason.DISMISSED_BY_USER));
+        n.expired.connect(() => proxy.emit_resolved.begin(n.id, ClosedReason.EXPIRED));
         n.state = State.RECEIVED;
         notifs.set(n.id, n);
         notification_list = notifs.get_values().copy();

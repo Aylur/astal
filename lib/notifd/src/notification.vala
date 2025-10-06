@@ -216,6 +216,20 @@ public class AstalNotifd.Notification : Object {
     internal signal void dismissed();
 
     /**
+     * Resolve this notification with [enum@AstalNotifd.ClosedReason.EXPIRED].
+     * Note that there should be no reason to use this method because expiration should be
+     * left to the daemon.
+     */
+    public void expire() {
+        if (state == State.RECEIVED) {
+            dismissed();
+        } else {
+            warning("notification cannot be dismissed: not a received notification");
+        }
+    }
+    internal signal void expired();
+
+    /**
      * Invoke an [class@AstalNotifd.Action] of this notification.
      */
     public void invoke(string action_id) {
