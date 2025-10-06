@@ -16,20 +16,11 @@ internal class AstalNotifd.Daemon : Object {
 
     public signal void notified(uint id, bool replaced);
 
-    public signal void resolved(uint id, ClosedReason reason) {
-        var n = notifs.get(id);
-        if (n != null) {
-            n.resolved(reason);
-            notifs.remove(id);
-            notification_list = notifs.get_values().copy();
-            notification_closed(id, reason);
-            write_state();
-        }
-    }
+    public signal void resolved(uint id, ClosedReason reason);
 
     // called from proxy
     public void emit_resolved(uint id, ClosedReason reason) throws Error {
-        resolved(id, reason);
+        resolve(id, reason);
     }
 
     // called from proxy
@@ -46,6 +37,18 @@ internal class AstalNotifd.Daemon : Object {
         return n.serialize();
     }
 
+    internal void resolve(uint id, ClosedReason reason) {
+        var n = notifs.get(id);
+        if (n != null) {
+            notifs.remove(id);
+            notification_list = notifs.get_values().copy();
+            n.resolved(reason);
+            notification_closed(id, reason);
+            write_state();
+            resolved(id, reason);
+        }
+    }
+
     internal Notification? get_notif(uint id) {
         return notifs.get(id);
     }
@@ -57,9 +60,9 @@ internal class AstalNotifd.Daemon : Object {
     internal void add_notification(Notification n) {
         n.invoked.connect((action) => {
             action_invoked(n.id, action);
-            if (!n.resident) resolved(n.id, ClosedReason.CLOSED);
+            if (!n.resident) resolve(n.id, ClosedReason.CLOSED);
         });
-        n.dismissed.connect(() => resolved(n.id, ClosedReason.DISMISSED_BY_USER));
+        n.dismissed.connect(() => resolve(n.id, ClosedReason.DISMISSED_BY_USER));
         n.state = State.RECEIVED;
         notifs.set(n.id, n);
         notification_list = notifs.get_values().copy();
@@ -69,7 +72,7 @@ internal class AstalNotifd.Daemon : Object {
         if (!ignore_timeout && (n.expire_timeout > 0)) {
             Timeout.add(n.expire_timeout, () => {
                 if (!ignore_timeout) {
-                    resolved(n.id, ClosedReason.EXPIRED);
+                    resolve(n.id, ClosedReason.EXPIRED);
                 }
                 return Source.REMOVE;
             }, Priority.DEFAULT);
@@ -128,7 +131,7 @@ internal class AstalNotifd.Daemon : Object {
     }
 
     public void close_notification(uint id) throws DBusError, IOError {
-        resolved(id, ClosedReason.CLOSED);
+        resolve(id, ClosedReason.CLOSED);
     }
 
     public void get_server_information(

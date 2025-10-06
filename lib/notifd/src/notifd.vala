@@ -77,7 +77,9 @@ public class AstalNotifd.Notifd : Object {
      * @param id The ID of the Notification.
      * @param replaced Indicates if an existing Notification was replaced.
      */
-    public signal void notified(uint id, bool replaced);
+    public signal void notified(uint id, bool replaced) {
+        notify_property("notifications");
+    }
 
     /**
      * Emitted when a [class@AstalNotifd.Notification] is resolved.
@@ -85,7 +87,9 @@ public class AstalNotifd.Notifd : Object {
      * @param id The ID of the Notification.
      * @param reason The reason how the Notification was resolved.
      */
-    public signal void resolved(uint id, ClosedReason reason);
+    public signal void resolved(uint id, ClosedReason reason) {
+        notify_property("notifications");
+    }
 
     class construct {
         Notifd.settings = new Settings("io.astal.notifd");
@@ -154,11 +158,6 @@ public class AstalNotifd.Notifd : Object {
         proxy = new Proxy();
         proxy.notified.connect((id, replaced) => notified(id, replaced));
         proxy.resolved.connect((id, reason) => resolved(id, reason));
-        proxy.notify.connect((prop) => {
-            if (get_class().find_property(prop.name) != null) {
-                notify_property(prop.name);
-            }
-        });
         active();
     }
 }
