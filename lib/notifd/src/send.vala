@@ -79,7 +79,9 @@ public async void send_notification(Notification notification) throws IOError, D
         });
 
     // should we resolve it if the server stops?
+
     n.id = n_id;
+    n.time = new DateTime.now_local().to_unix();
     n.state = State.SENT;
 }
 }

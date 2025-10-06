@@ -15,7 +15,7 @@ public class AstalNotifd.Notification : Object {
     /** State of the notification. */
     internal State state { set; get; default = State.DRAFT; }
 
-    /** Unix time of when the notification was sent. */
+    /** Unix time of when the notification was sent or received. */
     public int64 time { internal set; get; default = 0; }
 
     /** Id of the notification. */
