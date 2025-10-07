@@ -71,44 +71,35 @@ public class AstalMpris.Mpris : Object, ListModel {
 
     private void add_player(string busname) {
         var p = new Player(busname);
-        player_table.set(busname, p);
 
         ulong id = 0;
         id = p.notify["available"].connect(() => {
             if (p.available) {
-                player_list = player_table.get_values().copy();
+                player_table.set(busname, p);
+                player_list.append(p);
                 notify_property("players");
                 player_added(p);
-                items_changed(player_table.size(), 0, 1);
+                items_changed(player_table.size() - 1, 0, 1);
             } else {
                 if (id > 0) p.disconnect(id);
-                player_table.remove(busname);
-                player_list = player_table.get_values().copy();
-                notify_property("players");
-                player_closed(p);
 
                 var pos = 0;
                 foreach (var player in player_list) {
-                    if (player == p) {
-                        items_changed(pos, 1, 0);
-                        break;
-                    }
-                    pos = +1;
+                    if (player == p) break;
+                    pos += 1;
                 }
+
+                player_table.remove(busname);
+                player_list.remove(p);
+                notify_property("players");
+                player_closed(p);
+                items_changed(pos, 1, 0);
             }
         });
     }
 
     public Object? get_item(uint position) {
-        // realistically there will be at max 3-4 players at a time so iterating shuold be fine
-        var i = 0;
-        foreach (var player in player_list) {
-            if (i++ == position) {
-                return player;
-            }
-        }
-
-        return null;
+        return player_list.nth_data(position);
     }
 
     public Type get_item_type() {
