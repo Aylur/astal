@@ -380,6 +380,12 @@ public class AstalMpris.Player : Object {
     private double _position = -1;
     private void _set_position(double pos) {
         if (check_available()) return;
+
+        if (!trackid.has_prefix("/")) {
+            critical(@"cannot set position: invalid trackid '$trackid' of '$bus_name'");
+            return;
+        }
+
         proxy.set_position.begin((ObjectPath)trackid, (int64)(pos * 1000000), (_, res) => {
             try {
                 proxy.set_position.end(res);
@@ -617,8 +623,11 @@ public class AstalMpris.Player : Object {
 
         var meta = props.lookup_value("Metadata", new VariantType("a{sv}"));
         if (meta != null) {
-            var _id = meta.lookup_value("mpris:trackid", VariantType.OBJECT_PATH);
-            trackid = (_id != null) ? _id.get_string(null) : "";
+            var id_o = meta.lookup_value("mpris:trackid", VariantType.OBJECT_PATH);
+            var id_s = meta.lookup_value("mpris:trackid", VariantType.STRING);
+            if (id_o != null) trackid = id_o.get_string(null);
+            if (id_s != null) trackid = id_s.get_string(null);
+            if ((id_o == null) && (id_s == null)) trackid = "";
 
             var _art_url = meta.lookup_value("mpris:artUrl", VariantType.STRING);
             art_url = (_art_url != null) ? _art_url.get_string(null) : "";

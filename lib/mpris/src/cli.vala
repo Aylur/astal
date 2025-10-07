@@ -195,7 +195,7 @@ async int main(string[] argv) {
 
         return 0;
     } catch (Error error) {
-        critical(error.message);
+        printerr(error.message);
         return 1;
     }
 }
