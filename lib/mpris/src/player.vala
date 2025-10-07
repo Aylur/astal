@@ -530,13 +530,13 @@ public class AstalMpris.Player : Object {
      * @param name dbus name of the player.
      */
     public Player(string name) {
-        bus_name = name.has_prefix("org.mpris.MediaPlayer2.")
-            ? name : @"org.mpris.MediaPlayer2.$name";
+        bus_name = name.has_prefix(MediaPlayerProxy.PREFIX)
+            ? name : MediaPlayerProxy.PREFIX + name;
     }
 
-    internal async Player.async(string name) throws Error {
-        _busname = name;
-        yield init_proxy(name);
+    internal async Player.async(string busname) throws Error {
+        _busname = busname;
+        yield init_proxy(busname);
     }
 
     private void sync(Variant props) {

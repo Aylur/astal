@@ -7,7 +7,7 @@ static bool raw;
 [CCode(array_length = false, array_null_terminated = true)]
 static string[] player_names;
 
-static List<weak Player> players;
+static List<Player> players;
 
 const OptionEntry[] options = {
     { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref version, null, null },
@@ -75,10 +75,13 @@ async int main(string[] argv) {
             return 0;
         }
 
-        players = new List<weak Player>();
+        players = new List<Player>();
         if (player_names.length > 0) {
             foreach (var name in player_names) {
-                players.append(yield new Player.async(name));
+                var busname = name.has_prefix(MediaPlayerProxy.PREFIX)
+                    ? name : MediaPlayerProxy.PREFIX + name;
+
+                players.append(yield new Player.async(busname));
             }
         } else {
             foreach (var name in names) {
@@ -94,11 +97,7 @@ async int main(string[] argv) {
                 return yield do_monitor();
 
             case "info":
-                var list = new List<weak Player>();
-                foreach (var player in players) {
-                    list.append(player);
-                }
-                print_players(list);
+                print_players(players.copy());
                 break;
 
             case "play":
