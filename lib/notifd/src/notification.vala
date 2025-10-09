@@ -222,9 +222,9 @@ public class AstalNotifd.Notification : Object {
      */
     public void expire() {
         if (state == State.RECEIVED) {
-            dismissed();
+            expired();
         } else {
-            warning("notification cannot be dismissed: not a received notification");
+            warning("notification cannon be expired: not a received notification");
         }
     }
     internal signal void expired();
