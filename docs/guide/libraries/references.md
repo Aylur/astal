@@ -51,6 +51,8 @@ documentation will vary depending on the language they are used in.
   controlling media players
 - [Network](https://aylur.github.io/libastal/network): NetworkManager wrapper
   library
+- [Niri](https://aylur.github.io/libastal/niri): Library and cli tool for niri
+  IPC socket
 - [Notifd](https://aylur.github.io/libastal/notifd): A notification daemon
   library and cli tool
 - [PowerProfiles](https://aylur.github.io/libastal/powerprofiles): Library and
