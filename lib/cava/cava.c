@@ -27,7 +27,7 @@ struct _AstalCavaCava {
 };
 
 typedef struct {
-    struct cava_plan plan;
+    struct cava_plan * plan;
     struct config_params cfg;
     struct audio_data audio_data;
     struct audio_raw audio_raw;
@@ -77,7 +77,7 @@ static gboolean exec_cava(AstalCavaCava* self) {
 
     pthread_mutex_lock(&priv->audio_data.lock);
     cava_execute(priv->audio_data.cava_in, priv->audio_data.samples_counter,
-                 priv->audio_raw.cava_out, &priv->plan);
+                 priv->audio_raw.cava_out, priv->plan);
     if (priv->audio_data.samples_counter > 0) priv->audio_data.samples_counter = 0;
     pthread_mutex_unlock(&priv->audio_data.lock);
 
@@ -98,7 +98,7 @@ static void astal_cava_cava_cleanup(AstalCavaCava* self) {
     pthread_mutex_unlock(&priv->audio_data.lock);
     g_thread_join(priv->input_thread);
 
-    cava_destroy(&priv->plan);
+    cava_destroy(priv->plan);
 
     g_free(priv->audio_data.cava_in);
     g_free(priv->audio_data.source);
