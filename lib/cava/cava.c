@@ -2,6 +2,7 @@
 #include <gio/gio.h>
 
 #include "astal-cava.h"
+#include "cava/common.h"
 #include "cava/config.h"
 #include "glib-object.h"
 #include "glib.h"
@@ -27,7 +28,7 @@ struct _AstalCavaCava {
 };
 
 typedef struct {
-    struct cava_plan * plan;
+    struct cava_plan* plan;
     struct config_params cfg;
     struct audio_data audio_data;
     struct audio_raw audio_raw;
@@ -100,9 +101,14 @@ static void astal_cava_cava_cleanup(AstalCavaCava* self) {
 
     cava_destroy(priv->plan);
 
+    audio_raw_clean(&priv->audio_raw);
+
     g_free(priv->audio_data.cava_in);
     g_free(priv->audio_data.source);
 
+    // use config_clean(&priv->cfg); instead.
+    // While this was patched into the libcava 0.10.6 AUR package, it is not included in the
+    // official release, so wait for the next tagged release.
     g_free(priv->cfg.audio_source);
     g_free(priv->cfg.raw_target);
     g_free(priv->cfg.data_format);
