@@ -19,7 +19,7 @@ interface AstalMpris.PropertiesProxy : DBusProxy {
 
     public abstract async HashTable<string, Variant> get_all(string iface) throws Error;
     public abstract async Variant get(string iface, string property) throws Error;
-    public abstract async Variant set(string iface, string property, Variant value) throws Error;
+    public abstract async void set(string iface, string property, Variant value) throws Error;
 }
 
 [DBus(name = "org.mpris.MediaPlayer2")]
