@@ -72,6 +72,48 @@ public enum LayoutSwitchTargetTag {
   Index,
 }
 
+public struct WindowLayout {
+    /**
+      * Optional
+      * 1-indexed
+      */
+    public uint pos_in_scrolling_layout[2];
+    public double tile_size[2];
+    public int32 window_size[2];
+    /**
+      * Optional
+      * only populated on floating windows https://github.com/YaLTeR/niri/issues/2381#issuecomment-3289241212
+      */
+    public double tile_pos_in_workspace_view[2];
+    public double window_offset_in_tile[2];
+
+    internal WindowLayout.from_json(Json.Object object) {
+        if (object.has_member("pos_in_scrolling_layout") && !object.get_null_member("pos_in_scrolling_layout")) {
+            var arr = object.get_array_member("pos_in_scrolling_layout");
+            pos_in_scrolling_layout[0] = (uint)arr.get_int_element(0);
+            pos_in_scrolling_layout[1] = (uint)arr.get_int_element(1);
+        }
+
+        var tile_arr = object.get_array_member("tile_size");
+        tile_size[0] = tile_arr.get_double_element(0);
+        tile_size[1] = tile_arr.get_double_element(1);
+
+        var win_arr = object.get_array_member("window_size");
+        window_size[0] = (int)win_arr.get_int_element(0);
+        window_size[1] = (int)win_arr.get_int_element(1);
+
+        if (object.has_member("tile_pos_in_workspace_view") && !object.get_null_member("tile_pos_in_workspace_view")) {
+            var pos_arr = object.get_array_member("tile_pos_in_workspace_view");
+            tile_pos_in_workspace_view[0] = pos_arr.get_double_element(0);
+            tile_pos_in_workspace_view[1] = pos_arr.get_double_element(1);
+        }
+
+        var offset_arr = object.get_array_member("window_offset_in_tile");
+        window_offset_in_tile[0] = offset_arr.get_double_element(0);
+        window_offset_in_tile[1] = offset_arr.get_double_element(1);
+    }
+}
+
 }
 
 

@@ -14,6 +14,7 @@ public class Niri : Object {
     Array<string> keyboard_layouts { get; private set; }
 
     public uint8 keyboard_layout_idx { get; private set; }
+    public bool config_load_failed { get; private set; }
     public Overview overview { get; private set; }
 
     public Workspace? focused_workspace { get; private set; }
@@ -247,6 +248,18 @@ public class Niri : Object {
                 var is_open = payload.get_boolean_member("is_open");
                 overview.is_open = is_open;
                 overview_opened_or_closed(is_open);
+                break;
+            case "WindowLayoutsChanged":
+                var changes = payload.get_array_member("changes");
+                foreach (var change_tuple in changes.get_elements()) {
+                    var change = change_tuple.get_array();
+                    var window = _windows.get(change.get_int_element(0));
+                    var layout = WindowLayout.from_json(change.get_object_element(1));
+                    window?.apply_layout(layout);
+                }
+                break;
+            case "ConfigLoaded":
+                config_load_failed = payload.get_boolean_member("failed");
                 break;
         }
     }
