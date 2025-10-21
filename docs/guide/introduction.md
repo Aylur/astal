@@ -34,7 +34,7 @@ references to help you learn more about GTK and the Astal libraries.
 For a list of languages that support Gtk see
 [this wikipedia article](https://en.wikipedia.org/wiki/List_of_language_bindings_for_GTK).
 
-Interpreted languages like JavaScript and Python is supported out of the box
+Interpreted languages like JavaScript and Python are supported out of the box
 while some compiled languages might need extra work to make use of Astal
 libraries.
 

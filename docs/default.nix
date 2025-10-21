@@ -3,7 +3,7 @@
   pkgs,
 }: let
   inherit (builtins) removeAttrs concatStringsSep map attrValues;
-  packages = attrValues (removeAttrs self.packages.${pkgs.system} ["default" "docs" "gjs"]);
+  packages = attrValues (removeAttrs self.packages.${pkgs.system} ["default" "docs"]);
 
   cp = pkg: ''
     doc="${pkg.doc}/share/doc"

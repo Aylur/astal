@@ -21,27 +21,6 @@ However, if you want to use the CLI tool that comes with some of the libraries
 you have to **also** install them through `home.packages` or
 `environment.systemPackages` alongside your derivations.
 
-### Astal CLI
-
-The core library also comes with a CLI tool that you can use to send requests to
-your app.
-
-:::code-group
-
-```nix [nixos]
-environment.systemPackages = [inputs.astal.packages.${system}.default];
-```
-
-```nix [home-manager]
-home.packages = [inputs.astal.packages.${system}.default];
-```
-
-:::
-
-```sh [astal cli]
-astal --list # list running instances
-```
-
 ## TypeScript
 
 Using [esbuild](https://esbuild.github.io/) as the bundler.
@@ -59,9 +38,9 @@ In which case you can omit `installPhase` and just include meson in
     pkgs.wrapGAppsHook
     pkgs.gobject-introspection
     pkgs.esbuild
-    pkgs.meson
-    pkgs.ninja
-    pkgs.pkg-config
+    pkgs.meson # [!code ++]
+    pkgs.ninja # [!code ++]
+    pkgs.pkg-config # [!code ++]
   ];
 }
 ```

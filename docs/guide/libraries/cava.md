@@ -24,12 +24,19 @@ import Cava from "gi://AstalCava"
 const cava = Cava.get_default()
 
 cava.connect("notify::values", () => {
-  print(cava.get_values())
+    print(cava.get_values())
 })
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
-# Not yet documented
+from gi.repository import AstalCava as Cava
+
+cava = Cava.get_default()
+
+def callback(self, pspec):
+    print(cava.get_values())
+
+cava.connect("notify::values", callback)
 ```
 
 ```lua [<i class="devicon-lua-plain"></i> Lua]
@@ -43,7 +50,13 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var cava = AstalCava.get_default();
+
+cava.notify["values"].connect(() => {
+    foreach (var value in cava.values) {
+        print(value);
+    }
+});
 ```
 
 :::
@@ -52,36 +65,36 @@ end
 
 1. install dependencies
 
-   Note that it requires [libcava](https://github.com/LukashonakV/cava), a fork
-   of cava, which provides cava as a shared library.
+    Note that it requires [libcava](https://github.com/LukashonakV/cava), a fork
+    of cava, which provides cava as a shared library.
 
-   :::code-group
+    :::code-group
 
-   ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-   sudo pacman -Syu meson vala gobject-introspection
-   paru -S libcava
-   ```
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson vala gobject-introspection
+    paru -S libcava
+    ```
 
-   ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-   # Not yet documented
-   ```
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    # Not yet documented
+    ```
 
-   ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-   # Not yet documented
-   ```
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    # Not yet documented
+    ```
 
-   :::
+    :::
 
 2. clone repo
 
-   ```sh
-   git clone https://github.com/aylur/astal.git
-   cd astal/lib/cava
-   ```
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/cava
+    ```
 
 3. install
 
-   ```sh
-   meson setup build
-   meson install -C build
-   ```
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

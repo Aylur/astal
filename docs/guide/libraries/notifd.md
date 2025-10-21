@@ -32,8 +32,8 @@ import Notifd from "gi://AstalNotifd"
 const notifd = Notifd.get_default()
 
 notifd.connect("notified", (_, id) => {
-  const n = notifd.get_notification(id)
-  print(n.summary, n.body)
+    const n = notifd.get_notification(id)
+    print(n.summary, n.body)
 })
 ```
 
@@ -61,7 +61,12 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var notifd = AstalNotifd.get_default();
+
+notifd.notified.connect((_, id) => {
+    var n = notifd.get_notification(id);
+    print("%s %s\n", n.summary, n.body);
+})
 ```
 
 :::
@@ -70,32 +75,32 @@ end
 
 1. install dependencies
 
-   :::code-group
+    :::code-group
 
-   ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-   sudo pacman -Syu meson vala valadoc gdk-pixbuf2 json-glib gobject-introspection
-   ```
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson vala valadoc gdk-pixbuf2 json-glib gobject-introspection
+    ```
 
-   ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-   sudo dnf install meson vala valadoc gdk-pixbuf2-devel json-glib-devel gobject-introspection-devel
-   ```
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson vala valadoc gdk-pixbuf2-devel json-glib-devel gobject-introspection-devel
+    ```
 
-   ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-   sudo apt install meson valac valadoc libgdk-pixbuf-2.0-dev libjson-glib-dev gobject-introspection
-   ```
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson valac valadoc libgdk-pixbuf-2.0-dev libjson-glib-dev gobject-introspection
+    ```
 
-   :::
+    :::
 
 2. clone repo
 
-   ```sh
-   git clone https://github.com/aylur/astal.git
-   cd astal/lib/notifd
-   ```
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/notifd
+    ```
 
 3. install
 
-   ```sh
-   meson setup build
-   meson install -C build
-   ```
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

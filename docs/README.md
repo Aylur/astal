@@ -1,16 +1,17 @@
 # Astal Docs
 
-This directory contains the Astal documentation and Library references.
-Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.github.io/libastal](https://aylur.github.io/libastal/)
+This directory contains the Astal documentation and Library references. Hosted
+at [aylur.github.io/astal](https://aylur.github.io/astal/) and
+[aylur.github.io/libastal](https://aylur.github.io/libastal/)
 
 ## Commands
 
-| Command           | Action                                      |
-| :---------------- | :------------------------------------------ |
-| `npm install`     | Installs dependencies                       |
-| `npm run dev`     | Starts local dev server at `localhost:5173` |
-| `npm run build`   | Build your production site to `./dist/`     |
-| `npm run preview` | Preview your build locally                  |
+| Command            | Action                                      |
+| :----------------- | :------------------------------------------ |
+| `pnpm install`     | Installs dependencies                       |
+| `pnpm run dev`     | Starts local dev server at `localhost:5173` |
+| `pnpm run build`   | Build your production site to `./dist/`     |
+| `pnpm run preview` | Preview your build locally                  |
 
 ## Add your creation to the showcases page
 
