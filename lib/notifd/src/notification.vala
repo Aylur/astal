@@ -224,7 +224,7 @@ public class AstalNotifd.Notification : Object {
         if (state == State.RECEIVED) {
             expired();
         } else {
-            warning("notification cannon be expired: not a received notification");
+            warning("notification cannot be expired: not a received notification");
         }
     }
     internal signal void expired();

@@ -16,18 +16,19 @@ assert(
   'Either lib or cli option must be set to true.',
 )
 
-version_split = meson.project_version().split('.')
-api_version = version_split[0] + '.' + version_split[1]
-namespace = 'AstalTray'
-gir = namespace + '-' + api_version + '.gir'
-typelib = namespace + '-' + api_version + '.typelib'
+version = meson.project_version()
+name = meson.project_name()
+version_split = version.split('.')
+api_version = '0.1'
+gir_name = 'AstalTray-0.1.gir'
+typelib_name = 'AstalTray-0.1.typelib'
 
 config = configure_file(
-  input: 'config.vala.in',
+  input: 'src/config.vala.in',
   output: 'config.vala',
   configuration: {
     'API_VERSION': api_version,
-    'VERSION': meson.project_version(),
+    'VERSION': version,
     'MAJOR_VERSION': version_split[0],
     'MINOR_VERSION': version_split[1],
     'MICRO_VERSION': version_split[2],
@@ -44,31 +45,31 @@ deps = [
 ]
 
 sources = [config] + files(
-  'tray.vala',
-  'trayItem.vala',
-  'watcher.vala',
+  'src/tray-item.vala',
+  'src/tray.vala',
+  'src/watcher.vala',
 )
 
 if get_option('lib')
   lib = library(
-    meson.project_name(),
+    name,
     sources,
     dependencies: deps,
-    vala_header: meson.project_name() + '.h',
-    vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
     vala_args: ['--vapi-comments'],
-    version: meson.project_version(),
+    vala_header: name + '.h',
+    vala_vapi: name + '-' + api_version + '.vapi',
+    version: version,
     install: true,
     install_dir: [true, true, true],
   )
 
-  gir_tgt = custom_target(
-    gir,
+  gir = custom_target(
+    gir_name,
     command: [
       find_program('python3'),
       files('gir.py'),
-      '--name', meson.project_name(),
-      '--gir', gir,
+      '--name', name,
+      '--gir', gir_name,
       '--pkgs', ':'.join(
         'json-glib-1.0',
         'gdk-pixbuf-2.0',
@@ -79,32 +80,32 @@ if get_option('lib')
     ],
     input: sources,
     depends: lib,
-    output: gir,
+    output: gir_name,
     install: true,
     install_dir: get_option('datadir') / 'gir-1.0',
   )
 
   custom_target(
-    typelib,
+    typelib_name,
     command: [
       find_program('g-ir-compiler'),
       '--output', '@OUTPUT@',
       '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
-      meson.current_build_dir() / gir,
+      meson.current_build_dir() / gir_name,
     ],
     input: lib,
-    output: typelib,
-    depends: [lib, gir_tgt],
+    output: typelib_name,
+    depends: [lib, gir],
     install: true,
     install_dir: get_option('libdir') / 'girepository-1.0',
   )
 
   import('pkgconfig').generate(
     lib,
-    name: meson.project_name(),
-    filebase: meson.project_name() + '-' + api_version,
-    version: meson.project_version(),
-    subdirs: meson.project_name(),
+    name: name,
+    filebase: name + '-' + api_version,
+    version: version,
+    subdirs: name,
     requires: deps,
     install_dir: get_option('libdir') / 'pkgconfig',
   )
@@ -112,8 +113,8 @@ endif
 
 if get_option('cli')
   executable(
-    meson.project_name(),
-    ['cli.vala', sources],
+    name,
+    ['src/cli.vala', sources],
     dependencies: deps,
     install: true,
   )
