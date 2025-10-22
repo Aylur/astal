@@ -24,7 +24,7 @@ import Hyprland from "gi://AstalHyprland"
 const hyprland = Hyprland.get_default()
 
 for (const client of hyprland.get_clients()) {
-  print(client.title)
+    print(client.title)
 }
 ```
 
@@ -48,7 +48,11 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var hyprland = AstalHyprland.get_default();
+
+foreach (var client in hyprland.clients) {
+    print(client.title);
+}
 ```
 
 :::
@@ -57,32 +61,32 @@ end
 
 1. install dependencies
 
-   :::code-group
+    :::code-group
 
-   ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-   sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
-   ```
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
+    ```
 
-   ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-   sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
-   ```
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
+    ```
 
-   ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-   sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
-   ```
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
+    ```
 
-   :::
+    :::
 
 2. clone repo
 
-   ```sh
-   git clone https://github.com/aylur/astal.git
-   cd astal/lib/hyprland
-   ```
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/hyprland
+    ```
 
 3. install
 
-   ```sh
-   meson setup build
-   meson install -C build
-   ```
+    ```sh
+    meson setup build
+    meson install -C build
+    ```
