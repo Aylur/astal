@@ -54,6 +54,13 @@ export default [
     title: "colorshell",
     author: "retrozinndev",
   },
+  {
+    image: "/astal/showcase/delta-shell.webp",
+    url: "https://github.com/Sinomor/delta-shell/",
+    icon: "devicon-typescript-plain",
+    title: "Delta Shell",
+    author: "Sinomor",
+  },
 
   // add more showcases here~
 ] satisfies Grid<Showcase>[]
