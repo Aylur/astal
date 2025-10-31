@@ -100,10 +100,8 @@ static void astal_cava_cava_cleanup(AstalCavaCava* self) {
     g_thread_join(priv->input_thread);
 
     cava_destroy(priv->plan);
-
     audio_raw_clean(&priv->audio_raw);
-
-    g_free(priv->audio_data.cava_in);
+    free(priv->audio_data.cava_in);
     g_free(priv->audio_data.source);
 
     // use config_clean(&priv->cfg); instead.
@@ -112,6 +110,7 @@ static void astal_cava_cava_cleanup(AstalCavaCava* self) {
     g_free(priv->cfg.audio_source);
     g_free(priv->cfg.raw_target);
     g_free(priv->cfg.data_format);
+    g_free(priv->plan);
 }
 
 static void astal_cava_cava_start(AstalCavaCava* self) {
@@ -242,13 +241,13 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
     }
 
     priv->audio_data = (struct audio_data){
-        .cava_in = calloc(BUFFER_SIZE * priv->cfg.channels * 8, sizeof(gdouble)),
+        .cava_in = NULL,
         .input_buffer_size = BUFFER_SIZE * priv->cfg.channels,
         .cava_buffer_size = BUFFER_SIZE * priv->cfg.channels * 8,
         .format = -1,
         .rate = 0,
         .channels = priv->cfg.channels,
-        .source = g_strdup(priv->cfg.audio_source),
+        .source = NULL,
         .terminate = 0,
         .samples_counter = 0,
         .IEEE_FLOAT = 0,
@@ -256,9 +255,7 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
     };
 
     priv->input_src = get_input(&priv->audio_data, &priv->cfg);
-
     audio_raw_init(&priv->audio_data, &priv->audio_raw, &priv->cfg, &priv->plan);
-
     priv->input_thread = g_thread_new("cava_input", priv->input_src, &priv->audio_data);
 
     priv->timer_id = g_timeout_add(1000 / priv->cfg.framerate, G_SOURCE_FUNC(exec_cava), self);

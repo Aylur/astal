@@ -129,6 +129,8 @@ void astal_wp_node_update_volume(AstalWpNode *self) {
     g_object_notify(G_OBJECT(self), "volume-icon");
 
     g_object_thaw_notify(G_OBJECT(self));
+    g_variant_iter_free(channels);
+    g_variant_unref(variant);
 }
 
 static void astal_wp_node_mixer_changed(AstalWpNode *self, guint node_id) {
@@ -239,6 +241,8 @@ void astal_wp_node_set_volume(AstalWpNode *self, gdouble volume) {
     }
 
     g_signal_emit_by_name(priv->mixer, "set-volume", priv->id, g_variant_builder_end(&vol_b), &ret);
+    g_variant_iter_free(channels);
+    g_variant_unref(variant);
 }
 
 /**
@@ -740,6 +744,7 @@ static void astal_wp_node_finalize(GObject *object) {
     g_free(priv->node_name);
     g_free(priv->name);
     g_free(priv->path);
+    g_free(priv->icon);
 
     G_OBJECT_CLASS(astal_wp_node_parent_class)->finalize(object);
 }
