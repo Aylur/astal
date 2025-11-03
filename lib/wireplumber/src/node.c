@@ -186,6 +186,8 @@ void astal_wp_node_set_channel_volume(AstalWpNode *self, const gchar *name, gdou
     }
 
     g_signal_emit_by_name(priv->mixer, "set-volume", priv->id, g_variant_builder_end(&vol_b), &ret);
+    g_variant_iter_free(channels);
+    g_variant_unref(variant);
 }
 
 /**
