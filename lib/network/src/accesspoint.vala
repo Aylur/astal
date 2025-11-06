@@ -1,6 +1,6 @@
 public class AstalNetwork.AccessPoint : Object {
     private Wifi wifi;
-    private NM.AccessPoint ap;
+    public NM.AccessPoint ap;
 
     public uint bandwidth { get { return ap.bandwidth; } }
     public string bssid { owned get { return ap.bssid; } }
