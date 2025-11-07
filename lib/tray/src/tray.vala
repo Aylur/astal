@@ -42,6 +42,13 @@ public class Tray : Object {
      */
     public List<weak TrayItem> items { owned get { return _items.get_values(); } }
 
+    private ListStore _items_store;
+
+    /**
+    * ListModel containing the currently registered tray items.
+    */
+    public ListModel items_model { get { return this._items_store;} }
+
     /**
      * emitted when a new tray item was added.
      */
@@ -57,6 +64,7 @@ public class Tray : Object {
     }
 
     construct {
+        this._items_store = new ListStore(typeof(TrayItem));
         try {
             Bus.own_name(
                 BusType.SESSION,
@@ -105,6 +113,7 @@ public class Tray : Object {
                 });
 
                 _items.remove_all();
+                _items_store.remove_all();
 
                 if (proxy != null) {
                     foreach (string item in proxy.RegisteredStatusNotifierItems) {
@@ -132,12 +141,17 @@ public class Tray : Object {
         TrayItem item = new TrayItem(parts[0], "/" + parts[1]);
         item.ready.connect(() => {
             _items.set(service, item);
+            _items_store.append(item);
             item_added(service);
         });
     }
 
     private void on_item_unregister(string service) {
+        var item = _items.get(service);
         _items.remove(service);
+        uint pos;
+        _items_store.find(item, out pos);
+        _items_store.remove(pos);
         item_removed(service);
     }
 
@@ -147,5 +161,6 @@ public class Tray : Object {
     public TrayItem get_item(string item_id) {
         return _items.get(item_id);
     }
+
 }
 }
