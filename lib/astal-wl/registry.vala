@@ -1,6 +1,3 @@
-
-
-
 namespace AstalWl {
 
 extern unowned Wl.Display get_wl_display();
@@ -24,19 +21,43 @@ public class Registry : Object {
     }
 
     private Source source;
-    private Wl.Registry _registry;
-    private unowned Wl.Display _display;
-    private List<Global?> globals;
-
-    public Wl.Registry registry { get { return this._registry; } }
-    public Wl.Display display { get { return this._display; } }
-   
+    private Wl.Registry registry;
+    private unowned Wl.Display display;
+    
+    public List<Global?> globals;
+    public unowned List<Global?> get_globals() {
+        return this.globals;
+    }
     public signal void global_added(Global global);
     public signal void global_removed(Global global);
+
+    public List<Output?> outputs;
+    public unowned List<Output?> get_outputs() {
+        return this.outputs;
+    }
+    public signal void output_added(Output output);
+    public signal void output_removed(Output output);
+
+    [GIR(visible = false)]
+    public unowned Wl.Registry? get_registry() {
+        return this.registry;
+    }
+
+    [GIR(visible = false)]
+    public unowned Wl.Display? get_display() {
+        return this.display;
+    }
 
     private void registry_handle_global_added (Wl.Registry wl_registry, uint32 name, string @interface, uint32 version) {
         Global global = {name, @interface, version};
         this.globals.append(global);
+
+        if(@interface == "wl_output") {
+            var output = new Output(global, this.registry, this.display);
+            this.outputs.append(output);
+            output_added(output);
+        }
+
         global_added(global);
     }
 
@@ -44,7 +65,17 @@ public class Registry : Object {
         foreach (var global in this.globals) {
             if(global.name == name) {
                 this.globals.remove(global);
+                if(global.interface == "wl_output") {
+                    this.outputs.foreach((output) => {
+                        if(output.id == name) {
+                            this.outputs.remove(output);
+                            output_removed(output);
+                            return;
+                        }
+                    });
+                }
                 global_removed(global);
+                break;
             }
         }
     }
@@ -66,23 +97,24 @@ public class Registry : Object {
 
     construct {
         this.globals = new List<Global?>();
+        this.outputs = new List<Output?>();
 
-        this._display = get_wl_display();
+        this.display = get_wl_display();
 
-        if(this._display == null) {
+        if(this.display == null) {
             debug("Could not find Gdk Wayland Display, falling back to creating a new Wayland Display");
             this.source = new Source();
-            this._display = this.source.display;
+            this.display = this.source.display;
         }
 
-        if(this._display == null) {
+        if(this.display == null) {
             critical("Could not connect to wayland.");
             return;
         }
         
-        this._registry = this.display.get_registry ();
-        this._registry.add_listener (registry_listener, this);
-        this._display.roundtrip();
+        this.registry = this.display.get_registry ();
+        this.registry.add_listener (registry_listener, this);
+        this.display.roundtrip();
     }
 }
 }

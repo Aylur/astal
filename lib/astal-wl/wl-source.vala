@@ -1,9 +1,9 @@
 namespace AstalWl {
-public class Source : GLib.Source {
+internal class Source : GLib.Source {
 
-    public Wl.Display display;
-    public void* fd;
-    public int error;
+    internal Wl.Display display;
+    internal void* fd;
+    internal int error;
 
     public override bool dispatch(SourceFunc callback) {
         IOCondition revents = this.query_unix_fd(this.fd);
