@@ -27,7 +27,6 @@
     ];
 
     astalPackages = with astal.packages.${system}; [
-      io
       astal4
       battery
       wireplumber

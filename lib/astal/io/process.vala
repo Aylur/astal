@@ -1,6 +1,7 @@
 /**
  * `Process` provides shortcuts for [class@Gio.Subprocess] with sane defaults.
  */
+[Version (deprecated = true)]
 public class AstalIO.Process : Object {
     public string[] argv { construct; get; }
 

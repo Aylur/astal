@@ -4,7 +4,8 @@ Library for monitoring [bluez](https://www.bluez.org/) over dbus.
 
 ## Usage
 
-You can browse the [Bluetooth reference](https://aylur.github.io/libastal/bluetooth).
+You can browse the
+[Bluetooth reference](https://aylur.github.io/libastal/bluetooth).
 
 ### CLI
 
@@ -48,7 +49,11 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var bluetooth = AstalBluetooth.get_default();
+
+foreach (var device in bluetooth.get_devices()) {
+    print("%s\n", device.name);
+}
 ```
 
 :::
@@ -57,37 +62,39 @@ end
 
 1. install dependencies
 
-:::code-group
+    :::code-group
 
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala valadoc gobject-introspection
-```
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson vala valadoc gobject-introspection
+    ```
 
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson vala valadoc gobject-introspection-devel
-```
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson vala valadoc gobject-introspection-devel
+    ```
 
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac valadoc gobject-introspection
-```
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson valac valadoc gobject-introspection
+    ```
 
-:::
+    :::
 
-::: info
-Although bluez is not a direct build dependency,
-it should be self-explanatory that the daemon is required to be available at runtime.
-:::
+    ::: info
+
+    Although bluez is not a direct build dependency, it should be
+    self-explanatory that the daemon is required to be available at runtime.
+
+    :::
 
 2. clone repo
 
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/bluetooth
-```
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/bluetooth
+    ```
 
 3. install
 
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

@@ -7,7 +7,7 @@ gjs = find_program('gjs', required: true)
 layer_shell = dependency('gtk4-layer-shell-0')
 
 blueprint_sources = files(
-  'ui/Bar.blp',
+  'bar/Bar.blp',
 )
 
 # transplie blueprints
@@ -27,7 +27,7 @@ ui = custom_target(
 # bundle ts files
 js = custom_target(
   'typescript',
-  input: files('ts/App.ts'),
+  input: files('App.ts'),
   command: [
     esbuild,
     '--bundle', '@INPUT@',
@@ -44,9 +44,9 @@ js = custom_target(
 # bundle scss files
 css = custom_target(
   'scss',
-  input: files('main.scss'),
+  input: files('style.scss'),
   command: [sass, '@INPUT@', '@OUTPUT@'],
-  output: 'main.css',
+  output: 'style.css',
 )
 
 # compiling source files into a binary

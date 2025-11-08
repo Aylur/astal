@@ -1,4 +1,5 @@
 [DBus (name="io.Astal.Application")]
+[Version (deprecated = true)]
 public class Astal.Application : Gtk.Application, AstalIO.Application {
     private List<Gtk.CssProvider> css_providers = new List<Gtk.CssProvider>();
     private SocketService service;

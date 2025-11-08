@@ -351,6 +351,10 @@ void astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer, W
     astal_wp_node_set_mixer(ASTAL_WP_NODE(self), mixer);
     astal_wp_node_set_type(ASTAL_WP_NODE(self), type);
 
+    if (priv->default_plugin != NULL) {
+        g_signal_handler_disconnect(priv->default_plugin, priv->default_node_handler_signal_id);
+    }
+    g_clear_object(&priv->default_plugin);
     priv->default_plugin = g_object_ref(defaults);
     priv->is_default_node = TRUE;
     self->is_default = TRUE;

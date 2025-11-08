@@ -5,13 +5,13 @@
 }: let
   libcava = pkgs.stdenv.mkDerivation rec {
     pname = "cava";
-    version = "0.10.3";
+    version = "0.10.6";
 
     src = pkgs.fetchFromGitHub {
       owner = "LukashonakV";
       repo = "cava";
-      rev = "0.10.3";
-      hash = "sha256-ZDFbI69ECsUTjbhlw2kHRufZbQMu+FQSMmncCJ5pagg=";
+      rev = "0.10.6";
+      hash = "sha256-63be1wypMiqhPA6sjMebmFE6yKpTj/bUE53sMWun554=";
     };
 
     buildInputs = with pkgs; [

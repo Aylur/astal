@@ -55,9 +55,9 @@ static GParamSpec *astal_wp_audio_properties[ASTAL_WP_AUDIO_N_PROPERTIES] = {
 /**
  *  AstalWpAudio
  *
- *  is instanciated by [class@AstalWp.Wp]. An instance of class can only be received there.
+ *  is instanciated by [class@AstalWp.Wp]. An instance of this class can only be received there.
  *
- *  This is a convinience class and acts as a filter for [class@AstalWp.Wp] to filter for audio
+ *  This is a convenience class and acts as a filter for [class@AstalWp.Wp] to filter for audio
  * endpoints and devices.
  */
 
@@ -279,7 +279,7 @@ AstalWpNode *astal_wp_audio_get_node(AstalWpAudio *self, guint id) {
  *
  * gets the default speaker object
  *
- * Returns: (nullable) (transfer none)
+ * Returns: (transfer none)
  */
 AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -291,7 +291,7 @@ AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self) {
  *
  * gets the default microphone object
  *
- * Returns: (nullable) (transfer none)
+ * Returns: (transfer none)
  */
 AstalWpEndpoint *astal_wp_audio_get_default_microphone(AstalWpAudio *self) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
@@ -472,7 +472,7 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     /**
      * AstalWpAudio:default-speaker:
      *
-     * The AstalWndpoint object representing the default speaker
+     * The AstalEndpoint object representing the default speaker
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEFAULT_SPEAKER] =
         g_param_spec_object("default-speaker", "default-speaker", "default-speaker",
@@ -480,7 +480,7 @@ static void astal_wp_audio_class_init(AstalWpAudioClass *class) {
     /**
      * AstalWpAudio:default-microphone:
      *
-     * The AstalWndpoint object representing the default speaker
+     * The AstalEndpoint object representing the default microphone
      */
     astal_wp_audio_properties[ASTAL_WP_AUDIO_PROP_DEFAULT_MICROPHONE] =
         g_param_spec_object("default-microphone", "default-microphone", "default-microphone",
