@@ -69,7 +69,7 @@ in {
       buildInputs
       ++ dev
       ++ builtins.attrValues (
-        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
+        builtins.removeAttrs self.packages.${pkgs.stdenv.hostPlatform.system} ["docs"]
       );
   };
 }
