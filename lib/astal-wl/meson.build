@@ -37,24 +37,6 @@ wayland_scanner = find_program('wayland-scanner')
 
 wl_protocol_dir = wayland_protos.get_variable(pkgconfig: 'pkgdatadir')
 
-gen_client_header = generator(
-  wayland_scanner,
-  output: ['@BASENAME@.h'],
-  arguments: ['-c', 'client-header', '@INPUT@', '@BUILD_DIR@/@BASENAME@.h'],
-)
-
-gen_private_code = generator(
-  wayland_scanner,
-  output: ['@BASENAME@.c'],
-  arguments: ['-c', 'private-code', '@INPUT@', '@BUILD_DIR@/@BASENAME@.c'],
-)
-
-gen_vapi = generator(
-  find_program('wl-vapi-gen'),
-  output: ['@BASENAME@.vapi'],
-  arguments: ['--vapi', '@BUILD_DIR@/@BASENAME@.vapi', '--protocol', '@INPUT@', '--cheader', '@BASENAME@.h'],
-)
-
 protocols = [
   join_paths(wl_protocol_dir, 'unstable/xdg-output/xdg-output-unstable-v1.xml'),
 ]
@@ -63,18 +45,47 @@ protocol_deps = []
 protocol_vapis = []
 
 foreach protocol : protocols
-  client_header = gen_client_header.process(protocol)
-  code = gen_private_code.process(protocol)
-  vapi = gen_vapi.process(protocol)
+  client_header = custom_target(
+    '@BASENAME@_header',
+    input: protocol,
+    output: '@BASENAME@.h',
+    command: [
+      wayland_scanner,
+      '-c', 'client-header',
+      '@INPUT@',
+      '@OUTPUT@',
+    ],
+  )
+
+  code = custom_target(
+    '@BASENAME@_code',
+    input: protocol,
+    output: '@BASENAME@.c',
+    command: [
+      wayland_scanner,
+      '-c', 'private-code',
+      '@INPUT@',
+      '@OUTPUT@',
+    ],
+  )
+
+  vapi = custom_target(
+    '@INPUT0@_vapi',
+    input: [protocol, client_header],
+    output: '@BASENAME0@.vapi',
+    command: [
+      find_program('wl-vapi-gen'),
+      '--vapi', '@OUTPUT@',
+      '--protocol', '@INPUT0@',
+      '--cheader', '@INPUT1@',
+    ],
+  )
 
   protocol_deps += declare_dependency(
-    dependencies: [
-      dependency('wayland-client'),
-    ],
+    dependencies: [dependency('wayland-client')],
     sources: [client_header, code, vapi],
   )
   protocol_vapis += vapi
-
 endforeach
 
 deps = [
@@ -115,7 +126,6 @@ gir = custom_target(
     '--pkgs', ':'.join(
       'json-glib-1.0',
       'wayland-client',
-      'xdg-output-unstable-v1',
     ),
     '@INPUT@'
   ],
