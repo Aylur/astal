@@ -55,7 +55,7 @@ local Notifd = require("lgi").require("AstalNotifd")
 local notifd = Notifd.get_default()
 
 notifd.on_notified = function(_, id)
-    local n = notifd.get_notification(id)
+    local n = notifd:get_notification(id)
     print(n.body, n.summary)
 end
 ```
