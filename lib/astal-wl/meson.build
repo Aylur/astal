@@ -11,23 +11,71 @@ project(
   ],
 )
 
-version_split = meson.project_version().split('.')
-api_version = version_split[0] + '.' + version_split[1]
-namespace = 'AstalWl'
-gir = namespace + '-' + api_version + '.gir'
-typelib = namespace + '-' + api_version + '.typelib'
+version = meson.project_version()
+name = meson.project_name()
+version_split = version.split('.')
+api_version = '0.1'
+gir_name = 'AstalWl-0.1.gir'
+typelib_name = 'AstalWl-0.1.typelib'
 
 config = configure_file(
   input: 'config.vala.in',
   output: 'config.vala',
   configuration: {
     'API_VERSION': api_version,
-    'VERSION': meson.project_version(),
+    'VERSION': version,
     'MAJOR_VERSION': version_split[0],
     'MINOR_VERSION': version_split[1],
     'MICRO_VERSION': version_split[2],
   },
 )
+
+
+subproject('wl-vapi-gen')
+wayland_protos = dependency('wayland-protocols')
+wayland_scanner = find_program('wayland-scanner')
+
+wl_protocol_dir = wayland_protos.get_variable(pkgconfig: 'pkgdatadir')
+
+gen_client_header = generator(
+  wayland_scanner,
+  output: ['@BASENAME@.h'],
+  arguments: ['-c', 'client-header', '@INPUT@', '@BUILD_DIR@/@BASENAME@.h'],
+)
+
+gen_private_code = generator(
+  wayland_scanner,
+  output: ['@BASENAME@.c'],
+  arguments: ['-c', 'private-code', '@INPUT@', '@BUILD_DIR@/@BASENAME@.c'],
+)
+
+gen_vapi = generator(
+  find_program('wl-vapi-gen'),
+  output: ['@BASENAME@.vapi'],
+  arguments: ['--vapi', '@BUILD_DIR@/@BASENAME@.vapi', '--protocol', '@INPUT@', '--cheader', '@BASENAME@.h'],
+)
+
+protocols = [
+  join_paths(wl_protocol_dir, 'unstable/xdg-output/xdg-output-unstable-v1.xml'),
+]
+
+protocol_deps = []
+protocol_vapis = []
+
+foreach protocol : protocols
+  client_header = gen_client_header.process(protocol)
+  code = gen_private_code.process(protocol)
+  vapi = gen_vapi.process(protocol)
+
+  protocol_deps += declare_dependency(
+    dependencies: [
+      dependency('wayland-client'),
+    ],
+    sources: [client_header, code, vapi],
+  )
+  protocol_vapis += vapi
+
+endforeach
 
 deps = [
   dependency('glib-2.0'),
@@ -40,59 +88,65 @@ sources = [config] + files(
   'wl_display.c',
   'registry.vala',
   'wl-source.vala',
-  'output.vala'
+  'output.vala',
+  'seat.vala',
+  'utils.vala'
 )
 
 lib = library(
-  meson.project_name(),
+  name,
   sources,
-  dependencies: deps,
-  vala_header: meson.project_name() + '.h',
-  vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
+  dependencies: deps + protocol_deps,
   vala_args: ['--vapi-comments'],
-  version: meson.project_version(),
+  vala_header: name + '.h',
+  vala_vapi: name + '-' + api_version + '.vapi',
+  version: version,
   install: true,
   install_dir: [true, true, true],
 )
 
-pkgs = []
-foreach dep : deps
-  pkgs += ['--pkg=' + dep.name()]
-endforeach
-
-gir_tgt = custom_target(
-  gir,
-  command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-  + pkgs
-  + sources,
-  input: sources,
+gir = custom_target(
+  gir_name,
+  command: [
+    find_program('python3'),
+    files('gir.py'),
+    '--name', name,
+    '--gir', gir_name,
+    '--pkgs', ':'.join(
+      'json-glib-1.0',
+      'wayland-client',
+      'xdg-output-unstable-v1',
+    ),
+    '@INPUT@'
+  ],
+  input: sources + protocol_vapis,
   depends: lib,
-  output: gir,
+  output: gir_name,
   install: true,
   install_dir: get_option('datadir') / 'gir-1.0',
 )
 
 custom_target(
-  typelib,
+  typelib_name,
   command: [
     find_program('g-ir-compiler'),
     '--output', '@OUTPUT@',
     '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
-    meson.current_build_dir() / gir,
+    meson.current_build_dir() / gir_name,
   ],
   input: lib,
-  output: typelib,
-  depends: [lib, gir_tgt],
+  output: typelib_name,
+  depends: [lib, gir],
   install: true,
   install_dir: get_option('libdir') / 'girepository-1.0',
 )
 
 import('pkgconfig').generate(
   lib,
-  name: meson.project_name(),
-  filebase: meson.project_name() + '-' + api_version,
-  version: meson.project_version(),
-  subdirs: meson.project_name(),
+  name: name,
+  filebase: name + '-' + api_version,
+  version: version,
+  subdirs: name,
   requires: deps,
   install_dir: get_option('libdir') / 'pkgconfig',
 )
