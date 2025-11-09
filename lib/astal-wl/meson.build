@@ -18,6 +18,8 @@ api_version = '0.1'
 gir_name = 'AstalWl-0.1.gir'
 typelib_name = 'AstalWl-0.1.typelib'
 
+fs = import('fs')
+
 config = configure_file(
   input: 'config.vala.in',
   output: 'config.vala',
@@ -46,7 +48,7 @@ protocol_vapis = []
 
 foreach protocol : protocols
   client_header = custom_target(
-    '@BASENAME@_header',
+    fs.name(protocol) + '_header',
     input: protocol,
     output: '@BASENAME@.h',
     command: [
@@ -58,7 +60,7 @@ foreach protocol : protocols
   )
 
   code = custom_target(
-    '@BASENAME@_code',
+    fs.name(protocol) + '_code',
     input: protocol,
     output: '@BASENAME@.c',
     command: [
@@ -70,7 +72,7 @@ foreach protocol : protocols
   )
 
   vapi = custom_target(
-    '@INPUT0@_vapi',
+    fs.name(protocol) + '_vapi',
     input: [protocol, client_header],
     output: '@BASENAME0@.vapi',
     command: [
