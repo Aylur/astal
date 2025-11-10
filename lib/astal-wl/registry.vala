@@ -99,7 +99,7 @@ public class Registry : Object {
         List<Global?> list = new List<Global?>();
 
         HashTableIter<uint32, Global?> iter = HashTableIter<uint32, Global?>(this.globals);
-        unowned Global global;
+        unowned Global? global;
         uint32 id;
 
         while (iter.next(out id, out global)) {
@@ -160,7 +160,7 @@ public class Registry : Object {
     }
 
     [GIR(visible = false)]
-    public Seat? get_seat_by_wl_output(Wl.Seat wl_seat) {
+    public Seat? get_seat_by_wl_seat(Wl.Seat wl_seat) {
         HashTableIter<uint32, Seat> iter = HashTableIter<uint32, Seat>(this.seats);
         unowned Seat seat;
         uint32 id;
