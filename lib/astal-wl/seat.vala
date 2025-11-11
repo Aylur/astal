@@ -21,10 +21,10 @@ public class Seat : Object {
     public string? name { get; private set; }
     public Capabilities capabilities { get; private set; }
 
-    public void handle_capabilities (Wl.Seat wl_seat, uint32 capabilities) {
+    private void handle_capabilities (Wl.Seat wl_seat, uint32 capabilities) {
         this.capabilities = capabilities;
     }
-    public void handle_name (Wl.Seat wl_seat, string name) {
+    private void handle_name (Wl.Seat wl_seat, string name) {
         this.name = name;
     }
 
