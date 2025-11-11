@@ -9,7 +9,7 @@ deps = [
   dependency('gio-2.0'),
   dependency('wayland-client'),
   dependency('json-glib-1.0'),
-  dependency('astal-wl-0.1'),
+  wayland_glib_dep
 ]
 
 astal_river_lib = library(

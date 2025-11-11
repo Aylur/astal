@@ -1,12 +1,9 @@
-#include <astal-wl.h>
 #include <gio/gio.h>
 #include <json-glib/json-glib.h>
-#include <stdint.h>
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
+#include <wayland-glib.h>
 
-#include "astal-river.h"
-#include "glib-object.h"
 #include "river-control-unstable-v1-client.h"
 #include "river-layout-v3-client.h"
 #include "river-private.h"
@@ -22,11 +19,11 @@ struct _AstalRiverRiver {
 
 typedef struct {
     GHashTable* signal_ids;
+    gboolean init;
+    struct wl_registry* wl_registry;
     struct wl_seat* seat;
     struct wl_display* display;
-
-    AstalWlRegistry* registry;
-
+    WlGlibWlSource* wl_source;
     struct zriver_status_manager_v1* river_status_manager;
     struct zriver_control_v1* river_control;
     struct zriver_seat_status_v1* river_seat_status;
@@ -34,10 +31,12 @@ typedef struct {
 } AstalRiverRiverPrivate;
 
 static JsonSerializableIface* serializable_iface = NULL;
+static void astal_river_river_initable_iface_init(GInitableIface* iface);
 static void astal_river_river_json_serializable_iface_init(JsonSerializableIface* g_iface);
 
 G_DEFINE_TYPE_WITH_CODE(AstalRiverRiver, astal_river_river, G_TYPE_OBJECT,
-                        G_ADD_PRIVATE(AstalRiverRiver)
+                        G_ADD_PRIVATE(AstalRiverRiver) G_IMPLEMENT_INTERFACE(
+                            G_TYPE_INITABLE, astal_river_river_initable_iface_init)
                             G_IMPLEMENT_INTERFACE(JSON_TYPE_SERIALIZABLE,
                                                   astal_river_river_json_serializable_iface_init))
 
@@ -277,15 +276,10 @@ static const struct zriver_seat_status_v1_listener river_seat_status_listener = 
     .mode = river_seat_status_handle_mode,
 };
 
-static void global_registry_handler(gpointer data, gpointer user_data) {
-    AstalRiverRiver* self = ASTAL_RIVER_RIVER(user_data);
+static void global_registry_handler(void* data, struct wl_registry* registry, uint32_t id,
+                                    const char* interface, uint32_t version) {
+    AstalRiverRiver* self = ASTAL_RIVER_RIVER(data);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
-
-    AstalWlGlobal* global = (AstalWlGlobal*)data;
-    const char* interface = global->interface;
-    struct wl_registry* registry = astal_wl_registry_get_registry(priv->registry);
-    uint32_t id = global->name;
-
     if (strcmp(interface, wl_output_interface.name) == 0) {
         if (priv->river_status_manager == NULL) return;
         struct wl_output* wl_out = wl_registry_bind(registry, id, &wl_output_interface, 4);
@@ -312,11 +306,6 @@ static void global_registry_handler(gpointer data, gpointer user_data) {
         priv->river_layout_manager =
             wl_registry_bind(registry, id, &river_layout_manager_v3_interface, 2);
     }
-}
-
-static void global_registry_handler_cb(AstalWlRegistry* registry, AstalWlGlobal* global,
-                                       AstalRiverRiver* self) {
-    global_registry_handler(global, self);
 }
 
 static void astal_river_river_callback_success(void* data, struct zriver_command_callback_v1* cb,
@@ -358,9 +347,8 @@ void astal_river_river_run_command_async(AstalRiverRiver* self, gint length, con
     if (callback != NULL) zriver_command_callback_v1_add_listener(cb, &cb_listener, callback);
 }
 
-static void global_registry_remover(AstalWlRegistry* registry, AstalWlGlobal* global,
-                                    AstalRiverRiver* self) {
-    uint32_t id = global->name;
+static void global_registry_remover(void* data, struct wl_registry* registry, uint32_t id) {
+    AstalRiverRiver* self = ASTAL_RIVER_RIVER(data);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
     AstalRiverOutput* output = find_output_by_id(self, id);
     if (output != NULL) {
@@ -379,37 +367,40 @@ static void global_registry_remover(AstalWlRegistry* registry, AstalWlGlobal* gl
     g_signal_emit(self, astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_CHANGED], 0);
 }
 
+static const struct wl_registry_listener registry_listener = {global_registry_handler,
+                                                              global_registry_remover};
+
 static void astal_river_river_json_serializable_iface_init(JsonSerializableIface* iface) {
     iface->serialize_property = astal_river_river_serialize_property;
     serializable_iface = g_type_default_interface_peek(JSON_TYPE_SERIALIZABLE);
 }
 
-static void astal_river_river_init(AstalRiverRiver* self) {
+static gboolean astal_river_river_initable_init(GInitable* initable, GCancellable* cancellable,
+                                                GError** error) {
+    AstalRiverRiver* self = ASTAL_RIVER_RIVER(initable);
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
-    self->outputs = NULL;
-    priv->seat = NULL;
-    priv->display = NULL;
-    priv->river_status_manager = NULL;
-    priv->signal_ids = g_hash_table_new(g_direct_hash, g_direct_equal);
 
-    priv->registry = g_object_ref(astal_wl_registry_get_default());
+    if (priv->init) return TRUE;
 
-    priv->display = astal_wl_registry_get_display(priv->registry);
+    priv->wl_source = wl_glib_wl_source_new();
 
-    if (priv->display == NULL) {
-        return;
+    if (priv->wl_source == NULL) {
+        g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_FAILED,
+                            "Can not connect to wayland display");
+        return FALSE;
     }
 
-    g_signal_connect(priv->registry, "global-added", G_CALLBACK(global_registry_handler_cb), self);
-    g_signal_connect(priv->registry, "global-removed", G_CALLBACK(global_registry_remover), self);
+    priv->display = priv->wl_source->display;
 
-    g_list_foreach(astal_wl_registry_find_globals(priv->registry, NULL), global_registry_handler,
-                   self);
+    priv->wl_registry = wl_display_get_registry(priv->display);
+    wl_registry_add_listener(priv->wl_registry, &registry_listener, self);
 
     wl_display_roundtrip(priv->display);
 
     if (priv->river_status_manager == NULL) {
-        g_critical("Can not connect river status protocol");
+        g_set_error_literal(error, G_IO_ERROR, G_IO_ERROR_FAILED,
+                            "Can not connect river status protocol");
+        return FALSE;
     }
 
     priv->river_seat_status =
@@ -417,6 +408,27 @@ static void astal_river_river_init(AstalRiverRiver* self) {
     zriver_seat_status_v1_add_listener(priv->river_seat_status, &river_seat_status_listener, self);
 
     wl_display_roundtrip(priv->display);
+
+    priv->init = TRUE;
+    return TRUE;
+}
+
+static void astal_river_river_constructed(GObject* object) {
+    astal_river_river_initable_init(G_INITABLE(object), NULL, NULL);
+}
+
+static void astal_river_river_initable_iface_init(GInitableIface* iface) {
+    iface->init = astal_river_river_initable_init;
+}
+
+static void astal_river_river_init(AstalRiverRiver* self) {
+    AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
+    self->outputs = NULL;
+    priv->init = FALSE;
+    priv->seat = NULL;
+    priv->display = NULL;
+    priv->river_status_manager = NULL;
+    priv->signal_ids = g_hash_table_new(g_direct_hash, g_direct_equal);
 }
 
 /**
@@ -425,9 +437,11 @@ static void astal_river_river_init(AstalRiverRiver* self) {
  * creates a new River object. It is recommended to use the [func@AstalRiver.get_default] method
  * instead of this method.
  *
- * Returns: a newly created connection to river
+ * Returns: (nullable): a newly created connection to river
  */
-AstalRiverRiver* astal_river_river_new() { return g_object_new(ASTAL_RIVER_TYPE_RIVER, NULL); }
+AstalRiverRiver* astal_river_river_new() {
+    return g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, NULL, NULL);
+}
 
 static void disconnect_signal(gpointer key, gpointer value, gpointer user_data) {
     AstalRiverRiver* self = ASTAL_RIVER_RIVER(user_data);
@@ -467,11 +481,10 @@ static void astal_river_river_finalize(GObject* object) {
 
     if (priv->display != NULL) wl_display_roundtrip(priv->display);
 
-    g_clear_object(&priv->registry);
-
     g_clear_list(&self->outputs, g_object_unref);
     self->outputs = NULL;
 
+    if (priv->wl_registry != NULL) wl_registry_destroy(priv->wl_registry);
     if (priv->river_status_manager != NULL)
         zriver_status_manager_v1_destroy(priv->river_status_manager);
     if (priv->river_seat_status != NULL) zriver_seat_status_v1_destroy(priv->river_seat_status);
@@ -479,6 +492,9 @@ static void astal_river_river_finalize(GObject* object) {
         river_layout_manager_v3_destroy(priv->river_layout_manager);
     if (priv->seat != NULL) wl_seat_destroy(priv->seat);
     if (priv->display != NULL) wl_display_flush(priv->display);
+
+    // if (priv->wl_source != NULL) wl_source_free(priv->wl_source);
+    if (priv->wl_source != NULL) g_source_unref((GSource*)(priv->wl_source));
 
     g_free(self->focused_view);
     g_free(self->focused_output);
@@ -491,6 +507,7 @@ static void astal_river_river_class_init(AstalRiverRiverClass* class) {
     GObjectClass* object_class = G_OBJECT_CLASS(class);
     object_class->get_property = astal_river_river_get_property;
     object_class->finalize = astal_river_river_finalize;
+    object_class->constructed = astal_river_river_constructed;
 
     /**
      * AstalRiverRiver:mode:

@@ -37,7 +37,11 @@ int main(int argc, char** argv) {
     }
 
     GError* error = NULL;
-    AstalRiverRiver* river = astal_river_get_default();
+    AstalRiverRiver* river = g_initable_new(ASTAL_RIVER_TYPE_RIVER, NULL, &error, NULL);
+    if (error) {
+        g_critical("%s\n", error->message);
+        exit(EXIT_FAILURE);
+    }
     if (daemon) {
         loop = g_main_loop_new(NULL, FALSE);
         g_signal_connect(river, "changed", G_CALLBACK(print_json), NULL);
