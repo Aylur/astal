@@ -18,11 +18,11 @@ public class River : Object {
     public signal void output_removed(Output output);
 
     public Output? focused_output { get; private set; }
-    public string? focused_output_name { 
+    public string? focused_output_name {
         get {
-            if(this.focused_output == null) return null;
+            if (this.focused_output == null) return null;
             return this.focused_output.output.name;
-        } 
+        }
     }
 
     public string? focused_view { get; private set; }
@@ -32,46 +32,47 @@ public class River : Object {
     private ZriverStatusManagerV1 river_status;
     private ZriverSeatStatusV1 seat_status;
     private ZriverControlV1 river_control;
+    private RiverLayoutManagerV3 layout_manager;
 
     private void handle_output_added(AstalWl.Output wl_output) {
-        var output = new Output(wl_output, river_status);
+        var output = new Output(wl_output, this, river_status);
         this._outputs.append(output);
         this.output_added(output);
         this.notify_property("outputs");
     }
-    
+
     private void handle_output_removed(AstalWl.Output wl_output) {
-       var output = find_output_by_astal_wl_output(wl_output);
-       this._outputs.remove(output);
-       this.output_removed(output);
-       this.notify_property("outputs");
+        var output = find_output_by_astal_wl_output(wl_output);
+        this._outputs.remove(output);
+        this.output_removed(output);
+        this.notify_property("outputs");
     }
 
     [GIR(visible = false)]
     public Output? find_output_by_wl_output(Wl.Output wl_output) {
         foreach (var o in this.outputs) {
-            if(o.output.get_wl_output() == wl_output) return o;
+            if (o.output.get_wl_output() == wl_output) return o;
         }
         return null;
     }
 
     public Output? find_output_by_astal_wl_output(AstalWl.Output wl_output) {
         foreach (var o in this.outputs) {
-            if(o.output == wl_output) return o;
+            if (o.output == wl_output) return o;
         }
         return null;
     }
-    
+
     public Output? find_output_by_name(string name) {
         foreach (var o in this.outputs) {
-            if(o.output.name == name) return o;
+            if (o.output.name == name) return o;
         }
         return null;
     }
 
     public Output? find_output_by_id(uint32 id) {
         foreach (var o in this.outputs) {
-            if(o.output.id == id) return o;
+            if (o.output.id == id) return o;
         }
         return null;
     }
@@ -88,7 +89,7 @@ public class River : Object {
 
     private void handle_focused_view(ZriverSeatStatusV1 seat_status, string? title) {
         this.focused_view = title;
-        this.focused_output.focused_view = title;
+        if (this.focused_output != null) this.focused_output.focused_view = title;
     }
     private void handle_mode(ZriverSeatStatusV1 seat_status, string? mode) {
         this.mode = mode;
@@ -117,7 +118,6 @@ public class River : Object {
         }
         var seat = this.astal_registry.get_seats().nth_data(0);
         var cb = this.river_control.run_command(seat.get_wl_seat());
-        bool success = false;
         ZriverCommandCallbackV1Listener cb_listener = {
             handle_comman_callback_success,
             handle_comman_callback_failure,
@@ -133,6 +133,10 @@ public class River : Object {
         return run_command(cmd, out output);
     }
 
+    public Layout new_layout(string @namespace) {
+        return new Layout(this, @namespace, this.layout_manager);
+    }
+
     private const ZriverSeatStatusV1Listener seat_listener = {
         handle_focused_output,
         handle_unfocused_output,
@@ -145,20 +149,23 @@ public class River : Object {
         this.astal_registry = AstalWl.Registry.get_default();
 
         AstalWl.Global? status_global = this.astal_registry.find_globals("zriver_status_manager_v1").nth_data(0);
-        if(status_global == null)  {
+        if (status_global == null) {
             critical("the compositor does not support zriver_status_manager_v1\n");
             return;
         }
 
         this.river_status = this.astal_registry.get_registry().bind(status_global.name, ref ZriverStatusManagerV1.iface, uint.min(status_global.version, 4));
         var seat = this.astal_registry.get_seats().nth_data(0);
-        if(seat != null) {
+        if (seat != null) {
             this.seat_status = this.river_status.get_river_seat_status(seat.get_wl_seat());
             this.seat_status.add_listener(seat_listener, this);
         }
-        
+
         AstalWl.Global? control_global = this.astal_registry.find_globals("zriver_control_v1").nth_data(0);
         this.river_control = this.astal_registry.get_registry().bind(control_global.name, ref ZriverControlV1.iface, uint.min(control_global.version, 1));
+
+        AstalWl.Global? layout_global = this.astal_registry.find_globals("river_layout_manager_v3").nth_data(0);
+        this.layout_manager = this.astal_registry.get_registry().bind(layout_global.name, ref RiverLayoutManagerV3.iface, uint.min(layout_global.version, 2));
 
         this.astal_registry.get_outputs().foreach(output => this.handle_output_added(output));
         this.astal_registry.output_added.connect((o) => this.handle_output_added(o));
