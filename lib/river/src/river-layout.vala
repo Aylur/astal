@@ -1,5 +1,16 @@
 namespace AstalRiver {
-public delegate string LayoutDemandCallback(Layout layout, string namespace, Output output, uint view_count, uint usable_width, uint usable_height, out List<AstalWl.Rectangle?> rectangles);
+
+public delegate LayoutDemandResult LayoutDemandCallback(Layout layout, string namespace, Output output, uint view_count, uint usable_width, uint usable_height);
+
+public class LayoutDemandResult : Object {
+    internal string layout_name;
+    internal List<AstalWl.Rectangle?> rectangles;
+
+    public LayoutDemandResult(string layout_name, List<AstalWl.Rectangle?> rectangles) {
+        this.layout_name = layout_name;
+        this.rectangles = rectangles.copy_deep(r => r.copy());
+    }
+}
 
 public class Layout : Object {
     private class LayoutData {
@@ -13,13 +24,15 @@ public class Layout : Object {
     private HashTable<string, LayoutData?> layouts;
 
     public string @namespace { get; construct; }
-    private LayoutDemandCallback layout_demand_callback;
+    internal Closure layout_demand_closure;
 
     public signal void namespace_in_use(string namespace, Output output);
     public signal void user_command(string command, string namespace, Output output);
 
-    public void set_layout_demand_callback(owned LayoutDemandCallback callback) {
-        this.layout_demand_callback = (owned)callback;
+    public extern void set_layout_demand_closure(Closure closure);
+
+    public void set_layout_demand_closure_internal(Closure closure) {
+        this.layout_demand_closure = closure;
     }
 
     private static void handle_namespace_in_use(void* data, RiverLayoutV3 layout) {
@@ -29,17 +42,42 @@ public class Layout : Object {
 
     private static void handle_layout_demand(void* data, RiverLayoutV3 layout, uint32 view_count, uint32 usable_width, uint32 usable_height, uint32 tags, uint32 serial) {
         LayoutData*ld = data;
-        if (ld->layout.layout_demand_callback != null) {
-            List<AstalWl.Rectangle?> rectangles;
-            string layout_name = ld->layout.layout_demand_callback(ld->layout, ld->layout.namespace, ld->output, view_count, usable_width, usable_height, out rectangles);
-            if (rectangles.length() != view_count) {
+        if (ld->layout.layout_demand_closure != null) {
+            Value[] args = {
+                Value (typeof (Layout)),
+                Value (typeof (string)),
+                Value (typeof (Output)),
+                Value (typeof (uint)),  
+                Value (typeof (uint)),  
+                Value (typeof (uint))   
+            };
+            args[0].set_object (ld->layout);
+            args[1].set_string (ld->layout.namespace);
+            args[2].set_object (ld->output);
+            args[3].set_uint (view_count);
+            args[4].set_uint (usable_width);
+            args[5].set_uint (usable_height);
+
+            Value result_value = Value(typeof(LayoutDemandResult));
+
+            ld->layout.layout_demand_closure.invoke(ref result_value, args);
+       
+            LayoutDemandResult result = (LayoutDemandResult)result_value.get_object();
+
+            if (result.rectangles.length() != view_count) {
                 warning("the number of rectangles does not match the requested view count\n");
                 return;
             }
-            foreach (var view in rectangles) {
-                ld->river_layout.push_view_dimensions(view.x, view.y, view.width, view.height, serial);
+            var viewport = AstalWl.Rectangle() {
+                x = 0, y = 0,
+                width = (int)usable_width, height = (int)usable_height
+            };
+            AstalWl.Rectangle view;
+            foreach (var rect in result.rectangles) {
+                AstalWl.Rectangle.intersect(rect, viewport, out view);
+                ld->river_layout.push_view_dimensions(view.x, view.y, (uint)view.width, (uint)view.height, serial);
             }
-            ld->river_layout.commit(layout_name, serial);
+            ld->river_layout.commit(result.layout_name, serial);
         }
     }
 

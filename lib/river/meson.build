@@ -49,7 +49,8 @@ deps = [
 sources = [config] + files(
   'src/river.vala',
   'src/river-output.vala',
-  'src/river-layout.vala'
+  'src/river-layout.vala',
+  'src/river-layout.c'
 )
 
 if get_option('lib')
