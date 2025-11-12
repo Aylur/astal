@@ -1,5 +1,4 @@
 namespace AstalRiver {
-
 public delegate LayoutDemandResult LayoutDemandCallback(Layout layout, string namespace, Output output, uint view_count, uint usable_width, uint usable_height);
 
 public class LayoutDemandResult : Object {
@@ -44,24 +43,24 @@ public class Layout : Object {
         LayoutData*ld = data;
         if (ld->layout.layout_demand_closure != null) {
             Value[] args = {
-                Value (typeof (Layout)),
-                Value (typeof (string)),
-                Value (typeof (Output)),
-                Value (typeof (uint)),  
-                Value (typeof (uint)),  
-                Value (typeof (uint))   
+                Value(typeof (Layout)),
+                Value(typeof (string)),
+                Value(typeof (Output)),
+                Value(typeof (uint)),
+                Value(typeof (uint)),
+                Value(typeof (uint))
             };
-            args[0].set_object (ld->layout);
-            args[1].set_string (ld->layout.namespace);
-            args[2].set_object (ld->output);
-            args[3].set_uint (view_count);
-            args[4].set_uint (usable_width);
-            args[5].set_uint (usable_height);
+            args[0].set_object(ld->layout);
+            args[1].set_string(ld->layout.namespace);
+            args[2].set_object(ld->output);
+            args[3].set_uint(view_count);
+            args[4].set_uint(usable_width);
+            args[5].set_uint(usable_height);
 
             Value result_value = Value(typeof(LayoutDemandResult));
 
             ld->layout.layout_demand_closure.invoke(ref result_value, args);
-       
+
             LayoutDemandResult result = (LayoutDemandResult)result_value.get_object();
 
             if (result.rectangles.length() != view_count) {
