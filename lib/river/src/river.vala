@@ -1,4 +1,9 @@
 namespace AstalRiver {
+
+public static bool is_supported() {
+    return !AstalWl.Registry.get_default().find_globals("zriver_status_manager_v1").is_empty();
+}
+
 public static unowned River get_default() {
     return AstalRiver.River.get_default();
 }
@@ -113,6 +118,11 @@ public class River : Object {
     }
 
     public bool run_command(string[] cmd, out string? output) {
+        if(this.river_control == null) {
+            critical("the compositor does not support zriver_control_v1\n");
+            output = null;
+            return false;
+        }
         foreach (var arg in cmd) {
             this.river_control.add_argument(arg);
         }
@@ -133,7 +143,11 @@ public class River : Object {
         return run_command(cmd, out output);
     }
 
-    public Layout new_layout(string @namespace) {
+    public Layout? new_layout(string @namespace) {
+        if(this.layout_manager == null) {
+            critical("the compositor does not support river_layout_v3\n");
+            return null;
+        }
         return new Layout(this, @namespace, this.layout_manager);
     }
 
@@ -162,10 +176,14 @@ public class River : Object {
         }
 
         AstalWl.Global? control_global = this.astal_registry.find_globals("zriver_control_v1").nth_data(0);
-        this.river_control = this.astal_registry.get_registry().bind(control_global.name, ref ZriverControlV1.iface, uint.min(control_global.version, 1));
+        if (control_global != null) {
+            this.river_control = this.astal_registry.get_registry().bind(control_global.name, ref ZriverControlV1.iface, uint.min(control_global.version, 1));
+        }
 
         AstalWl.Global? layout_global = this.astal_registry.find_globals("river_layout_manager_v3").nth_data(0);
-        this.layout_manager = this.astal_registry.get_registry().bind(layout_global.name, ref RiverLayoutManagerV3.iface, uint.min(layout_global.version, 2));
+        if (layout_global != null) {
+            this.layout_manager = this.astal_registry.get_registry().bind(layout_global.name, ref RiverLayoutManagerV3.iface, uint.min(layout_global.version, 2));
+        }
 
         this.astal_registry.get_outputs().foreach(output => this.handle_output_added(output));
         this.astal_registry.output_added.connect((o) => this.handle_output_added(o));
