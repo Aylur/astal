@@ -33,7 +33,12 @@ config = configure_file(
 )
 
 
-subproject('wl-vapi-gen')
+wl_vapi_gen_prog = find_program('wl-vapi-gen', required: false)
+if not wl_vapi_gen_prog.found()
+  subproject('wl-vapi-gen')
+  wl_vapi_gen_prog = find_program('wl-vapi-gen', required: false)
+endif
+
 wayland_protos = dependency('wayland-protocols')
 wayland_scanner = find_program('wayland-scanner')
 
@@ -76,7 +81,7 @@ foreach protocol : protocols
     input: [protocol, client_header],
     output: '@BASENAME0@.vapi',
     command: [
-      find_program('wl-vapi-gen'),
+      wl_vapi_gen_prog,
       '--vapi', '@OUTPUT@',
       '--protocol', '@INPUT0@',
       '--cheader', '@INPUT1@',
