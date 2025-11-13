@@ -56,7 +56,7 @@ public class River : Object {
     [GIR(visible = false)]
     public Output? find_output_by_wl_output(Wl.Output wl_output) {
         foreach (var o in this.outputs) {
-            if (o.output.get_wl_output() == wl_output) return o;
+            if (o.output.get_wl_output() == wl_output || o.output.get_wl_output().get_id() == wl_output.get_id()) return o;
         }
         return null;
     }
@@ -83,13 +83,13 @@ public class River : Object {
     }
 
     private void handle_focused_output(ZriverSeatStatusV1 seat_status, Wl.Output wl_output) {
-        this.focused_output = find_output_by_wl_output(wl_output);
-        this.notify_property("focused_output_name");
+        var output = find_output_by_wl_output(wl_output);
+        if(output == null) return;
+        this.focused_output = output;
+        this.notify_property("focused-output-name");
     }
 
     private void handle_unfocused_output(ZriverSeatStatusV1 seat_status, Wl.Output wl_output) {
-        this.focused_output = null;
-        this.notify_property("focused_output_name");
     }
 
     private void handle_focused_view(ZriverSeatStatusV1 seat_status, string? title) {
