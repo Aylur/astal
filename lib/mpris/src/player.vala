@@ -680,6 +680,10 @@ public class AstalMpris.Player : Object {
             return;
         }
 
+        if (art_url.has_prefix("data:")) {
+            return;
+        }
+
         var file = File.new_for_uri(art_url);
         if (file.get_path() != null) {
             cover_art = file.get_path();
