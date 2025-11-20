@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<schemalist>
+  <schema id="io.astal.notifd" path="/io/astal/notifd/">
+    <key name="ignore-timeout" type="b">
+      <default>false</default>
+    </key>
+    <key name="dont-disturb" type="b">
+      <default>false</default>
+    </key>
+    <key name="notifications" type="av">
+      <default>[]</default>
+    </key>
+    <key name="default-timeout" type="i">
+      <default>-1</default>
+    </key>
+    <key name="server-capabilites" type="as">
+      <default>[
+        'action-icons',
+        'actions',
+        'body',
+        'body-hyperlinks',
+        'body-images',
+        'body-markup',
+        'icon-static',
+        'persistence',
+        'sound'
+      ]</default>
+    </key>
+  </schema>
+</schemalist>

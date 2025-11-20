@@ -33,11 +33,9 @@ the initial data has been loaded.
 import Wp from "gi://AstalWp"
 
 const wp = Wp.get_default()
-const default_speaker = wp.audio.default_speaker;
+const default_speaker = wp.audio.default_speaker
 
-wp.connect("ready", () => {
-    print(default_speaker.volume)
-}
+print(default_speaker.volume)
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
@@ -57,7 +55,10 @@ print(audio.default_speaker.volume)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var wp = AstalWp.get_default();
+var default_speaker = wp.audio.default_speaker;
+
+print(default_speaker.volume);
 ```
 
 :::
@@ -66,32 +67,32 @@ print(audio.default_speaker.volume)
 
 1. install dependencies
 
-   :::code-group
+    :::code-group
 
-   ```sh [<i class="devicon-archlinux-plain"></i> Arch]
-   sudo pacman -Syu meson vala valadoc wireplumber gobject-introspection
-   ```
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson vala valadoc wireplumber gobject-introspection
+    ```
 
-   ```sh [<i class="devicon-fedora-plain"></i> Fedora]
-   sudo dnf install meson vala valadoc wireplumber-devel gobject-introspection-devel
-   ```
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson vala valadoc wireplumber-devel gobject-introspection-devel
+    ```
 
-   ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-   # Not yet documented
-   ```
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    # Not yet documented
+    ```
 
-   :::
+    :::
 
 2. clone repo
 
-   ```sh
-   git clone https://github.com/aylur/astal.git
-   cd astal/lib/wireplumber
-   ```
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/wireplumber
+    ```
 
 3. install
 
-   ```sh
-   meson setup build
-   meson install -C build
-   ```
+    ```sh
+    meson setup build
+    meson install -C build
+    ```
