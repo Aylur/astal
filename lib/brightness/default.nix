@@ -1,10 +1,13 @@
-{ mkAstalPkg, ... }:
+{
+  mkAstalPkg,
+  ...
+}:
 mkAstalPkg {
   pname = "astal-brightness";
   src = ./.;
 
   libname = "brightness";
-  authors = "brainlessbitch";
   gir-suffix = "Brightness";
+  authors = "brainlessbitch";
   description = "Backlight brightness control";
 }

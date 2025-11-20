@@ -11,7 +11,9 @@ project(
   ],
 )
 
-version_split = meson.project_version().split('.')
+version = meson.project_version()
+name = meson.project_name()
+version_split = version.split('.')
 api_version = version_split[0] + '.' + version_split[1]
 gir = 'AstalBrightness-' + api_version + '.gir'
 typelib = 'AstalBrightness-' + api_version + '.typelib'
@@ -21,7 +23,7 @@ config = configure_file(
   output: 'config.vala',
   configuration: {
     'API_VERSION': api_version,
-    'VERSION': meson.project_version(),
+    'VERSION': version,
     'MAJOR_VERSION': version_split[0],
     'MINOR_VERSION': version_split[1],
     'MICRO_VERSION': version_split[2],
@@ -43,9 +45,9 @@ lib = library(
   sources,
   dependencies: deps,
   vala_args: ['--vapi-comments'],
-  vala_header: meson.project_name() + '.h',
-  vala_vapi: meson.project_name() + '-' + api_version + '.vapi',
-  version: meson.project_version(),
+  vala_header: name + '.h',
+  vala_vapi: name + '-' + api_version + '.vapi',
+  version: version,
   install: true,
   install_dir: [true, true, true],
 )
@@ -57,9 +59,13 @@ endforeach
 
 gir_tgt = custom_target(
   gir,
-  command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-  + pkgs
-  + sources,
+  command: [
+    find_program('python3'),
+    files('gir.py'),
+    '--name', name,
+    '--gir', gir,
+    sources,
+  ],
   input: sources,
   depends: lib,
   output: gir,
@@ -84,10 +90,10 @@ custom_target(
 
 import('pkgconfig').generate(
   lib,
-  name: meson.project_name(),
-  filebase: meson.project_name() + '-' + api_version,
-  version: meson.project_version(),
-  subdirs: meson.project_name(),
+  name: name,
+  filebase: name + '-' + api_version,
+  version: version,
+  subdirs: name,
   requires: deps,
   install_dir: get_option('libdir') / 'pkgconfig',
 )
