@@ -1,4 +1,4 @@
-public class Astal.CenterBox : Gtk.Box {
+public class Astal.CenterBox : Gtk.Box, Gtk.Buildable {
     /**
      * Corresponds to [property@Gtk.Orientable :orientation].
      */
@@ -50,6 +50,27 @@ public class Astal.CenterBox : Gtk.Box {
 
             if (value != null)
                 set_center_widget(value);
+        }
+    }
+
+    void add_child(Gtk.Builder builder, Object child, string? type) {
+        if (child is Gtk.Widget) {
+            switch (type) {
+                case "start":
+                    start_widget = child as Gtk.Widget;
+                    break;
+                case "center":
+                    center_widget = child as Gtk.Widget;
+                    break;
+                case "end":
+                    end_widget = child as Gtk.Widget;
+                    break;
+                default:
+                    base.add_child(builder, child, type);
+                    break;
+            }
+        } else {
+            base.add_child(builder, child, type);
         }
     }
 }

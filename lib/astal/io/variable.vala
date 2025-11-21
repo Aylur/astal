@@ -2,6 +2,7 @@
  * Base class for [class@AstalIO.Variable] mainly meant to be used
  * in higher level language bindings such as Lua and Gjs.
  */
+[Version (deprecated = true, deprecated_since="", replacement="")]
 public class AstalIO.VariableBase : Object {
     public signal void changed ();
     public signal void dropped ();
@@ -17,6 +18,7 @@ public class AstalIO.VariableBase : Object {
     }
 }
 
+[Version (deprecated = true, deprecated_since="", replacement="")]
 public class AstalIO.Variable : VariableBase {
     public Value value { owned get; set; }
 
@@ -172,7 +174,7 @@ public class AstalIO.Variable : VariableBase {
         return_if_fail(watch_proc == null);
         return_if_fail(watch_exec != null);
 
-        watch_proc = new Process.subprocessv(watch_exec);
+        watch_proc = Process.subprocessv(watch_exec);
         watch_proc.stdout.connect((str) => set_closure(str, watch_transform));
         watch_proc.stderr.connect((str) => this.error(str));
     }

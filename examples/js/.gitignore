@@ -1,6 +1,0 @@
-@girs/
-tsconfig.json
-env.d.ts
-dist/
-package.json
-package-lock.json

@@ -1,49 +1,12 @@
 # Power Profiles
 
-Library and CLI tool for monitoring [upowerd](https://upower.freedesktop.org/) powerprofiles.
-
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala json-glib gobject-introspection
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc valac json-glib-devel gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac libjson-glib-dev gobject-introspection
-```
-
-:::
-
-::: info
-Although UPower is not a direct build dependency,
-it should be self-explanatory that the daemon is required to be available at runtime.
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/powerprofiles
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
+Library and CLI tool for monitoring [upowerd](https://upower.freedesktop.org/)
+powerprofiles.
 
 ## Usage
 
-You can browse the [PowerProfiles reference](https://aylur.github.io/libastal/powerprofiles).
+You can browse the
+[PowerProfiles reference](https://aylur.github.io/libastal/powerprofiles).
 
 ### CLI
 
@@ -80,7 +43,50 @@ print(powerprofiles.active_profile)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var powerprofiles = AstalPowerProfiles.get_default();
+
+print(powerprofiles.activeProfile);
 ```
 
 :::
+
+## Installation
+
+1. install dependencies
+
+    :::code-group
+
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
+    ```
+
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
+    ```
+
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
+    ```
+
+    :::
+
+    ::: info
+
+    Although UPower is not a direct build dependency, it should be
+    self-explanatory that the daemon is required to be available at runtime.
+
+    :::
+
+2. clone repo
+
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/powerprofiles
+    ```
+
+3. install
+
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

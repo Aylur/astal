@@ -58,7 +58,6 @@ static GParamSpec *astal_auth_pam_properties[ASTAL_AUTH_PAM_N_PROPERTIES] = {
 G_DEFINE_TYPE_WITH_PRIVATE(AstalAuthPam, astal_auth_pam, G_TYPE_OBJECT);
 
 /**
- *
  * AstalAuthPam
  *
  * For simple authentication using only a password, using the [func@AstalAuth.Pam.authenticate]

@@ -6,7 +6,8 @@ type Args = {
     err?: (stderr: string) => void
 }
 
-export const { Process } = Astal
+export type Process = Astal.Process
+export const Process = Astal.Process
 
 export function subprocess(args: Args): Astal.Process
 
@@ -50,18 +51,15 @@ export function execAsync(cmd: string | string[]): Promise<string> {
             Astal.Process.exec_asyncv(cmd, (_, res) => {
                 try {
                     resolve(Astal.Process.exec_asyncv_finish(res))
-                }
-                catch (error) {
+                } catch (error) {
                     reject(error)
                 }
             })
-        }
-        else {
+        } else {
             Astal.Process.exec_async(cmd, (_, res) => {
                 try {
                     resolve(Astal.Process.exec_finish(res))
-                }
-                catch (error) {
+                } catch (error) {
                     reject(error)
                 }
             })

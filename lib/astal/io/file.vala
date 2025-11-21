@@ -2,6 +2,7 @@ namespace AstalIO {
 /**
  * Read the contents of a file synchronously.
  */
+[Version (deprecated = true)]
 public string read_file(string path) {
     var str = "";
     try {
@@ -15,6 +16,7 @@ public string read_file(string path) {
 /**
  * Read the contents of a file asynchronously.
  */
+[Version (deprecated = true)]
 public async string read_file_async(string path) throws Error {
     uint8[] content;
     yield File.new_for_path(path).load_contents_async(null, out content, null);
@@ -24,9 +26,22 @@ public async string read_file_async(string path) throws Error {
 /**
  * Write content to a file synchronously.
  */
+[Version (deprecated = true)]
 public void write_file(string path, string content) {
     try {
-        FileUtils.set_contents(path, content);
+        var dir = Path.get_dirname(path);
+        if (!FileUtils.test(dir, FileTest.IS_DIR)) {
+            File.new_for_path(dir).make_directory_with_parents(null);
+        }
+
+        File.new_for_path(path).replace_contents(
+            content.data,
+            null,
+            false,
+            FileCreateFlags.NONE,
+            null,
+            null
+        );
     } catch (Error error) {
         critical(error.message);
     }
@@ -35,14 +50,21 @@ public void write_file(string path, string content) {
 /**
  * Write content to a file asynchronously.
  */
+[Version (deprecated = true)]
 public async void write_file_async(string path, string content) throws Error {
+    var dir = Path.get_dirname(path);
+    if (!FileUtils.test(dir, FileTest.IS_DIR)) {
+        File.new_for_path(dir).make_directory_with_parents(null);
+    }
+
     yield File.new_for_path(path).replace_contents_async(
         content.data,
         null,
         false,
-        FileCreateFlags.REPLACE_DESTINATION,
+        FileCreateFlags.NONE,
         null,
-        null);
+        null
+    );
 }
 
 /**
@@ -50,10 +72,15 @@ public async void write_file_async(string path, string content) throws Error {
  * The callback will be called passed two parameters: the path of the file
  * that changed and an [enum@Gio.FileMonitorEvent] indicating the reason.
  */
+[Version (deprecated = true)]
 public FileMonitor? monitor_file(string path, Closure callback) {
     try {
         var file = File.new_for_path(path);
-        var mon = file.monitor(FileMonitorFlags.NONE);
+        var mon = file.monitor(
+            FileMonitorFlags.WATCH_HARD_LINKS |
+            FileMonitorFlags.WATCH_MOUNTS |
+            FileMonitorFlags.WATCH_MOVES
+        );
 
         mon.changed.connect((file, _file, event) => {
             var f = Value(Type.STRING);
@@ -75,7 +102,7 @@ public FileMonitor? monitor_file(string path, Closure callback) {
                 if (i.get_file_type() == FileType.DIRECTORY) {
                     var filepath = file.get_child(i.get_name()).get_path();
                     if (filepath != null) {
-                        var m = monitor_file(path, callback);
+                        var m = monitor_file(filepath, callback);
                         mon.notify["cancelled"].connect(() => {
                             m.cancel();
                         });

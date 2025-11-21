@@ -47,28 +47,34 @@ public enum Astal.Keymode {
  * Subclass of [class@Gtk.Window] which integrates GtkLayerShell as class fields.
  */
 public class Astal.Window : Gtk.Window {
-    private static bool check(string action) {
+    private InhibitManager? inhibit_manager;
+    private Inhibitor? inhibitor;
+
+    /**
+     * Get the current [class@Gdk.Monitor] this window resides in.
+     */
+    public Gdk.Monitor get_current_monitor() {
+        return Gdk.Display.get_default().get_monitor_at_window(base.get_window());
+    }
+
+    private bool check(string action) {
         if (!is_supported()) {
             critical(@"can not $action on window: layer shell not supported");
             print("tip: running from an xwayland terminal can cause this, for example VsCode");
             return true;
         }
+        if (!is_layer_window(this)) {
+            init_for_window(this);
+        }
         return false;
     }
 
-    private InhibitManager? inhibit_manager;
-    private Inhibitor? inhibitor;
-
     construct {
-        if (check("initialize layer shell"))
-            return;
-
-        // If the window has no size allocatoted when it gets mapped.
+        // If the window has no size allocatoted when it gets mapped
         // It won't show up later either when it size changes by adding children.
         height_request = 1;
         width_request = 1;
-
-        init_for_window(this);
+        check("initialize layer shell");
         inhibit_manager = InhibitManager.get_default();
     }
 
@@ -124,7 +130,7 @@ public class Astal.Window : Gtk.Window {
             set_anchor(this, Edge.RIGHT, WindowAnchor.RIGHT in value);
         }
         get {
-            var a = WindowAnchor.NONE;
+            var a = 0;
             if (get_anchor(this, Edge.TOP))
                 a = a | WindowAnchor.TOP;
 
@@ -136,6 +142,9 @@ public class Astal.Window : Gtk.Window {
 
             if (get_anchor(this, Edge.BOTTOM))
                 a = a | WindowAnchor.BOTTOM;
+
+            if (a == 0)
+                return WindowAnchor.NONE;
 
             return a;
         }

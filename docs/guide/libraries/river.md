@@ -1,40 +1,7 @@
 # River
 
-Library and CLI tool for monitoring the [River Wayland Compositor](https://isaacfreund.com/software/river/).
-
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson json-glib gobject-introspection
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson gcc json-glib-devel gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson libjson-glib-dev gobject-introspection
-```
-
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/river
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
+Library and CLI tool for monitoring the
+[River Wayland Compositor](https://isaacfreund.com/software/river/).
 
 ## Usage
 
@@ -80,7 +47,45 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var river = AstalRiver.get_default();
+
+foreach (var output in river.get_outputs()) {
+    print(output.name);
+}
 ```
 
 :::
+
+## Installation
+
+1. install dependencies
+
+    :::code-group
+
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson json-glib gobject-introspection
+    ```
+
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson gcc json-glib-devel gobject-introspection-devel
+    ```
+
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson libjson-glib-dev gobject-introspection
+    ```
+
+    :::
+
+2. clone repo
+
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/river
+    ```
+
+3. install
+
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

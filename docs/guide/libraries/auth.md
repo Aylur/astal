@@ -1,51 +1,7 @@
 # Auth
 
-Library and CLI tool for authentication using [pam](https://github.com/linux-pam/linux-pam).
-
-## Installation
-
-1. install dependencies
-
-:::code-group
-
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson pam gobject-introspection
-```
-
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson pam-devel gobject-introspection-devel
-```
-
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-# Not yet documented
-```
-
-:::
-
-::: warning On NixOS you have to add `astal-auth` to `security.pam`.
-::: code-group
-
-```nix [configuration.nix]
-{
-  security.pam.services.astal-auth = {}
-}
-```
-
-:::
-
-2. clone repo
-
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/auth
-```
-
-3. install
-
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
+Library and CLI tool for authentication using
+[pam](https://github.com/linux-pam/linux-pam).
 
 ## Usage
 
@@ -101,7 +57,58 @@ end)
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+AstalAuth.Pam.authenticate.begin("password", (_, task) => {
+    try {
+        AstalAuth.Pam.authenticate.end(task);
+    print("authentication sucessful\n");
+    } catch (Error error) {
+        print(error.message);
+    }
+});
 ```
 
 :::
+
+## Installation
+
+1. install dependencies
+
+    :::code-group
+
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson pam gobject-introspection
+    ```
+
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson pam-devel gobject-introspection-devel
+    ```
+
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    # Not yet documented
+    ```
+
+    :::
+
+    > [!WARNING] On NixOS you have to add `astal-auth` to `security.pam`.
+    >
+    > ::: code-group
+    >
+    > ```nix [configuration.nix]
+    > { security.pam.services.astal-auth = {} }
+    > ```
+    >
+    > :::
+
+2. clone repo
+
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/auth
+    ```
+
+3. install
+
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

@@ -44,7 +44,8 @@ jobs:
       - name: Clean and Copy Files
         run: |
           rm -rf dist/libastal
-          cp -r src/result/libastal dist/libastal
+          mkdir dist/libastal
+          cp -r src/result/* dist/libastal
 
       - name: Push to Pages Repo
         run: |

@@ -13,9 +13,6 @@ project(
 
 version_split = meson.project_version().split('.')
 
-vapi_dir = meson.current_source_dir() / 'vapi'
-add_project_arguments(['--vapidir', vapi_dir], language: 'vala')
-
 deps = [
   dependency('glib-2.0'),
   dependency('gio-2.0'),

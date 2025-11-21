@@ -1,43 +1,21 @@
 import Gtk from "gi://Gtk?version=3.0"
-import { mergeBindings, type BindableChild } from "./astalify.js"
+import { type BindableChild } from "./astalify.js"
+import { mergeBindings, jsx as _jsx } from "../_astal.js"
 import * as Widget from "./widget.js"
-
-function isArrowFunction(func: any): func is (args: any) => any {
-    return !Object.hasOwn(func, "prototype")
-}
 
 export function Fragment({ children = [], child }: {
     child?: BindableChild
     children?: Array<BindableChild>
 }) {
-    return mergeBindings([...children, child])
+    if (child) children.push(child)
+    return mergeBindings(children)
 }
 
 export function jsx(
     ctor: keyof typeof ctors | typeof Gtk.Widget,
-    { children, ...props }: any,
+    props: any,
 ) {
-    children ??= []
-
-    if (!Array.isArray(children))
-        children = [children]
-
-    children = children.filter(Boolean)
-
-    if (children.length === 1)
-        props.child = children[0]
-    else if (children.length > 1)
-        props.children = children
-
-    if (typeof ctor === "string") {
-        return new ctors[ctor](props)
-    }
-
-    if (isArrowFunction(ctor))
-        return ctor(props)
-
-    // @ts-expect-error can be class or function
-    return new ctor(props)
+    return _jsx(ctors, ctor as any, props)
 }
 
 const ctors = {
@@ -54,6 +32,7 @@ const ctors = {
     label: Widget.Label,
     levelbar: Widget.LevelBar,
     // TODO: listbox
+    menubutton: Widget.MenuButton,
     overlay: Widget.Overlay,
     revealer: Widget.Revealer,
     scrollable: Widget.Scrollable,
@@ -82,6 +61,7 @@ declare global {
             label: Widget.LabelProps
             levelbar: Widget.LevelBarProps
             // TODO: listbox
+            menubutton: Widget.MenuButtonProps
             overlay: Widget.OverlayProps
             revealer: Widget.RevealerProps
             scrollable: Widget.ScrollableProps

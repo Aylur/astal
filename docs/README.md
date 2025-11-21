@@ -1,7 +1,8 @@
 # Astal Docs
 
-This directory contains the Astal documentation and Library references.
-Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.github.io/libastal](https://aylur.github.io/libastal/)
+This directory contains the Astal documentation and Library references. Hosted
+at [aylur.github.io/astal](https://aylur.github.io/astal/) and
+[aylur.github.io/libastal](https://aylur.github.io/libastal/)
 
 ## Commands
 
