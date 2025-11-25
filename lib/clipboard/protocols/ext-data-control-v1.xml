@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<protocol name="wlr_data_control_unstable_v1">
+<protocol name="ext_data_control_v1">
   <copyright>
     Copyright © 2018 Simon Ser
     Copyright © 2019 Ivan Molodetskikh
+    Copyright © 2024 Neal Gompa
 
     Permission to use, copy, modify, distribute, and sell this
     software and its documentation for any purpose is hereby granted
@@ -31,20 +32,13 @@
     particular, the client will be able to manage the current selection and take
     the role of a clipboard manager.
 
-    Warning! The protocol described in this file is experimental and
-    backward incompatible changes may be made. Backward compatible changes
-    may be added together with the corresponding interface version bump.
-    Backward incompatible changes are done by bumping the version number in
-    the protocol and interface names and resetting the interface version.
-    Once the protocol is to be declared stable, the 'z' prefix and the
-    version number in the protocol and interface names are removed and the
-    interface version number is reset.
-
-    Note! This protocol is deprecated and not intended for production use.
-    For clipboard management, use the ext-data-control-v1 protocol.
+    Warning! The protocol described in this file is currently in the testing
+    phase. Backward compatible changes may be added together with the
+    corresponding interface version bump. Backward incompatible changes can
+    only be done by creating a new major version of the extension.
   </description>
 
-  <interface name="zwlr_data_control_manager_v1" version="2">
+  <interface name="ext_data_control_manager_v1" version="1">
     <description summary="manager to control data devices">
       This interface is a manager that allows creating per-seat data device
       controls.
@@ -54,7 +48,7 @@
       <description summary="create a new data source">
         Create a new data source.
       </description>
-      <arg name="id" type="new_id" interface="zwlr_data_control_source_v1"
+      <arg name="id" type="new_id" interface="ext_data_control_source_v1"
         summary="data source to create"/>
     </request>
 
@@ -62,7 +56,7 @@
       <description summary="get a data device for a seat">
         Create a data device that can be used to manage a seat's selection.
       </description>
-      <arg name="id" type="new_id" interface="zwlr_data_control_device_v1"/>
+      <arg name="id" type="new_id" interface="ext_data_control_device_v1"/>
       <arg name="seat" type="object" interface="wl_seat"/>
     </request>
 
@@ -74,7 +68,7 @@
     </request>
   </interface>
 
-  <interface name="zwlr_data_control_device_v1" version="2">
+  <interface name="ext_data_control_device_v1" version="1">
     <description summary="manage a data device for a seat">
       This interface allows a client to manage a seat's selection.
 
@@ -88,11 +82,11 @@
 
         The given source may not be used in any further set_selection or
         set_primary_selection requests. Attempting to use a previously used
-        source is a protocol error.
+        source triggers the used_source protocol error.
 
         To unset the selection, set the source to NULL.
       </description>
-      <arg name="source" type="object" interface="zwlr_data_control_source_v1"
+      <arg name="source" type="object" interface="ext_data_control_source_v1"
         allow-null="true"/>
     </request>
 
@@ -103,35 +97,36 @@
     </request>
 
     <event name="data_offer">
-      <description summary="introduce a new wlr_data_control_offer">
-        The data_offer event introduces a new wlr_data_control_offer object,
+      <description summary="introduce a new ext_data_control_offer">
+        The data_offer event introduces a new ext_data_control_offer object,
         which will subsequently be used in either the
-        wlr_data_control_device.selection event (for the regular clipboard
-        selections) or the wlr_data_control_device.primary_selection event (for
+        ext_data_control_device.selection event (for the regular clipboard
+        selections) or the ext_data_control_device.primary_selection event (for
         the primary clipboard selections). Immediately following the
-        wlr_data_control_device.data_offer event, the new data_offer object
-        will send out wlr_data_control_offer.offer events to describe the MIME
+        ext_data_control_device.data_offer event, the new data_offer object
+        will send out ext_data_control_offer.offer events to describe the MIME
         types it offers.
       </description>
-      <arg name="id" type="new_id" interface="zwlr_data_control_offer_v1"/>
+      <arg name="id" type="new_id" interface="ext_data_control_offer_v1"/>
     </event>
 
     <event name="selection">
       <description summary="advertise new selection">
         The selection event is sent out to notify the client of a new
-        wlr_data_control_offer for the selection for this device. The
-        wlr_data_control_device.data_offer and the wlr_data_control_offer.offer
+        ext_data_control_offer for the selection for this device. The
+        ext_data_control_device.data_offer and the ext_data_control_offer.offer
         events are sent out immediately before this event to introduce the data
         offer object. The selection event is sent to a client when a new
-        selection is set. The wlr_data_control_offer is valid until a new
-        wlr_data_control_offer or NULL is received. The client must destroy the
-        previous selection wlr_data_control_offer, if any, upon receiving this
-        event.
+        selection is set. The ext_data_control_offer is valid until a new
+        ext_data_control_offer or NULL is received. The client must destroy the
+        previous selection ext_data_control_offer, if any, upon receiving this
+        event. Regardless, the previous selection will be ignored once a new
+        selection ext_data_control_offer is received.
 
         The first selection event is sent upon binding the
-        wlr_data_control_device object.
+        ext_data_control_device object.
       </description>
-      <arg name="id" type="object" interface="zwlr_data_control_offer_v1"
+      <arg name="id" type="object" interface="ext_data_control_offer_v1"
         allow-null="true"/>
     </event>
 
@@ -142,63 +137,63 @@
       </description>
     </event>
 
-    <!-- Version 2 additions -->
-
-    <event name="primary_selection" since="2">
+    <event name="primary_selection">
       <description summary="advertise new primary selection">
         The primary_selection event is sent out to notify the client of a new
-        wlr_data_control_offer for the primary selection for this device. The
-        wlr_data_control_device.data_offer and the wlr_data_control_offer.offer
+        ext_data_control_offer for the primary selection for this device. The
+        ext_data_control_device.data_offer and the ext_data_control_offer.offer
         events are sent out immediately before this event to introduce the data
         offer object. The primary_selection event is sent to a client when a
-        new primary selection is set. The wlr_data_control_offer is valid until
-        a new wlr_data_control_offer or NULL is received. The client must
-        destroy the previous primary selection wlr_data_control_offer, if any,
-        upon receiving this event.
+        new primary selection is set. The ext_data_control_offer is valid until
+        a new ext_data_control_offer or NULL is received. The client must
+        destroy the previous primary selection ext_data_control_offer, if any,
+        upon receiving this event. Regardless, the previous primary selection
+        will be ignored once a new primary selection ext_data_control_offer is
+        received.
 
         If the compositor supports primary selection, the first
         primary_selection event is sent upon binding the
-        wlr_data_control_device object.
+        ext_data_control_device object.
       </description>
-      <arg name="id" type="object" interface="zwlr_data_control_offer_v1"
+      <arg name="id" type="object" interface="ext_data_control_offer_v1"
         allow-null="true"/>
     </event>
 
-    <request name="set_primary_selection" since="2">
+    <request name="set_primary_selection">
       <description summary="copy data to the primary selection">
         This request asks the compositor to set the primary selection to the
         data from the source on behalf of the client.
 
         The given source may not be used in any further set_selection or
         set_primary_selection requests. Attempting to use a previously used
-        source is a protocol error.
+        source triggers the used_source protocol error.
 
         To unset the primary selection, set the source to NULL.
 
         The compositor will ignore this request if it does not support primary
         selection.
       </description>
-      <arg name="source" type="object" interface="zwlr_data_control_source_v1"
+      <arg name="source" type="object" interface="ext_data_control_source_v1"
         allow-null="true"/>
     </request>
 
-    <enum name="error" since="2">
+    <enum name="error">
       <entry name="used_source" value="1"
         summary="source given to set_selection or set_primary_selection was already used before"/>
     </enum>
   </interface>
 
-  <interface name="zwlr_data_control_source_v1" version="1">
+  <interface name="ext_data_control_source_v1" version="1">
     <description summary="offer to transfer data">
-      The wlr_data_control_source object is the source side of a
-      wlr_data_control_offer. It is created by the source client in a data
+      The ext_data_control_source object is the source side of a
+      ext_data_control_offer. It is created by the source client in a data
       transfer and provides a way to describe the offered data and a way to
       respond to requests to transfer the data.
     </description>
 
     <enum name="error">
       <entry name="invalid_offer" value="1"
-        summary="offer sent after wlr_data_control_device.set_selection"/>
+        summary="offer sent after ext_data_control_device.set_selection"/>
     </enum>
 
     <request name="offer">
@@ -206,7 +201,7 @@
         This request adds a MIME type to the set of MIME types advertised to
         targets. Can be called several times to offer multiple types.
 
-        Calling this after wlr_data_control_device.set_selection is a protocol
+        Calling this after ext_data_control_device.set_selection is a protocol
         error.
       </description>
       <arg name="mime_type" type="string"
@@ -238,9 +233,9 @@
     </event>
   </interface>
 
-  <interface name="zwlr_data_control_offer_v1" version="1">
+  <interface name="ext_data_control_offer_v1" version="1">
     <description summary="offer to transfer data">
-      A wlr_data_control_offer represents a piece of data offered for transfer
+      A ext_data_control_offer represents a piece of data offered for transfer
       by another client (the source client). The offer describes the different
       MIME types that the data can be converted to and provides the mechanism
       for transferring the data directly from the source client.
@@ -272,7 +267,7 @@
 
     <event name="offer">
       <description summary="advertise offered MIME type">
-        Sent immediately after creating the wlr_data_control_offer object.
+        Sent immediately after creating the ext_data_control_offer object.
         One event per offered MIME type.
       </description>
       <arg name="mime_type" type="string" summary="offered MIME type"/>
