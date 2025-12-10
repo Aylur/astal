@@ -19,11 +19,11 @@ config = configure_file(
 )
 
 pkgconfig_deps = [
-  dependency('astal-io-0.1'),
-  dependency('glib-2.0'),
-  dependency('gio-unix-2.0'),
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
+  dependency('glib-2.0'),
+  dependency('astal-io-0.1'),
+  dependency('gio-unix-2.0'),
   dependency('gtk+-3.0'),
   dependency('gdk-pixbuf-2.0'),
   dependency('gtk-layer-shell-0'),
@@ -96,23 +96,24 @@ lib = library(
   install_dir: [true, true, true],
 )
 
-pkgs = []
-foreach dep : pkgconfig_deps
-  pkgs += ['--pkg=' + dep.name()]
-endforeach
-
 gir_tgt = custom_target(
   gir,
   command: [
     find_program('python3'),
     girpy,
-    meson.project_name(),
-    gir + ':src/' + gir,
-  ]
-  + pkgs
-  + vala_sources
-  + [meson.project_source_root() / 'src' / 'vapi' / 'AstalInhibitManager.vapi'],
-
+    '--name', meson.project_name(),
+    '--gir', gir + ':src/' + gir,
+    '--pkgs', ':'.join(
+      'astal-io-0.1',
+      'gio-unix-2.0',
+      'gtk+-3.0',
+      'gdk-pixbuf-2.0',
+      'gtk-layer-shell-0',
+      'wayland-client',
+    ),
+    vala_sources,
+    meson.project_source_root() / 'src' / 'vapi' / 'AstalInhibitManager.vapi',
+  ],
   input: sources,
   depends: lib,
   output: gir,

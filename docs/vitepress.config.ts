@@ -50,7 +50,6 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: "References", link: "/guide/libraries/references" },
-          { text: "IO", link: "https://aylur.github.io/libastal/io" },
           { text: "Astal3", link: "https://aylur.github.io/libastal/astal3" },
           { text: "Astal4", link: "https://aylur.github.io/libastal/astal4" },
           { text: "Apps", link: "/guide/libraries/apps" },

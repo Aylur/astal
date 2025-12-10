@@ -49,5 +49,5 @@ This example shows you how to get a TypeScript+Blueprint+Sass project going.
   ```
 
 - adding new typescript files requires no additional steps
-- adding new scss files requires no additional steps as long as they are imported from `main.scss`
+- adding new scss files requires no additional steps as long as they are imported from `style.scss`
 - adding new ui (blueprint) files will also have to be listed in `meson.build` and in `gresource.xml`

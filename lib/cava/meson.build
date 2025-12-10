@@ -22,7 +22,7 @@ install_headers('astal-cava.h')
 
 cava = dependency(
   'cava',
-  version: '>=0.10.3',
+  version: '>=0.10.6',
   required: true,
   fallback: ['cava', 'cava_dep'],
 )

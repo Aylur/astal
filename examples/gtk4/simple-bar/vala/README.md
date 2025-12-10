@@ -40,5 +40,5 @@ This example shows you how to get a Vala+Blueprint+Sass project going.
   ```
 
 - adding new vala files will also have to be listed in `meson.build`
-- adding new scss files requires no additional steps as long as they are imported from `main.scss`
+- adding new scss files requires no additional steps as long as they are imported from `style.scss`
 - adding new ui (blueprint) files will also have to be listed in `meson.build` and in `gresource.xml`

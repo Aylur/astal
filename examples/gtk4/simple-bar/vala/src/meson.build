@@ -19,12 +19,12 @@ dependencies = [
 ]
 
 blueprint_sources = files(
-  'ui/Bar.blp',
+  'bar/Bar.blp',
 )
 
 vala_sources = files(
-  'vala/Bar.vala',
-  'vala/App.vala',
+  'bar/Bar.vala',
+  'App.vala',
 )
 
 # transplie blueprints
@@ -44,9 +44,9 @@ ui = custom_target(
 # bundle scss files
 css = custom_target(
   'scss',
-  input: files('main.scss'),
+  input: files('style.scss'),
   command: [sass, '@INPUT@', '@OUTPUT@'],
-  output: ['main.css'],
+  output: ['style.css'],
 )
 
 # compiling data files into a binary

@@ -1,7 +1,8 @@
 # Astal Docs
 
-This directory contains the Astal documentation and Library references.
-Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.github.io/libastal](https://aylur.github.io/libastal/)
+This directory contains the Astal documentation and Library references. Hosted
+at [aylur.github.io/astal](https://aylur.github.io/astal/) and
+[aylur.github.io/libastal](https://aylur.github.io/libastal/)
 
 ## Commands
 
@@ -16,9 +17,9 @@ Hosted at [aylur.github.io/astal](https://aylur.github.io/astal/) and [aylur.git
 
 1. Add your image as a webp to `public/showcase`
 2. Add it to `showcases/showcases.ts`
-   - `src` should be `/astal/showcase/your-name-optional-title.webp`
-   - `url` should point to the source code of the showcased widget/setup
-   - `author` should be your name/nickname
+    - `src` should be `/astal/showcase/your-name-optional-title.webp`
+    - `url` should point to the source code of the showcased widget/setup
+    - `author` should be your name/nickname
 
 ```
 .

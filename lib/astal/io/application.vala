@@ -7,6 +7,7 @@ public errordomain AppError {
 /**
  * This interface is used internally in Astal3 and Astal4, not meant for public usage.
  */
+[Version (deprecated = true)]
 public interface Application : Object {
     public abstract void quit() throws Error;
     public abstract void inspector() throws Error;

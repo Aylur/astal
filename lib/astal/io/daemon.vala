@@ -1,4 +1,5 @@
 [DBus (name="io.Astal.Application")]
+[Version (deprecated = true)]
 public class AstalIO.Daemon : GLib.Application, AstalIO.Application {
     private SocketService service;
     private DBusConnection conn;

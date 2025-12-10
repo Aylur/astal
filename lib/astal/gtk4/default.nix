@@ -7,7 +7,7 @@ mkAstalPkg {
   pname = "astal4";
   src = ./.;
   packages = [
-    self.packages.${pkgs.system}.io
+    self.packages.${pkgs.stdenv.hostPlatform.system}.io
     pkgs.gtk4
     pkgs.gtk4-layer-shell
   ];

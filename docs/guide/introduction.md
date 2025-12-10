@@ -14,9 +14,9 @@ across different language ports. This marked the birth of Astal and the release
 of AGS v2.
 
 However, I mistakenly included frontend abstractions in Astal, which turned out
-to be a misstep. Over time, I lost interest in languages other than TypeScript.
-Eventually, I realized not only that, but also that the initial JSX
-implementation wasn’t well-suited for GTK4.
+to be a misstep. Over time, I also lost interest in Python and Lua. Eventually,
+I realized not only that, but also that the initial JSX implementation wasn’t
+well-suited for GTK4.
 
 After going through several iterations and decoupling the project from Astal,
 Gnim was created, leading to the emergence of AGS v3.
@@ -34,7 +34,7 @@ references to help you learn more about GTK and the Astal libraries.
 For a list of languages that support Gtk see
 [this wikipedia article](https://en.wikipedia.org/wiki/List_of_language_bindings_for_GTK).
 
-Interpreted languages like JavaScript and Python is supported out of the box
+Interpreted languages like JavaScript and Python are supported out of the box
 while some compiled languages might need extra work to make use of Astal
 libraries.
 

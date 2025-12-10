@@ -7,7 +7,7 @@ python = find_program('python3', required: true)
 layer_shell = dependency('gtk4-layer-shell-0')
 
 blueprint_sources = files(
-  'ui/Bar.blp',
+  'bar/Bar.blp',
 )
 
 # transplie blueprints
@@ -27,9 +27,9 @@ ui = custom_target(
 # bundle styles
 css = custom_target(
   'scss',
-  input: files('main.scss'),
+  input: files('style.scss'),
   command: [sass, '@INPUT@', '@OUTPUT@'],
-  output: 'main.css',
+  output: 'style.css',
 )
 
 # compiling ui and css into a binary
@@ -43,7 +43,17 @@ import('gnome').compile_resources(
 )
 
 # install python sources
-install_subdir('py', install_dir: pkgdatadir)
+install_data(
+  'app/__init__.py',
+  'app/App.py',
+  install_dir: pkgdatadir / 'app',
+)
+
+install_data(
+  'bar/__init__.py',
+  'bar/Bar.py',
+  install_dir: pkgdatadir / 'bar',
+)
 
 # configure the main python entry file
 configure_file(

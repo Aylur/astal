@@ -19,8 +19,8 @@ config = configure_file(
 )
 
 deps = [
-  dependency('astal-io-0.1'),
   dependency('glib-2.0'),
+  dependency('astal-io-0.1'),
   dependency('gtk4'),
   dependency('gtk4-layer-shell-0'),
 ]
@@ -28,9 +28,9 @@ deps = [
 sources = [config] + files(
   'widget/bin.vala',
   'widget/box.vala',
+  'widget/gizmo.vala',
   'widget/slider.vala',
   'widget/window.vala',
-  'widget/gizmo.vala',
   'application.vala',
 )
 
@@ -56,11 +56,15 @@ gir_tgt = custom_target(
   command: [
     find_program('python3'),
     girpy,
-    meson.project_name(),
-    gir + ':src/' + gir,
-  ]
-  + pkgs
-  + sources,
+    '--name', meson.project_name(),
+    '--gir', gir + ':src/' + gir,
+    '--pkgs', ':'.join(
+      'astal-io-0.1',
+      'gtk4',
+      'gtk4-layer-shell-0',
+    ),
+    sources,
+  ],
   input: sources,
   depends: lib,
   output: gir,

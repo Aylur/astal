@@ -1,6 +1,7 @@
 /**
  * `Time` provides shortcuts for GLib timeout functions.
  */
+[Version (deprecated = true)]
 public class AstalIO.Time : Object {
     private Cancellable cancellable;
     private uint timeout_id;

@@ -4,17 +4,9 @@
 
 maintainer: [@kotontrion](https://github.com/kotontrion)
 
-:::code-group
-
-```sh [Core Library]
-yay -S libastal-io-git libastal-git
-```
-
 ```sh [Every Library]
 yay -S libastal-meta
 ```
-
-:::
 
 ## Nix
 

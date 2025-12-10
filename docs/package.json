@@ -18,6 +18,14 @@
   },
   "prettier": {
     "semi": false,
-    "proseWrap": "always"
+    "proseWrap": "always",
+    "overrides": [
+      {
+        "files": "**.md",
+        "options": {
+          "tabWidth": 4
+        }
+      }
+    ]
   }
 }

@@ -32,9 +32,9 @@ config = configure_file(
 
 deps = [
   dependency('glib-2.0'),
-  dependency('gio-unix-2.0'),
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
+  dependency('gio-unix-2.0'),
 ]
 
 sources = [config] + files(
@@ -58,16 +58,16 @@ lib = library(
   install_dir: [true, true, true],
 )
 
-pkgs = []
-foreach dep : deps
-  pkgs += ['--pkg=' + dep.name()]
-endforeach
-
 gir_tgt = custom_target(
   gir,
-  command: [find_program('python3'), files('gir.py'), meson.project_name(), gir]
-  + pkgs
-  + sources,
+  command: [
+    find_program('python3'),
+    files('gir.py'),
+    '--name', meson.project_name(),
+    '--gir', gir,
+    '--pkgs', 'gio-unix-2.0',
+    sources,
+  ],
   input: sources,
   depends: lib,
   output: gir,
