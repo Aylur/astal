@@ -514,8 +514,8 @@ static void astal_wp_wp_core_connected(AstalWpWp *self) {
                                               WP_OBJECT_FEATURES_ALL);
 
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_NODE, WP_CONSTRAINT_TYPE_PW_PROPERTY,
-                                   "media.class", "c(ssss)", "Audio/Sink", "Audio/Source",
-                                   "Stream/Output/Audio", "Stream/Input/Audio", NULL);
+                                   "media.class", "c(sssss)", "Audio/Sink", "Audio/Source",
+                                   "Audio/Source/Virtual", "Stream/Output/Audio", "Stream/Input/Audio", NULL);
     wp_object_manager_add_interest(priv->obj_manager, WP_TYPE_DEVICE,
                                    WP_CONSTRAINT_TYPE_PW_GLOBAL_PROPERTY, "media.class", "=s",
                                    "Audio/Device", NULL);

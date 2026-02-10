@@ -24,15 +24,16 @@ typedef enum {
 } AstalWpAvailable;
 
 typedef enum {
-    ASTAL_WP_MEDIA_CLASS_UNKNOWN,          /*< nick=Unknown >*/
-    ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE, /*< nick=Audio-Source >*/
-    ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER,    /*< nick=Audio-Sink >*/
-    ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER,   /*< nick=Stream-Input-Audio >*/
-    ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM,     /*< nick=Stream-Output-Audio >*/
-    ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE,     /*< nick=Video-Source >*/
-    ASTAL_WP_MEDIA_CLASS_VIDEO_SINK,       /*< nick=Video-Sink >*/
-    ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER,   /*< nick=Stream-Input-Video >*/
-    ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM,     /*< nick=Stream-Output-Video >*/
+    ASTAL_WP_MEDIA_CLASS_UNKNOWN,               /*< nick=Unknown >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE,      /*< nick=Audio-Source >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER,         /*< nick=Audio-Sink >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER,        /*< nick=Stream-Input-Audio >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM,          /*< nick=Stream-Output-Audio >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE,          /*< nick=Video-Source >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_SINK,            /*< nick=Video-Sink >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER,        /*< nick=Stream-Input-Video >*/
+    ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM,          /*< nick=Stream-Output-Video >*/
+    ASTAL_WP_MEDIA_CLASS_AUDIO_SOURCE_VIRTUAL,  /*< nick=Audio-Source-Virtual >*/
 } AstalWpMediaClass;
 
 AstalWpMediaClass astal_wp_media_class_from_string(const gchar* string);
