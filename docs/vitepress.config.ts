@@ -59,6 +59,10 @@ export default defineConfig({
           { text: "Cava", link: "/guide/libraries/cava" },
           { text: "Greet", link: "/guide/libraries/greet" },
           { text: "Hyprland", link: "/guide/libraries/hyprland" },
+          {
+            text: "Hyprland Focus Grab",
+            link: "/guide/libraries/hyprland-focus-grab",
+          },
           { text: "Mpris", link: "/guide/libraries/mpris" },
           { text: "Network", link: "/guide/libraries/network" },
           { text: "Notifd", link: "/guide/libraries/notifd" },
