@@ -73,7 +73,7 @@ public class GrabContext : Object {
         }
     }
 
-    public signal void click_away();
+    public signal void cleared();
 
     private static void call_handle_realized(Gtk.Window window, GrabContext self) {
         self.handle_realized(window);
@@ -92,7 +92,7 @@ public class GrabContext : Object {
 
     private void handle_cleared() {
         active = false;
-        click_away();
+        cleared();
     }
 }
 }
