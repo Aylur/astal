@@ -44,16 +44,6 @@ internal class Grab : Object {
         wl_grab.commit();
     }
 
-    /**
-     * Destroy the underlying Wayland object, making this grab inert.
-     */
-    public void destroy() {
-        if (wl_grab == null) {
-            return;
-        }
-        wl_grab = null;
-    }
-
     private void handle_cleared() {
         cleared();
     }

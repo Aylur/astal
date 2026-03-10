@@ -93,16 +93,6 @@ public class GrabContext : Object {
         cleared();
     }
 
-    private unowned Wl.Surface? get_wl_surface_for_window(Gtk.Window window) {
-        var surf = window.get_surface();
-        if (surf == null) {
-            return null;
-        }
-        var wayland_surf = surf as Gdk.Wayland.Surface;
-        if (wayland_surf == null) {
-            critical("Not a Wayland surface");
-        }
-        return wayland_surf.get_wl_surface();
-    }
+    private extern static unowned Wl.Surface? get_wl_surface_for_window(Gtk.Window window);
 }
 }
