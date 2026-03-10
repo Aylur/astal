@@ -1,5 +1,5 @@
 namespace AstalHyprlandFocusGrab {
-public class Grab : Object {
+internal class Grab : Object {
     private HyprlandFocusGrabV1? wl_grab;
     private const HyprlandFocusGrabV1Listener grab_listener = {
         handle_cleared,
