@@ -15,15 +15,15 @@ public class GrabContext : Object {
         }
 
         set {
+            // create or destroy the grab
             if (value) {
                 if (grab != null) {
                     return;
                 }
-                // create a grab
                 assert_null(grab);
                 grab = new Grab();
                 windows.foreach((window) => {
-                        var surf = window.get_surface();
+                        unowned var surf = get_wl_surface_for_window(window);
                         if (surf != null) {
                             grab.add(surf);
                         }
@@ -34,8 +34,6 @@ public class GrabContext : Object {
                 if (grab == null) {
                     return;
                 }
-                // destroy the grab
-                grab.destroy();
                 grab = null;
             }
         }
@@ -51,7 +49,7 @@ public class GrabContext : Object {
         handlers.destroy = Signal.connect_object(window, "destroy", (Callback)call_destroy, this, 0);
         windows.set(window, handlers);
 
-        var surf = window.get_surface();
+        unowned var surf = get_wl_surface_for_window(window);
         if ((grab != null) && (surf != null)) {
             grab.add(surf);
             grab.commit();
@@ -66,7 +64,7 @@ public class GrabContext : Object {
         window.disconnect(handlers.realize);
         window.disconnect(handlers.destroy);
 
-        var surf = window.get_surface();
+        unowned var surf = get_wl_surface_for_window(window);
         if ((grab != null) && (surf != null)) {
             grab.remove(surf);
             grab.commit();
@@ -85,7 +83,7 @@ public class GrabContext : Object {
 
     private void handle_realized(Gtk.Window window) {
         if (grab != null) {
-            grab.add(window.get_surface());
+            grab.add(get_wl_surface_for_window(window));
             grab.commit();
         }
     }
@@ -93,6 +91,18 @@ public class GrabContext : Object {
     private void handle_cleared() {
         active = false;
         cleared();
+    }
+
+    private unowned Wl.Surface? get_wl_surface_for_window(Gtk.Window window) {
+        var surf = window.get_surface();
+        if (surf == null) {
+            return null;
+        }
+        var wayland_surf = surf as Gdk.Wayland.Surface;
+        if (wayland_surf == null) {
+            critical("Not a Wayland surface");
+        }
+        return wayland_surf.get_wl_surface();
     }
 }
 }

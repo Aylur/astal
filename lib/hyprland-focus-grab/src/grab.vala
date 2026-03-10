@@ -13,35 +13,24 @@ public class Grab : Object {
     /**
      * Add a surface to the grab. Doesn't take effect until commit() is called.
      */
-    public void add(Gdk.Surface surface) {
+    public void add(Wl.Surface surface) {
         if (wl_grab == null) {
             return;
         }
 
-        var wl_surface = surface as Gdk.Wayland.Surface;
-        if (wl_surface == null) {
-            critical("surface isn't a Wayland surface");
-            return;
-        }
-
-        wl_grab.add_surface(wl_surface.get_wl_surface());
+        wl_grab.add_surface(surface);
     }
 
     /**
      * Remove a surface from the grab. Doesn't take effect untill commit() is called.
      * Note that surfaces are removed automatically once they are unrealized.
      */
-    public void remove(Gdk.Surface surface) {
+    public void remove(Wl.Surface surface) {
         if (wl_grab == null) {
             return;
         }
 
-        var wl_surface = surface as Gdk.Wayland.Surface;
-        if (wl_surface == null) {
-            critical("surface isn't a Wayland surface");
-            return;
-        }
-        wl_grab.remove_surface(wl_surface.get_wl_surface());
+        wl_grab.remove_surface(surface);
     }
 
     /**
