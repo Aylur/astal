@@ -1,19 +1,48 @@
 namespace AstalWl {
 extern unowned Wl.Display get_wl_display();
 
+/**
+ * Describes a single Wayland global announced by `wl_registry`.
+ */
 public struct Global {
+    /**
+     * a unique numeric name
+     */
     uint32 name;
+    /**
+     * the interface name
+     */
     string interface;
+    /** 
+     * the supported version
+     */
     uint32 version;
 }
-
+/**
+ * Convenience wrapper for [func@AstalWl.Registry.get_default].
+ *
+ * Returns the singleton `Registry` instance that tracks all known
+ * globals, outputs, and seats on the connected Wayland display.
+ */
 public Registry get_default() {
     return Registry.get_default();
 }
-
+/**
+ * Wraps the Wayland `wl_registry` interface and
+ * keeps track of all announced globals, outputs and seats.
+ *
+ * It exposes high-level collections and lookup helpers and emits
+ * signals when globals, outputs or seats are added or removed.
+ */
 public class Registry : Object {
     private static Registry? instance;
 
+    /**
+     * Returns the singleton `Registry` instance.
+     *
+     * The first call connects to the Wayland display and sets up
+     * the underlying `wl_registry` listener.
+     */
     public static unowned Registry get_default() {
         if (instance == null) instance = new Registry();
         return instance;
@@ -24,32 +53,83 @@ public class Registry : Object {
     private unowned Wl.Display display;
     private ZxdgOutputManagerV1 output_manager;
 
+    /**
+     * Hash table of all known Wayland globals keyed by their numeric ID.
+     */
     public HashTable<uint32, Global?> globals;
+    
+    /**
+     * Returns a list of all known globals.
+     */
     public List<weak Global?> get_globals() {
         return this.globals.get_values();
     }
+    
+    /**
+     * Emitted whenever a new global is announced by the compositor.
+     */
     public signal void global_added(Global global);
+    
+    /**
+     * Emitted whenever a new global is removed by the compositor.
+     */
     public signal void global_removed(Global global);
-
+    
+    /**
+     * Hash table of all currently bound outputs keyed by their global ID.
+     */
     public HashTable<uint32, Output> outputs;
+
+    /**
+     * Returns a list of all known outputs.
+     */
     public List<weak Output> get_outputs() {
         return this.outputs.get_values();
     }
+
+    /**
+     * Emitted after a new [class@AstalWl.Output] has been created and bound.
+     */
     public signal void output_added(Output output);
+
+    /**
+     * Emitted just before an [class@AstalWl.Output] is removed from the List.
+     */
     public signal void output_removed(Output output);
 
+    /**
+     * Hash table of all currently bound seats keyed by their global ID.
+     */
     public HashTable<uint32, Seat> seats;
+
+    /**
+     * Returns a list of all known seats.
+     */
     public List<weak Seat> get_seats() {
         return this.seats.get_values();
     }
+
+    /**
+     * Emitted after a new [class@AstalWl.Seat] has been created and bound.
+     */
     public signal void seat_added(Seat seat);
+
+    /**
+     * Emitted just before a [class@AstalWl.Seat] is removed.
+     */
     public signal void seat_removed(Seat seat);
 
+    /**
+     * Returns the underlying `wl_registry` object.
+     */
     [GIR(visible = false)]
     public unowned Wl.Registry? get_registry() {
         return this.registry;
     }
 
+    /**
+    * Returns the underlying `wl_display` used by this registry.
+    */
     [GIR(visible = false)]
     public unowned Wl.Display? get_display() {
         return this.display;
@@ -95,6 +175,10 @@ public class Registry : Object {
         global_removed(global);
     }
 
+    /**
+    * Returns a list of globals, optionally filtered by interface name.
+    * If `null` is passed, all globals are returned.
+    */
     public List<Global?>? find_globals(string? @interface = null) {
         List<Global?> list = new List<Global?>();
 
@@ -108,14 +192,23 @@ public class Registry : Object {
         return list;
     }
 
+    /**
+    * Looks up a global by its numeric Iid.
+    */
     public Global? get_global_by_id(uint32 id) {
         return this.globals.lookup(id);
     }
-
+    
+    /**
+    * Looks up an output by its global id.
+    */
     public Output? get_output_by_id(uint32 id) {
         return this.outputs.lookup(id);
     }
-
+   
+   /**
+    * Looks up an output by its compositor-assigned name.
+    */
     public Output? get_output_by_name(string name) {
         HashTableIter<uint32, Output> iter = HashTableIter<uint32, Output>(this.outputs);
         unowned Output output;
@@ -126,7 +219,10 @@ public class Registry : Object {
         }
         return null;
     }
-
+  
+    /**
+    * Looks up an `Output` by its underlying `wl_output`.
+    */
     [GIR(visible = false)]
     public Output? get_output_by_wl_output(Wl.Output wl_output) {
         HashTableIter<uint32, Output> iter = HashTableIter<uint32, Output>(this.outputs);
@@ -143,11 +239,17 @@ public class Registry : Object {
         registry_handle_global_added,
         registry_handle_global_removed,
     };
-
+   
+    /**
+    * Looks up a seat by its global id.
+    */
     public Seat? get_seat_by_id(uint32 id) {
         return this.seats.lookup(id);
     }
 
+    /**
+    * Looks up a seat by its compositor-assigned name.
+    */
     public Seat? get_seat_by_name(string name) {
         HashTableIter<uint32, Seat> iter = HashTableIter<uint32, Seat?>(this.seats);
         unowned Seat seat;
@@ -159,6 +261,9 @@ public class Registry : Object {
         return null;
     }
 
+    /**
+    * Looks up a `Seat` by its underlying `wl_seat`.
+    */
     [GIR(visible = false)]
     public Seat? get_seat_by_wl_seat(Wl.Seat wl_seat) {
         HashTableIter<uint32, Seat> iter = HashTableIter<uint32, Seat>(this.seats);

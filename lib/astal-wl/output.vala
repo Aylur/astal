@@ -2,7 +2,17 @@
 private extern Wl.Interface wl_output_interface;
 
 namespace AstalWl {
+/**
+ * Represents a display output device and tracks properties associated with it.
+ *
+ * This class listens to Wayland `wl_output` and optional
+ * `zxdg_output_v1` events if supported by the compositor
+ * to maintain accurate state information.
+ */
 public class Output : Object {
+    /**
+     * This enumeration describes how the physical pixels on an output are laid out.
+     */
     public enum Subpixel {
         UNKNOWN = 0,
         NONE = 1,
@@ -12,6 +22,10 @@ public class Output : Object {
         VERTICAL_BGR = 5
     }
 
+    /**
+     * This describes transformations that clients and compositors apply to buffer contents.
+     * The flipped values correspond to an initial flip around a vertical axis followed by rotation.
+     */
     public enum Transform {
         NORMAL = 0,
         ROTATE_90 = 1,
@@ -26,23 +40,63 @@ public class Output : Object {
     private Wl.Output output;
     private ZxdgOutputV1? xdg_output;
 
+    /**
+     * Returns the underlying `wl_output` proxy pointer.
+     */
     [GIR(visible = false)]
     public unowned Wl.Output get_wl_output() {
         return this.output;
     }
-
+    /**
+     * The unique registry ID of this output as provided by the compositor.
+     */
     public uint32 id { get; construct; }
+    /**
+     * The logical geometry of the output in compositor coordinates.
+     * This reflects the visible area after applying scaling and transform.
+     */
     public Rectangle? geometry { get; private set; }
     private Rectangle? output_geometry { get; private set; }
+    /**
+     * The physical width of the output in millimeters.
+     */
     public int physical_width { get; private set; }
+    /**
+     * The physical height of the output in millimeters.
+     */
     public int physical_height { get; private set; }
+    /**
+     * The refresh rate of the current output mode in Hz.
+     */
     public double refresh_rate { get; private set; }
+    /**
+     * The rotation or flip transform of the output surface.
+     */
     public Transform transform { get; private set; }
+    /**
+     * The subpixel layout of the physical monitor.
+     */
     public Subpixel subpixel { get; private set; }
+    /**
+     * The manufacturer name of the display device.
+     */
     public string? make { get; private set; }
+    /**
+     * The product or model name of the display device.
+     */
     public string? model { get; private set; }
+    /**
+     * The scaling factor of the output.
+     */
     public double scale { get; private set; }
+    /**
+     * The compositor-assigned name of this output.
+     * Usually corresponds to an identifier like "HDMI-A-1".
+     */
     public string? name { get; private set; }
+    /**
+     * A description of the output.
+     */
     public string? description { get; private set; }
 
     private void handle_geometry (Wl.Output wl_output, int32 x, int32 y, int32 physical_width, int32 physical_height, int32 subpixel, string make, string model, int32 transform) {
