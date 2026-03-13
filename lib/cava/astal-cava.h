@@ -5,6 +5,7 @@
 
 G_BEGIN_DECLS
 
+GType astal_cava_input_get_type();
 #define ASTAL_CAVA_TYPE_INPUT (astal_cava_input_get_type())
 
 typedef enum {

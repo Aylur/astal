@@ -118,7 +118,7 @@ public class Astal.CircularProgress : Gtk.Bin {
             arc_length += 1; // Adjust for circular representation
 
         // Calculate the position on the arc based on the percentage value
-        var scaled = arc_length + value;
+        var scaled = value * arc_length;
 
         // Ensure the position is between 0 and 1
         return (scaled % 1 + 1) % 1;
@@ -192,6 +192,7 @@ public class Astal.CircularProgress : Gtk.Bin {
         }
 
         // Draw background
+        cr.new_sub_path();
         cr.set_source_rgba(bg.red, bg.green, bg.blue, bg.alpha);
         cr.arc(center_x, center_y, radius, start_background, end_background);
         cr.set_line_width(bg_stroke);
@@ -211,6 +212,7 @@ public class Astal.CircularProgress : Gtk.Bin {
         }
 
         // Draw progress
+        cr.new_sub_path();
         cr.set_source_rgba(fg.red, fg.green, fg.blue, fg.alpha);
         cr.arc(center_x, center_y, radius, start_progress, end_progress);
         cr.set_line_width(fg_stroke);

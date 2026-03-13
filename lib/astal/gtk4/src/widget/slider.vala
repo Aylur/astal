@@ -1,7 +1,4 @@
 public class Astal.Slider : Gtk.Scale {
-    private Gtk.EventControllerLegacy controller;
-    private bool dragging;
-
     construct {
         if (adjustment == null)
             adjustment = new Gtk.Adjustment(0,0,0,0,0,0);
@@ -18,19 +15,9 @@ public class Astal.Slider : Gtk.Scale {
             page = 0.01;
         }
 
-        controller = new Gtk.EventControllerLegacy();
-        add_controller(controller);
-        controller.event.connect((event) => {
-            var type = event.get_event_type();
-            if (type == Gdk.EventType.BUTTON_PRESS ||
-                type == Gdk.EventType.KEY_PRESS ||
-                type == Gdk.EventType.TOUCH_BEGIN) {
-                dragging = true;
-            }
-            if (type == Gdk.EventType.BUTTON_RELEASE ||
-                type == Gdk.EventType.KEY_RELEASE ||
-                type == Gdk.EventType.TOUCH_END) {
-                dragging = false;
+        this.change_value.connect((range, scroll, value) => {
+            if (this.value == value) {
+                this.notify_property("value");
             }
         });
     }
@@ -38,9 +25,10 @@ public class Astal.Slider : Gtk.Scale {
     /**
      * Value of this slider. Defaults to `0`.
      */
+    [CCode (notify = false)]
     public double value {
         get { return adjustment.value; }
-        set { if (!dragging) adjustment.value = value; }
+        set { adjustment.value = value; }
     }
 
     /**

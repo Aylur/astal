@@ -1,6 +1,8 @@
 # Tray
 
-Library for managing the systemtray by implementing the [StatusNotifierItem](https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/) protocol.
+Library for managing the systemtray by implementing the
+[StatusNotifierItem](https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/)
+protocol.
 
 ## Usage
 
@@ -46,7 +48,11 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var tray = AstalTray.get_default();
+
+foreach (var item in tray.get_items()) {
+    print(item.title);
+}
 ```
 
 :::
@@ -55,41 +61,41 @@ end
 
 1. install dependencies
 
-:::code-group
+    :::code-group
 
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson json-glib gobject-introspection
-```
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson json-glib gobject-introspection
+    ```
 
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson json-glib-devel gobject-introspection-devel
-```
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson json-glib-devel gobject-introspection-devel
+    ```
 
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson libjson-glib-dev gobject-introspection
-```
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson libjson-glib-dev gobject-introspection
+    ```
 
-:::
+    :::
 
 2. install `appmenu-glib-translator`
 
-```sh
-git clone https://github.com/rilian-la-te/vala-panel-appmenu.git
-cd vala-panel-appmenu/subprojects/appmenu-glib-translator
-meson setup --prefix /usr build
-meson install -C build
-```
+    ```sh
+    git clone https://github.com/rilian-la-te/vala-panel-appmenu.git
+    cd vala-panel-appmenu/subprojects/appmenu-glib-translator
+    meson setup build
+    meson install -C build
+    ```
 
 3. clone repo
 
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/tray
-```
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/tray
+    ```
 
 4. install
 
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

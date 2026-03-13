@@ -1,10 +1,10 @@
 # Mpris
 
-Library and CLI tool for interacting and monitoring media players
-exposing an mpris interface through dbus.
+Library and CLI tool for interacting and monitoring media players exposing an
+mpris interface through dbus.
 
-An alternative for [playerctl](https://github.com/altdesktop/playerctl) that better integrates
-with astal.
+An alternative for [playerctl](https://github.com/altdesktop/playerctl) that
+better integrates with astal.
 
 ## Usage
 
@@ -25,8 +25,7 @@ import Mpris from "gi://AstalMpris"
 
 const spotify = Mpris.Player.new("spotify")
 
-if (spotify.available)
-    print(spotify.title)
+if (spotify.available) print(spotify.title)
 ```
 
 ```py [<i class="devicon-python-plain"></i> Python]
@@ -49,53 +48,54 @@ end
 ```
 
 ```vala [<i class="devicon-vala-plain"></i> Vala]
-// Not yet documented
+var spotify = AstalMpris.Player.new("spotify")
+
+if (spotify.available) print(spotify.title);
 ```
 
 :::
 
 ## Installation
 
+> [!WARNING]
+>
+> In order for network cover art urls to be cached (spotify for example) make
+> sure `gvfs` is enabled.
+>
+> :::code-group
+>
+> ```nix [<i class="devicon-nixos-plain"></i> configuration.nix]
+> services.gvfs.enable = true;
+> ```
+
 1. install dependencies
 
-:::code-group
+    :::code-group
 
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala valadoc gvfs json-glib gobject-introspection
-```
+    ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+    sudo pacman -Syu meson vala valadoc gvfs json-glib gobject-introspection
+    ```
 
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson vala valadoc gvfs json-glib-devel gobject-introspection-devel
-```
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson vala valadoc gvfs json-glib-devel gobject-introspection-devel
+    ```
 
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac valadoc gvfs libjson-glib-dev gobject-introspection
-```
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson valac valadoc gvfs libjson-glib-dev gobject-introspection
+    ```
 
-:::
+    :::
 
 2. clone repo
 
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/mpris
-```
+    ```sh
+    git clone https://github.com/aylur/astal.git
+    cd astal/lib/mpris
+    ```
 
 3. install
 
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
-
-:::warning
-In order for network cover art urls to be cached (spotify for example)
-make sure `gvfs` is enabled.
-
-:::code-group
-
-```nix [<i class="devicon-nixos-plain"></i> configuration.nix]
-services.gvfs.enable = true;
-```
-
-:::
+    ```sh
+    meson setup build
+    meson install -C build
+    ```

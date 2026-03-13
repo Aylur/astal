@@ -2,12 +2,12 @@
 #include <json-glib/json-glib.h>
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
+#include <wayland-glib.h>
 
 #include "river-control-unstable-v1-client.h"
+#include "river-layout-v3-client.h"
 #include "river-private.h"
 #include "river-status-unstable-v1-client.h"
-// #include "wayland-source.h"
-#include <wayland-glib.h>
 
 struct _AstalRiverRiver {
     GObject parent_instance;
@@ -27,6 +27,7 @@ typedef struct {
     struct zriver_status_manager_v1* river_status_manager;
     struct zriver_control_v1* river_control;
     struct zriver_seat_status_v1* river_seat_status;
+    struct river_layout_manager_v3* river_layout_manager;
 } AstalRiverRiverPrivate;
 
 static JsonSerializableIface* serializable_iface = NULL;
@@ -66,6 +67,8 @@ static void reemit_changed(AstalRiverOutput* output, AstalRiverRiver* self) {
 }
 
 static AstalRiverOutput* find_output_by_id(AstalRiverRiver* self, uint32_t id) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
     GList* output = self->outputs;
     while (output != NULL) {
         AstalRiverOutput* river_output = output->data;
@@ -76,6 +79,8 @@ static AstalRiverOutput* find_output_by_id(AstalRiverRiver* self, uint32_t id) {
 }
 
 static AstalRiverOutput* find_output_by_output(AstalRiverRiver* self, struct wl_output* wl_output) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
     GList* output = self->outputs;
     while (output != NULL) {
         AstalRiverOutput* river_output = output->data;
@@ -86,6 +91,8 @@ static AstalRiverOutput* find_output_by_output(AstalRiverRiver* self, struct wl_
 }
 
 static AstalRiverOutput* find_output_by_name(AstalRiverRiver* self, gchar* name) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
     GList* output = self->outputs;
     while (output != NULL) {
         AstalRiverOutput* river_output = output->data;
@@ -110,7 +117,10 @@ static AstalRiverOutput* find_output_by_name(AstalRiverRiver* self, gchar* name)
  * Returns: (transfer none) (element-type AstalRiver.Output): a list of all outputs
  *
  */
-GList* astal_river_river_get_outputs(AstalRiverRiver* self) { return self->outputs; }
+GList* astal_river_river_get_outputs(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->outputs;
+}
 
 /**
  * astal_river_river_get_output
@@ -122,6 +132,7 @@ GList* astal_river_river_get_outputs(AstalRiverRiver* self) { return self->outpu
  * Returns: (transfer none) (nullable): the output with the given name or null
  */
 AstalRiverOutput* astal_river_river_get_output(AstalRiverRiver* self, gchar* name) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
     return find_output_by_name(self, name);
 }
 
@@ -133,7 +144,10 @@ AstalRiverOutput* astal_river_river_get_output(AstalRiverRiver* self, gchar* nam
  *
  * Returns: (transfer none) (nullable): the currently focused view
  */
-gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) { return self->focused_view; }
+gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->focused_view;
+}
 
 /**
  * astal_river_river_get_focused_output
@@ -143,7 +157,10 @@ gchar* astal_river_river_get_focused_view(AstalRiverRiver* self) { return self->
  *
  * Returns: (transfer none) (nullable): the name of the currently focused output
  */
-gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) { return self->focused_output; }
+gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->focused_output;
+}
 
 /**
  * astal_river_river_get_mode
@@ -153,7 +170,10 @@ gchar* astal_river_river_get_focused_output(AstalRiverRiver* self) { return self
  *
  * Returns: (transfer none) (nullable): the currently active mode
  */
-gchar* astal_river_river_get_mode(AstalRiverRiver* self) { return self->mode; }
+gchar* astal_river_river_get_mode(AstalRiverRiver* self) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+    return self->mode;
+}
 
 static void astal_river_river_get_property(GObject* object, guint property_id, GValue* value,
                                            GParamSpec* pspec) {
@@ -176,6 +196,22 @@ static void astal_river_river_get_property(GObject* object, guint property_id, G
             G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
             break;
     }
+}
+
+/**
+ * astal_river_river_new_layout:
+ * @self: the AstalRiverRiver object
+ * @namespace: the namespace of the layout
+ *
+ * creates a new [class@AstalRiver.Layout] object for this river instance.
+ *
+ * Returns: (transfer full): a newly created AstalRiverLayout object
+ */
+AstalRiverLayout* astal_river_river_new_layout(AstalRiverRiver* self, const gchar* namespace) {
+    g_return_val_if_fail(ASTAL_RIVER_IS_RIVER(self), NULL);
+
+    AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
+    return astal_river_layout_new(self, priv->river_layout_manager, priv->display, namespace);
 }
 
 static JsonNode* astal_river_river_serialize_property(JsonSerializable* serializable,
@@ -219,7 +255,7 @@ static void river_seat_status_handle_focused_view(void* data,
     g_free(self->focused_view);
     self->focused_view = g_strdup(focused_view);
     AstalRiverOutput* output = find_output_by_name(self, self->focused_output);
-    astal_river_output_set_focused_view(output, focused_view);
+    if (output != NULL) astal_river_output_set_focused_view(output, focused_view);
     g_object_notify(G_OBJECT(self), "focused-view");
     g_signal_emit(self, astal_river_river_signals[ASTAL_RIVER_RIVER_SIGNAL_CHANGED], 0);
 }
@@ -247,8 +283,8 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
     if (strcmp(interface, wl_output_interface.name) == 0) {
         if (priv->river_status_manager == NULL) return;
         struct wl_output* wl_out = wl_registry_bind(registry, id, &wl_output_interface, 4);
-        AstalRiverOutput* output =
-            astal_river_output_new(id, wl_out, priv->river_status_manager, priv->river_control, priv->seat, priv->display);
+        AstalRiverOutput* output = astal_river_output_new(
+            id, wl_out, priv->river_status_manager, priv->river_control, priv->seat, priv->display);
 
         self->outputs = g_list_append(self->outputs, output);
         g_object_notify(G_OBJECT(self), "outputs");
@@ -266,6 +302,9 @@ static void global_registry_handler(void* data, struct wl_registry* registry, ui
             wl_registry_bind(registry, id, &zriver_status_manager_v1_interface, 4);
     } else if (strcmp(interface, zriver_control_v1_interface.name) == 0) {
         priv->river_control = wl_registry_bind(registry, id, &zriver_control_v1_interface, 1);
+    } else if (strcmp(interface, river_layout_manager_v3_interface.name) == 0) {
+        priv->river_layout_manager =
+            wl_registry_bind(registry, id, &river_layout_manager_v3_interface, 2);
     }
 }
 
@@ -295,6 +334,8 @@ const struct zriver_command_callback_v1_listener cb_listener = {
  */
 void astal_river_river_run_command_async(AstalRiverRiver* self, gint length, const gchar** cmd,
                                          AstalRiverCommandCallback callback) {
+    g_return_if_fail(ASTAL_RIVER_IS_RIVER(self));
+
     AstalRiverRiverPrivate* priv = astal_river_river_get_instance_private(self);
 
     for (gint i = 0; i < length; ++i) {
@@ -447,6 +488,8 @@ static void astal_river_river_finalize(GObject* object) {
     if (priv->river_status_manager != NULL)
         zriver_status_manager_v1_destroy(priv->river_status_manager);
     if (priv->river_seat_status != NULL) zriver_seat_status_v1_destroy(priv->river_seat_status);
+    if (priv->river_layout_manager != NULL)
+        river_layout_manager_v3_destroy(priv->river_layout_manager);
     if (priv->seat != NULL) wl_seat_destroy(priv->seat);
     if (priv->display != NULL) wl_display_flush(priv->display);
 

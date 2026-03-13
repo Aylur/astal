@@ -1,5 +1,6 @@
 srcs = files(
   'river-output.c',
+  'river-layout.c',
   'river.c'
 )
 

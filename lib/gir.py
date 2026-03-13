@@ -4,6 +4,7 @@ so we use valadoc to generate them. However, they are formatted
 for valadoc and not gi-docgen so we need to fix it.
 """
 
+import argparse
 import xml.etree.ElementTree as ET
 import html
 import sys
@@ -15,12 +16,12 @@ import os
 # valac fails on gi-docgen compliant markdown
 # gi-docgen removes valac compliant ulink
 # so we use vala notation and turn it into markdown
-def ulink_to_markdown(text: str):
+def _ulink_to_markdown(text: str):
     pattern = r'<ulink url="(.*?)">(.*?)</ulink>'
     return re.sub(pattern, r"[\2](\1)", text)
 
 
-def fix_gir(name: str, gir: str, out: str):
+def _fix_gir(name: str, gir: str, out: str, properties: str | None):
     namespaces = {
         "": "http://www.gtk.org/introspection/core/1.0",
         "c": "http://www.gtk.org/introspection/c/1.0",
@@ -34,7 +35,7 @@ def fix_gir(name: str, gir: str, out: str):
 
     for doc in root.findall(".//doc", namespaces):
         if doc.text:
-            doc.text = ulink_to_markdown(
+            doc.text = _ulink_to_markdown(
                 html.unescape(doc.text).replace("<para>", "").replace("</para>", "")
             )
 
@@ -44,25 +45,52 @@ def fix_gir(name: str, gir: str, out: str):
         print("no c:include tag found", file=sys.stderr)
         exit(1)
 
+    # Fix "Can't convert untyped array to JS value"
+    # https://gitlab.gnome.org/GNOME/vala/-/issues/1212
+    if properties is not None:
+        for part in properties.split(":"):
+            klass, prop = part.split(".")
+            query = f'.//class[@name="{klass}"]/property[@name="{prop}"]'
+            if elem := root.find(query, namespaces):
+                elem.set("getter", f"get_{prop}")
+
     tree.write(out, encoding="utf-8", xml_declaration=True)
 
 
-def valadoc(name: str, gir: str, args: list[str]):
-    cmd = [os.getenv("VALADOC", "valadoc"), "-o", "docs", "--package-name", name, "--gir", gir, *args]
+def _valadoc(name: str, gir: str, pkgs: str, sources: list[str]):
+    pkglist = ["glib-2.0", "gobject-2.0", "gio-2.0", *pkgs.split(":")]
+    cmd = [
+        os.getenv("VALADOC", "valadoc"),
+        *["-o", "docs"],
+        *["--package-name", name],
+        *["--gir", gir],
+        *[f"--pkg={pkg}" for pkg in pkglist if pkg != ""],
+        *sources,
+    ]
     try:
-        subprocess.run(cmd, check=True, text=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        print(e.stderr, file=sys.stderr)
+        subprocess.run(
+            cmd,
+            check=True,
+            text=True,
+            stderr=sys.stderr,
+            stdout=sys.stdout,
+        )
+    except subprocess.CalledProcessError:
         exit(1)
 
 
 if __name__ == "__main__":
-    name = sys.argv[1]
-    in_out = sys.argv[2].split(":")
-    args = sys.argv[3:]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--name", required=True, help="name of package in kebab-case")
+    parser.add_argument("--gir", required=True, help="name of .gir target")
+    parser.add_argument("--pkgs", default="", help="dependencies separeted with :")
+    parser.add_argument("--property", help="class.member properties")
+    parser.add_argument("sources", nargs=argparse.REMAINDER, help="vala source files")
+    args = parser.parse_args()
 
-    gir = in_out[0]
-    out = in_out[1] if len(in_out) > 1 else gir
+    split = args.gir.split(":")
+    gir = split[0]
+    out = split[1] if len(split) > 1 else gir
 
-    valadoc(name, gir, args)
-    fix_gir(name, gir, out)
+    _valadoc(args.name, gir, args.pkgs, args.sources)
+    _fix_gir(args.name, gir, out, args.property)

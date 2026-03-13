@@ -6,7 +6,7 @@
 mkAstalPkg {
   pname = "astal-mpris";
   src = ./.;
-  packages = with pkgs; [gvfs json-glib];
+  packages = [pkgs.gvfs pkgs.json-glib];
 
   libname = "mpris";
   authors = "Aylur";

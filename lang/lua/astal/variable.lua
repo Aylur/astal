@@ -113,7 +113,7 @@ end
 
 function Variable:stop_poll()
     if self:is_polling() then
-        self._poll.cancel()
+        self._poll:cancel()
     end
     self._poll = nil
 end

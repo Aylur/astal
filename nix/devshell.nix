@@ -21,7 +21,7 @@
   ]);
 
   buildInputs = with pkgs; [
-    wrapGAppsHook
+    wrapGAppsHook3
     gobject-introspection
     meson
     pkg-config
@@ -42,31 +42,34 @@
     blueprint-compiler
     libadwaita
     wayland-scanner
-
     dart-sass
+    esbuild
     lua
     python
     gjs
   ];
 
-  lsp = with pkgs; [
+  dev = with pkgs; [
     nodejs
     mesonlsp
     vala-language-server
     vtsls
     vscode-langservers-extracted
     markdownlint-cli2
+    pyright
+    ruff
+    uncrustify
   ];
 in {
   default = pkgs.mkShell {
-    packages = buildInputs ++ lsp;
+    packages = buildInputs ++ dev;
   };
   astal = pkgs.mkShell {
     packages =
       buildInputs
-      ++ lsp
+      ++ dev
       ++ builtins.attrValues (
-        builtins.removeAttrs self.packages.${pkgs.system} ["docs"]
+        builtins.removeAttrs self.packages.${pkgs.stdenv.hostPlatform.system} ["docs"]
       );
   };
 }

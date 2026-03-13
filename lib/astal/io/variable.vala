@@ -2,6 +2,7 @@
  * Base class for [class@AstalIO.Variable] mainly meant to be used
  * in higher level language bindings such as Lua and Gjs.
  */
+[Version (deprecated = true, deprecated_since="", replacement="")]
 public class AstalIO.VariableBase : Object {
     public signal void changed ();
     public signal void dropped ();
@@ -17,6 +18,7 @@ public class AstalIO.VariableBase : Object {
     }
 }
 
+[Version (deprecated = true, deprecated_since="", replacement="")]
 public class AstalIO.Variable : VariableBase {
     public Value value { owned get; set; }
 

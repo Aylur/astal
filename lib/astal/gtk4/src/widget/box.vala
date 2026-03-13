@@ -1,3 +1,4 @@
+[Version (deprecated = true, deprecated_since="", replacement="")]
 public class Astal.Box : Gtk.Box {
     /**
      * Corresponds to [property@Gtk.Orientable :orientation].

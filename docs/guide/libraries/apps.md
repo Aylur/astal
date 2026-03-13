@@ -1,7 +1,7 @@
 # Apps
 
-Library and CLI tool for querying and launching
-applications that have a corresponding `.desktop` file.
+Library and CLI tool for querying and launching applications that have a
+corresponding `.desktop` file.
 
 ## Usage
 
@@ -21,13 +21,13 @@ astal-apps --help
 import Apps from "gi://AstalApps"
 
 const apps = new Apps.Apps({
-    nameMultiplier: 2,
-    entryMultiplier: 0,
-    executableMultiplier: 2,
+  nameMultiplier: 2,
+  entryMultiplier: 0,
+  executableMultiplier: 2,
 })
 
 for (const app of apps.fuzzy_query("spotify")) {
-    print(app.name)
+  print(app.name)
 }
 ```
 
@@ -77,32 +77,32 @@ foreach (var app in apps.fuzzy_query("firefox")) {
 
 1. install dependencies
 
-:::code-group
+   :::code-group
 
-```sh [<i class="devicon-archlinux-plain"></i> Arch]
-sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
-```
+   ```sh [<i class="devicon-archlinux-plain"></i> Arch]
+   sudo pacman -Syu meson vala valadoc json-glib gobject-introspection
+   ```
 
-```sh [<i class="devicon-fedora-plain"></i> Fedora]
-sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
-```
+   ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+   sudo dnf install meson vala valadoc json-glib-devel gobject-introspection-devel
+   ```
 
-```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
-sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
-```
+   ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+   sudo apt install meson valac valadoc libjson-glib-dev gobject-introspection
+   ```
 
-:::
+   :::
 
 2. clone repo
 
-```sh
-git clone https://github.com/aylur/astal.git
-cd astal/lib/apps
-```
+   ```sh
+   git clone https://github.com/aylur/astal.git
+   cd astal/lib/apps
+   ```
 
 3. install
 
-```sh
-meson setup --prefix /usr build
-meson install -C build
-```
+   ```sh
+   meson setup build
+   meson install -C build
+   ```

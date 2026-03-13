@@ -10,7 +10,7 @@ pkgs.stdenvNoCC.mkDerivation {
     pkgs.meson
     pkgs.ninja
     pkgs.pkg-config
-    self.packages.${pkgs.system}.io
-    self.packages.${pkgs.system}.astal3
+    self.packages.${pkgs.stdenv.hostPlatform.system}.io
+    self.packages.${pkgs.stdenv.hostPlatform.system}.astal3
   ];
 }

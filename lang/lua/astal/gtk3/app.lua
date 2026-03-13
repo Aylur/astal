@@ -67,7 +67,7 @@ function Astal.Application:start(config)
 
     app.on_activate = function()
         if type(config.main) == "function" then
-            config.main(table.unpack(arg))
+            config.main(table.unpack(arg or {}))
         end
         if config.hold then
             self:hold()
@@ -77,8 +77,8 @@ function Astal.Application:start(config)
     local _, err = app:acquire_socket()
     if err ~= nil then
         return config.client(function(msg)
-            return AstalIO.send_message(self.instance_name, msg)
-        end, table.unpack(arg))
+            return AstalIO.send_request(self.instance_name, msg)
+        end, table.unpack(arg or {}))
     end
 
     self:run(nil)
