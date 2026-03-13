@@ -21,10 +21,10 @@ srcs = files(
 install_headers('astal-cava.h')
 
 cava = dependency(
-  'cava',
-  version: '>=0.10.6',
+  'libcava',
+  version: '>=0.10.7',
   required: true,
-  fallback: ['cava', 'cava_dep'],
+  fallback: ['libcava', 'cava_dep'],
 )
 
 deps = [
