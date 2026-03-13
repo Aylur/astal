@@ -5,7 +5,7 @@
 }: let
   wl-vapi-gen = pkgs.stdenv.mkDerivation {
     pname = "wl-vapi-gen";
-    version = "v0.1.0";
+    version = "v1.0.0";
     src = pkgs.fetchFromGitHub {
       owner = "kotontrion";
       repo = "wl-vapi-gen";

@@ -175,8 +175,8 @@ public class Output : Object {
 
     internal Output(Global global, Wl.Registry registry, Wl.Display display, ZxdgOutputManagerV1 output_manager) {
         Object(id: global.name);
-        this.geometry = new Rectangle();
-        this.output_geometry = new Rectangle();
+        this.geometry = Rectangle();
+        this.output_geometry = Rectangle();
         this.output = registry.bind<Wl.Output>(global.name, ref wl_output_interface, uint.min(global.version, 4));
         this.output.add_listener(output_listener, this);
         display.roundtrip();
