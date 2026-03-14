@@ -1,7 +1,6 @@
 {
   mkAstalPkg,
   pkgs,
-  self,
   ...
 }: let
   wl-vapi-gen = pkgs.stdenv.mkDerivation {
@@ -26,17 +25,13 @@
 
   };
 in
-  mkAstalPkg {
-    pname = "astal-river";
-    src = ./.;
-    packages = [
-      self.packages.${pkgs.stdenv.hostPlatform.system}.wl
-      wl-vapi-gen
-    ];
+mkAstalPkg {
+  pname = "astal-wl";
+  src = ./.;
+  packages = [wl-vapi-gen];
 
-    libname = "river";
-    authors = "kotontrion";
-    gir-suffix = "River";
-    description = "IPC client for River";
-    dependencies = ["AstalWl-0.1"];
-  }
+  libname = "wl";
+  authors = "kotontrion";
+  gir-suffix = "Wl";
+  description = "A central wayland connection manager for the other libs.";
+}
