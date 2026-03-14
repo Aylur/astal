@@ -1,8 +1,0 @@
-[wrap-file]
-directory = wl-vapi-gen-1.0.0
-source_url = https://github.com/kotontrion/wl-vapi-gen/archive/refs/tags/1.0.0.tar.gz
-source_filename = wl-vapi-gen-1.0.0.tar.gz
-source_hash = 28a130fa59c883f23c3aaaacd326a7c42bdc449dc809103814db9c077934000f
-
-[provide]
-program_names = wl-vapi-gen

@@ -33,7 +33,7 @@
       river = mkPkg ./lib/river;
       tray = mkPkg ./lib/tray;
       wireplumber = mkPkg ./lib/wireplumber;
-      wl = mkPkg ./lib/astal-wl;
+      wl = mkPkg ./lib/wl;
     });
 
     devShells = forAllSystems (system:
