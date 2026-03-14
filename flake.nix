@@ -12,6 +12,7 @@
           inherit self pkgs;
           mkAstalPkg = import ./nix/mkAstalPkg.nix pkgs;
         };
+      hyprland-focus-grab = mkPkg ./lib/hyprland-focus-grab;
     in {
       default = self.packages.${system}.io;
       docs = import ./docs {inherit self pkgs;};
@@ -26,6 +27,8 @@
       cava = mkPkg ./lib/cava;
       greet = mkPkg ./lib/greet;
       hyprland = mkPkg ./lib/hyprland;
+      hyprland-focus-grab-gtk3 = hyprland-focus-grab.gtk3;
+      hyprland-focus-grab-gtk4 = hyprland-focus-grab.gtk4;
       mpris = mkPkg ./lib/mpris;
       network = mkPkg ./lib/network;
       notifd = mkPkg ./lib/notifd;
