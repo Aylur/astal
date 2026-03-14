@@ -71,7 +71,7 @@ foreach config : build_configs
     dependencies: deps + protocol_deps + config['extra_deps'],
     vala_args: ['--vapi-comments', '-D', config['define']],
     vala_header: config['name'] + '.h',
-    vala_vapi: name + '-' + config['version'] + '.vapi',
+    vala_vapi: config['name'] + '-' + api_version + '.vapi',
     version: config['version'],
     install: true,
     install_dir: [true, true, true],
