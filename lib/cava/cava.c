@@ -104,13 +104,7 @@ static void astal_cava_cava_cleanup(AstalCavaCava* self) {
     free(priv->audio_data.cava_in);
     g_free(priv->audio_data.source);
 
-    // use config_clean(&priv->cfg); instead.
-    // While this was patched into the libcava 0.10.6 AUR package, it is not included in the
-    // official release, so wait for the next tagged release.
-    g_free(priv->cfg.audio_source);
-    g_free(priv->cfg.raw_target);
-    g_free(priv->cfg.data_format);
-    g_free(priv->plan);
+    free_config(&priv->cfg);
 }
 
 static void astal_cava_cava_start(AstalCavaCava* self) {

@@ -4,6 +4,7 @@
 
 #include "device.h"
 #include "endpoint.h"
+#include "enums.h"
 #include "glib-object.h"
 #include "node.h"
 #include "stream.h"
@@ -92,7 +93,8 @@ AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
-    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE)
+    if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE
+        || astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_SOURCE_VIRTUAL)
         return ASTAL_WP_ENDPOINT(node);
     return NULL;
 }
@@ -162,7 +164,8 @@ GList *astal_wp_audio_get_microphones(AstalWpAudio *self) {
     GList *mics = NULL;
 
     for (GList *l = nodes; l != NULL; l = l->next) {
-        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE) {
+        if (astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE
+            || astal_wp_node_get_media_class(l->data) == ASTAL_WP_MEDIA_CLASS_AUDIO_SOURCE_VIRTUAL) {
             mics = g_list_append(mics, ASTAL_WP_ENDPOINT(l->data));
         }
     }
@@ -350,6 +353,7 @@ static void astal_wp_audio_object_added(AstalWpAudio *self, gpointer object) {
     AstalWpNode *node = ASTAL_WP_NODE(object);
     switch (astal_wp_node_get_media_class(node)) {
         case ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE:
+        case ASTAL_WP_MEDIA_CLASS_AUDIO_SOURCE_VIRTUAL:
             g_signal_emit_by_name(self, "microphone-added", node);
             g_object_notify(G_OBJECT(self), "microphones");
             break;
