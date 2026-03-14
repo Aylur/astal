@@ -13,21 +13,9 @@ version_split = version.split('.')
 api_version = '0.1'
 gir_name_base = 'AstalHyprlandFocusGrab'
 
-config = configure_file(
-  input: 'src/config.vala.in',
-  output: 'config.vala',
-  configuration: {
-    'API_VERSION': api_version,
-    'VERSION': version,
-    'MAJOR_VERSION': version_split[0],
-    'MINOR_VERSION': version_split[1],
-    'MICRO_VERSION': version_split[2],
-  },
-)
-
 subdir('protocols')
 
-sources = [config] + files('src/context.vala', 'src/grab.vala', 'src/manager.vala')
+sources = files('src/context.vala', 'src/grab.vala', 'src/manager.vala')
 
 deps = [
   dependency('glib-2.0'),
@@ -65,9 +53,21 @@ if '4' in gtk_version
 endif
 
 foreach config : build_configs
+  config_vala = configure_file(
+    input: 'src/config.vala.in',
+    output: 'config.vala',
+    configuration: {
+      'API_VERSION': config['version'],
+      'VERSION': version,
+      'MAJOR_VERSION': version_split[0],
+      'MINOR_VERSION': version_split[1],
+      'MICRO_VERSION': version_split[2],
+    },
+  )
+
   lib = library(
     config['name'],
-    sources + config['wl_shim'],
+    sources + config_vala + config['wl_shim'],
     dependencies: deps + protocol_deps + config['extra_deps'],
     vala_args: ['--vapi-comments', '-D', config['define']],
     vala_header: config['name'] + '.h',
