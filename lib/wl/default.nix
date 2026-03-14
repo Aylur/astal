@@ -18,6 +18,11 @@
       ninja
       python3
     ];
+
+    patchPhase = ''
+      patchShebangs wl-vapi-gen.py
+    '';
+
   };
 in
 mkAstalPkg {
