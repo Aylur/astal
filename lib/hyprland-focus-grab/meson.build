@@ -17,6 +17,7 @@ config = configure_file(
   input: 'src/config.vala.in',
   output: 'config.vala',
   configuration: {
+    'API_VERSION': api_version,
     'VERSION': version,
     'MAJOR_VERSION': version_split[0],
     'MINOR_VERSION': version_split[1],
@@ -35,31 +36,33 @@ deps = [
   dependency('wayland-client'),
 ]
 
-deps_gtk3 = [dependency('gtk+-3.0')]
+build_configs = []
 
-deps_gtk4 = [
-  dependency('gtk4'),
-  dependency('gtk4-wayland'),
-]
-
-build_configs = [
-  {
+gtk_version = get_option('gtk-version')
+if '3' in gtk_version
+  build_configs += {
     'define': 'GTK_3',
     'name': name + '-3',
     'version': '3.0',
     'wl_shim': files('src/window-surface-gtk3.c'),
-    'extra_deps': deps_gtk3,
+    'extra_deps': [dependency('gtk+-3.0')],
     'gir_deps': ['gtk+-3.0'],
-  },
-  {
+  }
+endif
+
+if '4' in gtk_version
+  build_configs += {
     'define': 'GTK_4',
     'name': name + '-4',
     'version': '4.0',
     'wl_shim': files('src/window-surface-gtk4.c'),
-    'extra_deps': deps_gtk4,
+    'extra_deps': [
+      dependency('gtk4'),
+      dependency('gtk4-wayland'),
+    ],
     'gir_deps': ['gtk4', 'gtk4-wayland'],
-  },
-]
+  }
+endif
 
 foreach config : build_configs
   lib = library(
