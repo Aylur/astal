@@ -4,14 +4,14 @@
   self,
   ...
 }: let
-   wl-vapi-gen = pkgs.stdenv.mkDerivation {
+  wl-vapi-gen = pkgs.stdenv.mkDerivation {
     pname = "wl-vapi-gen";
-    version = "v0.1.0";
+    version = "v1.0.0";
     src = pkgs.fetchFromGitHub {
       owner = "kotontrion";
       repo = "wl-vapi-gen";
-      rev = "b4a7eda9404edbf192faf474be1372f77f584dfd";
-      hash = "sha256-uIl1mxoQRmHNRLbFLDuymK//H0Kse7KpiHf8CQ8fnI0=";
+      rev = "1.0.0";
+      hash = "sha256-XdgYmxW0ndH6szq7VJ+XQEnWKHCyaWoBwEQREZnTm98=";
     };
  
     nativeBuildInputs = with pkgs; [
@@ -19,13 +19,18 @@
       ninja
       python3
     ];
+
+    patchPhase = ''
+      patchShebangs wl-vapi-gen.py
+    '';
+
   };
 in
   mkAstalPkg {
     pname = "astal-river";
     src = ./.;
     packages = [
-      self.packages.${pkgs.system}.wl
+      self.packages.${pkgs.stdenv.hostPlatform.system}.wl
       wl-vapi-gen
     ];
 
@@ -33,4 +38,5 @@ in
     authors = "kotontrion";
     gir-suffix = "River";
     description = "IPC client for River";
+    dependencies = ["AstalWl-0.1"];
   }

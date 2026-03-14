@@ -11,6 +11,9 @@ public class LayoutDemandResult : Object {
     }
 }
 
+/**
+ * Allows implementing a custom windows Layout generator.
+ */
 public class Layout : Object {
     private class LayoutData {
         public Layout layout;
@@ -22,17 +25,32 @@ public class Layout : Object {
     private unowned RiverLayoutManagerV3 layout_manager;
     private HashTable<string, LayoutData?> layouts;
 
+    /**
+     * The name of this layout.
+     */
     public string @namespace { get; construct; }
     internal Closure layout_demand_closure;
 
+    /**
+     * Emitted when a Layout with the given name is already registered for an output.
+     */
     public signal void namespace_in_use(string namespace, Output output);
+
+    /**
+     * Emitted when the user sent a command to this layout.
+     */
     public signal void user_command(string command, string namespace, Output output);
 
+    /**
+     * Sets the Closure to be called when a new layout is requested.
+     * The Closure is of type [callback@AstalRiver.LayoutDemandCallback].
+     *
+     * The Closure must return a [class@AstalRiver.LayoutDemandResult] containing exactly as 
+     * many [struct@AstalWl.Rectangle] objects as requested. Each rectangle represents the position
+     * and size of each window. Before the result is applied, each rectangle is croped to ensure it 
+     * lies entirely within the usable area.
+     */
     public extern void set_layout_demand_closure(Closure closure);
-
-    public void set_layout_demand_closure_internal(Closure closure) {
-        this.layout_demand_closure = closure;
-    }
 
     private static void handle_namespace_in_use(void* data, RiverLayoutV3 layout) {
         LayoutData*ld = data;

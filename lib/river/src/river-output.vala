@@ -1,8 +1,20 @@
 namespace AstalRiver {
+
+/**
+ * Represents a display output device.
+ */
 public class Output : Object {
+
+    /**
+     * The underlying [class@AstalWl.Output] object, which represents a wayland output.
+     */
     public AstalWl.Output output { get; construct; }
 
     private uint _focused_tags;
+
+    /**
+     * The focused tags.
+     */
     public uint focused_tags {
         get {
             return this._focused_tags;
@@ -12,9 +24,25 @@ public class Output : Object {
             this.river.run_command({ "set-focused-tags", value.to_string() }, out output);
         }
     }
+
+    /**
+     * The occupied tags.
+     */
     public uint occupied_tags { get; private set; }
+
+    /**
+     * The tags marked as urgent.
+     */
     public uint urgent_tags { get; private set; }
+
+    /**
+     * The title of the focused view on this output.
+     */
     public string? focused_view { get; internal set; }
+
+    /**
+     * The name of the active layout for this output.
+     */
     public string? layout_name { get; private set; }
 
     private ZriverOutputStatusV1 output_status;

@@ -4,25 +4,50 @@ public static bool is_supported() {
     return !AstalWl.Registry.get_default().find_globals("zriver_status_manager_v1").is_empty();
 }
 
+/**
+ * Returns the singleton River instance.
+ */
 public static unowned River get_default() {
     return AstalRiver.River.get_default();
 }
-
+/**
+ * This class creates a connection to the river compositor.
+ */
 public class River : Object {
     private static River? instance;
 
+    /**
+     * Returns the singleton River instance.
+     */
     public static unowned River get_default() {
         if (instance == null) instance = new River();
         return instance;
     }
 
     private List<Output> _outputs;
+
+    /**
+     * A List of all known Outputs
+     */
     public List<weak Output> outputs { owned get { return _outputs.copy(); } }
 
+    /**
+     * Signals a new Output was added, emitted after the Output was added to the lists.
+     */
     public signal void output_added(Output output);
+    /**
+     * Signals an Output was removed, emitted after the Output was removed from the lists.
+     */
     public signal void output_removed(Output output);
 
+    /**
+     * The currently focused Output object.
+     */
     public Output? focused_output { get; private set; }
+
+    /**
+     * The currently focused Output name.
+     */
     public string? focused_output_name {
         get {
             if (this.focused_output == null) return null;
@@ -30,7 +55,14 @@ public class River : Object {
         }
     }
 
+    /**
+     * The currently focused view title.
+     */
     public string? focused_view { get; private set; }
+    
+    /**
+     * The currently active mode.
+     */
     public string? mode { get; private set; }
 
     private AstalWl.Registry astal_registry;
@@ -53,6 +85,9 @@ public class River : Object {
         this.notify_property("outputs");
     }
 
+    /**
+     * Looks up an output based on its underlying wl_output object.
+     */
     [GIR(visible = false)]
     public Output? find_output_by_wl_output(Wl.Output wl_output) {
         foreach (var o in this.outputs) {
@@ -61,6 +96,9 @@ public class River : Object {
         return null;
     }
 
+    /**
+     * Looks up an output based on its underlying [class@AstalWl.Output] object.
+     */
     public Output? find_output_by_astal_wl_output(AstalWl.Output wl_output) {
         foreach (var o in this.outputs) {
             if (o.output == wl_output) return o;
@@ -68,6 +106,9 @@ public class River : Object {
         return null;
     }
 
+    /**
+     * Looks up an output based on its underlying name.
+     */
     public Output? find_output_by_name(string name) {
         foreach (var o in this.outputs) {
             if (o.output.name == name) return o;
@@ -75,6 +116,9 @@ public class River : Object {
         return null;
     }
 
+    /**
+     * Looks up an output based on its underlying wayland id.
+     */
     public Output? find_output_by_id(uint32 id) {
         foreach (var o in this.outputs) {
             if (o.output.id == id) return o;
@@ -117,6 +161,9 @@ public class River : Object {
         result->msg = msg;
     }
 
+    /**
+     * executes a given command, similar to riverctl.
+     */
     public bool run_command(string[] cmd, out string? output) {
         if(this.river_control == null) {
             critical("the compositor does not support zriver_control_v1\n");
@@ -139,10 +186,16 @@ public class River : Object {
         return result.success;
     }
 
+    /**
+     * executes a given command, similar to riverctl.
+     */
     public async bool run_command_async(string[] cmd, out string? output) {
         return run_command(cmd, out output);
     }
 
+    /**
+     * creates a new Layout object with a given namespace.
+     */
     public Layout? new_layout(string @namespace) {
         if(this.layout_manager == null) {
             critical("the compositor does not support river_layout_v3\n");
@@ -158,6 +211,9 @@ public class River : Object {
         handle_mode
     };
 
+    /**
+     * Creates a new River object. It is recommended to use the [func@AstalRiver.get_default] method instead of this method.
+     */
     public River() {
         this._outputs = new List<Output>();
         this.astal_registry = AstalWl.Registry.get_default();
