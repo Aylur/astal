@@ -31,6 +31,11 @@ pkgs: let
       description = "Astal Core library";
       docs_url = "https://aylur.github.io/libastal/io";
     };
+    "AstalWl-0.1" = {
+      name = "AstalWl";
+      description = "A central lib to manage wayland objects";
+      docs_url = "https://aylur.github.io/libastal/wl";
+    };
     "NM-1.0" = {
       name = "NetworkManager";
       description = "The standard Linux network configuration tool suite";
@@ -51,7 +56,8 @@ pkgs: let
       ["Gdk" "https://docs.gtk.org/gdk3/"]
       ["Gtk" "https://docs.gtk.org/gtk3/"]
       ["GdkPixbuf" "https://docs.gtk.org/gdk-pixbuf/"]
-      ["AstalIO" "https://aylur.github.io/libastal/io"]
+      ["AstalIO" "https://aylur.github.io/libastal/io/"]
+      ["AstalWl" "https://aylur.github.io/libastal/wl/"]
 
       # FIXME: these are not gi-docgen generated, therefore links are broken
       ["NM" "https://networkmanager.dev/docs/libnm/latest/"]
