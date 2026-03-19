@@ -95,11 +95,13 @@ void astal_wp_node_update_volume(AstalWpNode *self) {
 
     if (channels != NULL) {
         const gchar *key;
-        const gchar *channel_str;
-        gdouble channel_volume;
+        const gchar *channel_str = NULL;
+        gdouble channel_volume = 0;
         GVariant *varvol;
 
         while (g_variant_iter_loop(channels, "{&sv}", &key, &varvol)) {
+            channel_str = NULL;
+            channel_volume = 0;
             g_variant_lookup(varvol, "volume", "d", &channel_volume);
             g_variant_lookup(varvol, "channel", "&s", &channel_str);
 
@@ -167,14 +169,17 @@ void astal_wp_node_set_channel_volume(AstalWpNode *self, const gchar *name, gdou
         g_auto(GVariantBuilder) channel_volumes_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
 
         const gchar *key;
-        const gchar *channel_str;
-        gdouble channel_volume;
+        const gchar *channel_str = NULL;
+        gdouble channel_volume = 0;
         GVariant *varvol;
 
         while (g_variant_iter_loop(channels, "{&sv}", &key, &varvol)) {
             g_auto(GVariantBuilder) channel_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+            channel_str = NULL;
+            channel_volume = 0;
             g_variant_lookup(varvol, "volume", "d", &channel_volume);
             g_variant_lookup(varvol, "channel", "&s", &channel_str);
+            if (channel_str == NULL) continue;
             gdouble vol = g_str_equal(name, channel_str) ? volume : channel_volume;
             g_variant_builder_add(&channel_b, "{sv}", "volume", g_variant_new_double(vol));
             g_variant_builder_add(&channel_volumes_b, "{sv}", key,
@@ -221,14 +226,17 @@ void astal_wp_node_set_volume(AstalWpNode *self, gdouble volume) {
         g_auto(GVariantBuilder) channel_volumes_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
 
         const gchar *key;
-        const gchar *channel_str;
-        gdouble channel_volume;
+        const gchar *channel_str = NULL;
+        gdouble channel_volume = 0;
         GVariant *varvol;
 
         while (g_variant_iter_loop(channels, "{&sv}", &key, &varvol)) {
             g_auto(GVariantBuilder) channel_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
+            channel_str = NULL;
+            channel_volume = 0;
             g_variant_lookup(varvol, "volume", "d", &channel_volume);
             g_variant_lookup(varvol, "channel", "&s", &channel_str);
+            if (channel_str == NULL) continue;
             gdouble vol = priv->volume == 0 ? volume : channel_volume * volume / priv->volume;
             g_variant_builder_add(&channel_b, "{sv}", "volume", g_variant_new_double(vol));
             g_variant_builder_add(&channel_volumes_b, "{sv}", key,
