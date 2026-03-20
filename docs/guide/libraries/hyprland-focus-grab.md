@@ -5,7 +5,8 @@ Library for making windows behave like popups using the [hyprland-focus-grab-v1]
 ## Usage
 
 Create a `GrabContext`, add some windows to it, and set its `active` property to true to begin the grab.
-It will emit the `cleared` signal when the grab is dismissed (usually due to clicking away from any added windows).
+During the grab, only windows added to the grab object can be interacted with. Clicking outside will cancel the click and end the grab.
+The context object will emit the `cleared` signal when the grab is dismissed (usually due to clicking away).
 You can then set `active` to true again to start another grab.
 
 You can browse the
