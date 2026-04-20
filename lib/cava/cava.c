@@ -82,7 +82,7 @@ static gboolean exec_cava(AstalCavaCava* self) {
     if (priv->audio_data.samples_counter > 0) priv->audio_data.samples_counter = 0;
     pthread_mutex_unlock(&priv->audio_data.lock);
 
-    g_array_remove_range(self->values, 0, priv->audio_raw.number_of_bars);
+    g_array_remove_range(self->values, 0, self->values->len);
     g_array_insert_vals(self->values, 0, priv->audio_raw.cava_out, priv->audio_raw.number_of_bars);
 
     g_object_notify(G_OBJECT(self), "values");
