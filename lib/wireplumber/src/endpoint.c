@@ -49,7 +49,10 @@ static GParamSpec *astal_wp_endpoint_properties[ASTAL_WP_ENDPOINT_N_PROPERTIES] 
  *
  * gets the id of the device associated with this endpoint
  */
-guint astal_wp_endpoint_get_device_id(AstalWpEndpoint *self) { return self->device_id; }
+guint astal_wp_endpoint_get_device_id(AstalWpEndpoint *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_ENDPOINT(self), 0);
+    return self->device_id; 
+}
 
 /**
  * astal_wp_endpoint_get_device:
@@ -59,6 +62,7 @@ guint astal_wp_endpoint_get_device_id(AstalWpEndpoint *self) { return self->devi
  * Returns: (transfer none) (nullable)
  */
 AstalWpDevice *astal_wp_endpoint_get_device(AstalWpEndpoint *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_ENDPOINT(self), NULL);
     AstalWpWp *wp;
     g_object_get(self, "wp", &wp, NULL);
     return astal_wp_wp_get_device(wp, self->device_id);
@@ -69,7 +73,10 @@ AstalWpDevice *astal_wp_endpoint_get_device(AstalWpEndpoint *self) {
  *
  * is this endpoint configured as the default.
  */
-gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint *self) { return self->is_default; }
+gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_ENDPOINT(self), FALSE);
+    return self->is_default; 
+}
 
 /**
  * astal_wp_endpoint_set_is_default:
@@ -77,6 +84,7 @@ gboolean astal_wp_endpoint_get_is_default(AstalWpEndpoint *self) { return self->
  * Sets this endpoint as the default
  */
 void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default) {
+    g_return_if_fail(ASTAL_WP_IS_ENDPOINT(self));
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
     WpNode *node;
 
@@ -97,6 +105,7 @@ void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default
  * gets the id of the currently active route
  */
 guint astal_wp_endpoint_get_route_id(AstalWpEndpoint *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_ENDPOINT(self), 0);
     AstalWpMediaClass media_class;
     g_object_get(self, "media-class", &media_class, NULL);
     AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
@@ -116,6 +125,7 @@ guint astal_wp_endpoint_get_route_id(AstalWpEndpoint *self) {
  * Return: (transfer none) (nullable)
  */
 AstalWpRoute *astal_wp_endpoint_get_route(AstalWpEndpoint *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_ENDPOINT(self), NULL);
     AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
     if (dev == NULL) return NULL;
     return astal_wp_device_get_route(dev, astal_wp_endpoint_get_route_id(self));
@@ -127,6 +137,7 @@ AstalWpRoute *astal_wp_endpoint_get_route(AstalWpEndpoint *self) {
  * Sets the currently active [class@AstalWp.Route]
  */
 void astal_wp_endpoint_set_route(AstalWpEndpoint *self, AstalWpRoute *route) {
+    g_return_if_fail(ASTAL_WP_IS_ENDPOINT(self));
     AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
     if (dev == NULL) return;
     WpNode *node;
@@ -145,6 +156,7 @@ void astal_wp_endpoint_set_route(AstalWpEndpoint *self, AstalWpRoute *route) {
  * Sets the currently active route id
  */
 void astal_wp_endpoint_set_route_id(AstalWpEndpoint *self, guint route_id) {
+    g_return_if_fail(ASTAL_WP_IS_ENDPOINT(self));
     AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
     if (dev == NULL) return;
     astal_wp_endpoint_set_route(self, astal_wp_device_get_route(dev, route_id));
@@ -160,6 +172,7 @@ void astal_wp_endpoint_set_route_id(AstalWpEndpoint *self, guint route_id) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
  */
 GList *astal_wp_endpoint_get_routes(AstalWpEndpoint *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_ENDPOINT(self), NULL);
     AstalWpMediaClass media_class;
     g_object_get(self, "media-class", &media_class, NULL);
     AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
@@ -346,6 +359,7 @@ static void astal_wp_endpoint_default_changed(AstalWpEndpoint *self) {
 
 void astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer, WpPlugin *defaults,
                                        AstalWpMediaClass type) {
+    g_return_if_fail(ASTAL_WP_IS_ENDPOINT(self));
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
     astal_wp_node_set_mixer(ASTAL_WP_NODE(self), mixer);
@@ -402,6 +416,7 @@ static void astal_wp_endpoint_dispose(GObject *object) {
 }
 
 static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
+    g_return_if_fail(ASTAL_WP_IS_ENDPOINT(self));
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
     priv->device_signal_group = g_signal_group_new(ASTAL_WP_TYPE_DEVICE);
     g_signal_group_connect_swapped(priv->device_signal_group, "notify::routes",

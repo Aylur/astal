@@ -34,12 +34,12 @@ static GParamSpec *astal_wp_stream_properties[ASTAL_WP_STREAM_N_PROPERTIES] = {
 };
 
 gint astal_wp_stream_get_target_serial(AstalWpStream *self) {
-    g_return_val_if_fail(self != NULL, -1);
+    g_return_val_if_fail(ASTAL_WP_IS_STREAM(self), -1);
     return self->target_serial;
 }
 
 void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
-    g_return_if_fail(self != NULL);
+    g_return_if_fail(ASTAL_WP_IS_STREAM(self));
     AstalWpWp *wp;
     guint id;
     gchar *serial_str = g_strdup_printf("%d", serial);
@@ -56,7 +56,7 @@ void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
  * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_stream_get_target_endpoint(AstalWpStream *self) {
-    g_return_val_if_fail(self != NULL, NULL);
+    g_return_val_if_fail(ASTAL_WP_IS_STREAM(self), NULL);
     AstalWpWp *wp;
     g_object_get(self, "wp", &wp, NULL);
 
@@ -73,7 +73,7 @@ AstalWpEndpoint *astal_wp_stream_get_target_endpoint(AstalWpStream *self) {
  *
  */
 void astal_wp_stream_set_target_endpoint(AstalWpStream *self, AstalWpEndpoint *target) {
-    g_return_if_fail(self != NULL);
+    g_return_if_fail(ASTAL_WP_IS_STREAM(self));
     if (target == NULL)
         astal_wp_stream_set_target_serial(self, -1);
     else
@@ -81,12 +81,12 @@ void astal_wp_stream_set_target_endpoint(AstalWpStream *self, AstalWpEndpoint *t
 }
 
 AstalWpMediaRole astal_wp_stream_get_media_role(AstalWpStream *self) {
-    g_return_val_if_fail(self != NULL, ASTAL_WP_MEDIA_ROLE_UNKNOWN);
+    g_return_val_if_fail(ASTAL_WP_IS_STREAM(self), ASTAL_WP_MEDIA_ROLE_UNKNOWN);
     return self->media_role;
 }
 
 AstalWpMediaCategory astal_wp_stream_get_media_category(AstalWpStream *self) {
-    g_return_val_if_fail(self != NULL, ASTAL_WP_MEDIA_CATEGORY_UNKNOWN);
+    g_return_val_if_fail(ASTAL_WP_IS_STREAM(self), ASTAL_WP_MEDIA_CATEGORY_UNKNOWN);
     return self->media_category;
 }
 

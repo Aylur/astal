@@ -32,10 +32,12 @@ static GParamSpec *astal_wp_channel_properties[ASTAL_WP_CHANNEL_N_PROPERTIES] = 
  * the node this channel is associated with, this method will set the volume for all channels.
  */
 void astal_wp_channel_set_volume(AstalWpChannel *self, gdouble volume) {
+    g_return_if_fail(ASTAL_WP_IS_CHANNEL(self));
     astal_wp_node_set_channel_volume(self->node, self->name, volume);
 }
 
 void astal_wp_channel_update_volume(AstalWpChannel *self, gdouble volume) {
+    g_return_if_fail(ASTAL_WP_IS_CHANNEL(self));
     if (volume == self->volume) return;
     self->volume = volume;
     g_object_notify(G_OBJECT(self), "volume");
@@ -47,16 +49,23 @@ void astal_wp_channel_update_volume(AstalWpChannel *self, gdouble volume) {
  *
  * the name of the channel
  */
-const gchar *astal_wp_channel_get_name(AstalWpChannel *self) { return self->name; }
+const gchar *astal_wp_channel_get_name(AstalWpChannel *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_CHANNEL(self), NULL);
+    return self->name; 
+}
 
 /**
  * astal_wp_channel_get_volume:
  *
  * the volume of the channel
  */
-gdouble astal_wp_channel_get_volume(AstalWpChannel *self) { return self->volume; }
+gdouble astal_wp_channel_get_volume(AstalWpChannel *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_CHANNEL(self), 0);
+    return self->volume; 
+}
 
 const gchar *astal_wp_channel_get_volume_icon(AstalWpChannel *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_CHANNEL(self), "audio-volume-muted-symbolic");
     if (self->volume == 0) return "audio-volume-muted-symbolic";
     if (self->volume <= 0.33) return "audio-volume-low-symbolic";
     if (self->volume <= 0.66) return "audio-volume-medium-symbolic";

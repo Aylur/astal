@@ -59,7 +59,10 @@ static GParamSpec *astal_wp_device_properties[ASTAL_WP_DEVICE_N_PROPERTIES] = {
  *
  * Returns: (nullable):
  */
-const gchar *astal_wp_device_get_form_factor(AstalWpDevice *self) { return self->from_factor; }
+const gchar *astal_wp_device_get_form_factor(AstalWpDevice *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
+    return self->from_factor; 
+}
 
 /**
  * astal_wp_device_get_id
@@ -68,7 +71,10 @@ const gchar *astal_wp_device_get_form_factor(AstalWpDevice *self) { return self-
  * gets the id of this device
  *
  */
-guint astal_wp_device_get_id(AstalWpDevice *self) { return self->id; }
+guint astal_wp_device_get_id(AstalWpDevice *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), 0);
+    return self->id; 
+}
 
 /**
  * astal_wp_device_get_description
@@ -78,7 +84,10 @@ guint astal_wp_device_get_id(AstalWpDevice *self) { return self->id; }
  *
  * Returns: (nullable):
  */
-const gchar *astal_wp_device_get_description(AstalWpDevice *self) { return self->description; }
+const gchar *astal_wp_device_get_description(AstalWpDevice *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
+    return self->description; 
+}
 
 /**
  * astal_wp_device_get_icon
@@ -88,7 +97,7 @@ const gchar *astal_wp_device_get_description(AstalWpDevice *self) { return self-
  *
  */
 const gchar *astal_wp_device_get_icon(AstalWpDevice *self) {
-    g_return_val_if_fail(self != NULL, "audio-card-symbolic");
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), "audio-card-symbolic");
     return self->icon;
 }
 
@@ -99,7 +108,10 @@ const gchar *astal_wp_device_get_icon(AstalWpDevice *self) {
  * gets the type of this device
  *
  */
-AstalWpDeviceType astal_wp_device_get_device_type(AstalWpDevice *self) { return self->type; }
+AstalWpDeviceType astal_wp_device_get_device_type(AstalWpDevice *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), ASTAL_WP_DEVICE_TYPE_UNKNOWN);
+    return self->type; 
+}
 
 /**
  * astal_wp_device_get_active_profile_id
@@ -108,7 +120,10 @@ AstalWpDeviceType astal_wp_device_get_device_type(AstalWpDevice *self) { return 
  * gets the currently active profile of this device
  *
  */
-gint astal_wp_device_get_active_profile_id(AstalWpDevice *self) { return self->active_profile_id; }
+gint astal_wp_device_get_active_profile_id(AstalWpDevice *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), 0);
+    return self->active_profile_id; 
+}
 
 /**
  * astal_wp_device_set_active_profile_id
@@ -119,6 +134,7 @@ gint astal_wp_device_get_active_profile_id(AstalWpDevice *self) { return self->a
  *
  */
 void astal_wp_device_set_active_profile_id(AstalWpDevice *self, int profile_id) {
+    g_return_if_fail(ASTAL_WP_IS_DEVICE(self));
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     WpSpaPodBuilder *builder =
@@ -141,6 +157,7 @@ void astal_wp_device_set_active_profile_id(AstalWpDevice *self, int profile_id) 
  * Returns: (transfer none) (nullable)
  */
 AstalWpProfile *astal_wp_device_get_profile(AstalWpDevice *self, gint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     return g_hash_table_lookup(priv->profiles, GINT_TO_POINTER(id));
@@ -155,6 +172,7 @@ AstalWpProfile *astal_wp_device_get_profile(AstalWpDevice *self, gint id) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpProfile))
  */
 GList *astal_wp_device_get_profiles(AstalWpDevice *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
     return g_hash_table_get_values(priv->profiles);
 }
@@ -166,7 +184,10 @@ GList *astal_wp_device_get_profiles(AstalWpDevice *self) {
  * gets the currently active input route of this device
  *
  */
-gint astal_wp_device_get_input_route_id(AstalWpDevice *self) { return self->input_route_id; }
+gint astal_wp_device_get_input_route_id(AstalWpDevice *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), 0);
+    return self->input_route_id; 
+}
 
 /**
  * astal_wp_device_get_output_route_id
@@ -175,7 +196,10 @@ gint astal_wp_device_get_input_route_id(AstalWpDevice *self) { return self->inpu
  * gets the currently active output route of this device
  *
  */
-gint astal_wp_device_get_output_route_id(AstalWpDevice *self) { return self->output_route_id; }
+gint astal_wp_device_get_output_route_id(AstalWpDevice *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), 0);
+    return self->output_route_id; 
+}
 
 /**
  * astal_wp_device_get_route:
@@ -187,7 +211,7 @@ gint astal_wp_device_get_output_route_id(AstalWpDevice *self) { return self->out
  * Returns: (transfer none) (nullable)
  */
 AstalWpRoute *astal_wp_device_get_route(AstalWpDevice *self, gint id) {
-    g_return_val_if_fail(self != NULL, NULL);
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     return g_hash_table_lookup(priv->routes, GINT_TO_POINTER(id));
@@ -201,6 +225,7 @@ AstalWpRoute *astal_wp_device_get_route(AstalWpDevice *self, gint id) {
  * sets the route for this device. You should use the [method@AstalWp.Endpoint.set_route] instead.
  */
 void astal_wp_device_set_route(AstalWpDevice *self, AstalWpRoute *route, guint card_device) {
+    g_return_if_fail(ASTAL_WP_IS_DEVICE(self));
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
     WpSpaPodBuilder *builder = wp_spa_pod_builder_new_object("Spa:Pod:Object:Param:Route", "Route");
     wp_spa_pod_builder_add_property(builder, "index");
@@ -224,6 +249,7 @@ void astal_wp_device_set_route(AstalWpDevice *self, AstalWpRoute *route, guint c
  * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
  */
 GList *astal_wp_device_get_routes(AstalWpDevice *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
     return g_hash_table_get_values(priv->routes);
 }
@@ -247,6 +273,7 @@ static void astal_wp_device_filter_by_direction(gpointer key, gpointer value, gp
  * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
  */
 GList *astal_wp_device_get_input_routes(AstalWpDevice *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     GList *routes = NULL;
@@ -268,6 +295,7 @@ GList *astal_wp_device_get_input_routes(AstalWpDevice *self) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpRoute))
  */
 GList *astal_wp_device_get_output_routes(AstalWpDevice *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
     GList *routes = NULL;
@@ -289,6 +317,7 @@ GList *astal_wp_device_get_output_routes(AstalWpDevice *self) {
  * Returns: (transfer full) (nullable)
  */
 gchar *astal_wp_device_get_pw_property(AstalWpDevice *self, const gchar *key) {
+    g_return_val_if_fail(ASTAL_WP_IS_DEVICE(self), NULL);
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
     if(priv->device == NULL) return NULL;
     const gchar *value = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->device), key);

@@ -67,6 +67,7 @@ static GParamSpec *astal_wp_video_properties[ASTAL_WP_VIDEO_N_PROPERTIES] = {
  * Returns: (transfer none) (nullable): the source with the given id
  */
 AstalWpEndpoint *astal_wp_video_get_source(AstalWpVideo *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -85,6 +86,7 @@ AstalWpEndpoint *astal_wp_video_get_source(AstalWpVideo *self, guint id) {
  * Returns: (transfer none) (nullable): the sink with the given id
  */
 AstalWpEndpoint *astal_wp_video_get_sink(AstalWpVideo *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -103,6 +105,7 @@ AstalWpEndpoint *astal_wp_video_get_sink(AstalWpVideo *self, guint id) {
  * Returns: (transfer none) (nullable): the stream with the given id
  */
 AstalWpStream *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -121,6 +124,7 @@ AstalWpStream *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
  * Returns: (transfer none) (nullable): the recorder with the given id
  */
 AstalWpStream *astal_wp_video_get_recorder(AstalWpVideo *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -139,6 +143,7 @@ AstalWpStream *astal_wp_video_get_recorder(AstalWpVideo *self, guint id) {
  * Returns: (transfer none) (nullable): the device with the given id
  */
 AstalWpDevice *astal_wp_video_get_device(AstalWpVideo *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
 
     AstalWpDevice *device = astal_wp_wp_get_device(priv->wp, id);
@@ -156,6 +161,7 @@ AstalWpDevice *astal_wp_video_get_device(AstalWpVideo *self, guint id) {
  * video sources
  */
 GList *astal_wp_video_get_sources(AstalWpVideo *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
@@ -179,6 +185,7 @@ GList *astal_wp_video_get_sources(AstalWpVideo *self) {
  * video sinks
  */
 GList *astal_wp_video_get_sinks(AstalWpVideo *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
@@ -202,6 +209,7 @@ GList *astal_wp_video_get_sinks(AstalWpVideo *self) {
  * video recorders
  */
 GList *astal_wp_video_get_recorders(AstalWpVideo *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
@@ -225,6 +233,7 @@ GList *astal_wp_video_get_recorders(AstalWpVideo *self) {
  * video streams
  */
 GList *astal_wp_video_get_streams(AstalWpVideo *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *list = NULL;
@@ -248,6 +257,7 @@ GList *astal_wp_video_get_streams(AstalWpVideo *self) {
  * devices
  */
 GList *astal_wp_video_get_devices(AstalWpVideo *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_VIDEO(self), NULL);
     AstalWpVideoPrivate *priv = astal_wp_video_get_instance_private(self);
     GList *eps = astal_wp_wp_get_devices(priv->wp);
     GList *list = NULL;

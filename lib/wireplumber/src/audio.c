@@ -72,6 +72,7 @@ static GParamSpec *astal_wp_audio_properties[ASTAL_WP_AUDIO_N_PROPERTIES] = {
  * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -90,6 +91,7 @@ AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id) {
  * Returns: (transfer none) (nullable)
  */
 AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -109,6 +111,7 @@ AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
  * Returns: (transfer none) (nullable)
  */
 AstalWpStream *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -127,6 +130,7 @@ AstalWpStream *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
  * Returns: (transfer none) (nullable)
  */
 AstalWpStream *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -145,6 +149,7 @@ AstalWpStream *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
  * Returns: (transfer none) (nullable)
  */
 AstalWpDevice *astal_wp_audio_get_device(AstalWpAudio *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
     return astal_wp_wp_get_device(priv->wp, id);
@@ -159,6 +164,7 @@ AstalWpDevice *astal_wp_audio_get_device(AstalWpAudio *self, guint id) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
  */
 GList *astal_wp_audio_get_microphones(AstalWpAudio *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *mics = NULL;
@@ -182,6 +188,7 @@ GList *astal_wp_audio_get_microphones(AstalWpAudio *self) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpEndpoint))
  */
 GList *astal_wp_audio_get_speakers(AstalWpAudio *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *speakers = NULL;
@@ -204,6 +211,7 @@ GList *astal_wp_audio_get_speakers(AstalWpAudio *self) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpStream))
  */
 GList *astal_wp_audio_get_recorders(AstalWpAudio *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *recorders = NULL;
@@ -226,6 +234,7 @@ GList *astal_wp_audio_get_recorders(AstalWpAudio *self) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpStream))
  */
 GList *astal_wp_audio_get_streams(AstalWpAudio *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     GList *nodes = astal_wp_wp_get_nodes(priv->wp);
     GList *streams = NULL;
@@ -248,6 +257,7 @@ GList *astal_wp_audio_get_streams(AstalWpAudio *self) {
  * Returns: (transfer container) (nullable) (type GList(AstalWpDevice))
  */
 GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     GList *eps = astal_wp_wp_get_devices(priv->wp);
     GList *list = NULL;
@@ -271,6 +281,7 @@ GList *astal_wp_audio_get_devices(AstalWpAudio *self) {
  * Returns: (transfer none) (nullable)
  */
 AstalWpNode *astal_wp_audio_get_node(AstalWpAudio *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
 
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
@@ -285,6 +296,7 @@ AstalWpNode *astal_wp_audio_get_node(AstalWpAudio *self, guint id) {
  * Returns: (transfer none)
  */
 AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     return astal_wp_wp_get_default_speaker(priv->wp);
 }
@@ -297,6 +309,7 @@ AstalWpEndpoint *astal_wp_audio_get_default_speaker(AstalWpAudio *self) {
  * Returns: (transfer none)
  */
 AstalWpEndpoint *astal_wp_audio_get_default_microphone(AstalWpAudio *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_AUDIO(self), NULL);
     AstalWpAudioPrivate *priv = astal_wp_audio_get_instance_private(self);
     return astal_wp_wp_get_default_microphone(priv->wp);
 }

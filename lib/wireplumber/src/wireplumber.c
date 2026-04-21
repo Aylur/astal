@@ -3,6 +3,7 @@
 #include "astal-wp-enum-types.h"
 #include "audio.h"
 #include "device.h"
+#include "enums.h"
 #include "gio/gio.h"
 #include "glib-object.h"
 #include "glib.h"
@@ -92,6 +93,7 @@ static GParamSpec *astal_wp_wp_properties[ASTAL_WP_WP_N_PROPERTIES] = {
  * Returns: (transfer none) (nullable): the node with the given id
  */
 AstalWpNode *astal_wp_wp_get_node(AstalWpWp *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     AstalWpNode *node = g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id));
@@ -108,6 +110,7 @@ AstalWpNode *astal_wp_wp_get_node(AstalWpWp *self, guint id) {
  * nodes
  */
 GList *astal_wp_wp_get_nodes(AstalWpWp *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     return g_hash_table_get_values(priv->nodes);
 }
@@ -122,6 +125,7 @@ GList *astal_wp_wp_get_nodes(AstalWpWp *self) {
  * Returns: (transfer none) (nullable): the device with the given id
  */
 AstalWpDevice *astal_wp_wp_get_device(AstalWpWp *self, guint id) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     AstalWpDevice *device = g_hash_table_lookup(priv->devices, GUINT_TO_POINTER(id));
@@ -138,6 +142,7 @@ AstalWpDevice *astal_wp_wp_get_device(AstalWpWp *self, guint id) {
  * devices
  */
 GList *astal_wp_wp_get_devices(AstalWpWp *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     return g_hash_table_get_values(priv->devices);
 }
@@ -149,7 +154,10 @@ GList *astal_wp_wp_get_devices(AstalWpWp *self) {
  *
  * Returns: (transfer none): gets the audio object
  */
-AstalWpAudio *astal_wp_wp_get_audio(AstalWpWp *self) { return self->audio; }
+AstalWpAudio *astal_wp_wp_get_audio(AstalWpWp *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
+    return self->audio;
+}
 
 /**
  * astal_wp_wp_get_video
@@ -158,7 +166,10 @@ AstalWpAudio *astal_wp_wp_get_audio(AstalWpWp *self) { return self->audio; }
  *
  * Returns: (transfer none): gets the video object
  */
-AstalWpVideo *astal_wp_wp_get_video(AstalWpWp *self) { return self->video; }
+AstalWpVideo *astal_wp_wp_get_video(AstalWpWp *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
+    return self->video;
+}
 
 /**
  * astal_wp_wp_get_default_speaker
@@ -167,7 +178,10 @@ AstalWpVideo *astal_wp_wp_get_video(AstalWpWp *self) { return self->video; }
  *
  * Returns: (transfer none): gets the default speaker object
  */
-AstalWpEndpoint *astal_wp_wp_get_default_speaker(AstalWpWp *self) { return self->default_speaker; }
+AstalWpEndpoint *astal_wp_wp_get_default_speaker(AstalWpWp *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
+    return self->default_speaker;
+}
 
 /**
  * astal_wp_wp_get_default_microphone
@@ -177,12 +191,17 @@ AstalWpEndpoint *astal_wp_wp_get_default_speaker(AstalWpWp *self) { return self-
  * Returns: (transfer none): gets the default microphone object
  */
 AstalWpEndpoint *astal_wp_wp_get_default_microphone(AstalWpWp *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
     return self->default_microphone;
 }
 
-AstalWpScale astal_wp_wp_get_scale(AstalWpWp *self) { return self->scale; }
+AstalWpScale astal_wp_wp_get_scale(AstalWpWp *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), ASTAL_WP_SCALE_CUBIC);
+    return self->scale;
+}
 
 void astal_wp_wp_set_scale(AstalWpWp *self, AstalWpScale scale) {
+    g_return_if_fail(ASTAL_WP_IS_WP(self));
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     self->scale = scale;
 
@@ -215,6 +234,7 @@ static gboolean astal_wp_wp_node_compare_serial(gpointer key, gpointer value, gp
  * Returns: (transfer none) (nullable)
  */
 AstalWpNode *astal_wp_wp_get_node_by_serial(AstalWpWp *self, gint serial) {
+    g_return_val_if_fail(ASTAL_WP_IS_WP(self), NULL);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     return g_hash_table_find(priv->nodes, astal_wp_wp_node_compare_serial, GINT_TO_POINTER(serial));
 }

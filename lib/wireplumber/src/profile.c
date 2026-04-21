@@ -3,6 +3,7 @@
 #include <wp/wp.h>
 
 #include "astal-wp-enum-types.h"
+#include "enums.h"
 #include "glib-object.h"
 
 struct _AstalWpProfile {
@@ -30,15 +31,30 @@ static GParamSpec *astal_wp_profile_properties[ASTAL_WP_PROFILE_N_PROPERTIES] = 
     NULL,
 };
 
-gint astal_wp_profile_get_index(AstalWpProfile *self) { return self->index; }
+gint astal_wp_profile_get_index(AstalWpProfile *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_PROFILE(self), 0);
+    return self->index; 
+}
 
-const gchar *astal_wp_profile_get_description(AstalWpProfile *self) { return self->description; }
+const gchar *astal_wp_profile_get_description(AstalWpProfile *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_PROFILE(self), NULL);
+    return self->description; 
+}
 
-const gchar *astal_wp_profile_get_name(AstalWpProfile *self) { return self->name; }
+const gchar *astal_wp_profile_get_name(AstalWpProfile *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_PROFILE(self), NULL);
+    return self->name; 
+}
 
-AstalWpAvailable astal_wp_profile_get_available(AstalWpProfile *self) { return self->available; }
+AstalWpAvailable astal_wp_profile_get_available(AstalWpProfile *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_PROFILE(self), ASTAL_WP_AVAILABLE_UNKNOWN);
+    return self->available; 
+}
 
-gint astal_wp_profile_get_priority(AstalWpProfile *self) { return self->priority; }
+gint astal_wp_profile_get_priority(AstalWpProfile *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_PROFILE(self), 0);
+    return self->priority;
+}
 
 static void astal_wp_profile_get_property(GObject *object, guint property_id, GValue *value,
                                           GParamSpec *pspec) {

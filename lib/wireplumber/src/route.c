@@ -3,6 +3,7 @@
 #include <wp/wp.h>
 
 #include "astal-wp-enum-types.h"
+#include "enums.h"
 #include "glib-object.h"
 #include "glib.h"
 
@@ -33,17 +34,35 @@ static GParamSpec *astal_wp_route_properties[ASTAL_WP_ROUTE_N_PROPERTIES] = {
     NULL,
 };
 
-gint astal_wp_route_get_index(AstalWpRoute *self) { return self->index; }
+gint astal_wp_route_get_index(AstalWpRoute *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_ROUTE(self), 0);
+    return self->index; 
+}
 
-const gchar *astal_wp_route_get_description(AstalWpRoute *self) { return self->description; }
+const gchar *astal_wp_route_get_description(AstalWpRoute *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_ROUTE(self), NULL);
+    return self->description;
+}
 
-const gchar *astal_wp_route_get_name(AstalWpRoute *self) { return self->name; }
+const gchar *astal_wp_route_get_name(AstalWpRoute *self) { 
+    g_return_val_if_fail(ASTAL_WP_IS_ROUTE(self), NULL);
+    return self->name; 
+}
 
-AstalWpDirection astal_wp_route_get_direction(AstalWpRoute *self) { return self->direction; }
+AstalWpDirection astal_wp_route_get_direction(AstalWpRoute *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_ROUTE(self), ASTAL_WP_DIRECTION_OUTPUT);
+    return self->direction;
+}
 
-AstalWpAvailable astal_wp_route_get_available(AstalWpRoute *self) { return self->available; }
+AstalWpAvailable astal_wp_route_get_available(AstalWpRoute *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_ROUTE(self), ASTAL_WP_AVAILABLE_UNKNOWN);
+    return self->available;
+}
 
-gint astal_wp_route_get_priority(AstalWpRoute *self) { return self->priority; }
+gint astal_wp_route_get_priority(AstalWpRoute *self) {
+    g_return_val_if_fail(ASTAL_WP_IS_ROUTE(self), 0);
+    return self->priority;
+}
 
 static void astal_wp_route_get_property(GObject *object, guint property_id, GValue *value,
                                         GParamSpec *pspec) {
@@ -105,7 +124,10 @@ static void astal_wp_route_set_property(GObject *object, guint property_id, cons
     }
 }
 
-static void astal_wp_route_init(AstalWpRoute *self) { self->description = NULL; }
+static void astal_wp_route_init(AstalWpRoute *self) {
+    g_return_if_fail(ASTAL_WP_IS_ROUTE(self));
+    self->description = NULL;
+}
 
 static void astal_wp_route_finalize(GObject *object) {
     AstalWpRoute *self = ASTAL_WP_ROUTE(object);
