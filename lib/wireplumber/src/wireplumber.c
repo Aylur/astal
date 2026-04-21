@@ -399,6 +399,16 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
         astal_wp_wp_check_delayed_endpoints(self, wp_proxy_get_bound_id(WP_PROXY(node)));
+
+        if(astal_wp_endpoint_get_device_id(self->default_speaker) == astal_wp_device_get_id(device)) {
+            g_object_notify(G_OBJECT(self->default_speaker), "device-id");
+            g_object_notify(G_OBJECT(self->default_speaker), "device");
+ 
+        if(astal_wp_endpoint_get_device_id(self->default_microphone) == astal_wp_device_get_id(device)) {
+            g_object_notify(G_OBJECT(self->default_microphone), "device-id");
+            g_object_notify(G_OBJECT(self->default_microphone), "device");
+        }
+       }
     }
 }
 
