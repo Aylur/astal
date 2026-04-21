@@ -1,0 +1,1 @@
+option('gtk-version', type: 'array', choices: ['3', '4'], value: ['4'])

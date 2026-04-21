@@ -70,6 +70,7 @@ in
     pname,
     libname,
     gir-suffix,
+    api-ver ? null,
     authors,
     description,
     dependencies ? [],
@@ -77,13 +78,15 @@ in
     website-path ? libname,
     nativeBuildInputs ? [],
     packages ? [],
+    mesonFlags ? [],
     postUnpack ? "",
   }: let
     version = readVer "${src}/version";
 
     ver = splitVersion version;
-    api-ver = "${elemAt ver 0}.${elemAt ver 1}";
-    girName = "Astal${gir-suffix}-${api-ver}";
+    api-ver' = if api-ver == null then "${elemAt ver 0}.${elemAt ver 1}"
+               else api-ver;
+    girName = "Astal${gir-suffix}-${api-ver'}";
   in
     pkgs.stdenv.mkDerivation {
       inherit pname src version;
@@ -108,6 +111,8 @@ in
           glib
         ]
         ++ packages;
+
+      mesonFlags = mesonFlags;
 
       postUnpack = ''
         cp --remove-destination ${../lib/gir.py} $sourceRoot/gir.py
