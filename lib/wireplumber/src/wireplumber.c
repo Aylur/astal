@@ -407,17 +407,25 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
 
     if (WP_IS_NODE(object)) {
         guint id = wp_proxy_get_bound_id(WP_PROXY(object));
-        AstalWpNode *node = g_object_ref(g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id)));
+        AstalWpNode *node = g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id));
+        if(node != NULL) {
+            g_object_ref(node);
+            g_hash_table_remove(priv->nodes, GUINT_TO_POINTER(id));
 
-        g_hash_table_remove(priv->nodes, GUINT_TO_POINTER(id));
-
-        g_signal_emit_by_name(self, "node-removed", node);
-        g_object_notify(G_OBJECT(self), "nodes");
-        g_object_unref(node);
+            g_signal_emit_by_name(self, "node-removed", node);
+            g_object_notify(G_OBJECT(self), "nodes");
+            g_object_unref(node);
+        }
+        else {
+            node = g_hash_table_lookup(priv->delayed_endpoints, GUINT_TO_POINTER(id));
+            if(node == NULL) return;
+            g_hash_table_remove(priv->delayed_endpoints, GUINT_TO_POINTER(id));
+        }
     } else if (WP_IS_DEVICE(object)) {
         guint id = wp_proxy_get_bound_id(WP_PROXY(object));
-        AstalWpDevice *device =
-            g_object_ref(g_hash_table_lookup(priv->devices, GUINT_TO_POINTER(id)));
+        AstalWpDevice *device = g_hash_table_lookup(priv->devices, GUINT_TO_POINTER(id));
+        if(device == NULL) return;
+        g_object_ref(device);
         g_hash_table_remove(priv->devices, GUINT_TO_POINTER(id));
 
         g_signal_emit_by_name(self, "device-removed", device);
