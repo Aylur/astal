@@ -12,7 +12,7 @@
       rev = "1.0.0";
       hash = "sha256-XdgYmxW0ndH6szq7VJ+XQEnWKHCyaWoBwEQREZnTm98=";
     };
- 
+
     nativeBuildInputs = with pkgs; [
       meson
       ninja
@@ -22,16 +22,15 @@
     patchPhase = ''
       patchShebangs wl-vapi-gen.py
     '';
-
   };
 in
-mkAstalPkg {
-  pname = "astal-wl";
-  src = ./.;
-  packages = [wl-vapi-gen];
+  mkAstalPkg {
+    pname = "astal-wl";
+    src = ./.;
+    packages = [wl-vapi-gen];
 
-  libname = "wl";
-  authors = "kotontrion";
-  gir-suffix = "Wl";
-  description = "A central wayland connection manager for the other libs.";
-}
+    libname = "wl";
+    authors = "kotontrion";
+    name = "AstalWl";
+    description = "A central wayland connection manager for the other libs.";
+  }

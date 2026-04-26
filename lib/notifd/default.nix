@@ -10,6 +10,6 @@ mkAstalPkg {
 
   libname = "notifd";
   authors = "Aylur";
-  gir-suffix = "Notifd";
+  name = "AstalNotifd";
   description = "Notification daemon library";
 }

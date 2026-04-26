@@ -5,6 +5,6 @@ mkAstalPkg {
 
   libname = "bluetooth";
   authors = "Aylur";
-  gir-suffix = "Bluetooth";
+  name = "AstalBluetooth";
   description = "DBus proxy for bluez";
 }

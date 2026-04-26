@@ -10,6 +10,6 @@ mkAstalPkg {
 
   libname = "greet";
   authors = "Aylur";
-  gir-suffix = "Greet";
+  name = "AstalGreet";
   description = "IPC client for greetd";
 }

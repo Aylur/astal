@@ -13,7 +13,7 @@ mkAstalPkg {
   ];
 
   libname = "astal4";
-  gir-suffix = "";
+  name = "Astal";
   authors = "Aylur";
   description = "Astal GTK4 widget library";
   dependencies = ["AstalIO-0.1" "Gtk-4.0"];

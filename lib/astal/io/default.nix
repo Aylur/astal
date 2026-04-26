@@ -2,9 +2,8 @@
 mkAstalPkg {
   pname = "astal";
   src = ./.;
-
   libname = "io";
-  gir-suffix = "IO";
+  name = "AstalIO";
   authors = "Aylur";
   description = "Astal Core library";
   repo-path = "astal/io";

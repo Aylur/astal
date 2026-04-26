@@ -36,6 +36,6 @@ in
 
     libname = "tray";
     authors = "kotontrion";
-    gir-suffix = "Tray";
+    name = "AstalTray";
     description = "StatusNotifierItem implementation";
   }

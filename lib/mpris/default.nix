@@ -10,6 +10,6 @@ mkAstalPkg {
 
   libname = "mpris";
   authors = "Aylur";
-  gir-suffix = "Mpris";
+  name = "AstalMpris";
   description = "Control mpris players";
 }

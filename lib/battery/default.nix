@@ -10,6 +10,6 @@ mkAstalPkg {
 
   libname = "battery";
   authors = "Aylur";
-  gir-suffix = "Battery";
+  name = "AstalBattery";
   description = "DBus proxy for upowerd devices";
 }
