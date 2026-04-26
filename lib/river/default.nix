@@ -13,7 +13,7 @@
       rev = "1.0.0";
       hash = "sha256-XdgYmxW0ndH6szq7VJ+XQEnWKHCyaWoBwEQREZnTm98=";
     };
- 
+
     nativeBuildInputs = with pkgs; [
       meson
       ninja
@@ -23,7 +23,6 @@
     patchPhase = ''
       patchShebangs wl-vapi-gen.py
     '';
-
   };
 in
   mkAstalPkg {
@@ -36,7 +35,7 @@ in
 
     libname = "river";
     authors = "kotontrion";
-    gir-suffix = "River";
+    name = "AstalRiver";
     description = "IPC client for River";
     dependencies = ["AstalWl-0.1"];
   }

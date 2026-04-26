@@ -10,6 +10,6 @@ mkAstalPkg {
 
   libname = "hyprland";
   authors = "Aylur";
-  gir-suffix = "Hyprland";
+  name = "AstalHyprland";
   description = "IPC client for Hyprland";
 }

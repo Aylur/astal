@@ -10,6 +10,6 @@ mkAstalPkg {
 
   libname = "powerprofiles";
   authors = "Aylur";
-  gir-suffix = "PowerProfiles";
+  name = "AstalPowerProfiles";
   description = "DBus proxy for upowerd profiles";
 }

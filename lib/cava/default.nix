@@ -51,6 +51,6 @@ in
 
     libname = "cava";
     authors = "kotontrion";
-    gir-suffix = "Cava";
+    name = "AstalCava";
     description = "Audio visualization library using cava";
   }

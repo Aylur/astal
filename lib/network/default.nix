@@ -10,7 +10,7 @@ mkAstalPkg {
 
   libname = "network";
   authors = "Aylur";
-  gir-suffix = "Network";
+  name = "AstalNetwork";
   description = "NetworkManager wrapper library";
   dependencies = ["NM-1.0"];
 }

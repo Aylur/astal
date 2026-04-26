@@ -69,7 +69,7 @@ in
     src,
     pname,
     libname,
-    gir-suffix,
+    name,
     authors,
     description,
     dependencies ? [],
@@ -83,14 +83,14 @@ in
 
     ver = splitVersion version;
     api-ver = "${elemAt ver 0}.${elemAt ver 1}";
-    girName = "Astal${gir-suffix}-${api-ver}";
+    girName = "${name}-${api-ver}";
   in
     pkgs.stdenv.mkDerivation {
       inherit pname src version;
       outputs = ["out" "dev" "doc"];
 
-      nativeBuildInputs = with pkgs;
-        [
+      nativeBuildInputs =
+        (with pkgs; [
           wrapGAppsHook3
           gobject-introspection
           meson
@@ -100,14 +100,10 @@ in
           wayland
           wayland-scanner
           python3
-        ]
+        ])
         ++ nativeBuildInputs;
 
-      propagatedBuildInputs = with pkgs;
-        [
-          glib
-        ]
-        ++ packages;
+      propagatedBuildInputs = [pkgs.glib] ++ packages;
 
       postUnpack = ''
         cp --remove-destination ${../lib/gir.py} $sourceRoot/gir.py

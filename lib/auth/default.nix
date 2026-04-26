@@ -9,7 +9,7 @@ mkAstalPkg {
   packages = [pkgs.pam];
 
   libname = "auth";
-  gir-suffix = "Auth";
+  name = "AstalAuth";
   authors = "kotontrion";
   description = "Authentication using pam";
 }

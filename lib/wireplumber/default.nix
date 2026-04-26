@@ -10,7 +10,7 @@ mkAstalPkg {
 
   libname = "wireplumber";
   authors = "kotontrion";
-  gir-suffix = "Wp";
+  name = "AstalWp";
   description = "Wrapper library over the wireplumber API";
   dependencies = ["WP-0.5"];
 }
