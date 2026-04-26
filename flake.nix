@@ -30,6 +30,7 @@
       network = mkPkg ./lib/network;
       notifd = mkPkg ./lib/notifd;
       powerprofiles = mkPkg ./lib/powerprofiles;
+      quarrel = mkPkg ./lib/quarrel;
       river = mkPkg ./lib/river;
       tray = mkPkg ./lib/tray;
       wireplumber = mkPkg ./lib/wireplumber;

@@ -63,6 +63,7 @@ export default defineConfig({
           { text: "Network", link: "/guide/libraries/network" },
           { text: "Notifd", link: "/guide/libraries/notifd" },
           { text: "PowerProfiles", link: "/guide/libraries/powerprofiles" },
+          { text: "Quarrel", link: "/guide/libraries/quarrel" },
           { text: "River", link: "/guide/libraries/river" },
           { text: "Tray", link: "/guide/libraries/tray" },
           { text: "WirePlumber", link: "/guide/libraries/wireplumber" },
