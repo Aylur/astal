@@ -3,12 +3,18 @@ namespace Quarrel {
  * Declarative command definition with builder-style APIs for options, arguments, subcommands, parsing, and help generation.
  */
 public class Command : Object {
-    internal HashTable<string, Command> subcommands = new HashTable<string, Command>(str_hash, str_equal);
+    private static Command? current;
 
-    internal HashTable<char, Opt> shorts = new HashTable<char, Opt>(direct_hash, direct_equal);
-    internal HashTable<string, Opt> longs = new HashTable<string, Opt>(str_hash, str_equal);
+    /** The current command that threw an error while parsing. */
+    public static Command? throwing() {
+        return current;
+    }
+
+    internal HashTable<string, Command> subcommands = new HashTable<string, Command>(str_hash, str_equal);
     internal Opt[] opts = {};
-    internal string[] argvec = null;
+
+    private HashTable<char, Opt> shorts = new HashTable<char, Opt>(direct_hash, direct_equal);
+    private HashTable<string, Opt> longs = new HashTable<string, Opt>(str_hash, str_equal);
 
     internal string[] examples = {};
 
@@ -19,16 +25,19 @@ public class Command : Object {
     }
 
     internal Arg[] arg_list = {};
-    internal uint min_args = 0;
-    internal uint max_args = 0;
+    private uint min_args = 0;
+    private uint max_args = 0;
     internal string? rest_args_name;
     internal string? rest_args_description;
 
     /** Parent Command that this Command is a subcommand of. */
-    public Command? parent { get; construct set; }
+    public Command? parent { get; private set; }
 
     /** Description set via [method@Command.about]. */
     public string? about_text { get; private set; }
+
+    /** Parsed positional arguments. */
+    public string[] args { get; private set; }
 
     /**
      * Name of this command.
@@ -138,12 +147,13 @@ public class Command : Object {
         return_val_if_reached(null);
     }
 
-    /**
-     * Get the parsed positional arguments. Guaranteed to be empty before calling [method@Command.parse].
-     */
-    public string[] args { get { return argvec; } }
+    private void validate_parsed_args(string[] parsed_args) throws ParseError {
+        foreach (var opt in opts) {
+            if (opt is SpecialFlag && opt.enabled) {
+                return;
+            }
+        }
 
-    private void validate_parsed_args (string[] parsed_args) throws ParseError {
         if (parsed_args.length < min_args) {
             throw new ParseError.MISSING_ARGS("expected at least %u arguments, got %u".printf(min_args, parsed_args.length));
         }
@@ -151,6 +161,8 @@ public class Command : Object {
         if (parsed_args.length > max_args) {
             throw new ParseError.EXTRA_ARGS("expected at most %u arguments, got %u".printf(max_args, parsed_args.length));
         }
+
+        args = parsed_args;
     }
 
     /**
@@ -158,9 +170,10 @@ public class Command : Object {
      * assumed to be the name of this command.
      * Returns the command that should be invoked.
      */
-    public Command parse (string[] argv) throws ParseError {
-        string[] parsed_args = {};
+    public virtual Command parse (string[] argv) throws ParseError {
+        Command.current = this;
         bool parsing_options = true;
+        string[] parsed_args = {};
 
         // argv[0] is ignored as it's assumed to be the current command name.
         for (var i = 1; i < argv.length; i++) {
@@ -189,7 +202,7 @@ public class Command : Object {
                     throw new ParseError.UNKNOWN_OPTION(@"unknown option --$name");
                 }
 
-                if (!(opt is Flag) && (separator < 0)) {
+                if (!(opt is Flag || opt is SpecialFlag) && (separator < 0)) {
                     i++;
                     if (i >= argv.length) {
                         throw new ParseError.MISSING_OPTION_VALUE(@"missing value for --$name");
@@ -198,7 +211,10 @@ public class Command : Object {
                     value = argv[i];
                 }
 
-                opt.parse(value);
+                var err = opt.parse(value);
+                if (err != null) {
+                    throw new ParseError.INVALID_OPTION(err);
+                }
                 continue;
             }
 
@@ -211,7 +227,7 @@ public class Command : Object {
                         throw new ParseError.UNKNOWN_OPTION(@"unknown option -$short_name");
                     }
 
-                    if (opt is Flag) {
+                    if (opt is Flag || opt is SpecialFlag) {
                         opt.parse("");
                         continue;
                     }
@@ -228,7 +244,10 @@ public class Command : Object {
                         value = argv[i];
                     }
 
-                    opt.parse(value);
+                    var err = opt.parse(value);
+                    if (err != null) {
+                        throw new ParseError.INVALID_OPTION(err);
+                    }
                     break;
                 }
 
@@ -237,7 +256,6 @@ public class Command : Object {
 
             var subcommand = subcommands.get(token);
             if (subcommand != null) {
-                this.argvec = parsed_args;
                 validate_parsed_args(parsed_args);
                 return subcommand.parse(argv[i: argv.length]);
             }
@@ -245,14 +263,14 @@ public class Command : Object {
             parsed_args += token;
         }
 
-        this.argvec = parsed_args;
         validate_parsed_args(parsed_args);
+        Command.current = null;
         return this;
     }
 }
 
 /**
- * Possible errors on [method@Command.parse] and [method@Opt.parse].
+ * Possible errors on [method@Command.parse].
  */
 public errordomain ParseError {
     /** Number of arguments is less than expected. */

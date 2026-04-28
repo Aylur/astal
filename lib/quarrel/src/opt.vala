@@ -2,7 +2,7 @@ namespace Quarrel {
 /**
  * Base type for command-line options parsed by [class@Command].
  */
-public abstract class Opt : Object {
+public class Opt : Object {
     /** Human-readable description shown in generated help output. */
     public string? description { get; set; }
 
@@ -11,23 +11,26 @@ public abstract class Opt : Object {
 
     /** Long option name, used as `--name`. */
     public string? long { get; set; }
+
     /** Short option name, used as `-n`. */
     public char short { get; set; default = '\0'; }
 
-    /** Parse and store a value received for this option. */
-    public abstract void parse(string value) throws ParseError;
+    /**
+     * Parse and store a value received for this option.
+     * Returns optional parse error string.
+     */
+    public signal string? parse(string value);
 }
 
 /**
- * Boolean flag option that becomes `true` when present.
+ * Boolean flag option that becomes `enabled` when present.
  */
-public class Flag : Opt {
+public sealed class Flag : Opt {
     /** Parsed flag state. */
-    public bool value { get; set; }
+    public bool enabled { get; set; }
 
-    /** Mark the flag as enabled. */
-    public override void parse (string _) throws ParseError {
-        _value = true;
+    construct {
+        parse.connect(() => { _enabled = true; });
     }
 
     /** Create a flag option. */
@@ -37,15 +40,32 @@ public class Flag : Opt {
 }
 
 /**
+ * Similar to [class@Flag] which also turns of validating positional arguments.
+ * Used for flags such as `--version` and `--help`.
+ */
+public sealed class SpecialFlag : Opt {
+    /** Parsed flag state. */
+    public bool enabled { get; set; }
+
+    construct {
+        parse.connect(() => { _enabled = true; });
+    }
+
+    /** Create a flag option. */
+    public SpecialFlag(string? long = null, char short = '\0', string? description = null) {
+        Object(long: long, short: short, description: description);
+    }
+}
+
+/**
  * Option that stores a single string value.
  */
-public class StringOpt : Opt {
+public sealed class StringOpt : Opt {
     /** Parsed string value. */
-    public string? value { get;  set; }
+    public string? value { get; set; }
 
-    /** Store the parsed string value. */
-    public override void parse (string value) throws ParseError {
-        _value = value;
+    construct {
+        parse.connect((value) => { _value = value; });
     }
 
     /** Create a string-valued option. */
@@ -57,17 +77,21 @@ public class StringOpt : Opt {
 /**
  * Option that stores a single integer value.
  */
-public class IntOpt : Opt {
+public sealed class IntOpt : Opt {
     /** Parsed integer value. */
-    public int value { get;  set; }
+    public int value { get; set; }
 
-    /** Parse and store an integer value. */
-    public override void parse (string value) throws ParseError {
+    construct {
+        parse.connect(on_parse);
+    }
+
+    private string? on_parse(string value) {
         int parsed;
         if (!int.try_parse(value, out parsed)) {
-            throw new ParseError.INVALID_OPTION(@"invalid integer: $value");
+            return @"invalid integer: $value";
         }
         _value = parsed;
+        return null;
     }
 
     /** Create an integer-valued option. */
@@ -79,17 +103,22 @@ public class IntOpt : Opt {
 /**
  * Option that stores a single floating-point value.
  */
-public class FloatOpt : Opt {
+public sealed class FloatOpt : Opt {
     /** Parsed floating-point value. */
     public float value { get; set; }
 
+    construct {
+        parse.connect(on_parse);
+    }
+
     /** Parse and store a floating-point value. */
-    public override void parse (string value) throws ParseError {
+    private string? on_parse(string value) {
         float parsed;
         if (!float.try_parse(value, out parsed)) {
-            throw new ParseError.INVALID_OPTION(@"invalid float: $value");
+            return @"invalid float: $value";
         }
         _value = parsed;
+        return null;
     }
 
     /** Create a floating-point-valued option. */
@@ -101,13 +130,12 @@ public class FloatOpt : Opt {
 /**
  * Option that stores a single file path as a [iface@Gio.File].
  */
-public class FileOpt : Opt {
+public sealed class FileOpt : Opt {
     /** Parsed file value. */
     public File? value { get; set; }
 
-    /** Parse and store a file path. */
-    public override void parse (string value) throws ParseError {
-        _value = File.new_for_commandline_arg(value);
+    construct {
+        parse.connect((value) => { _value = File.new_for_commandline_arg(value); });
     }
 
     /** Create a file-valued option. */
@@ -119,15 +147,14 @@ public class FileOpt : Opt {
 /**
  * Option that collects repeated file path values.
  */
-public class FileArrayOpt : Opt {
+public sealed class FileArrayOpt : Opt {
     private List<File> _list = new List<File>();
 
     /** Parsed file values in the order they were provided. */
     public List<File> value { get { return _list; } }
 
-    /** Append a parsed file path to the collected values. */
-    public override void parse (string value) throws ParseError {
-        _list.append(File.new_for_commandline_arg(value));
+    construct {
+        parse.connect((value) => { _list.append(File.new_for_commandline_arg(value)); });
     }
 
     /** Create a repeated file-valued option. */
@@ -139,13 +166,12 @@ public class FileArrayOpt : Opt {
 /**
  * Option that collects repeated string values.
  */
-public class StringArrayOpt : Opt {
+public sealed class StringArrayOpt : Opt {
     /** Parsed string values in the order they were provided. */
     public string[] value { get; default = {}; }
 
-    /** Append a parsed string to the collected values. */
-    public override void parse (string value) throws ParseError {
-        _value += value;
+    construct {
+        parse.connect((value) => { _value += value; });
     }
 
     /** Create a repeated string-valued option. */

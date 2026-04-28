@@ -204,7 +204,7 @@ public string help (Command command) {
     builder.append(title("\nUsage:"));
     command_usage(command, builder);
 
-    if ((command.min_args > 0) || (command.max_args > 0)) {
+    if ((command.arg_list.length > 0)) {
         builder.append(title("\n\nArguments:"));
         command_arguments(command, builder);
     }
