@@ -4,18 +4,12 @@ function github(url = "") {
   return `https://github.com/aylur/astal${url}`
 }
 
-declare global {
-  interface ImportMeta {
-    env: { VERCEL?: 1 }
-  }
-}
-
 export default defineConfig({
   title: "Astal",
   description: "Documentation website of the Astal project",
 
   outDir: "./dist",
-  base: import.meta.env.VERCEL ? "" : "/astal/",
+  base: process.env.VERCEL ? "" : "/astal/",
   cleanUrls: true,
 
   lastUpdated: true,

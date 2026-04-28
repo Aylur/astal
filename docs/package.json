@@ -2,6 +2,7 @@
   "name": "astal-docs",
   "type": "module",
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "vitepress": "latest",
     "vue": "latest"
   },
