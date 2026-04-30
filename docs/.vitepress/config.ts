@@ -12,7 +12,15 @@ export default defineConfig({
 
   lastUpdated: true,
 
-  head: [["link", { rel: "icon", href: "/astal/icon.svg" }]],
+  head: [
+    [
+      "link",
+      {
+        rel: "icon",
+        href: process.env.VERCEL ? "/icon.svg" : "/astal/icon.svg",
+      },
+    ],
+  ],
 
   themeConfig: {
     logo: "/icon.svg",
