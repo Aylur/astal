@@ -8,7 +8,7 @@ export default defineConfig({
   title: "Astal",
   description: "Documentation website of the Astal project",
 
-  base: process.env.VITE_VERCEL_ENV ? "" : "/astal/",
+  base: process.env.VERCEL ? "" : "/astal/",
   cleanUrls: true,
 
   lastUpdated: true,

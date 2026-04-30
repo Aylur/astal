@@ -61,8 +61,11 @@ jobs:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
         run: |
+          sudo apt update
+          sudo apt install rsync -y
+
           tmp="$(mktemp -d)"
-          rsync -a --chmod=u+rwX dist/libastal/ "$tmp/"
+          rsync -a --chmod=u+rwX src/result/* "$tmp"
 
           nix shell nixpkgs#netlify-cli -c netlify deploy \
             --prod \
