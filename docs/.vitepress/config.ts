@@ -3,12 +3,11 @@ import { defineConfig } from "vitepress"
 function github(url = "") {
   return `https://github.com/aylur/astal${url}`
 }
-
 export default defineConfig({
   title: "Astal",
   description: "Documentation website of the Astal project",
 
-  base: "/astal/",
+  base: process.env.VERCEL ? "" : "/astal/",
   cleanUrls: true,
 
   lastUpdated: true,
