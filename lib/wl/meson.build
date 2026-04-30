@@ -130,9 +130,7 @@ gir = custom_target(
     files('gir.py'),
     '--name', name,
     '--gir', gir_name,
-    '--pkgs', ':'.join(
-      'json-glib-1.0',
-      'wayland-client',
+    '--pkgs', 'wayland-client',
     ),
     '@INPUT@'
   ],
@@ -156,6 +154,12 @@ custom_target(
   depends: [lib, gir],
   install: true,
   install_dir: get_option('libdir') / 'girepository-1.0',
+)
+
+install_data(
+  meson.project_name() + '.deps',
+  install_dir: get_option('datadir') / 'vala' / 'vapi',
+  rename: meson.project_name() + '-' + api_version + '.deps',
 )
 
 import('pkgconfig').generate(
