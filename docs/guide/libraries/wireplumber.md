@@ -6,8 +6,7 @@ integrate with Astal.
 
 ## Usage
 
-You can browse the
-[Wireplumber reference](https://aylur.github.io/libastal/wireplumber).
+You can browse the [Wireplumber reference](https://docs.astal.dev/wireplumber).
 
 ### CLI
 

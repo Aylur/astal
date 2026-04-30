@@ -2,6 +2,7 @@
 import showcases from "./showcases"
 import Showcase from "./Showcase.vue"
 </script>
+
 <template>
   <div class="Showcases">
     <template v-for="(showcase, index) in showcases" :key="index">

@@ -29,12 +29,12 @@ pkgs: let
     "AstalIO-0.1" = {
       name = "AstalIO";
       description = "Astal Core library";
-      docs_url = "https://aylur.github.io/libastal/io";
+      docs_url = "https://docs.astal.dev/io";
     };
     "AstalWl-0.1" = {
       name = "AstalWl";
-      description = "A central lib to manage wayland objects";
-      docs_url = "https://aylur.github.io/libastal/wl";
+      description = "A central library to manage wayland objects";
+      docs_url = "https://docs.astal.dev/wl";
     };
     "NM-1.0" = {
       name = "NetworkManager";
@@ -56,8 +56,8 @@ pkgs: let
       ["Gdk" "https://docs.gtk.org/gdk3/"]
       ["Gtk" "https://docs.gtk.org/gtk3/"]
       ["GdkPixbuf" "https://docs.gtk.org/gdk-pixbuf/"]
-      ["AstalIO" "https://aylur.github.io/libastal/io/"]
-      ["AstalWl" "https://aylur.github.io/libastal/wl/"]
+      ["AstalIO" "https://docs.astal.dev/io/"]
+      ["AstalWl" "https://docs.astal.dev/wl/"]
 
       # FIXME: these are not gi-docgen generated, therefore links are broken
       ["NM" "https://networkmanager.dev/docs/libnm/latest/"]
@@ -117,7 +117,7 @@ in
             license = "LGPL-2.1";
             browse_url = "https://github.com/Aylur/astal/tree/main/lib/${repo-path}";
             repository_url = "https://github.com/aylur/aylur.git";
-            website_url = "https://aylur.github.io/astal/guide/libraries/${website-path}";
+            website_url = "https://astal.dev/guide/libraries/${website-path}";
             dependencies = ["GObject-2.0"] ++ dependencies;
           };
 
@@ -146,7 +146,7 @@ in
 
       meta = {
         inherit description;
-        homepage = "https://aylur.github.io/astal";
+        homepage = "https://astal.dev";
         license = pkgs.lib.licenses.lgpl21;
       };
     }

@@ -4,8 +4,7 @@ A CLI argument parser with subcommand support.
 
 ## Usage
 
-You can browse the
-[Quarrel reference](https://aylur.github.io/libastal/quarrel).
+You can browse the [Quarrel reference](https://docs.astal.dev/quarrel).
 
 ### Library
 

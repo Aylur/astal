@@ -5,7 +5,7 @@ Library and CLI tool for sending requests to
 
 ## Usage
 
-You can browse the [Greet reference](https://aylur.github.io/libastal/greet).
+You can browse the [Greet reference](https://docs.astal.dev/greet).
 
 ### CLI
 

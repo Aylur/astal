@@ -5,7 +5,7 @@ Library and CLI tool for authentication using
 
 ## Usage
 
-You can browse the [Auth reference](https://aylur.github.io/libastal/auth).
+You can browse the [Auth reference](https://docs.astal.dev/auth).
 
 ### CLI
 

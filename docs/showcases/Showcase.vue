@@ -1,22 +1,27 @@
-<script setup>
+<script setup lang="ts">
 import { VPButton } from "vitepress/theme"
-defineProps({
-  image: { type: String, required: true },
-  url: { type: String, required: true },
-  icon: { type: String, required: false, default: "" },
-  title: { type: String, required: false, default: "" },
-  description: { type: String, required: false, default: "" },
-  author: { type: String, required: true },
-})
+
+const props = defineProps<{
+  image: string
+  url: string
+  icon?: string
+  title?: string
+  description?: string
+  author: string
+}>()
+
+const imgSource = import.meta.env.VITE_VERCEL_ENV
+  ? props.image
+  : `/astal${props.image}`
 </script>
 
 <template>
   <figure>
     <div class="image-wrapper">
-      <img :src="image" :alt="title" />
+      <img :src="imgSource" :alt="title" />
       <div class="overlay">
         <div class="text-content">
-          <h3 v-if="title.length">
+          <h3 v-if="title?.length">
             {{ title }}
           </h3>
           <h3 v-else>{{ author }}'s dotfiles</h3>

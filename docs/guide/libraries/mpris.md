@@ -8,7 +8,7 @@ better integrates with astal.
 
 ## Usage
 
-You can browse the [Mpris reference](https://aylur.github.io/libastal/mpris).
+You can browse the [Mpris reference](https://docs.astal.dev/mpris).
 
 ### CLI
 

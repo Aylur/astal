@@ -6,7 +6,7 @@ protocol.
 
 ## Usage
 
-You can browse the [Tray reference](https://aylur.github.io/libastal/tray).
+You can browse the [Tray reference](https://docs.astal.dev/tray).
 
 ### CLI
 

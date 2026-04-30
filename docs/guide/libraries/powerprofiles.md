@@ -6,7 +6,7 @@ powerprofiles.
 ## Usage
 
 You can browse the
-[PowerProfiles reference](https://aylur.github.io/libastal/powerprofiles).
+[PowerProfiles reference](https://docs.astal.dev/powerprofiles).
 
 ### CLI
 

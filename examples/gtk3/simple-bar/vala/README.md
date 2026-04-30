@@ -4,10 +4,10 @@
 
 A simple bar for Hyprland using
 
-- [Battery library](https://aylur.github.io/astal/guide/libraries/battery).
-- [Hyprland library](https://aylur.github.io/astal/guide/libraries/hyprland).
-- [Mpris library](https://aylur.github.io/astal/guide/libraries/mpris).
-- [Network library](https://aylur.github.io/astal/guide/libraries/network).
-- [Tray library](https://aylur.github.io/astal/guide/libraries/tray).
-- [WirePlumber library](https://aylur.github.io/astal/guide/libraries/wireplumber).
+- [Battery library](https://astal.dev/guide/libraries/battery).
+- [Hyprland library](https://astal.dev/guide/libraries/hyprland).
+- [Mpris library](https://astal.dev/guide/libraries/mpris).
+- [Network library](https://astal.dev/guide/libraries/network).
+- [Tray library](https://astal.dev/guide/libraries/tray).
+- [WirePlumber library](https://astal.dev/guide/libraries/wireplumber).
 - [dart-sass](https://sass-lang.com/dart-sass/) as the css precompiler

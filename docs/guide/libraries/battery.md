@@ -5,8 +5,7 @@ devices.
 
 ## Usage
 
-You can browse the
-[Battery reference](https://aylur.github.io/libastal/battery).
+You can browse the [Battery reference](https://docs.astal.dev/battery).
 
 ### CLI
 

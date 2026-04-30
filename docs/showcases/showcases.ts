@@ -7,19 +7,29 @@ type Showcase = {
   author: string
 }
 
+declare global {
+  interface ImportMetaEnv {
+    VITE_VERCEL_ENV?: "production" | "preview" | "development"
+  }
+
+  interface ImportMeta {
+    env: ImportMetaEnv
+  }
+}
+
 // TODO: support more layouts
 type Grid<T> = T | [T, T]
 
 export default [
   {
-    image: "/astal/showcase/aylur.webp",
+    image: "/showcase/aylur.webp",
     url: "https://github.com/Aylur/dotfiles",
     icon: "devicon-typescript-plain",
     title: "Marble Shell",
     author: "Aylur",
   },
   {
-    image: "/astal/showcase/tokyob0t.webp",
+    image: "/showcase/tokyob0t.webp",
     url: "https://github.com/tokyob0t/dotfiles",
     icon: "devicon-lua-plain",
     title: "Tokyob0t's Desktop",
@@ -27,40 +37,40 @@ export default [
     author: "tokyob0t",
   },
   {
-    image: "/astal/showcase/kotontrion-kompass.webp",
+    image: "/showcase/kotontrion-kompass.webp",
     url: "https://github.com/kotontrion/kompass",
     icon: "devicon-vala-plain",
     title: "kompass",
     author: "kotontrion",
   },
   {
-    image: "/astal/showcase/ezerinz.webp",
+    image: "/showcase/ezerinz.webp",
     url: "https://github.com/ezerinz/epik-shell",
     icon: "devicon-javascript-plain",
     title: "Epik Shell",
     author: "ezerinz",
   },
   {
-    image: "/astal/showcase/hyprpanel_showcase.webp",
+    image: "/showcase/hyprpanel_showcase.webp",
     url: "https://github.com/Jas-SinghFSU/hyprpanel",
     icon: "devicon-javascript-plain",
     title: "HyprPanel",
     author: "Jas",
   },
   {
-    image: "/astal/showcase/retrozinndev-colorshell.webp",
+    image: "/showcase/retrozinndev-colorshell.webp",
     url: "https://github.com/retrozinndev/colorshell",
     icon: "devicon-typescript-plain",
     title: "colorshell",
     author: "retrozinndev",
   },
   {
-    image: "/astal/showcase/delta-shell.webp",
+    image: "/showcase/delta-shell.webp",
     url: "https://github.com/Sinomor/delta-shell/",
     icon: "devicon-typescript-plain",
     title: "Delta Shell",
     author: "Sinomor",
   },
 
-  // add more showcases here~
+  // add more showcases here
 ] satisfies Grid<Showcase>[]

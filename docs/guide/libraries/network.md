@@ -5,8 +5,7 @@ integrate with Astal.
 
 ## Usage
 
-You can browse the
-[Network reference](https://aylur.github.io/libastal/network).
+You can browse the [Network reference](https://docs.astal.dev/network).
 
 ### CLI
 

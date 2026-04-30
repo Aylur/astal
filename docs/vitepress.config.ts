@@ -8,12 +8,20 @@ export default defineConfig({
   title: "Astal",
   description: "Documentation website of the Astal project",
 
-  base: process.env.VERCEL ? "" : "/astal/",
+  base: process.env.VITE_VERCEL_ENV ? "" : "/astal/",
   cleanUrls: true,
 
   lastUpdated: true,
 
-  head: [["link", { rel: "icon", href: "/astal/icon.svg" }]],
+  head: [
+    [
+      "link",
+      {
+        rel: "icon",
+        href: process.env.VERCEL ? "/icon.svg" : "/astal/icon.svg",
+      },
+    ],
+  ],
 
   themeConfig: {
     logo: "/icon.svg",
@@ -49,8 +57,6 @@ export default defineConfig({
         collapsed: false,
         items: [
           { text: "References", link: "/guide/libraries/references" },
-          { text: "Astal3", link: "https://aylur.github.io/libastal/astal3" },
-          { text: "Astal4", link: "https://aylur.github.io/libastal/astal4" },
           { text: "Apps", link: "/guide/libraries/apps" },
           { text: "Auth", link: "/guide/libraries/auth" },
           { text: "Battery", link: "/guide/libraries/battery" },

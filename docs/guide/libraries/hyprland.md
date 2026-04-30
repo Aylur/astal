@@ -5,8 +5,7 @@ Library and CLI tool for monitoring the
 
 ## Usage
 
-You can browse the
-[Hyprland reference](https://aylur.github.io/libastal/hyprland).
+You can browse the [Hyprland reference](https://docs.astal.dev/hyprland).
 
 ### CLI
 

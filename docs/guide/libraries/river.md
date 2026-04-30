@@ -5,7 +5,7 @@ Library and CLI tool for monitoring the
 
 ## Usage
 
-You can browse the [River reference](https://aylur.github.io/libastal/river).
+You can browse the [River reference](https://docs.astal.dev/river).
 
 ### CLI
 

@@ -4,8 +4,7 @@ Library for monitoring [bluez](https://www.bluez.org/) over dbus.
 
 ## Usage
 
-You can browse the
-[Bluetooth reference](https://aylur.github.io/libastal/bluetooth).
+You can browse the [Bluetooth reference](https://docs.astal.dev/bluetooth).
 
 ### CLI
 

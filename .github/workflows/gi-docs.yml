@@ -55,3 +55,17 @@ jobs:
             git commit -m "Deployed from https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
             git push origin main
           fi
+
+      - name: Push to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          tmp="$(mktemp -d)"
+          rsync -a --chmod=u+rwX dist/libastal/ "$tmp/"
+
+          nix shell nixpkgs#netlify-cli -c netlify deploy \
+            --prod \
+            --dir "$tmp" \
+            --site "$NETLIFY_SITE_ID" \
+            --auth "$NETLIFY_AUTH_TOKEN"

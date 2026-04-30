@@ -4,7 +4,7 @@ Audio visualizer using [cava](https://github.com/karlstav/cava).
 
 ## Usage
 
-You can browse the [Cava reference](https://aylur.github.io/libastal/cava).
+You can browse the [Cava reference](https://docs.astal.dev/cava).
 
 ### CLI
 

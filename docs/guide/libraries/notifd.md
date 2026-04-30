@@ -7,14 +7,14 @@ implementation as a library and CLI tool.
 ## How it works
 
 The first instantiation of the
-[Notifd](https://aylur.github.io/libastal/notifd/class.Notifd.html) class will
-become the daemon and every subsequent instantiation will queue up to act as the
-daemon and will act as a client in the meantime. This means this library can be
-used throughout multiple processes.
+[Notifd](https://docs.astal.dev/notifd/class.Notifd) class will become the
+daemon and every subsequent instantiation will queue up to act as the daemon and
+will act as a client in the meantime. This means this library can be used
+throughout multiple processes.
 
 ## Usage
 
-You can browse the [Notifd reference](https://aylur.github.io/libastal/notifd).
+You can browse the [Notifd reference](https://docs.astal.dev/notifd).
 
 ### CLI
 
