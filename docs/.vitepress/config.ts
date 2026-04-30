@@ -8,7 +8,6 @@ export default defineConfig({
   title: "Astal",
   description: "Documentation website of the Astal project",
 
-  outDir: "./dist",
   base: "/astal/",
   cleanUrls: true,
 
