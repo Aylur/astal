@@ -6,31 +6,6 @@ documentation will vary depending on the language they are used in.
 <!--TODO: list some examples on how to read docs,-->
 <!--for example the difference between C enums and gjs enums-->
 
-## Additional references
-
-### GJS
-
-- [gjs-docs.gnome.org](https://gjs-docs.gnome.org/): Library references
-  annotated for GJS
-- [gjs.guide](https://gjs.guide/): GJS and GObject guide
-
-### Python
-
-- [pgi-docs](https://lazka.github.io/pgi-docs/): Library references annotated
-  for Python
-- [pygobject.gnome.org](https://pygobject.gnome.org/): PyGObject reference and
-  guide
-
-### Lua
-
-- [lua-lgi docs](https://github.com/lgi-devs/lgi/tree/master/docs): GObject
-  bindings guide for Lua
-
-### Vala
-
-- [vala.dev](https://vala.dev/): Guide for the Vala language
-- [valadoc.org](https://valadoc.org/): Library references annotated for Vala
-
 ## Astal Libraries
 
 - [Apps](https://docs.astal.dev/apps): Library and cli tool for querying
@@ -59,3 +34,28 @@ documentation will vary depending on the language they are used in.
 - [Tray](https://docs.astal.dev/tray): A systemtray library and cli tool
 - [WirePlumber](https://docs.astal.dev/wireplumber): A library for audio control
   using wireplumber
+
+## Additional references
+
+### GJS
+
+- [gjs-docs.gnome.org](https://gjs-docs.gnome.org/): Library references
+  annotated for GJS
+- [gjs.guide](https://gjs.guide/): GJS and GObject guide
+
+### Python
+
+- [pgi-docs](https://lazka.github.io/pgi-docs/): Library references annotated
+  for Python
+- [pygobject.gnome.org](https://pygobject.gnome.org/): PyGObject reference and
+  guide
+
+### Lua
+
+- [lua-lgi docs](https://github.com/lgi-devs/lgi/tree/master/docs): GObject
+  bindings guide for Lua
+
+### Vala
+
+- [vala.dev](https://vala.dev/): Guide for the Vala language
+- [valadoc.org](https://valadoc.org/): Library references annotated for Vala
