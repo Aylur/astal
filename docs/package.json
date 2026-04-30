@@ -15,6 +15,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "devicon": "latest",
     "font-logos": "latest"
   },
