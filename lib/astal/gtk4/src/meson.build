@@ -29,6 +29,7 @@ sources = [config] + files(
   'widget/bin.vala',
   'widget/box.vala',
   'widget/gizmo.vala',
+  'widget/scroller.vala',
   'widget/slider.vala',
   'widget/window.vala',
   'application.vala',
