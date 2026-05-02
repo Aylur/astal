@@ -49,6 +49,7 @@ sources = [config] + files(
   'src/monitor.vala',
   'src/structs.vala',
   'src/workspace.vala',
+  'src/group.vala',
 )
 
 if get_option('lib')
@@ -80,6 +81,7 @@ if get_option('lib')
         'Hyprland.monitors',
         'Hyprland.workspaces',
         'Hyprland.clients',
+        'Hyprland.groups',
       ),
       sources,
     ],

@@ -10,6 +10,7 @@ public class Client : Object {
     public int y { get; private set; }
     public int width { get; private set; }
     public int height { get; private set; }
+    public Group? group { get; private set; }
     public Workspace workspace { get; private set; }
     public bool floating { get; private set; }
     public Monitor monitor { get; private set; }
@@ -23,8 +24,9 @@ public class Client : Object {
     public Fullscreen fullscreen { get; private set; }
     public Fullscreen fullscreen_client { get; private set; }
 
-    // TODO: public Group[] grouped { get; private set; }
     // TODO: public Tag[] tags { get; private set; }
+    private List<string> _grouped = new List<string>();
+    public List<string> grouped { get { return _grouped; } }
     public string swallowing { get; private set; }
     public int focus_history_id { get; private set; }
 
@@ -51,6 +53,11 @@ public class Client : Object {
         fullscreen = (Fullscreen)obj.get_int_member("fullscreen");
         fullscreen_client = (Fullscreen)obj.get_int_member("fullscreenClient");
 
+        foreach (var addr in obj.get_array_member("grouped").get_elements()) {
+            _grouped.append(addr.get_string().replace("0x", ""));
+        }
+
+        group = hyprland.get_group_from_addresses(_grouped);
         workspace = hyprland.get_workspace((int)obj.get_object_member("workspace").get_int_member("id"));
         monitor = hyprland.get_monitor((int)obj.get_int_member("monitor"));
     }
@@ -71,13 +78,5 @@ public class Client : Object {
     public void toggle_floating() {
         Hyprland.get_default().dispatch("togglefloating", @"address:0x$address");
     }
-}
-
-[Flags]
-public enum Fullscreen {
-    CURRENT = -1,
-    NONE = 0,
-    MAXIMIZED = 1,
-    FULLSCREEN = 2,
 }
 }
