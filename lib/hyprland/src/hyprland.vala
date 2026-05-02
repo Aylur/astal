@@ -46,14 +46,14 @@ public class Hyprland : Object {
     public List<weak Workspace> workspaces { owned get { return _workspaces.get_values(); } }
     public List<weak Client> clients { owned get { return _clients.get_values(); } }
 
-    public Monitor get_monitor(int id) {
+    public Monitor? get_monitor(int id) {
         return _monitors.get(id);
     }
-    public Workspace get_workspace(int id) {
+    public Workspace? get_workspace(int id) {
         return _workspaces.get(id);
     }
     public Client? get_client(string address) {
-        if ((address == "") || (address == null)) return null;
+        if (address == "") return null;
 
         if (address.substring(0, 2) == "0x") return _clients.get(address.substring(2, -1));
 
@@ -74,9 +74,45 @@ public class Hyprland : Object {
         return null;
     }
 
-    public Workspace focused_workspace { get; private set; }
-    public Monitor focused_monitor { get; private set; }
-    public Client focused_client { get; private set; }
+    [CCode (cname = "focused-client")]
+    [Version (deprecated = true, replacement = "Hyprland.get_focused_client")]
+    public Client focused_client_v0_1 {
+        internal get { return _focused_client; }
+    }
+    [CCode (cname = "focused-workspace")]
+    [Version (deprecated = true, replacement = "Hyprland.get_focused_workspace")]
+    public Workspace focused_workspace_v0_1 {
+        internal get { return _focused_workspace; }
+    }
+    [CCode (cname = "focused-monitor")]
+    [Version (deprecated = true, replacement = "Hyprland.get_focused_monitor")]
+    public Monitor focused_monitor_v0_1 {
+        internal get { return _focused_monitor; }
+    }
+
+    private Client? _focused_client;
+    public Client? get_focused_client() { return _focused_client; }
+    private void set_focused_client(Client? client) {
+        _focused_client = client;
+        notify_property("focused-client");
+        client_focus_changed(client);
+    }
+
+    private Workspace? _focused_workspace;
+    public Workspace? get_focused_workspace() { return _focused_workspace; }
+    private void set_focused_workspace(Workspace? workspace) {
+        _focused_workspace = workspace;
+        notify_property("focused-workspace");
+        workspace_focus_changed(workspace);
+    }
+
+    private Monitor? _focused_monitor;
+    public Monitor? get_focused_monitor() { return _focused_monitor; }
+    private void set_focused_monitor(Monitor? monitor) {
+        _focused_monitor = monitor;
+        notify_property("focused-monitor");
+        monitor_focus_changed(monitor);
+    }
 
     // other props
     public List<Bind> binds {
@@ -117,10 +153,13 @@ public class Hyprland : Object {
     // state
     public signal void client_added(Client client);
     public signal void client_removed(string address);
+    public signal void client_focus_changed(Client? client);
     public signal void workspace_added(Workspace workspace);
     public signal void workspace_removed(int id);
+    public signal void workspace_focus_changed(Workspace? workspace);
     public signal void monitor_added(Monitor monitor);
     public signal void monitor_removed(int id);
+    public signal void monitor_focus_changed(Monitor? monitor);
 
     private SocketConnection socket2;
 
@@ -223,7 +262,7 @@ public class Hyprland : Object {
             var m = new Monitor();
             _monitors.insert(id, m);
 
-            if (mon.get_object().get_member("focused").get_boolean()) focused_monitor = m;
+            if (mon.get_object().get_member("focused").get_boolean()) set_focused_monitor(m);
         }
         foreach (var wrkpsc in wrkspcs.get_elements()) {
             var id = (int)wrkpsc.get_object().get_member("id").get_int();
@@ -249,11 +288,11 @@ public class Hyprland : Object {
         }
 
         // focused
-        focused_workspace = get_workspace((int)Json.from_string(message("j/activeworkspace"))
-                .get_object().get_member("id").get_int());
+        set_focused_workspace(get_workspace((int)Json.from_string(message("j/activeworkspace"))
+                .get_object().get_member("id").get_int()));
 
-        focused_client = get_client(Json.from_string(message("j/activewindow"))
-                .get_object().get_member("address").get_string());
+        set_focused_client(get_client(Json.from_string(message("j/activewindow"))
+                .get_object().get_member("address")?.get_string() ?? ""));
     }
 
     ~Hyprland() {
@@ -317,14 +356,14 @@ public class Hyprland : Object {
             case "workspacev2": {
                 yield sync_workspaces();
                 yield sync_monitors();
-                focused_workspace = get_workspace(int.parse(args[1]));
+                set_focused_workspace(get_workspace(int.parse(args[1])));
                 break;
             }
             case "focusedmon": {
                 var argv = args[1].split(",", 2);
                 yield sync_monitors();
-                focused_monitor = get_monitor_by_name(argv[0]);
-                focused_workspace = get_workspace_by_name(argv[1]);
+                set_focused_monitor(get_monitor_by_name(argv[0]));
+                set_focused_workspace(get_workspace_by_name(argv[1]));
                 break;
             }
             case "fullscreen": {
@@ -368,7 +407,7 @@ public class Hyprland : Object {
             case "moveworkspacev2": {
                 yield sync_workspaces();
                 yield sync_monitors();
-                focused_workspace = get_workspace(int.parse(args[1]));
+                set_focused_workspace(get_workspace(int.parse(args[1])));
                 notify_property("workspaces");
                 break;
             }
@@ -389,7 +428,7 @@ public class Hyprland : Object {
             // first event that signals a new client when it opens as an active window
             case "activewindowv2": {
                 yield try_add_client(args[1]);
-                focused_client = get_client(args[1]);
+                set_focused_client(get_client(args[1]));
                 break;
             }
             case "openwindow": {
