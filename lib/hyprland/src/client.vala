@@ -56,7 +56,7 @@ public class Client : Object {
     }
 
     public void kill() {
-        Hyprland.get_default().dispatch("window.close", @"address:0x$address");
+        Hyprland.get_default().dispatch("window.close", @"\"address:0x$address\"");
     }
 
     public void focus() {
@@ -64,7 +64,7 @@ public class Client : Object {
     }
 
     public void move_to(Workspace ws) {
-        var id = ws.id;
+        var id = ws.id.to_string();
         Hyprland.get_default().dispatch("window.move", @"{window=\"address:0x$address\",workspace=$id,follow=false}");
     }
 
