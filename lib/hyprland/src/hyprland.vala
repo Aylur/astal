@@ -199,8 +199,24 @@ public class Hyprland : Object {
         return "";
     }
 
+    /** Call a dispatcher in the Hyprland socket (without the `hl.dsp` prefix) 
+      * Please keep in mid that arguments are in the lua syntax, 
+      * you might need to add string quotes when needed
+      */
     public void dispatch(string dispatcher, string args) {
-        var msg = "dispatch " + dispatcher + " " + args;
+        var msg = "dispatch hl.dsp." + dispatcher + "(" + args + ")";
+        message_async.begin(msg, (_, res) => {
+                var err = message_async.end(res);
+                if (err != "ok") critical("dispatch error: %s", err);
+            });
+    }
+
+    /** Call a dispatcher in the Hyprland socket (without the `hl.dsp` prefix) 
+      * Please keep in mid that arguments are in the lua syntax, 
+      * you might need to add string quotes when needed
+      */
+    public void dispatch_argv(string dispatcher, string[] args) {
+        var msg = "dispatch hl.dsp." + dispatcher + "(" + string.joinv(",", args) + ")";
         message_async.begin(msg, (_, res) => {
                 var err = message_async.end(res);
                 if (err != "ok") critical("dispatch error: %s", err);
@@ -208,7 +224,7 @@ public class Hyprland : Object {
     }
 
     public void move_cursor(int x, int y) {
-        dispatch("movecursor", x.to_string() + " " + y.to_string());
+        dispatch("cursor.move", "{x=" + x.to_string() + ",y=" + y.to_string() + "}");
     }
 
     // TODO: nag vaxry to make socket events and hyprctl more consistent
