@@ -199,7 +199,8 @@ public class Hyprland : Object {
         return "";
     }
 
-    /** Call a dispatcher in the Hyprland socket (without the `hl.dsp` prefix) 
+    /**
+      * Call a dispatcher in the Hyprland socket (without the `hl.dsp` prefix) 
       * Please keep in mid that arguments are in the lua syntax, 
       * you might need to add string quotes when needed
       */
@@ -211,7 +212,8 @@ public class Hyprland : Object {
             });
     }
 
-    /** Call a dispatcher in the Hyprland socket (without the `hl.dsp` prefix) 
+    /**
+      * Call a dispatcher in the Hyprland socket (without the `hl.dsp` prefix) 
       * Please keep in mid that arguments are in the lua syntax, 
       * you might need to add string quotes when needed
       */
