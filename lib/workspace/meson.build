@@ -2,7 +2,7 @@ project(
   'astal-workspace',
   'vala',
   version: run_command('cat', join_paths(meson.project_source_root(), 'version')).stdout().strip(),
-  meson_version: '>= 1.1',
+  meson_version: '>= 1.5',
   default_options: [
     'warning_level=2',
     'werror=false',
@@ -46,6 +46,7 @@ deps = [
 ]
 
 sources = [config] + files(
+  'src/manager.vala',
   'src/workspace.vala',
 )
 
@@ -62,40 +63,40 @@ if get_option('lib')
     install_dir: [true, true, true],
   )
 
-  gir = custom_target(
-    gir_name,
-    command: [
-      find_program('python3'),
-      files('gir.py'),
-      '--name', name,
-      '--gir', gir_name,
-      '--pkgs', ':'.join(
-        'wayland-client',
-        'astal-wl-0.1',
-      ),
-      '@INPUT@',
-    ],
-    input: sources + protocol_vapis,
-    depends: lib,
-    output: gir_name,
-    install: true,
-    install_dir: get_option('datadir') / 'gir-1.0',
-  )
+  # gir = custom_target(
+  #   gir_name,
+  #   command: [
+  #     find_program('python3'),
+  #     files('gir.py'),
+  #     '--name', name,
+  #     '--gir', gir_name,
+  #     '--pkgs', ':'.join(
+  #       'wayland-client',
+  #       'astal-wl-0.1',
+  #     ),
+  #     '@INPUT@',
+  #   ],
+  #   input: sources + protocol_vapis,
+  #   depends: lib,
+  #   output: gir_name,
+  #   install: true,
+  #   install_dir: get_option('datadir') / 'gir-1.0',
+  # )
 
-  custom_target(
-    typelib_name,
-    command: [
-      find_program('g-ir-compiler'),
-      '--output', '@OUTPUT@',
-      '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
-      meson.current_build_dir() / gir_name,
-    ],
-    input: lib,
-    output: typelib_name,
-    depends: [lib, gir],
-    install: true,
-    install_dir: get_option('libdir') / 'girepository-1.0',
-  )
+  # custom_target(
+  #   typelib_name,
+  #   command: [
+  #     find_program('g-ir-compiler'),
+  #     '--output', '@OUTPUT@',
+  #     '--shared-library', get_option('prefix') / get_option('libdir') / '@PLAINNAME@',
+  #     meson.current_build_dir() / gir_name,
+  #   ],
+  #   input: lib,
+  #   output: typelib_name,
+  #   depends: [lib, gir],
+  #   install: true,
+  #   install_dir: get_option('libdir') / 'girepository-1.0',
+  # )
 
   import('pkgconfig').generate(
     lib,
@@ -108,11 +109,14 @@ if get_option('lib')
   )
 endif
 
-# if get_option('cli')
-#   executable(
-#     name,
-#     ['src/cli.vala', sources],
-#     dependencies: deps,
-#     install: true,
-#   )
-# endif
+if get_option('cli')
+  cli_deps = [
+    dependency('quarrel-0.1')
+  ]
+  executable(
+    name,
+    ['src/cli.vala', sources],
+    dependencies: deps + protocol_deps + cli_deps,
+    install: true,
+  )
+endif
