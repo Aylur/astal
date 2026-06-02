@@ -16,6 +16,8 @@ public class AstalNetwork.AccessPoint : Object {
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
 
     public GenericArray<NM.RemoteConnection> get_connections() {
+        if (wifi.device == null) return new GenericArray<NM.RemoteConnection>();
+
         return (GenericArray<NM.RemoteConnection>)ap.filter_connections(
             wifi.device.client.connections
         );
@@ -65,6 +67,9 @@ public class AstalNetwork.AccessPoint : Object {
      * Returns whether the connection is the new active connection.
      */
     public async void activate(string? password = null) throws Error {
+        var wifi_device = wifi.device;
+        if (wifi_device == null) return;
+
         var conns = get_connections();
 
         if (conns.length > 0) {
@@ -78,7 +83,7 @@ public class AstalNetwork.AccessPoint : Object {
 
             yield ap.client.activate_connection_async(
                 first_conn,
-                wifi.device,
+                wifi_device,
                 get_path(),
                 null
             );
@@ -97,7 +102,7 @@ public class AstalNetwork.AccessPoint : Object {
 
             yield ap.client.add_and_activate_connection_async(
                 connection,
-                wifi.device,
+                wifi_device,
                 get_path(),
                 null
             );

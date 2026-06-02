@@ -13,8 +13,8 @@ public class AstalNetwork.Network : Object {
 
     public NM.Client client { get; private set; }
 
-    public Wifi? wifi { get; private set; }
-    public Wired? wired { get; private set; }
+    public Wifi wifi { get; private set; }
+    public Wired wired { get; private set; }
     public Primary primary { get; private set; }
     private bool sync_queued = false;
     private bool sync_wifi_queued = false;
@@ -31,6 +31,8 @@ public class AstalNetwork.Network : Object {
     construct {
         try {
             client = new NM.Client();
+            wifi = new Wifi();
+            wired = new Wired();
             sync_devices();
 
             sync();
@@ -101,14 +103,14 @@ public class AstalNetwork.Network : Object {
     }
 
     private void on_device_removed(NM.Device device) {
-        if ((wifi != null) && (wifi.device == device)) {
-            wifi.disconnect_signals();
-            wifi = null;
+        if (wifi.device == device) {
+            wifi.sync_device(null);
+            notify_property("wifi");
         }
 
-        if ((wired != null) && (wired.device == device)) {
-            wired.disconnect_signals();
-            wired = null;
+        if (wired.device == device) {
+            wired.sync_device(null);
+            notify_property("wired");
         }
 
         queue_sync_device_type(device.device_type);
@@ -120,25 +122,17 @@ public class AstalNetwork.Network : Object {
     }
 
     private void sync_wifi() {
+        var old_device = wifi.device;
         var wifi_device = (NM.DeviceWifi)get_device(NM.DeviceType.WIFI);
-        if (wifi_device == null) {
-            if (wifi != null) wifi.disconnect_signals();
-            wifi = null;
-        } else if ((wifi == null) || (wifi.device != wifi_device)) {
-            if (wifi != null) wifi.disconnect_signals();
-            wifi = new Wifi(wifi_device);
-        }
+        wifi.sync_device(wifi_device);
+        if (old_device != wifi.device) notify_property("wifi");
     }
 
     private void sync_wired() {
+        var old_device = wired.device;
         var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
-        if (ethernet == null) {
-            if (wired != null) wired.disconnect_signals();
-            wired = null;
-        } else if ((wired == null) || (wired.device != ethernet)) {
-            if (wired != null) wired.disconnect_signals();
-            wired = new Wired(ethernet);
-        }
+        wired.sync_device(ethernet);
+        if (old_device != wired.device) notify_property("wired");
     }
 
     private void sync() {
