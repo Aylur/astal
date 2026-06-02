@@ -16,6 +16,7 @@ public class AstalNetwork.Network : Object {
     public Wifi? wifi { get; private set; }
     public Wired? wired { get; private set; }
     public Primary primary { get; private set; }
+    private bool sync_queued = false;
 
     public Connectivity connectivity {
         get { return (Connectivity)client.connectivity; }
@@ -28,15 +29,13 @@ public class AstalNetwork.Network : Object {
     construct {
         try {
             client = new NM.Client();
-            var wifi_device = (NM.DeviceWifi)get_device(NM.DeviceType.WIFI);
-            if (wifi_device != null) wifi = new Wifi(wifi_device);
-
-            var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
-            if (ethernet != null) wired = new Wired(ethernet);
+            sync_devices();
 
             sync();
-            client.notify["primary-connection"].connect(sync);
-            client.notify["activating-connection"].connect(sync);
+            client.notify["primary-connection"].connect(queue_sync);
+            client.notify["activating-connection"].connect(queue_sync);
+            client.device_added.connect(queue_sync);
+            client.device_removed.connect(on_device_removed);
 
             client.notify["state"].connect(() => notify_property("state"));
             client.notify["connectivity"].connect(() => notify_property("connectivity"));
@@ -58,6 +57,53 @@ public class AstalNetwork.Network : Object {
         if (valid.length > 0) return valid.get(0);
 
         return null;
+    }
+
+    private void queue_sync() {
+        if (sync_queued) return;
+
+        sync_queued = true;
+        Idle.add(() => {
+            sync_queued = false;
+            sync_devices();
+            sync();
+
+            return Source.REMOVE;
+        });
+    }
+
+    private void on_device_removed(NM.Device device) {
+        if ((wifi != null) && (wifi.device == device)) {
+            wifi.disconnect_signals();
+            wifi = null;
+        }
+
+        if ((wired != null) && (wired.device == device)) {
+            wired.disconnect_signals();
+            wired = null;
+        }
+
+        queue_sync();
+    }
+
+    private void sync_devices() {
+        var wifi_device = (NM.DeviceWifi)get_device(NM.DeviceType.WIFI);
+        if (wifi_device == null) {
+            if (wifi != null) wifi.disconnect_signals();
+            wifi = null;
+        } else if ((wifi == null) || (wifi.device != wifi_device)) {
+            if (wifi != null) wifi.disconnect_signals();
+            wifi = new Wifi(wifi_device);
+        }
+
+        var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
+        if (ethernet == null) {
+            if (wired != null) wired.disconnect_signals();
+            wired = null;
+        } else if ((wired == null) || (wired.device != ethernet)) {
+            if (wired != null) wired.disconnect_signals();
+            wired = new Wired(ethernet);
+        }
     }
 
     private void sync() {

@@ -18,9 +18,16 @@ public class AstalNetwork.Wifi : Object {
 
     public NM.ActiveConnection? active_connection { get; private set; }
     private ulong connection_handler = 0;
+    private ulong device_active_connection_handler = 0;
 
     public AccessPoint? active_access_point { get; private set; }
     private ulong ap_handler = 0;
+    private ulong device_active_access_point_handler = 0;
+    private ulong device_access_point_added_handler = 0;
+    private ulong device_access_point_removed_handler = 0;
+    private ulong device_state_handler = 0;
+    private ulong client_wireless_handler = 0;
+    private ulong client_connectivity_handler = 0;
 
     public List<weak AccessPoint> access_points {
         owned get { return _access_points.get_values(); }
@@ -53,7 +60,7 @@ public class AstalNetwork.Wifi : Object {
             access_point_added(new_ap);
         }
 
-        device.access_point_added.connect((access_point) => {
+        device_access_point_added_handler = device.access_point_added.connect((access_point) => {
             var ap = (NM.AccessPoint)access_point;
             var new_ap = new AccessPoint(this, ap);
             _access_points.set(ap.bssid, new_ap);
@@ -61,29 +68,34 @@ public class AstalNetwork.Wifi : Object {
             notify_property("access-points");
         });
 
-        device.access_point_removed.connect((access_point) => {
+        device_access_point_removed_handler = device.access_point_removed.connect((access_point) => {
             var ap = (NM.AccessPoint)access_point;
             var rem_ap = _access_points.get(ap.bssid);
             _access_points.remove(ap.bssid);
+            if (rem_ap != null) rem_ap.disconnect_signals();
             access_point_removed(rem_ap);
             notify_property("access-points");
         });
 
         on_active_connection();
-        device.notify["active-connection"].connect(on_active_connection);
+        device_active_connection_handler = device.notify["active-connection"].connect(on_active_connection);
 
         on_active_access_point();
-        device.notify["active-access-point"].connect(on_active_access_point);
+        device_active_access_point_handler =
+            device.notify["active-access-point"].connect(on_active_access_point);
 
         state = (DeviceState)device.state;
-        device.client.notify["wireless-enabled"].connect(() => notify_property("enabled"));
-        device.state_changed.connect((n, o, r) => {
+        client_wireless_handler = device.client.notify["wireless-enabled"].connect(() => {
+            notify_property("enabled");
+            icon_name = _icon();
+        });
+        device_state_handler = device.state_changed.connect((n, o, r) => {
             state_changed(n, o, r);
             state = (DeviceState)n;
         });
 
-        device.notify.connect(() => { icon_name = _icon(); });
-        device.client.notify.connect(() => { icon_name = _icon(); });
+        client_connectivity_handler =
+            device.client.notify["connectivity"].connect(() => { icon_name = _icon(); });
         icon_name = _icon();
     }
 
@@ -92,6 +104,57 @@ public class AstalNetwork.Wifi : Object {
         DeviceState old_state,
         NM.DeviceStateReason reaseon
     );
+
+    internal void disconnect_signals() {
+        if ((connection_handler > 0) && (active_connection != null)) {
+            SignalHandler.disconnect(active_connection, connection_handler);
+            connection_handler = 0;
+        }
+
+        if ((ap_handler > 0) && (active_access_point != null)) {
+            SignalHandler.disconnect(active_access_point, ap_handler);
+            ap_handler = 0;
+        }
+
+        if (device_active_connection_handler > 0) {
+            SignalHandler.disconnect(device, device_active_connection_handler);
+            device_active_connection_handler = 0;
+        }
+
+        if (device_active_access_point_handler > 0) {
+            SignalHandler.disconnect(device, device_active_access_point_handler);
+            device_active_access_point_handler = 0;
+        }
+
+        if (device_access_point_added_handler > 0) {
+            SignalHandler.disconnect(device, device_access_point_added_handler);
+            device_access_point_added_handler = 0;
+        }
+
+        if (device_access_point_removed_handler > 0) {
+            SignalHandler.disconnect(device, device_access_point_removed_handler);
+            device_access_point_removed_handler = 0;
+        }
+
+        if (device_state_handler > 0) {
+            SignalHandler.disconnect(device, device_state_handler);
+            device_state_handler = 0;
+        }
+
+        if (client_wireless_handler > 0) {
+            SignalHandler.disconnect(device.client, client_wireless_handler);
+            client_wireless_handler = 0;
+        }
+
+        if (client_connectivity_handler > 0) {
+            SignalHandler.disconnect(device.client, client_connectivity_handler);
+            client_connectivity_handler = 0;
+        }
+
+        foreach (var ap in _access_points.get_values()) {
+            ap.disconnect_signals();
+        }
+    }
 
     public void scan() {
         scanning = true;
@@ -121,18 +184,21 @@ public class AstalNetwork.Wifi : Object {
 
     private void on_active_connection() {
         if ((connection_handler > 0) && (active_connection != null)) {
-            active_connection.disconnect(connection_handler);
+            SignalHandler.disconnect(active_connection, connection_handler);
             connection_handler = 0;
             active_connection = null;
         }
 
         active_connection = device.active_connection;
         is_hotspot = _hotspot();
+        internet = Internet.from_device(device);
         if (active_connection != null) {
             connection_handler = active_connection.notify["state"].connect(() => {
                 internet = Internet.from_device(device);
+                icon_name = _icon();
             });
         }
+        icon_name = _icon();
     }
 
     private void on_active_access_point_notify() {
@@ -140,11 +206,12 @@ public class AstalNetwork.Wifi : Object {
         frequency = active_access_point.frequency;
         strength = active_access_point.strength;
         ssid = active_access_point.ssid;
+        icon_name = _icon();
     }
 
     private void on_active_access_point() {
         if ((ap_handler > 0) && (active_access_point != null)) {
-            active_access_point.disconnect(ap_handler);
+            SignalHandler.disconnect(active_access_point, ap_handler);
             ap_handler = 0;
             active_access_point = null;
         }

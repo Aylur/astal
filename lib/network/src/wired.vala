@@ -8,6 +8,10 @@ public class AstalNetwork.Wired : Object {
 
     public NM.ActiveConnection connection;
     private ulong connection_handler = 0;
+    private ulong device_active_connection_handler = 0;
+    private ulong device_speed_handler = 0;
+    private ulong device_state_handler = 0;
+    private ulong client_connectivity_handler = 0;
 
     internal Wired(NM.DeviceEthernet device) {
         this.device = device;
@@ -16,20 +20,14 @@ public class AstalNetwork.Wired : Object {
         state = (DeviceState)device.state;
         icon_name = _icon();
 
-        device.notify.connect((pspec) => {
-            if (pspec.name == "speed") {
-                speed = device.speed;
-            }
-            if (pspec.name == "state") {
-                state = (DeviceState)device.state;
-            }
-            if (pspec.name == "active-connection") {
-                on_active_connection();
-            }
-            icon_name = _icon();
-        });
+        device_speed_handler = device.notify["speed"].connect(() => { speed = device.speed; });
+        device_state_handler =
+            device.notify["state"].connect(() => { state = (DeviceState)device.state; });
+        device_active_connection_handler =
+            device.notify["active-connection"].connect(on_active_connection);
 
-        device.client.notify.connect(() => { icon_name = _icon(); });
+        client_connectivity_handler =
+            device.client.notify["connectivity"].connect(() => { icon_name = _icon(); });
 
         on_active_connection();
         icon_name = _icon();
@@ -37,16 +35,46 @@ public class AstalNetwork.Wired : Object {
 
     private void on_active_connection() {
         if ((connection_handler > 0) && (connection != null)) {
-            connection.disconnect(connection_handler);
+            SignalHandler.disconnect(connection, connection_handler);
             connection_handler = 0;
             connection = null;
         }
 
         connection = device.active_connection;
+        internet = Internet.from_device(device);
         if (connection != null) {
             connection_handler = connection.notify["state"].connect(() => {
                 internet = Internet.from_device(device);
+                icon_name = _icon();
             });
+        }
+        icon_name = _icon();
+    }
+
+    internal void disconnect_signals() {
+        if ((connection_handler > 0) && (connection != null)) {
+            SignalHandler.disconnect(connection, connection_handler);
+            connection_handler = 0;
+        }
+
+        if (device_active_connection_handler > 0) {
+            SignalHandler.disconnect(device, device_active_connection_handler);
+            device_active_connection_handler = 0;
+        }
+
+        if (device_speed_handler > 0) {
+            SignalHandler.disconnect(device, device_speed_handler);
+            device_speed_handler = 0;
+        }
+
+        if (device_state_handler > 0) {
+            SignalHandler.disconnect(device, device_state_handler);
+            device_state_handler = 0;
+        }
+
+        if (client_connectivity_handler > 0) {
+            SignalHandler.disconnect(device.client, client_connectivity_handler);
+            client_connectivity_handler = 0;
         }
     }
 
