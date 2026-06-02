@@ -73,7 +73,7 @@ public class AstalNetwork.Wifi : Object {
             var rem_ap = _access_points.get(ap.bssid);
             _access_points.remove(ap.bssid);
             if (rem_ap != null) rem_ap.disconnect_signals();
-            access_point_removed(rem_ap);
+            if (rem_ap != null) access_point_removed(rem_ap);
             notify_property("access-points");
         });
 
@@ -110,11 +110,13 @@ public class AstalNetwork.Wifi : Object {
             SignalHandler.disconnect(active_connection, connection_handler);
             connection_handler = 0;
         }
+        active_connection = null;
 
         if ((ap_handler > 0) && (active_access_point != null)) {
             SignalHandler.disconnect(active_access_point, ap_handler);
             ap_handler = 0;
         }
+        active_access_point = null;
 
         if (device_active_connection_handler > 0) {
             SignalHandler.disconnect(device, device_active_connection_handler);
@@ -154,6 +156,7 @@ public class AstalNetwork.Wifi : Object {
         foreach (var ap in _access_points.get_values()) {
             ap.disconnect_signals();
         }
+        _access_points.remove_all();
     }
 
     public void scan() {
@@ -219,8 +222,10 @@ public class AstalNetwork.Wifi : Object {
         var ap = device.active_access_point;
         if (ap != null) {
             active_access_point = _access_points.get(ap.bssid);
-            on_active_access_point_notify();
-            ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
+            if (active_access_point != null) {
+                on_active_access_point_notify();
+                ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
+            }
         }
     }
 

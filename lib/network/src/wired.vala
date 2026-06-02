@@ -56,6 +56,7 @@ public class AstalNetwork.Wired : Object {
             SignalHandler.disconnect(connection, connection_handler);
             connection_handler = 0;
         }
+        connection = null;
 
         if (device_active_connection_handler > 0) {
             SignalHandler.disconnect(device, device_active_connection_handler);
