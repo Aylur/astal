@@ -67,7 +67,12 @@ public class AstalHyprland.Monitor : Object {
     }
 
     public void focus() {
-        Hyprland.get_default().dispatch("focus", "{monitor=" + id.to_string() + "}");
+        if(Hyprland.get_default().config_provider == ConfigProvider.LUA) {
+            Hyprland.get_default().dispatch("focus", "{monitor=" + id.to_string() + "}");
+            return;
+        }
+
+        Hyprland.get_default().dispatch("focusmonitor", id.to_string());
     }
 
     public enum Transform {
