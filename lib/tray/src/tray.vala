@@ -149,9 +149,16 @@ public class Tray : Object {
     private void on_item_unregister(string service) {
         var item = _items.get(service);
         _items.remove(service);
+
+        // the item never became ready (it unregistered right after registering,
+        // e.g. during startup churn), so it was never added to the store and
+        // item_added never fired for it
+        if (item == null) return;
+
         uint pos;
-        _items_store.find(item, out pos);
-        _items_store.remove(pos);
+        if (_items_store.find(item, out pos)) {
+            _items_store.remove(pos);
+        }
         item_removed(service);
     }
 
