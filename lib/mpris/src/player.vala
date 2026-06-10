@@ -775,9 +775,9 @@ public class AstalMpris.Player : Object {
             sync(yield proxy.get_all(MediaPlayerProxy.NAME));
             sync(yield proxy.get_all(PlayerProxy.NAME));
             yield check_position();
-            yield cache_cover();
             available = true;
             init_position_poll();
+            cache_cover.begin();
         } catch (Error error) {
             critical(error.message);
         }
