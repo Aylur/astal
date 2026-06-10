@@ -36,6 +36,8 @@ public class Tray : Object {
 
     private HashTable<string, TrayItem> _items =
         new HashTable<string, TrayItem>(str_hash, str_equal);
+    private HashTable<string, TrayItem> _pending_items =
+        new HashTable<string, TrayItem>(str_hash, str_equal);
 
     /**
      * List of currently registered tray items
@@ -139,7 +141,12 @@ public class Tray : Object {
 
         var parts = service.split("/", 2);
         TrayItem item = new TrayItem(parts[0], "/" + parts[1]);
-        item.ready.connect(() => {
+        _pending_items.set(service, item);
+        item.ready.connect((item) => {
+            if(!_pending_items.contains(service)) {
+                return;
+            }
+            _pending_items.remove(service);
             _items.set(service, item);
             _items_store.append(item);
             item_added(service);
@@ -147,18 +154,18 @@ public class Tray : Object {
     }
 
     private void on_item_unregister(string service) {
-        var item = _items.get(service);
-        _items.remove(service);
-
-        // the item never became ready (it unregistered right after registering,
-        // e.g. during startup churn), so it was never added to the store and
-        // item_added never fired for it
-        if (item == null) return;
-
-        uint pos;
-        if (_items_store.find(item, out pos)) {
-            _items_store.remove(pos);
+        if(_pending_items.contains(service)) {
+            _pending_items.remove(service);
+            return;
         }
+        var item = _items.lookup(service);
+        if(item == null) {
+            return;
+        }
+        uint pos;
+        if(!_items_store.find(item, out pos)) return;
+        _items.remove(service);
+        _items_store.remove(pos);
         item_removed(service);
     }
 

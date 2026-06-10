@@ -35,7 +35,7 @@ int main(string[] argv) {
             id, item.to_json_string());
             stdout.flush();
 
-            item.changed.connect(() => {
+            item.changed.connect((item) => {
                 stdout.printf("{\"event\":\"item_changed\",\"id\":\"%s\",\"item\":%s}\n",
                 id, item.to_json_string());
                 stdout.flush();
