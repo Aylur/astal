@@ -16,7 +16,7 @@ namespace AstalWorkspace {
 
     public class Workspace : Object {
         private WorkspaceManager manager;
-        private ExtWorkspaceHandleV1 handle;
+        private unowned ExtWorkspaceHandleV1 handle;
 
         private const ExtWorkspaceHandleV1Listener listener = {
             handle_id,
@@ -31,9 +31,8 @@ namespace AstalWorkspace {
         private string? pending_id = null;
         public string name { get; private set; }
         private string? pending_name = null;
-        // TODO: this probably has to be a fancier array type for bindings
-        public uint32[]? coordinates { get; private set; default = null; }
-        private uint32[]? pending_coordinates;
+        public GenericArray<uint32>? coordinates { get; private set; default = null; }
+        private GenericArray<uint32>? pending_coordinates;
         public WorkspaceState state { get; private set; }
         private WorkspaceState pending_state;
         public WorkspaceCapabilities capabilities { get; private set; }
@@ -55,10 +54,14 @@ namespace AstalWorkspace {
             handle.remove();
         }
 
-        internal Workspace(WorkspaceManager manager, owned ExtWorkspaceHandleV1 handle) {
+        internal Workspace(WorkspaceManager manager, ExtWorkspaceHandleV1 handle) {
             this.manager = manager;
-            this.handle = (owned)handle;
+            this.handle = handle;
             handle.add_listener(listener, this);
+        }
+
+        public override void dispose() {
+            this.handle.destroy();
         }
 
         private void handle_id(ExtWorkspaceHandleV1 handle, string id) {
@@ -68,7 +71,12 @@ namespace AstalWorkspace {
             pending_name = name;
         }
         private void handle_coordinates(ExtWorkspaceHandleV1 handle, Wl.Array coordinates) {
-            // TODO
+            uint32 *coords_data = coordinates.data;
+            var count = coordinates.size / sizeof(uint32);
+            pending_coordinates = new GenericArray<uint32>((uint)count);
+            for (var i = 0; i < count; i++) {
+                pending_coordinates.add(coords_data[i]);
+            }
         }
         private void handle_state(ExtWorkspaceHandleV1 handle, ExtWorkspaceHandleV1State state) {
             pending_state = (WorkspaceState)state;
@@ -77,7 +85,7 @@ namespace AstalWorkspace {
             pending_capabilities = (WorkspaceCapabilities)capabilities;
         }
         private void handle_removed(ExtWorkspaceHandleV1 handle) {
-            // TODO: tell the manager to pending-remove us
+            manager.handle_workspace_destroy(this);
         }
 
         internal void apply_pending() {
