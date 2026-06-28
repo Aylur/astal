@@ -33,7 +33,7 @@ public class AstalNetwork.Wifi : Object {
 
     public Internet internet { get; private set; }
     public uint bandwidth { get; private set; }
-    public string ssid { get; private set; }
+    public string? ssid { get; private set; }
     public uint8 strength { get; private set; }
     public uint frequency { get; private set; }
     public DeviceState state { get; private set; }
@@ -136,10 +136,10 @@ public class AstalNetwork.Wifi : Object {
     }
 
     private void on_active_access_point_notify() {
-        bandwidth = active_access_point.bandwidth;
-        frequency = active_access_point.frequency;
-        strength = active_access_point.strength;
-        ssid = active_access_point.ssid;
+        bandwidth = active_access_point?.bandwidth ?? 0;
+        frequency = active_access_point?.frequency ?? 0;
+        strength = active_access_point?.strength ?? 0;
+        ssid = active_access_point?.ssid;
     }
 
     private void on_active_access_point() {
@@ -152,9 +152,9 @@ public class AstalNetwork.Wifi : Object {
         var ap = device.active_access_point;
         if (ap != null) {
             active_access_point = _access_points.get(ap.bssid);
-            on_active_access_point_notify();
             ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
         }
+        on_active_access_point_notify();
     }
 
     private string _icon() {
