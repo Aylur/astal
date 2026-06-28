@@ -184,14 +184,16 @@ public class AstalBluetooth.Bluetooth : Object {
     private void on_interface_removed (DBusObject object, DBusInterface iface) {
         if (iface is IDevice) {
             unowned var device = (IDevice)iface;
-            device_removed(_devices.get(device.g_object_path));
+            unowned var device_obj = _devices.get(device.g_object_path);
             _devices.remove(device.g_object_path);
+            device_removed(device_obj);
         }
 
         if (iface is IAdapter) {
             unowned var adapter = (IAdapter)iface;
-            adapter_removed(_adapters.get(adapter.g_object_path));
+            unowned var adapter_obj = _adapters.get(adapter.g_object_path);
             _adapters.remove(adapter.g_object_path);
+            adapter_removed(adapter_obj);
         }
 
         sync();
