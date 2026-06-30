@@ -46,8 +46,8 @@ namespace AstalWorkspace {
             handle.deactivate();
         }
 
-        public void assign(void* group) {
-            // TODO
+        public void assign_to_group(WorkspaceGroup group) {
+            handle.assign(group.handle);
         }
 
         public void remove() {
@@ -57,6 +57,8 @@ namespace AstalWorkspace {
         internal Workspace(WorkspaceManager manager, ExtWorkspaceHandleV1 handle) {
             this.manager = manager;
             this.handle = handle;
+            // Used by groups to recover these objects from the handles.
+            handle.set_user_data(this);
             handle.add_listener(listener, this);
         }
 
@@ -67,23 +69,28 @@ namespace AstalWorkspace {
         private void handle_id(ExtWorkspaceHandleV1 handle, string id) {
             pending_id = id;
         }
+
         private void handle_name(ExtWorkspaceHandleV1 handle, string name) {
             pending_name = name;
         }
+
         private void handle_coordinates(ExtWorkspaceHandleV1 handle, Wl.Array coordinates) {
-            uint32 *coords_data = coordinates.data;
-            var count = coordinates.size / sizeof(uint32);
-            pending_coordinates = new GenericArray<uint32>((uint)count);
+            uint32* coords_data = coordinates.data;
+            var count = coordinates.size / sizeof (uint32);
+            pending_coordinates = new GenericArray<uint32> ((uint) count);
             for (var i = 0; i < count; i++) {
                 pending_coordinates.add(coords_data[i]);
             }
         }
+
         private void handle_state(ExtWorkspaceHandleV1 handle, ExtWorkspaceHandleV1State state) {
-            pending_state = (WorkspaceState)state;
+            pending_state = (WorkspaceState) state;
         }
+
         private void handle_capabilities(ExtWorkspaceHandleV1 handle, ExtWorkspaceHandleV1WorkspaceCapabilities capabilities) {
-            pending_capabilities = (WorkspaceCapabilities)capabilities;
+            pending_capabilities = (WorkspaceCapabilities) capabilities;
         }
+
         private void handle_removed(ExtWorkspaceHandleV1 handle) {
             manager.handle_workspace_destroy(this);
         }
@@ -91,13 +98,13 @@ namespace AstalWorkspace {
         internal void apply_pending() {
             freeze_notify();
             if (pending_id != null) {
-                id = (owned)pending_id;
+                id = (owned) pending_id;
             }
             if (pending_name != null) {
-                name = (owned)pending_name;
+                name = (owned) pending_name;
             }
             if (pending_coordinates != null) {
-                coordinates = (owned)pending_coordinates;
+                coordinates = (owned) pending_coordinates;
             }
             if (_state != pending_state) {
                 state = pending_state;
