@@ -31,8 +31,10 @@ namespace AstalWorkspace {
         private GenericArray<Workspace> pending_deleted_workspaces;
 
         public GenericArray<WorkspaceGroup> groups { get; private set; }
-        public GenericArray<WorkspaceGroup> pending_created_groups;
-        public GenericArray<WorkspaceGroup> pending_deleted_groups;
+        private GenericArray<WorkspaceGroup> pending_created_groups;
+        private GenericArray<WorkspaceGroup> pending_deleted_groups;
+
+        public signal void changed();
 
         public WorkspaceManager() {
             var registry = AstalWl.get_default();
@@ -96,6 +98,7 @@ namespace AstalWorkspace {
             if (groups_changed) {
                 notify_property("groups");
             }
+            changed();
         }
 
         private void handle_finished() {

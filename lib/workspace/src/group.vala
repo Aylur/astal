@@ -61,6 +61,7 @@ namespace AstalWorkspace {
                 warning("Couldn't find AstalWl.Output for output %p", wl_output);
                 return;
             }
+            pending_added_outputs.add(output);
         }
 
         private void handle_output_leave(ExtWorkspaceGroupHandleV1 handle, Wl.Output wl_output) {
@@ -68,6 +69,9 @@ namespace AstalWorkspace {
             if (output == null) {
                 warning("Couldn't find AstalWl.Output for output %p", wl_output);
                 return;
+            }
+            if (!pending_added_outputs.remove(output)) {
+                pending_removed_outputs.add(output);
             }
         }
 
