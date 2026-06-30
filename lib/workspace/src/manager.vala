@@ -30,6 +30,10 @@ namespace AstalWorkspace {
         private GenericArray<Workspace> pending_created_workspaces;
         private GenericArray<Workspace> pending_deleted_workspaces;
 
+        public GenericArray<WorkspaceGroup> groups { get; private set; }
+        public GenericArray<WorkspaceGroup> pending_created_groups;
+        public GenericArray<WorkspaceGroup> pending_deleted_groups;
+
         public WorkspaceManager() {
             var registry = AstalWl.get_default();
             var manager_global = registry.find_globals("ext_workspace_manager_v1").nth_data(0);
@@ -43,6 +47,10 @@ namespace AstalWorkspace {
             workspaces = new GenericArray<Workspace>();
             pending_created_workspaces = new GenericArray<Workspace>();
             pending_deleted_workspaces = new GenericArray<Workspace>();
+
+            groups = new GenericArray<WorkspaceGroup>();
+            pending_created_groups = new GenericArray<WorkspaceGroup>();
+            pending_deleted_groups = new GenericArray<WorkspaceGroup>();
         }
 
         private void handle_done() {
@@ -50,7 +58,7 @@ namespace AstalWorkspace {
 
             var workspaces_changed = false;
             if (pending_created_workspaces.length > 0) {
-                workspaces.extend_and_steal((owned) pending_created_workspaces);
+                workspaces.extend_and_steal((owned)pending_created_workspaces);
                 pending_created_workspaces = new GenericArray<Workspace>();
                 workspaces_changed = true;
             }
@@ -61,13 +69,32 @@ namespace AstalWorkspace {
                 pending_deleted_workspaces = new GenericArray<Workspace>();
                 workspaces_changed = true;
             }
-
             foreach (var workspace in workspaces) {
                 workspace.apply_pending();
             }
 
+            var groups_changed = false;
+            if (pending_created_groups.length > 0) {
+                groups.extend_and_steal((owned)pending_deleted_groups);
+                pending_created_groups = new GenericArray<WorkspaceGroup>();
+                groups_changed = true;
+            }
+            if (pending_deleted_groups.length > 0) {
+                foreach (var deleted in pending_deleted_groups) {
+                    groups.remove(deleted);
+                }
+                pending_deleted_groups = new GenericArray<WorkspaceGroup>();
+                groups_changed = true;
+            }
+            foreach (var group in groups) {
+                group.apply_pending();
+            }
+
             if (workspaces_changed) {
                 notify_property("workspaces");
+            }
+            if (groups_changed) {
+                notify_property("groups");
             }
         }
 
@@ -78,11 +105,18 @@ namespace AstalWorkspace {
 
         private void handle_workspace_group(ExtWorkspaceManagerV1 manager, ExtWorkspaceGroupHandleV1 group) {
             print("group %p\n", group);
+            pending_created_groups.add(new WorkspaceGroup(this, group));
         }
 
         private void handle_workspace_create(ExtWorkspaceManagerV1 manager, ExtWorkspaceHandleV1 workspace) {
             print("workspace %p\n", workspace);
             pending_created_workspaces.add(new Workspace(this, workspace));
+        }
+
+        internal void handle_group_destroy(WorkspaceGroup group) {
+            if (!pending_created_groups.remove(group)) {
+                pending_deleted_groups.add(group);
+            }
         }
 
         internal void handle_workspace_destroy(Workspace workspace) {

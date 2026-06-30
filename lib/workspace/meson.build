@@ -45,6 +45,7 @@ deps = [
 ]
 
 sources = [config] + files(
+    'src/group.vala',
     'src/manager.vala',
     'src/workspace.vala',
 )
