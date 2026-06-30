@@ -6,8 +6,7 @@ namespace AstalWorkspace {
 
     public class WorkspaceGroup : Object {
         private WorkspaceManager manager;
-        // Needs to be internal and not private for Workspace.assign_to_group
-        internal unowned ExtWorkspaceGroupHandleV1 handle;
+        private unowned ExtWorkspaceGroupHandleV1 handle;
 
         private const ExtWorkspaceGroupHandleV1Listener listener = {
             handle_capabilities,
@@ -28,6 +27,11 @@ namespace AstalWorkspace {
         public GenericArray<Workspace> workspaces { get; private set; }
         private GenericArray<Workspace> pending_added_workspaces;
         private GenericArray<Workspace> pending_removed_workspaces;
+
+        // Helper for workspaces to be able to assign themselves to this handle
+        internal unowned ExtWorkspaceGroupHandleV1 _get_handle() {
+            return handle;
+        }
 
         public void create_workspace(string name) {
             handle.create_workspace(name);

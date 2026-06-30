@@ -47,7 +47,7 @@ namespace AstalWorkspace {
         }
 
         public void assign_to_group(WorkspaceGroup group) {
-            handle.assign(group.handle);
+            handle.assign(group._get_handle());
         }
 
         public void remove() {
