@@ -7,6 +7,7 @@ public class AstalApps.Apps : Object {
     private string cache_directory;
     private string cache_file;
     private List<Application> _list;
+    private AppInfoMonitor monitor;
     private HashTable<string, int> frequents { get; private set; }
 
     /**
@@ -65,7 +66,8 @@ public class AstalApps.Apps : Object {
         cache_file = cache_directory + "/apps-frequents.json";
         frequents = new HashTable<string, int>(str_hash, str_equal);
 
-        AppInfoMonitor.get().changed.connect(() => {
+        monitor = AppInfoMonitor.get();
+        monitor.changed.connect(() => {
             reload();
         });
 
@@ -210,6 +212,7 @@ public class AstalApps.Apps : Object {
         }
 
         cache();
+        notify_property("list");
     }
 
     private void cache() {
