@@ -71,7 +71,7 @@ abstract class WorkspaceCommand : Command {
 
             if (watch.enabled) {
                 var loop = new MainLoop();
-                manager.changed.connect(() => dump_state(manager));
+                manager.updated.connect(() => dump_state(manager));
                 loop.run();
             }
             return 0;

@@ -36,7 +36,10 @@ namespace AstalWorkspace {
         private GenericArray<WorkspaceGroup> pending_created_groups;
         private GenericArray<WorkspaceGroup> pending_deleted_groups;
 
-        public signal void changed();
+        /**
+         * Emitted when the compositor updates the workspace state.
+         */
+        public signal void updated();
 
         public Object ? get_item(uint position) {
             if (position >= workspaces.length) {
@@ -161,7 +164,7 @@ namespace AstalWorkspace {
             if (groups_changed) {
                 notify_property("groups");
             }
-            changed();
+            updated();
         }
 
         private void handle_finished() {
