@@ -1,3 +1,5 @@
+// TODO: "monitor view" object which filters workspaces/groups for those on a specific (GDK) monitor
+
 namespace AstalWorkspace {
     public bool is_supported() {
         return !AstalWl.Registry.get_default().find_globals("ext_workspace_manager_v1").is_empty();
@@ -7,7 +9,7 @@ namespace AstalWorkspace {
         return WorkspaceManager.get_default();
     }
 
-    public class WorkspaceManager : Object {
+    public class WorkspaceManager : Object, ListModel {
         private static WorkspaceManager? instance;
 
         public static WorkspaceManager get_default() {
@@ -36,6 +38,34 @@ namespace AstalWorkspace {
 
         public signal void changed();
 
+        public Object ? get_item(uint position) {
+            if (position >= workspaces.length) {
+                return null;
+            } else {
+                return workspaces[position];
+            }
+        }
+
+        public Type item_type {
+            get {
+                return typeof (Workspace);
+            }
+        }
+
+        public Type get_item_type() {
+            return typeof (Workspace);
+        }
+
+        public uint n_items {
+            get {
+                return workspaces.length;
+            }
+        }
+
+        public uint get_n_items() {
+            return workspaces.length;
+        }
+
         public WorkspaceManager() {
             var registry = AstalWl.get_default();
             var manager_global = registry.find_globals("ext_workspace_manager_v1").nth_data(0);
@@ -58,23 +88,6 @@ namespace AstalWorkspace {
         private void handle_done() {
             print("done\n");
 
-            var workspaces_changed = false;
-            if (pending_created_workspaces.length > 0) {
-                workspaces.extend_and_steal((owned) pending_created_workspaces);
-                pending_created_workspaces = new GenericArray<Workspace> ();
-                workspaces_changed = true;
-            }
-            if (pending_deleted_workspaces.length > 0) {
-                foreach (var deleted in pending_deleted_workspaces) {
-                    workspaces.remove(deleted);
-                }
-                pending_deleted_workspaces = new GenericArray<Workspace> ();
-                workspaces_changed = true;
-            }
-            foreach (var workspace in workspaces) {
-                workspace.apply_pending();
-            }
-
             var groups_changed = false;
             if (pending_created_groups.length > 0) {
                 groups.extend_and_steal((owned) pending_created_groups);
@@ -90,6 +103,56 @@ namespace AstalWorkspace {
             }
             foreach (var group in groups) {
                 group.apply_pending();
+            }
+
+            // This is done in a very particular order, to make emitting items-changed as easy as possible,
+            // and to ensure every remaining workspace has apply_pending called on it exactly once before it's exposed.
+            // First, items are deleted, from highest index to lowest, then apply_pending is called on the remaining items,
+            // and then the pending created items have their pending state applied and are added all at once.
+            var workspaces_changed = false;
+            var deleted_count = pending_deleted_workspaces.length;
+            if (deleted_count > 0) {
+                // This is an array of individually heap-allocated ints. It'd be nice if a plain array could be used here,
+                // but all the built-in sort functions are broken on all the non-boxing arrays.
+                var deleted_indices = new GenericArray<uint> (deleted_count);
+                for (int i = 0; i < deleted_count; i++) {
+                    uint index;
+                    if (workspaces.find(pending_deleted_workspaces[i], out index)) {
+                        deleted_indices.add(index);
+                    } else {
+                        critical("Couldn't find workspace to delete");
+                    }
+                }
+                for (int i = deleted_indices.length - 1; i >= 0; i--) {
+                    uint run_end = deleted_indices[i];
+                    while (i > 0 && deleted_indices[i - 1] == deleted_indices[i] - 1) {
+                        i--;
+                    }
+                    uint run_start = deleted_indices[i];
+                    // Items in the range [run_start, run_end] can be deleted all at once.
+                    uint run_length = run_end + 1 - run_start;
+                    workspaces.remove_range(run_start, run_length);
+                    items_changed(run_start, run_length, 0);
+                }
+
+                pending_deleted_workspaces = new GenericArray<Workspace> ();
+                workspaces_changed = true;
+            }
+            foreach (var workspace in workspaces) {
+                workspace.apply_pending();
+            }
+            if (pending_created_workspaces.length > 0) {
+                foreach (var created in pending_created_workspaces) {
+                    created.apply_pending();
+                }
+
+                uint before_length = workspaces.length;
+                uint count = pending_created_workspaces.length;
+                workspaces.extend_and_steal((owned) pending_created_workspaces);
+                pending_created_workspaces = new GenericArray<Workspace> ();
+
+                items_changed(before_length, 0, count);
+                workspaces_changed = true;
             }
 
             if (workspaces_changed) {
