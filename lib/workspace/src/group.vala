@@ -4,7 +4,7 @@ namespace AstalWorkspace {
         CREATE_WORKSPACE,
     }
 
-    public class WorkspaceGroup : Object {
+    public class WorkspaceGroup : Object, ListModel {
         private WorkspaceManager manager;
         private unowned ExtWorkspaceGroupHandleV1 handle;
 
@@ -31,6 +31,34 @@ namespace AstalWorkspace {
         // Helper for workspaces to be able to assign themselves to this handle
         internal unowned ExtWorkspaceGroupHandleV1 _get_handle() {
             return handle;
+        }
+
+        public Object ? get_item(uint position) {
+            if (position >= workspaces.length) {
+                return null;
+            } else {
+                return workspaces[position];
+            }
+        }
+
+        public Type item_type {
+            get {
+                return typeof (Workspace);
+            }
+        }
+
+        public Type get_item_type() {
+            return typeof (Workspace);
+        }
+
+        public uint n_items {
+            get {
+                return workspaces.length;
+            }
+        }
+
+        public uint get_n_items() {
+            return workspaces.length;
         }
 
         public void create_workspace(string name) {
@@ -97,6 +125,7 @@ namespace AstalWorkspace {
 
         internal void apply_pending() {
             freeze_notify();
+
             if (_capabilities != pending_capabilities) {
                 capabilities = pending_capabilities;
             }
@@ -115,17 +144,44 @@ namespace AstalWorkspace {
                 outputs_changed = true;
             }
 
+            // See the manager's version of this process for why it's done like this.
+            // We do not apply_pending on workspaces here because it's done in the manager.
             var workspaces_changed = false;
-            if (pending_added_workspaces.length > 0) {
-                workspaces.extend_and_steal((owned) pending_added_workspaces);
-                pending_added_workspaces = new GenericArray<Workspace> ();
+            var removed_count = pending_removed_workspaces.length;
+            if (removed_count > 0) {
+                var removed_indices = new GenericArray<uint> (removed_count);
+                for (int i = 0; i < removed_count; i++) {
+                    uint index;
+                    if (workspaces.find(pending_removed_workspaces[i], out index)) {
+                        removed_indices.add(index);
+                    } else {
+                        critical("Couldn't find workspace to remove from group");
+                    }
+                }
+                removed_indices.sort((a, b) => (int) a - (int) b);
+
+                for (int i = removed_indices.length - 1; i >= 0; i--) {
+                    uint run_end = removed_indices[i];
+                    while (i > 0 && removed_indices[i - 1] == removed_indices[i] - 1) {
+                        i--;
+                    }
+                    uint run_start = removed_indices[i];
+                    // Items in the range [run_start, run_end] can be deleted all at once.
+                    uint run_length = run_end + 1 - run_start;
+                    workspaces.remove_range(run_start, run_length);
+                    items_changed(run_start, run_length, 0);
+                }
+
+                pending_removed_workspaces = new GenericArray<Workspace> ();
                 workspaces_changed = true;
             }
-            if (pending_removed_workspaces.length > 0) {
-                foreach (var deleted in pending_removed_workspaces) {
-                    workspaces.remove(deleted);
-                }
-                pending_removed_workspaces = new GenericArray<Workspace> ();
+            if (pending_added_workspaces.length > 0) {
+                uint before_length = workspaces.length;
+                uint count = pending_added_workspaces.length;
+                workspaces.extend_and_steal((owned) pending_added_workspaces);
+                pending_added_workspaces = new GenericArray<Workspace> ();
+
+                items_changed(before_length, 0, count);
                 workspaces_changed = true;
             }
 

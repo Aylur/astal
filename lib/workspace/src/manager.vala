@@ -126,6 +126,8 @@ namespace AstalWorkspace {
                         critical("Couldn't find workspace to delete");
                     }
                 }
+                deleted_indices.sort((a, b) => (int) a - (int) b);
+
                 for (int i = deleted_indices.length - 1; i >= 0; i--) {
                     uint run_end = deleted_indices[i];
                     while (i > 0 && deleted_indices[i - 1] == deleted_indices[i] - 1) {
