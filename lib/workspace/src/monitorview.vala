@@ -1,11 +1,20 @@
 namespace AstalWorkspace {
+    /**
+     * A helper proxy object to list all of the workspaces on a specific monitor (Wayland output)
+     * The workspaces are only accessible via ListModel; the relevant groups can be accessed via property.
+     */
     public class MonitorView : Object, ListModel {
         private AstalWl.Output output;
 
         private GenericArray<ulong> group_connections;
+        /**
+         * The groups that belong to the monitor view's monitor (Wayland output).
+         */
         public GenericArray<WorkspaceGroup> groups { get; private set; }
 
-        // As a list model, this just concatenates all the interior groups' workspace lists.
+        /**
+         * Get the workspace at a specific position in the monitor view's list, or null if out-of-bounds.
+         */
         public Object ? get_item(uint position) {
             for (int i = 0; i < groups.length; i++) {
                 var ws_list = groups[i].workspaces;
@@ -96,6 +105,7 @@ namespace AstalWorkspace {
             if (group.workspaces.length > 0) {
                 items_changed(before_length, 0, group.workspaces.length);
             }
+            notify_property("groups");
         }
 
         private void handle_group_leave_output(WorkspaceGroup group, AstalWl.Output output) {
@@ -116,6 +126,7 @@ namespace AstalWorkspace {
                 total_before += groups[i].workspaces.length;
             }
             items_changed(total_before, group.workspaces.length, 0);
+            notify_property("groups");
         }
     }
 }

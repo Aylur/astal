@@ -1,9 +1,23 @@
 namespace AstalWorkspace {
+    /**
+     * The set of actions that the compositor supports on a workspace group. Note that this is a bitfield enum,
+     * so "has CREATE_WORKSPACE" and "no CREATE_WORKSPACE" are the two valid states for this type.
+     * Note that this can change over the group's lifetime.
+     */
     [Flags]
     public enum GroupCapabilities {
         CREATE_WORKSPACE,
     }
 
+    /**
+     * A group of workspaces, belonging to some set of outputs (monitors).
+     * A workspace can be in multiple groups, and a group can be on multiple outputs (monitors) at once.
+     * Most of the time you don't need to worry about groups directly; if you just want the workspaces on a specific
+     * monitor, use a MonitorView object.
+     *
+     * As a ListModel, it exposes every workspace belonging to the group;
+     * lists of outputs and workspaces are also available through properties.
+     */
     public class WorkspaceGroup : Object, ListModel {
         private WorkspaceManager manager;
         private unowned ExtWorkspaceGroupHandleV1 handle;
@@ -17,13 +31,23 @@ namespace AstalWorkspace {
             handle_removed,
         };
 
+        /**
+         * The group's current capabilities (i.e. can you create workspaces in it).
+         * Note that a group's capabilities can change over its lifetime.
+         */
         public GroupCapabilities capabilities { get; private set; }
         private GroupCapabilities pending_capabilities;
 
+        /**
+         * The set of Wayland outputs (monitors) the group belongs to.
+         */
         public GenericArray<AstalWl.Output> outputs { get; private set; }
         private GenericArray<AstalWl.Output> pending_added_outputs;
         private GenericArray<AstalWl.Output> pending_removed_outputs;
 
+        /**
+         * The workspaces belonging to this group.
+         */
         public GenericArray<Workspace> workspaces { get; private set; }
         private GenericArray<Workspace> pending_added_workspaces;
         private GenericArray<Workspace> pending_removed_workspaces;
@@ -33,6 +57,9 @@ namespace AstalWorkspace {
             return handle;
         }
 
+        /**
+         * Get a workspace at a specific position in the group's list, or null if out-of-bounds.
+         */
         public Object ? get_item(uint position) {
             if (position >= workspaces.length) {
                 return null;
@@ -61,6 +88,10 @@ namespace AstalWorkspace {
             return workspaces.length;
         }
 
+        /**
+         * Ask the compositor to create a workspace with the specified name in this group.
+         * This does nothing if the group doesn't have the CREATE_WORKSPACE capability.
+         */
         public void create_workspace(string name) {
             handle.create_workspace(name);
         }

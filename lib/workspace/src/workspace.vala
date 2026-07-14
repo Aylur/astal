@@ -1,4 +1,8 @@
 namespace AstalWorkspace {
+    /**
+     * The set of possible states that a workspace can be in. Note that this is a bitfield enum,
+     * so any combination of these is allowed. Not every compositor will use all the states.
+     */
     [Flags]
     public enum WorkspaceState {
         ACTIVE,
@@ -6,6 +10,11 @@ namespace AstalWorkspace {
         HIDDEN,
     }
 
+    /**
+     * The set of actions that the compositor supports on a workspace. Note that this is a bitfield enum,
+     * so any combination of these is allowed. Note that this can change over the workspace's lifetime
+     * (e.g. ACTIVATE is supported only when inactive, and vice versa)
+     */
     [Flags]
     public enum WorkspaceCapabilities {
         ACTIVATE,
@@ -27,29 +36,69 @@ namespace AstalWorkspace {
             handle_removed,
         };
 
+        /**
+         * The workspace's ID. This is not required to be set by the compositor,
+         * but if it is set, it will not change during the workspace's lifetime,
+         * and will be unique during its lifetime.
+         * IDs are not human-readable and shouldn't be displayed,
+         * they're for identifying workspaces across sessions.
+         */
         public string? id { get; private set; default = null; }
         private string? pending_id = null;
+        /**
+         * The workspace's human-readable name. It is not guaranteed to be unique,
+         * and can change during the workspace's lifetime.
+         */
         public string name { get; private set; }
         private string? pending_name = null;
+        /**
+         * The workspace's coordinates.
+         * Compositors which arrange workspaces geometrically will use this property
+         * to describe where the workspace is in space;
+         * other compositors may use the workspace's number or leave it as null.
+         */
         public GenericArray<uint32>? coordinates { get; private set; default = null; }
         private GenericArray<uint32>? pending_coordinates;
+        /**
+         * The workspace's current state.
+         */
         public WorkspaceState state { get; private set; }
         private WorkspaceState pending_state;
+        /**
+         * The workspace's current capabilities. These directly correspond to methods on this object.
+         * Note that a workspace's capabilities can change during its lifetime.
+         */
         public WorkspaceCapabilities capabilities { get; private set; }
         private WorkspaceCapabilities pending_capabilities;
 
+        /**
+         * Ask the compositor to activate the workspace.
+         * This does nothing if the workspace doesn't have the ACTIVATE capability.
+         */
         public void activate() {
             handle.activate();
         }
 
+        /**
+         * Ask the compositor to deactivate the workspace.
+         * This does nothing if the workspace doesn't have the DEACTIVATE capability.
+         */
         public void deactivate() {
             handle.deactivate();
         }
 
+        /**
+         * Ask the compositor to assign the workspace to a group.
+         * This does nothing if the workspace doesn't have the ASSIGN capability.
+         */
         public void assign_to_group(WorkspaceGroup group) {
             handle.assign(group._get_handle());
         }
 
+        /**
+         * Ask the compositor to remove the workspace.
+         * This does nothing if the workspace doesn't have the REMOVE capability.
+         */
         public void remove() {
             handle.remove();
         }

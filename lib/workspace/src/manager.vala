@@ -1,4 +1,5 @@
 namespace AstalWorkspace {
+    /** Check whether the ext-workspace-v1 protocol is supported. */
     public bool is_supported() {
         return !AstalWl.Registry.get_default().find_globals("ext_workspace_manager_v1").is_empty();
     }
@@ -7,6 +8,12 @@ namespace AstalWorkspace {
         return WorkspaceManager.get_default();
     }
 
+    /**
+     * The global workspace state. As a ListModel, it exposes every workspace available;
+     * lists of workspaces and groups are also available through properties,
+     * and helper objects can be created to access workspaces on a specific monitor
+     * through the for_monitor and for_output factory methods.
+     */
     public class WorkspaceManager : Object, ListModel {
         private static WorkspaceManager? instance;
 
@@ -49,6 +56,9 @@ namespace AstalWorkspace {
          */
         public signal void group_leave_output(WorkspaceGroup group, AstalWl.Output output);
 
+        /**
+         * Get the workspace at a specific position in the list, or null if out-of-bounds.
+         */
         public Object ? get_item(uint position) {
             if (position >= workspaces.length) {
                 return null;
@@ -77,16 +87,31 @@ namespace AstalWorkspace {
             return workspaces.length;
         }
 
+        /**
+         * Get a proxy object which filters workspaces to those that belong to a group on the specified Wayland output.
+         */
         public MonitorView for_output(AstalWl.Output output) {
             return new MonitorView(this, output);
         }
 
+        /**
+         * Get a proxy object which filters workspaces to those that belong to a group on the specified GDK monitor.
+         */
         public MonitorView for_monitor(Gdk.Monitor monitor) {
             var wl_monitor = monitor as Gdk.Wayland.Monitor;
             return_val_if_fail(wl_monitor != null, null);
 
             var output = AstalWl.get_default().get_output_by_wl_output(wl_monitor.get_wl_output());
             return new MonitorView(this, output);
+        }
+
+        /**
+         * Commit any pending workspace method calls.
+         * After calling any of the workspace methods (activate, deactivate, assign, and remove)
+         * this method needs to be called for them to apply.
+         */
+        public void commit() {
+            manager.commit();
         }
 
         public WorkspaceManager() {
