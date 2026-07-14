@@ -40,6 +40,7 @@ deps = [
     dependency('glib-2.0'),
     dependency('gobject-2.0'),
     dependency('gio-2.0'),
+    dependency('gtk4-wayland'),
     dependency('astal-wl-0.1'),
     dependency('wayland-client'),
 ]
@@ -47,6 +48,7 @@ deps = [
 sources = [config] + files(
     'src/group.vala',
     'src/manager.vala',
+    'src/monitorview.vala',
     'src/workspace.vala',
 )
 
@@ -71,6 +73,7 @@ if get_option('lib')
             '--name', name,
             '--gir', gir_name,
             '--pkgs', ':'.join(
+                'gtk4-wayland',
                 'wayland-client',
                 'astal-wl-0.1',
             ),

@@ -132,13 +132,17 @@ namespace AstalWorkspace {
 
             var outputs_changed = false;
             if (pending_added_outputs.length > 0) {
-                outputs.extend_and_steal((owned) pending_added_outputs);
+                outputs.extend(pending_added_outputs, (x) => x);
+                foreach (var added in pending_added_outputs) {
+                    manager.group_enter_output(this, added);
+                }
                 pending_added_outputs = new GenericArray<AstalWl.Output> ();
                 outputs_changed = true;
             }
             if (pending_removed_outputs.length > 0) {
                 foreach (var deleted in pending_removed_outputs) {
                     outputs.remove(deleted);
+                    manager.group_leave_output(this, deleted);
                 }
                 pending_removed_outputs = new GenericArray<AstalWl.Output> ();
                 outputs_changed = true;

@@ -1,5 +1,3 @@
-// TODO: "monitor view" object which filters workspaces/groups for those on a specific (GDK) monitor
-
 namespace AstalWorkspace {
     public bool is_supported() {
         return !AstalWl.Registry.get_default().find_globals("ext_workspace_manager_v1").is_empty();
@@ -41,6 +39,16 @@ namespace AstalWorkspace {
          */
         public signal void updated();
 
+        /**
+         * Emitted when any group enters an output.
+         */
+        public signal void group_enter_output(WorkspaceGroup group, AstalWl.Output output);
+
+        /**
+         * Emitted when any group leaves an output, and just before a group with outputs assigned to it gets destroyed.
+         */
+        public signal void group_leave_output(WorkspaceGroup group, AstalWl.Output output);
+
         public Object ? get_item(uint position) {
             if (position >= workspaces.length) {
                 return null;
@@ -69,6 +77,18 @@ namespace AstalWorkspace {
             return workspaces.length;
         }
 
+        public MonitorView for_output(AstalWl.Output output) {
+            return new MonitorView(this, output);
+        }
+
+        public MonitorView for_monitor(Gdk.Monitor monitor) {
+            var wl_monitor = monitor as Gdk.Wayland.Monitor;
+            return_val_if_fail(wl_monitor != null, null);
+
+            var output = AstalWl.get_default().get_output_by_wl_output(wl_monitor.get_wl_output());
+            return new MonitorView(this, output);
+        }
+
         public WorkspaceManager() {
             var registry = AstalWl.get_default();
             var manager_global = registry.find_globals("ext_workspace_manager_v1").nth_data(0);
@@ -91,23 +111,6 @@ namespace AstalWorkspace {
         private void handle_done() {
             print("done\n");
 
-            var groups_changed = false;
-            if (pending_created_groups.length > 0) {
-                groups.extend_and_steal((owned) pending_created_groups);
-                pending_created_groups = new GenericArray<WorkspaceGroup> ();
-                groups_changed = true;
-            }
-            if (pending_deleted_groups.length > 0) {
-                foreach (var deleted in pending_deleted_groups) {
-                    groups.remove(deleted);
-                }
-                pending_deleted_groups = new GenericArray<WorkspaceGroup> ();
-                groups_changed = true;
-            }
-            foreach (var group in groups) {
-                group.apply_pending();
-            }
-
             // This is done in a very particular order, to make emitting items-changed as easy as possible,
             // and to ensure every remaining workspace has apply_pending called on it exactly once before it's exposed.
             // First, items are deleted, from highest index to lowest, then apply_pending is called on the remaining items,
@@ -115,8 +118,6 @@ namespace AstalWorkspace {
             var workspaces_changed = false;
             var deleted_count = pending_deleted_workspaces.length;
             if (deleted_count > 0) {
-                // This is an array of individually heap-allocated ints. It'd be nice if a plain array could be used here,
-                // but all the built-in sort functions are broken on all the non-boxing arrays.
                 var deleted_indices = new GenericArray<uint> (deleted_count);
                 for (int i = 0; i < deleted_count; i++) {
                     uint index;
@@ -158,6 +159,27 @@ namespace AstalWorkspace {
 
                 items_changed(before_length, 0, count);
                 workspaces_changed = true;
+            }
+
+            // Groups are done after workspaces so that monitorviews' workspaces have correct contents.
+            var groups_changed = false;
+            if (pending_created_groups.length > 0) {
+                groups.extend_and_steal((owned) pending_created_groups);
+                pending_created_groups = new GenericArray<WorkspaceGroup> ();
+                groups_changed = true;
+            }
+            if (pending_deleted_groups.length > 0) {
+                foreach (var deleted in pending_deleted_groups) {
+                    foreach (var output in deleted.outputs) {
+                        group_leave_output(deleted, output);
+                    }
+                    groups.remove(deleted);
+                }
+                pending_deleted_groups = new GenericArray<WorkspaceGroup> ();
+                groups_changed = true;
+            }
+            foreach (var group in groups) {
+                group.apply_pending();
             }
 
             if (workspaces_changed) {
