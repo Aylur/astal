@@ -22,6 +22,8 @@ api_version = '0.1'
 gir_name = 'AstalWorkspace-0.1.gir'
 typelib_name = 'AstalWorkspace-0.1.typelib'
 
+add_project_arguments('-DG_LOG_DOMAIN="astal-workspace"', language: 'c')
+
 config = configure_file(
     input: 'src/config.vala.in',
     output: 'config.vala',
@@ -40,10 +42,12 @@ deps = [
     dependency('glib-2.0'),
     dependency('gobject-2.0'),
     dependency('gio-2.0'),
-    dependency('gtk4-wayland'),
     dependency('astal-wl-0.1'),
     dependency('wayland-client'),
 ]
+
+# Separated so it can be excluded out of the CLI build.
+gtk_deps = [dependency('gtk4-wayland')]
 
 sources = [config] + files(
     'src/group.vala',
@@ -56,7 +60,7 @@ if get_option('lib')
     lib = library(
         name,
         sources,
-        dependencies: deps + protocol_deps,
+        dependencies: deps + gtk_deps + protocol_deps,
         vala_args: ['--vapi-comments'],
         vala_header: name + '.h',
         vala_vapi: name + '-' + api_version + '.vapi',
@@ -117,6 +121,7 @@ if get_option('cli')
     executable(
         name,
         ['src/cli.vala', sources],
+        vala_args: ['-D', 'NO_GTK'],
         dependencies: deps + protocol_deps + cli_deps,
         install: true,
     )

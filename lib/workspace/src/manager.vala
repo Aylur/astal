@@ -94,6 +94,11 @@ namespace AstalWorkspace {
             return new MonitorView(this, output);
         }
 
+// Having GDK linked in makes AstalWl use it (and print a critical if there is no display).
+// Pretty much everyone will have it linked in anyway, EXCEPT the astal-workspace CLI.
+// So add an escape hatch to stop depending on it.
+#if !NO_GTK
+
         /**
          * Get a proxy object which filters workspaces to those that belong to a group on the specified GDK monitor.
          */
@@ -104,6 +109,8 @@ namespace AstalWorkspace {
             var output = AstalWl.get_default().get_output_by_wl_output(wl_monitor.get_wl_output());
             return new MonitorView(this, output);
         }
+
+#endif
 
         /**
          * Commit any pending workspace method calls.
@@ -134,7 +141,7 @@ namespace AstalWorkspace {
         }
 
         private void handle_done() {
-            print("done\n");
+            debug("manager done");
 
             // This is done in a very particular order, to make emitting items-changed as easy as possible,
             // and to ensure every remaining workspace has apply_pending called on it exactly once before it's exposed.
@@ -222,22 +229,24 @@ namespace AstalWorkspace {
         }
 
         private void handle_workspace_group(ExtWorkspaceManagerV1 manager, ExtWorkspaceGroupHandleV1 group) {
-            print("group %p\n", group);
+            debug("create group %p", group);
             pending_created_groups.add(new WorkspaceGroup(this, group));
         }
 
         private void handle_workspace_create(ExtWorkspaceManagerV1 manager, ExtWorkspaceHandleV1 workspace) {
-            print("workspace %p\n", workspace);
+            debug("create workspace %p", workspace);
             pending_created_workspaces.add(new Workspace(this, workspace));
         }
 
         internal void handle_group_destroy(WorkspaceGroup group) {
+            debug("destroy group %p", group);
             if (!pending_created_groups.remove(group)) {
                 pending_deleted_groups.add(group);
             }
         }
 
         internal void handle_workspace_destroy(Workspace workspace) {
+            debug("destroy workspace %p", workspace);
             if (!pending_created_workspaces.remove(workspace)) {
                 pending_deleted_workspaces.add(workspace);
             }
