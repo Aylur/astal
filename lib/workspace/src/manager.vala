@@ -41,6 +41,9 @@ public class WorkspaceManager : Object, ListModel {
     private GenericArray<WorkspaceGroup> pending_created_groups;
     private GenericArray<WorkspaceGroup> pending_deleted_groups;
 
+    private int autocommit_freeze_count;
+    private bool autocommit_pending;
+
     /**
      * Emitted when the compositor updates the workspace state.
      */
@@ -102,11 +105,22 @@ public class WorkspaceManager : Object, ListModel {
     /**
      * Get a proxy object which filters workspaces to those that belong to a group on the specified GDK monitor.
      */
-    public MonitorView for_monitor(Gdk.Monitor monitor) {
-        var wl_monitor = monitor as Gdk.Wayland.Monitor;
-        return_val_if_fail(wl_monitor != null, null);
+    public MonitorView? for_monitor(Gdk.Monitor monitor) {
+        // Because of how Wayland works, an object's properties are sent separately from its existence.
+        // A roundtrip() waits until everything has come through, but anecdotally I've experienced crashes in the past
+        // when using it. For now I'm just doing a roundtrip, but if crashes reappear this will get rewritten as an
+        // async-function-like state machine.
+        AstalWl.Output? output = null;
+        var registry = AstalWl.get_default();
+        if ((monitor.connector == null) || ((output = registry.get_output_by_name(monitor.connector)) == null)) {
+            registry.get_display().roundtrip();
+        }
+        output = registry.get_output_by_name(monitor.connector);
+        if (output == null) {
+            critical("Couldn't find Wayland output matching GDK monitor");
+            return null;
+        }
 
-        var output = AstalWl.get_default().get_output_by_wl_output(wl_monitor.get_wl_output());
         return new MonitorView(this, output);
     }
 
@@ -114,11 +128,47 @@ public class WorkspaceManager : Object, ListModel {
 
     /**
      * Commit any pending workspace method calls.
-     * After calling any of the workspace methods (activate, deactivate, assign, and remove)
-     * this method needs to be called for them to apply.
+     * By default, this is done automatically; you can use freeze_autocommit()
+     * to delay committing any changes until thaw_autocommit() is called.
+     * You can also call this while autocommits are frozen to commit manually.
      */
     public void commit() {
         manager.commit();
+    }
+
+    /**
+     * Temporarily suspend the automatic commit() calls after doing workspace actions.
+     * In effect, calling methods like activate() on workspaces or create_workspace() on groups
+     * while autocommitting is frozen will make them take effect all at once upon calling
+     * thaw_autocommit().
+     */
+    public void freeze_autocommit() {
+        autocommit_freeze_count++;
+    }
+
+    /**
+     * Resume the automatic commit() calls after doing workspace actions.
+     * If any autocommitting actions were taken during the freeze,
+     * they will all be applied at once.
+     */
+    public void thaw_autocommit() {
+        if (autocommit_freeze_count <= 0) {
+            critical("unbalanced freeze/thaw_autocommit on WorkspaceManager");
+        } else {
+            autocommit_freeze_count--;
+        }
+        if (autocommit_pending) {
+            autocommit_pending = false;
+            commit();
+        }
+    }
+
+    internal void _autocommit() {
+        if (autocommit_freeze_count > 0) {
+            autocommit_pending = true;
+        } else {
+            commit();
+        }
     }
 
     public WorkspaceManager() {
