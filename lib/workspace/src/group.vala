@@ -122,7 +122,7 @@ public class WorkspaceGroup : Object, ListModel {
     private void handle_output_enter(ExtWorkspaceGroupHandleV1 handle, Wl.Output wl_output) {
         var output = AstalWl.get_default().get_output_by_wl_output(wl_output);
         if (output == null) {
-            warning("Couldn't find AstalWl.Output for output %p", wl_output);
+            // This is probably an output from the GDK registry.
             return;
         }
         pending_added_outputs.add(output);
@@ -131,7 +131,7 @@ public class WorkspaceGroup : Object, ListModel {
     private void handle_output_leave(ExtWorkspaceGroupHandleV1 handle, Wl.Output wl_output) {
         var output = AstalWl.get_default().get_output_by_wl_output(wl_output);
         if (output == null) {
-            warning("Couldn't find AstalWl.Output for output %p", wl_output);
+            // This is probably an output from the GDK registry.
             return;
         }
         if (!pending_added_outputs.remove(output)) {

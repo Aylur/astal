@@ -56,6 +56,7 @@ public class WorkspaceMonitorView : Object, ListModel {
 
         // Typically there will be one group per monitor, so we can reserve the space up front.
         groups = new GenericArray<WorkspaceGroup>(1);
+        group_connections = new GenericArray<ulong>(1);
         manager.group_enter_output.connect(handle_group_enter_output);
         manager.group_leave_output.connect(handle_group_leave_output);
 
