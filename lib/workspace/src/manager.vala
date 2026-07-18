@@ -93,8 +93,8 @@ public class WorkspaceManager : Object, ListModel {
     /**
      * Get a proxy object which filters workspaces to those that belong to a group on the specified Wayland output.
      */
-    public MonitorView for_output(AstalWl.Output output) {
-        return new MonitorView(this, output);
+    public WorkspaceMonitorView for_output(AstalWl.Output output) {
+        return new WorkspaceMonitorView(this, output);
     }
 
     // Having GDK linked in makes AstalWl use it (and print a critical if there is no display).
@@ -105,7 +105,7 @@ public class WorkspaceManager : Object, ListModel {
     /**
      * Get a proxy object which filters workspaces to those that belong to a group on the specified GDK monitor.
      */
-    public MonitorView? for_monitor(Gdk.Monitor monitor) {
+    public WorkspaceMonitorView? for_monitor(Gdk.Monitor monitor) {
         // Because of how Wayland works, an object's properties are sent separately from its existence.
         // A roundtrip() waits until everything has come through, but anecdotally I've experienced crashes in the past
         // when using it. For now I'm just doing a roundtrip, but if crashes reappear this will get rewritten as an
@@ -121,7 +121,7 @@ public class WorkspaceManager : Object, ListModel {
             return null;
         }
 
-        return new MonitorView(this, output);
+        return new WorkspaceMonitorView(this, output);
     }
 
 #endif

@@ -3,7 +3,7 @@ namespace AstalWorkspace {
  * A helper proxy object to list all of the workspaces on a specific monitor (Wayland output)
  * The workspaces are only accessible via ListModel; the relevant groups can be accessed via property.
  */
-public class MonitorView : Object, ListModel {
+public class WorkspaceMonitorView : Object, ListModel {
     private AstalWl.Output output;
 
     private GenericArray<ulong> group_connections;
@@ -51,7 +51,7 @@ public class MonitorView : Object, ListModel {
         return total;
     }
 
-    internal MonitorView(WorkspaceManager manager, AstalWl.Output output) {
+    internal WorkspaceMonitorView(WorkspaceManager manager, AstalWl.Output output) {
         this.output = output;
 
         // Typically there will be one group per monitor, so we can reserve the space up front.
