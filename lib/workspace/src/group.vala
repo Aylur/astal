@@ -94,6 +94,7 @@ public class WorkspaceGroup : Object, ListModel {
      */
     public void create_workspace(string name) {
         handle.create_workspace(name);
+        manager._autocommit();
     }
 
     internal WorkspaceGroup(WorkspaceManager manager, ExtWorkspaceGroupHandleV1 handle) {

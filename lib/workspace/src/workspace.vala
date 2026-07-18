@@ -77,6 +77,7 @@ public class Workspace : Object {
      */
     public void activate() {
         handle.activate();
+        manager._autocommit();
     }
 
     /**
@@ -85,6 +86,7 @@ public class Workspace : Object {
      */
     public void deactivate() {
         handle.deactivate();
+        manager._autocommit();
     }
 
     /**
@@ -93,6 +95,7 @@ public class Workspace : Object {
      */
     public void assign_to_group(WorkspaceGroup group) {
         handle.assign(group._get_handle());
+        manager._autocommit();
     }
 
     /**
@@ -101,6 +104,7 @@ public class Workspace : Object {
      */
     public void remove() {
         handle.remove();
+        manager._autocommit();
     }
 
     internal Workspace(WorkspaceManager manager, ExtWorkspaceHandleV1 handle) {
