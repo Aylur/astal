@@ -71,6 +71,11 @@ public class Workspace : Object {
     public WorkspaceCapabilities capabilities { get; private set; }
     private WorkspaceCapabilities pending_capabilities;
 
+    // Helper for the manager to be able to call group.handle_workspace_leave.
+    internal unowned ExtWorkspaceHandleV1 _get_handle() {
+        return handle;
+    }
+
     /**
      * Ask the compositor to activate the workspace.
      * This does nothing if the workspace doesn't have the ACTIVATE capability.

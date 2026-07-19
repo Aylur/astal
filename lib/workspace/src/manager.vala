@@ -300,6 +300,15 @@ public class WorkspaceManager : Object, ListModel {
         if (!pending_created_workspaces.remove(workspace)) {
             pending_deleted_workspaces.add(workspace);
         }
+        // Compositors are supposed to remove workspaces from groups first.
+        // But not all of them do. So also remove manually.
+        foreach (var group in groups) {
+            group.handle_workspace_leave(group._get_handle(), workspace._get_handle());
+        }
+        foreach (var group in pending_created_groups) {
+            group.handle_workspace_leave(group._get_handle(), workspace._get_handle());
+        }
+        // deleted groups will get deleted anyway
     }
 }
 }

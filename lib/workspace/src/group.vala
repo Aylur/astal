@@ -140,14 +140,21 @@ public class WorkspaceGroup : Object, ListModel {
     }
 
     private void handle_workspace_enter(ExtWorkspaceGroupHandleV1 handle, ExtWorkspaceHandleV1 workspace_handle) {
+        debug("workspace %p enter group %p", workspace_handle, handle);
         var workspace = (Workspace)workspace_handle.get_user_data();
         pending_added_workspaces.add(workspace);
     }
 
-    private void handle_workspace_leave(ExtWorkspaceGroupHandleV1 handle, ExtWorkspaceHandleV1 workspace_handle) {
+    // Internal, so the manager can call this as a failsafe (see handle_workspace_destroy)
+    internal void handle_workspace_leave(ExtWorkspaceGroupHandleV1 handle, ExtWorkspaceHandleV1 workspace_handle) {
+        debug("workspace %p leave group %p", workspace_handle, handle);
         var workspace = (Workspace)workspace_handle.get_user_data();
         if (!pending_added_workspaces.remove(workspace)) {
-            pending_removed_workspaces.add(workspace);
+            // Also guard against double-deletions and workspaces not in the group here to simplify calling code
+            // (this isn't just invoked by the compositor)
+            if (!pending_removed_workspaces.find(workspace) && workspaces.find(workspace)) {
+                pending_removed_workspaces.add(workspace);
+            }
         }
     }
 
