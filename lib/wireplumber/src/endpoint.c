@@ -421,7 +421,7 @@ static void astal_wp_endpoint_init(AstalWpEndpoint *self) {
     priv->device_signal_group = g_signal_group_new(ASTAL_WP_TYPE_DEVICE);
     g_signal_group_connect_swapped(priv->device_signal_group, "notify::routes",
                                    G_CALLBACK(astal_wp_endpoint_reemit_route_signals), self);
-    g_signal_group_connect_swapped(priv->device_signal_group, "notify::ouput-route-id",
+    g_signal_group_connect_swapped(priv->device_signal_group, "notify::output-route-id",
                                    G_CALLBACK(astal_wp_endpoint_reemit_route_signals), self);
     g_signal_group_connect_swapped(priv->device_signal_group, "notify::input-route-id",
                                    G_CALLBACK(astal_wp_endpoint_reemit_route_signals), self);
