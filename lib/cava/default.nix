@@ -10,7 +10,7 @@
     src = pkgs.fetchFromGitHub {
       owner = "LukashonakV";
       repo = "cava";
-      rev = "v${version}";
+      rev = "${version}";
       hash = "sha256-0r5aAmTs+FcmS501tNYKxG9H+Pq6i32BDRBEjWW6M74=";
     };
 
