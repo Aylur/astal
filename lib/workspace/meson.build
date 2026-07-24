@@ -117,7 +117,10 @@ if get_option('lib')
 endif
 
 if get_option('cli')
-    cli_deps = [dependency('quarrel-0.1')]
+    cli_deps = [
+        dependency('quarrel-0.1'),
+        dependency('json-glib-1.0')
+    ]
     executable(
         name,
         ['src/cli.vala', sources],
