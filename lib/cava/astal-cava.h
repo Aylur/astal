@@ -19,6 +19,7 @@ typedef enum {
     ASTAL_CAVA_INPUT_JACK,
     ASTAL_CAVA_INPUT_SHMEM,
     ASTAL_CAVA_INPUT_WINSCAP,
+    ASTAL_CAVA_INPUT_COREAUDIO,
 } AstalCavaInput;
 
 #define ASTAL_CAVA_TYPE_CAVA (astal_cava_cava_get_type())

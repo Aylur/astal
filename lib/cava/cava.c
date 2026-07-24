@@ -47,8 +47,41 @@ G_DEFINE_ENUM_TYPE(AstalCavaInput, astal_cava_input,
                    G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_ALSA, "alsa"),
                    G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_PULSE, "pulse"),
                    G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_SNDIO, "sndio"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_OSS, "oss"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_JACK, "jack"),
                    G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_SHMEM, "shmem"),
-                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_WINSCAP, "winscap"));
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_WINSCAP, "winscap"),
+                   G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_COREAUDIO, "coreaudio"));
+
+static enum input_method astal_input_to_cava(AstalCavaInput input) {
+    switch (input) {
+        case ASTAL_CAVA_INPUT_FIFO:
+            return INPUT_FIFO;
+        case ASTAL_CAVA_INPUT_PORTAUDIO:
+            return INPUT_PORTAUDIO;
+        case ASTAL_CAVA_INPUT_PIPEWIRE:
+            return INPUT_PIPEWIRE;
+        case ASTAL_CAVA_INPUT_ALSA:
+            return INPUT_ALSA;
+        case ASTAL_CAVA_INPUT_PULSE:
+            return INPUT_PULSE;
+        case ASTAL_CAVA_INPUT_SNDIO:
+            return INPUT_SNDIO;
+        case ASTAL_CAVA_INPUT_OSS:
+            return INPUT_OSS;
+        case ASTAL_CAVA_INPUT_JACK:
+            return INPUT_JACK;
+        case ASTAL_CAVA_INPUT_SHMEM:
+            return INPUT_SHMEM;
+        case ASTAL_CAVA_INPUT_WINSCAP:
+            return INPUT_WINSCAP;
+        case ASTAL_CAVA_INPUT_COREAUDIO:
+            return INPUT_COREAUDIO;
+        default:
+            g_critical("could not translate AstalCavaInput enum to cava\n");
+    }
+    return INPUT_PIPEWIRE;
+}
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalCavaCava, astal_cava_cava, G_TYPE_OBJECT)
 
@@ -145,7 +178,7 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
         .stereo = self->stereo,
         .noise_reduction = self->noise_reduction,
         .framerate = self->framerate,
-        .input = (enum input_method)self->input,
+        .input = astal_input_to_cava(self->input),
         .channels = self->channels,
         .lower_cut_off = self->low_cutoff,
         .upper_cut_off = self->high_cutoff,
@@ -225,6 +258,9 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
                 priv->cfg.audio_source = g_strdup("/squeezelite-00:00:00:00:00:00");
                 break;
             case INPUT_PORTAUDIO:
+                priv->cfg.audio_source = g_strdup("auto");
+                break;
+            case INPUT_COREAUDIO:
                 priv->cfg.audio_source = g_strdup("auto");
                 break;
             default:
