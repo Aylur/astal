@@ -118,15 +118,18 @@ public class WorkspaceMonitorView : Object, ListModel {
             critical("Group should've been attached to MonitorView but wasn't");
             return;
         }
-        groups[index].disconnect(group_connections[index]);
-        group_connections.remove_index(index);
-        groups.remove_index(index);
 
         uint total_before = 0;
         for (int i = 0; i < index; i++) {
             total_before += groups[i].workspaces.length;
         }
-        items_changed(total_before, group.workspaces.length, 0);
+        uint removed_count = group.workspaces.length;
+
+        groups[index].disconnect(group_connections[index]);
+        group_connections.remove_index(index);
+        groups.remove_index(index);
+
+        items_changed(total_before, removed_count, 0);
         notify_property("groups");
     }
 }

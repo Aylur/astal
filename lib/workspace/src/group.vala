@@ -112,7 +112,9 @@ public class WorkspaceGroup : Object, ListModel {
     }
 
     public override void dispose() {
+        debug("group %p dispose", this);
         handle.destroy();
+        base.dispose();
     }
 
     private void handle_capabilities(ExtWorkspaceGroupHandleV1 handle, ExtWorkspaceGroupHandleV1GroupCapabilities capabilities) {

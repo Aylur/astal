@@ -297,6 +297,9 @@ public class WorkspaceManager : Object, ListModel {
 
     internal void handle_workspace_destroy(Workspace workspace) {
         debug("destroy workspace %p", workspace);
+        // Take a reference on the workspace, so that it doesn't get destroyed after we remove it from all the containers
+        // it's in (function parameters are unowned, so the workspace variable here does NOT keep it alive)
+        workspace.ref();
         if (!pending_created_workspaces.remove(workspace)) {
             pending_deleted_workspaces.add(workspace);
         }
@@ -309,6 +312,7 @@ public class WorkspaceManager : Object, ListModel {
             group.handle_workspace_leave(group._get_handle(), workspace._get_handle());
         }
         // deleted groups will get deleted anyway
+        workspace.unref();
     }
 }
 }

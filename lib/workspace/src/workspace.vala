@@ -121,7 +121,9 @@ public class Workspace : Object {
     }
 
     public override void dispose() {
-        this.handle.destroy();
+        debug("workspace %p dispose", this);
+        handle.destroy();
+        base.dispose();
     }
 
     private void handle_id(ExtWorkspaceHandleV1 handle, string id) {
