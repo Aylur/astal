@@ -162,6 +162,234 @@ abstract class WorkspaceCommand : Command {
         }
     }
 
+    abstract class WorkspaceAction : WorkspaceCommand {
+        protected StringOpt w_id;
+        protected StringOpt w_name;
+
+        protected WorkspaceAction() {
+            opt(w_id = new StringOpt("id", 'i', "Workspace ID"));
+            opt(w_name = new StringOpt("name", 'n', "Workspace name"));
+        }
+    }
+
+    class ActivateWorkspace : WorkspaceAction {
+        public ActivateWorkspace() {
+            name = "activate";
+            about("Activate a workspace");
+        }
+
+        public override int execute() {
+            if ((w_id.value == null) && (w_name.value == null)) {
+                return err("at least one of ID or name must be specified");
+            }
+
+            var manager = AstalWorkspace.get_default();
+            unowned var display = AstalWl.get_default().get_display();
+            display.roundtrip();
+            bool found_ineligible = false;
+            foreach (var workspace in manager.workspaces) {
+                if ((w_id.value != null) && (workspace.id != w_id.value)) {
+                    continue;
+                }
+                if ((w_name.value != null) && (workspace.name != w_name.value)) {
+                    continue;
+                }
+                if ((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.ACTIVATE) == 0) {
+                    found_ineligible = true;
+                    continue;
+                }
+                workspace.activate();
+                display.flush();
+                return 0;
+            }
+
+            if (found_ineligible) {
+                return err("target workspace can't be activated");
+            } else {
+                return err("couldn't find target workspace");
+            }
+        }
+    }
+
+    class DeactivateWorkspace : WorkspaceAction {
+        public DeactivateWorkspace() {
+            name = "deactivate";
+            about("Deactivate a workspace");
+        }
+
+        public override int execute() {
+            if ((w_id.value == null) && (w_name.value == null)) {
+                return err("at least one of ID or name must be specified");
+            }
+
+            var manager = AstalWorkspace.get_default();
+            unowned var display = AstalWl.get_default().get_display();
+            display.roundtrip();
+            bool found_ineligible = false;
+            foreach (var workspace in manager.workspaces) {
+                if ((w_id.value != null) && (workspace.id != w_id.value)) {
+                    continue;
+                }
+                if ((w_name.value != null) && (workspace.name != w_name.value)) {
+                    continue;
+                }
+                if ((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.DEACTIVATE) == 0) {
+                    found_ineligible = true;
+                    continue;
+                }
+                workspace.deactivate();
+                display.flush();
+                return 0;
+            }
+
+            if (found_ineligible) {
+                return err("target workspace can't be deactivated");
+            } else {
+                return err("couldn't find target workspace");
+            }
+        }
+    }
+
+    class RemoveWorkspace : WorkspaceAction {
+        public RemoveWorkspace() {
+            name = "remove";
+            about("Remove a workspace");
+        }
+
+        public override int execute() {
+            if ((w_id.value == null) && (w_name.value == null)) {
+                return err("at least one of ID or name must be specified");
+            }
+
+            var manager = AstalWorkspace.get_default();
+            unowned var display = AstalWl.get_default().get_display();
+            display.roundtrip();
+            bool found_ineligible = false;
+            foreach (var workspace in manager.workspaces) {
+                if ((w_id.value != null) && (workspace.id != w_id.value)) {
+                    continue;
+                }
+                if ((w_name.value != null) && (workspace.name != w_name.value)) {
+                    continue;
+                }
+                if ((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.REMOVE) == 0) {
+                    found_ineligible = true;
+                    continue;
+                }
+                workspace.remove();
+                display.flush();
+                return 0;
+            }
+
+            if (found_ineligible) {
+                return err("target workspace can't be removed");
+            } else {
+                return err("couldn't find target workspace");
+            }
+        }
+    }
+
+    class AssignWorkspace : WorkspaceAction {
+        StringOpt monitor;
+
+        public AssignWorkspace() {
+            name = "assign";
+            about("Assign a workspace to a group");
+            opt(monitor = new StringOpt("monitor", 'm', "Target monitor"));
+        }
+
+        public override int execute() {
+            if ((w_id.value == null) && (w_name.value == null)) {
+                return err("at least one of ID or name must be specified");
+            }
+            if (monitor.value == null) {
+                return err("target monitor must be specified");
+            }
+
+            var manager = AstalWorkspace.get_default();
+            unowned var display = AstalWl.get_default().get_display();
+            display.roundtrip();
+            AstalWorkspace.Workspace? target_workspace = null;
+            bool found_ineligible = false;
+            foreach (var workspace in manager.workspaces) {
+                if ((w_id.value != null) && (workspace.id != w_id.value)) {
+                    continue;
+                }
+                if ((w_name.value != null) && (workspace.name != w_name.value)) {
+                    continue;
+                }
+                if ((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.ASSIGN) == 0) {
+                    found_ineligible = true;
+                    continue;
+                }
+                target_workspace = workspace;
+                break;
+            }
+
+            if (target_workspace == null) {
+                if (found_ineligible) {
+                    return err("target workspace can't be assigned");
+                } else {
+                    return err("couldn't find target workspace");
+                }
+            }
+
+            foreach (var group in manager.groups) {
+                foreach (var output in group.outputs) {
+                    if (output.name == monitor.value) {
+                        target_workspace.assign_to_group(group);
+                        display.flush();
+                        return 0;
+                    }
+                }
+            }
+
+            return err("couldn't find target group");
+        }
+    }
+
+    // This is the only group action, so a base class is unnecessary.
+    class CreateWorkspace : WorkspaceCommand {
+        StringOpt monitor;
+
+        public CreateWorkspace() {
+            name = "create";
+            about("Create a workspace");
+            required_arg("name", "New workspace name");
+            opt(monitor = new StringOpt("monitor", 'm', "Target monitor"));
+        }
+
+        public override int execute() {
+            if (monitor.value == null) {
+                return err("target monitor must be specified");
+            }
+
+            var manager = AstalWorkspace.get_default();
+            unowned var display = AstalWl.get_default().get_display();
+            display.roundtrip();
+            bool found_ineligible = false;
+            foreach (var group in manager.groups) {
+                foreach (var output in group.outputs) {
+                    if (output.name == monitor.value) {
+                        if ((group.capabilities & AstalWorkspace.GroupCapabilities.CREATE_WORKSPACE) == 0) {
+                            found_ineligible = true;
+                            break;
+                        }
+                        group.create_workspace(args[0]);
+                        display.flush();
+                        return 0;
+                    }
+                }
+            }
+
+            if (found_ineligible) {
+                return err("target group can't have workspaces created in it");
+            } else {
+                return err("couldn't find target group");
+            }
+        }
+    }
+
     class CLI : WorkspaceCommand {
         SpecialFlag version;
 
@@ -172,7 +400,11 @@ abstract class WorkspaceCommand : Command {
             opt(version = new SpecialFlag("version", 'v', "Print version"));
             subcommand(new ListWorkspaces().opt(help));
             subcommand(new ListGroups().opt(help));
-            // TODO: subcommands for doing workspace actions
+            subcommand(new ActivateWorkspace().opt(help));
+            subcommand(new DeactivateWorkspace().opt(help));
+            subcommand(new RemoveWorkspace().opt(help));
+            subcommand(new AssignWorkspace().opt(help));
+            subcommand(new CreateWorkspace().opt(help));
         }
 
         public override int execute() {
