@@ -10,7 +10,21 @@ abstract class WorkspaceCommand : Command {
         return 1;
     }
 
-    private Json.Node workspace_to_json(AstalWorkspace.Workspace workspace) {
+    private List<AstalWl.Output> get_workspace_monitors(AstalWorkspace.WorkspaceManager manager, AstalWorkspace.Workspace workspace) {
+        var result = new List<AstalWl.Output>();
+        foreach (var group in manager.groups) {
+            if (group.workspaces.find(workspace)) {
+                foreach (var output in group.outputs) {
+                    if (result.find(output) == null) {
+                        result.append(output);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private Json.Node workspace_to_json(AstalWorkspace.Workspace workspace, List<AstalWl.Output>? monitors = null) {
         var builder = new Json.Builder()
             .begin_object()
             .set_member_name("id").add_string_value(workspace.id)
@@ -35,8 +49,14 @@ abstract class WorkspaceCommand : Command {
             }
             builder.end_array();
         }
-
-        // TODO: show the monitors from the groups this object belongs in
+        if (monitors != null) {
+            builder.set_member_name("monitors");
+            builder.begin_array();
+            foreach (var output in monitors) {
+                builder.add_string_value(output.name);
+            }
+            builder.end_array();
+        }
 
         return builder.end_object().get_root();
     }
@@ -65,20 +85,31 @@ abstract class WorkspaceCommand : Command {
     class ListWorkspaces : WorkspaceCommand {
         Flag watch;
         Flag pretty;
+        StringOpt monitor;
 
         public ListWorkspaces() {
             name = "list";
             about("List workspaces");
             opt(watch = new Flag("watch", 'w', "Watch for changes"));
             opt(pretty = new Flag("pretty", 'p', "Pretty print JSON"));
-            // TODO: option for monitor-filtering (get a MonitorView instead of the whole manager)
+            opt(monitor = new StringOpt("monitor", 'm', "Filter for workspaces on a specific monitor"));
         }
 
         private void list_workspaces(AstalWorkspace.WorkspaceManager manager) {
             var builder = new Json.Builder()
                 .begin_array();
             foreach (var workspace in manager.workspaces) {
-                builder.add_value(workspace_to_json(workspace));
+                var monitors = get_workspace_monitors(manager, workspace);
+                if (monitor.value != null) {
+                    foreach (var output in monitors) {
+                        if (output.name == monitor.value) {
+                            builder.add_value(workspace_to_json(workspace, monitors));
+                            break;
+                        }
+                    }
+                } else {
+                    builder.add_value(workspace_to_json(workspace, monitors));
+                }
             }
             print("%s\n", Json.to_string(builder.end_array().get_root(), pretty.enabled));
         }
