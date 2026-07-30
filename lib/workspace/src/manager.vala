@@ -52,12 +52,22 @@ public class WorkspaceManager : Object, ListModel {
     /**
      * Emitted when any group enters an output.
      */
-    public signal void group_enter_output(WorkspaceGroup group, AstalWl.Output output);
+    internal signal void group_enter_output(WorkspaceGroup group, AstalWl.Output output);
 
     /**
      * Emitted when any group leaves an output, and just before a group with outputs assigned to it gets destroyed.
      */
-    public signal void group_leave_output(WorkspaceGroup group, AstalWl.Output output);
+    internal signal void group_leave_output(WorkspaceGroup group, AstalWl.Output output);
+
+    /**
+     * Emitted when a new output appears on AstalWl with a name attached. Used by monitorviews to pair themselves with GDK monitors
+     */
+    internal signal void add_named_output(AstalWl.Output output);
+
+    /**
+     * Emitted when an output disappears from AstalWl. Used by monitorviews to know when to invalidate
+     */
+    internal signal void remove_output(AstalWl.Output output);
 
     /**
      * Get the workspace at a specific position in the list, or null if out-of-bounds.
@@ -104,24 +114,10 @@ public class WorkspaceManager : Object, ListModel {
 
     /**
      * Get a proxy object which filters workspaces to those that belong to a group on the specified GDK monitor.
+     * Note that the workspaces may not appear in the proxy object immediately if the monitor is very new.
      */
-    public WorkspaceMonitorView? for_monitor(Gdk.Monitor monitor) {
-        // Because of how Wayland works, an object's properties are sent separately from its existence.
-        // A roundtrip() waits until everything has come through, but anecdotally I've experienced crashes in the past
-        // when using it. For now I'm just doing a roundtrip, but if crashes reappear this will get rewritten as an
-        // async-function-like state machine.
-        AstalWl.Output? output = null;
-        var registry = AstalWl.get_default();
-        if ((monitor.connector == null) || ((output = registry.get_output_by_name(monitor.connector)) == null)) {
-            registry.get_display().roundtrip();
-        }
-        output = registry.get_output_by_name(monitor.connector);
-        if (output == null) {
-            critical("Couldn't find Wayland output matching GDK monitor");
-            return null;
-        }
-
-        return new WorkspaceMonitorView(this, output);
+    public WorkspaceMonitorView for_monitor(Gdk.Monitor monitor) {
+        return new WorkspaceMonitorView.with_gdkmonitor(this, monitor);
     }
 
 #endif
@@ -180,6 +176,19 @@ public class WorkspaceManager : Object, ListModel {
         }
         manager = registry.get_registry().bind(manager_global.name, ref ExtWorkspaceManagerV1.iface, uint.min(manager_global.version, 1));
         manager.add_listener(manager_listener, this);
+
+        registry.output_added.connect((output) => {
+                if (output.name != null) {
+                    add_named_output(output);
+                } else {
+                    ulong id = 0;
+                    id = output.notify["name"].connect(() => {
+                        add_named_output(output);
+                        output.disconnect(id);
+                    });
+                }
+            });
+        registry.output_removed.connect((output) => remove_output(output));
 
         workspaces = new GenericArray<Workspace>();
         pending_created_workspaces = new GenericArray<Workspace>();
@@ -274,8 +283,7 @@ public class WorkspaceManager : Object, ListModel {
     }
 
     private void handle_finished() {
-        // TODO: should this exist?
-        warning("ext-workspace finished");
+        warning("ext-workspace finished, but it was never requested! Further workspace updates will not occur.");
     }
 
     private void handle_workspace_group(ExtWorkspaceManagerV1 manager, ExtWorkspaceGroupHandleV1 group) {

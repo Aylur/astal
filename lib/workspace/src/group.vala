@@ -127,6 +127,7 @@ public class WorkspaceGroup : Object, ListModel {
             // This is probably an output from the GDK registry.
             return;
         }
+        debug("output %p enter group %p", output, handle);
         pending_added_outputs.add(output);
     }
 
@@ -136,6 +137,7 @@ public class WorkspaceGroup : Object, ListModel {
             // This is probably an output from the GDK registry.
             return;
         }
+        debug("output %p leave group %p", output, handle);
         if (!pending_added_outputs.remove(output)) {
             pending_removed_outputs.add(output);
         }
