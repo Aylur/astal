@@ -61,7 +61,6 @@ public class Seat : Object {
         Object(id: global.name);
         this.seat = registry.bind<Wl.Seat>(global.name, ref wl_seat_interface, uint.min(global.version, 10));
         this.seat.add_listener(seat_listener, this);
-        display.roundtrip();
     }
 }
 }
