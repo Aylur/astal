@@ -18,6 +18,16 @@ public struct Global {
      */
     uint32 version;
 }
+
+internal class SourceFuncWrapper {
+
+    internal SourceFunc fun;
+
+    internal SourceFuncWrapper(owned SourceFunc fun) {
+        this.fun = (owned)fun;
+    }
+}
+
 /**
  * Convenience wrapper for [func@AstalWl.Registry.get_default].
  *
@@ -35,6 +45,7 @@ public Registry get_default() {
  * signals when globals, outputs or seats are added or removed.
  */
 public class Registry : Object {
+
     private static Registry? instance;
 
     /**
@@ -52,6 +63,15 @@ public class Registry : Object {
     private Wl.Registry registry;
     private unowned Wl.Display display;
     private ZxdgOutputManagerV1 output_manager;
+
+    private const Wl.RegistryListener registry_listener = {
+        registry_handle_global_added,
+        registry_handle_global_removed,
+    };
+
+    private const Wl.CallbackListener async_roundtrip_listener = {
+        handle_async_roundtrip
+    };
 
     /**
      * Hash table of all known Wayland globals keyed by their numeric ID.
@@ -128,11 +148,33 @@ public class Registry : Object {
     }
 
     /**
-    * Returns the underlying `wl_display` used by this registry.
-    */
+     * Returns the underlying `wl_display` used by this registry.
+     */
     [GIR(visible = false)]
     public unowned Wl.Display? get_display() {
         return this.display;
+    }
+
+    /**
+     * Block until all pending requests have been handled by the compositor. Returns the number of dispatched events.
+     */
+    public int roundtrip() {
+        return this.display.roundtrip();
+    }
+
+    private static void handle_async_roundtrip(owned SourceFuncWrapper func, Wl.Callback cb, uint32 data) {
+        SourceFunc callback = func.fun;
+        callback();
+    }
+
+    /**
+     * makes an asynchronous roundtrip invoking the callback when done without blocking in the main thread.
+     */
+    public async void roundtrip_async() {
+        unowned Wl.Callback callback = this.display.sync();
+        SourceFunc callback_func = this.roundtrip_async.callback;
+        callback.add_listener(async_roundtrip_listener, new SourceFuncWrapper((owned) callback_func));
+        yield;
     }
 
     private void registry_handle_global_added (Wl.Registry wl_registry, uint32 name, string @interface, uint32 version) {
@@ -235,11 +277,6 @@ public class Registry : Object {
         return null;
     }
 
-    private const Wl.RegistryListener registry_listener = {
-        registry_handle_global_added,
-        registry_handle_global_removed,
-    };
-   
     /**
     * Looks up a seat by its global id.
     */
