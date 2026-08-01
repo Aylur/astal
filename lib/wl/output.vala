@@ -224,7 +224,6 @@ public class Output : Object {
     internal void init_xdg(ZxdgOutputManagerV1 output_manager, Wl.Display display) {
         this.xdg_output = output_manager.get_xdg_output(this.output);
         this.xdg_output.add_listener(xdg_output_listener, this);
-        display.roundtrip();
     }
 
     internal Output(Global global, Wl.Registry registry, Wl.Display display, ZxdgOutputManagerV1 output_manager) {
@@ -233,7 +232,6 @@ public class Output : Object {
         this.output_geometry = Rectangle();
         this.output = registry.bind<Wl.Output>(global.name, ref wl_output_interface, uint.min(global.version, 4));
         this.output.add_listener(output_listener, this);
-        display.roundtrip();
         if (output_manager != null) init_xdg(output_manager, display);
     }
 }
