@@ -107,8 +107,12 @@ public class Registry : Object {
         return this.outputs.get_values();
     }
 
+    public ListModel output_list_model { get; private set; }
+
     /**
-     * Emitted after a new [class@AstalWl.Output] has been created and bound.
+     * Emitted after a new [class@AstalWl.Output] has been created and bound, note that when this signal is emitted,
+     * the output might not have received all events yet, so its properties might no have been set to the correct values yet.
+     * If you are only interested ni outputs that have been fully initialized, use the ListModel api.
      */
     public signal void output_added(Output output);
 
@@ -128,6 +132,8 @@ public class Registry : Object {
     public List<weak Seat> get_seats() {
         return this.seats.get_values();
     }
+    
+    public ListModel seat_list_model { get; private set; }
 
     /**
      * Emitted after a new [class@AstalWl.Seat] has been created and bound.
@@ -192,11 +198,17 @@ public class Registry : Object {
             }
         } else if (@interface == "wl_output") {
             var output = new Output(global, this.registry, this.display, this.output_manager);
+            ulong id = 0;
+            id = output.changed.connect(() => {
+               (this.output_list_model as ListStore).append(output);
+                output.disconnect(id);
+            });
             this.outputs.insert(name, output);
             output_added(output);
         } else if (@interface == "wl_seat") {
             var seat = new Seat(global, this.registry, this.display);
             this.seats.insert(name, seat);
+            (this.seat_list_model as ListStore).append(seat);
             seat_added(seat);
         }
         global_added(global);
@@ -208,10 +220,16 @@ public class Registry : Object {
         if (global.interface == "wl_output") {
             var output = this.outputs.lookup(name);
             this.outputs.remove(name);
+            uint pos;
+            (this.output_list_model as ListStore).find(output, out pos);
+            (this.output_list_model as ListStore).remove(pos);
             output_removed(output);
         } else if (global.interface == "wl_seat") {
             var seat = this.seats.lookup(name);
             this.seats.remove(name);
+            uint pos;
+            (this.seat_list_model as ListStore).find(seat, out pos);
+            (this.seat_list_model as ListStore).remove(pos);
             seat_removed(seat);
         }
         global_removed(global);
@@ -316,7 +334,10 @@ public class Registry : Object {
     construct {
         this.globals = new HashTable<uint32, Global?>(direct_hash, direct_equal);
         this.outputs = new HashTable<uint32, Output>(direct_hash, direct_equal);
+        this.output_list_model = new ListStore(typeof(Output));
         this.seats = new HashTable<uint32, Seat>(direct_hash, direct_equal);
+        this.seat_list_model = new ListStore(typeof(Seat));
+        
 
         this.display = get_wl_display();
 
