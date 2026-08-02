@@ -227,6 +227,7 @@ public class Output : Object {
         this.notify_property("geometry");
 
         this.thaw_notify();
+        changed();
     }
 
     private void handle_scale (Wl.Output wl_output, int32 factor) {
