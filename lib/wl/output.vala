@@ -56,77 +56,91 @@ public class Output : Object {
      * This reflects the visible area after applying scaling and transform.
      */
     public Rectangle? geometry { get; private set; }
+    public Rectangle? pending_geometry;
     private Rectangle? output_geometry { get; private set; }
     /**
      * The physical width of the output in millimeters.
      */
     public int physical_width { get; private set; }
+    public int? pending_physical_width;
     /**
      * The physical height of the output in millimeters.
      */
     public int physical_height { get; private set; }
+    public int? pending_physical_height;
     /**
      * The refresh rate of the current output mode in Hz.
      */
     public double refresh_rate { get; private set; }
+    public double? pending_refresh_rate;
     /**
      * The rotation or flip transform of the output surface.
      */
     public Transform transform { get; private set; }
+    public Transform? pending_transform;
     /**
      * The subpixel layout of the physical monitor.
      */
     public Subpixel subpixel { get; private set; }
+    public Subpixel? pending_subpixel;
     /**
      * The manufacturer name of the display device.
      */
     public string? make { get; private set; }
+    public string? pending_make;
     /**
      * The product or model name of the display device.
      */
     public string? model { get; private set; }
+    public string? pending_model;
     /**
      * The scaling factor of the output.
      */
     public double scale { get; private set; }
+    public double? pending_scale;
     /**
      * The compositor-assigned name of this output.
      * Usually corresponds to an identifier like "HDMI-A-1".
      */
     public string? name { get; private set; }
+    public string? pending_name;
     /**
      * A description of the output.
      */
     public string? description { get; private set; }
+    public string? pending_description;
+
+    /**
+     * emitted whenever there were changes on any property
+     */
+    public signal void changed();
 
     private void handle_geometry (Wl.Output wl_output, int32 x, int32 y, int32 physical_width, int32 physical_height, int32 subpixel, string make, string model, int32 transform) {
-        this.freeze_notify();
         this.output_geometry.x = x;
         this.output_geometry.y = y;
-        this.subpixel = subpixel;
-        this.make = make;
-        this.model = model;
-        this.transform = transform;
-        switch (this.transform) {
+        this.pending_subpixel = subpixel;
+        this.pending_make = make;
+        this.pending_model = model;
+        this.pending_transform = transform;
+        switch (this.pending_transform) {
             case ROTATE_90:
             case ROTATE_270:
             case FLIPPED_90:
             case FLIPPED_270:
-                this.physical_width = physical_height;
-                this.physical_height = physical_width;
+                this.pending_physical_width = physical_height;
+                this.pending_physical_height = physical_width;
                 break;
             default:
-                this.physical_width = physical_width;
-                this.physical_height = physical_height;
+                this.pending_physical_width = physical_width;
+                this.pending_physical_height = physical_height;
                 break;
         }
-        this.thaw_notify();
     }
 
     private void handle_mode (Wl.Output wl_output, uint32 flags, int32 width, int32 height, int32 refresh) {
         if ((flags & 1) == 0) return;
-        this.freeze_notify();
-        switch (this.transform) {
+        Transform transform = this.pending_transform != null ? this.pending_transform : this.transform;
+        switch (transform) {
             case ROTATE_90:
             case ROTATE_270:
             case FLIPPED_90:
@@ -139,11 +153,57 @@ public class Output : Object {
                 this.output_geometry.width = width;
                 break;
         }
-        this.refresh_rate = refresh / 1000;
-        this.thaw_notify();
+        this.pending_refresh_rate = refresh / 1000;
     }
 
     private void handle_done (Wl.Output wl_output) {
+        this.freeze_notify();
+        if(this.pending_name != null) {
+            this.name = this.pending_name;
+            this.pending_name = null;
+        }
+        if(this.pending_description != null) {
+            this.description = this.pending_description;
+            this.pending_description = null;
+        }
+        if(this.pending_make != null) {
+            this.make = this.pending_make;
+            this.pending_make = null;
+        }
+        if(this.pending_model != null) {
+            this.model = this.pending_model;
+            this.pending_model = null;
+        }
+        if(this.pending_scale != null) {
+            this.scale = this.pending_scale;
+            this.pending_scale = null;
+        }
+        if(this.pending_refresh_rate != null) {
+            this.refresh_rate = this.pending_refresh_rate;
+            this.pending_refresh_rate = null;
+        }
+        if(this.pending_geometry != null) {
+            this.geometry = this.pending_geometry.copy();
+            this.pending_geometry = null;
+        }
+        if(this.pending_subpixel != null) {
+            this.subpixel = this.pending_subpixel;
+            this.pending_subpixel = null;
+        }
+        if(this.pending_transform != null) {
+            this.transform = this.pending_transform;
+            this.pending_transform = null;
+        }
+        if(this.pending_physical_width != null) {
+            this.physical_width = this.pending_physical_width;
+            this.pending_physical_width = null;
+        }
+        if(this.pending_physical_height != null) {
+            this.physical_height = this.pending_physical_height;
+            this.pending_physical_height = null;
+        }
+        
+        this.name = this.pending_name;
         if (this.xdg_output == null) {
             this.geometry.x = (int)(this.output_geometry.x / this.scale);
             this.geometry.y = (int)(this.output_geometry.y / this.scale);
@@ -165,28 +225,32 @@ public class Output : Object {
                     this.output_geometry.height / (double)this.geometry.height);
         }
         this.notify_property("geometry");
+
+        this.thaw_notify();
     }
 
     private void handle_scale (Wl.Output wl_output, int32 factor) {
-        this.scale = factor;
+        this.pending_scale = factor;
     }
 
     private void handle_name(Wl.Output wl_output, string name) {
-        this.name = name;
+        this.pending_name = name;
     }
 
     private void handle_description (Wl.Output wl_output, string description) {
-        this.description = description;
+        this.pending_description = description;
     }
 
     private void handle_xdg_logical_position(ZxdgOutputV1 zxdg_output_v1, int32 x, int32 y) {
-        this.geometry.x = x;
-        this.geometry.y = y;
+        if(this.pending_geometry == null) this.pending_geometry = Rectangle();
+        this.pending_geometry.x = x;
+        this.pending_geometry.y = y;
     }
 
     private void handle_xdg_logical_size(ZxdgOutputV1 zxdg_output_v1, int32 width, int32 height) {
-        this.geometry.width = width;
-        this.geometry.height = height;
+        if(this.pending_geometry == null) this.pending_geometry = Rectangle();
+        this.pending_geometry.width = width;
+        this.pending_geometry.height = height;
     }
 
     /**
@@ -229,6 +293,7 @@ public class Output : Object {
     internal Output(Global global, Wl.Registry registry, Wl.Display display, ZxdgOutputManagerV1 output_manager) {
         Object(id: global.name);
         this.geometry = Rectangle();
+        this.pending_geometry = Rectangle();
         this.output_geometry = Rectangle();
         this.output = registry.bind<Wl.Output>(global.name, ref wl_output_interface, uint.min(global.version, 4));
         this.output.add_listener(output_listener, this);
