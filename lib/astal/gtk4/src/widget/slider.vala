@@ -19,6 +19,7 @@ public class Astal.Slider : Gtk.Scale {
             if (this.value == value) {
                 this.notify_property("value");
             }
+            return false;
         });
     }
 
