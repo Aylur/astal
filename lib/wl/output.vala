@@ -40,6 +40,8 @@ public class Output : Object {
     private Wl.Output output;
     private ZxdgOutputV1? xdg_output;
 
+    public signal void invalidate();
+
     /**
      * Returns the underlying `wl_output` proxy pointer.
      */
@@ -203,7 +205,6 @@ public class Output : Object {
             this.pending_physical_height = null;
         }
         
-        this.name = this.pending_name;
         if (this.xdg_output == null) {
             this.geometry.x = (int)(this.output_geometry.x / this.scale);
             this.geometry.y = (int)(this.output_geometry.y / this.scale);
