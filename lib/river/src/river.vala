@@ -73,6 +73,7 @@ public class River : Object {
 
     private void handle_output_added(AstalWl.Output wl_output) {
         var output = new Output(wl_output, this, river_status);
+        output.output.invalidate.connect((o) => this.handle_output_removed(o));
         this._outputs.append(output);
         this.output_added(output);
         this.notify_property("outputs");
@@ -181,7 +182,7 @@ public class River : Object {
         };
         CallbackResult result = CallbackResult() {};
         cb.add_listener(cb_listener, &result);
-        this.astal_registry.get_display().roundtrip();
+        this.astal_registry.roundtrip();
         output = result.msg;
         return result.success;
     }
@@ -241,11 +242,17 @@ public class River : Object {
             this.layout_manager = this.astal_registry.get_registry().bind(layout_global.name, ref RiverLayoutManagerV3.iface, uint.min(layout_global.version, 2));
         }
 
-        this.astal_registry.get_outputs().foreach(output => this.handle_output_added(output));
-        this.astal_registry.output_added.connect((o) => this.handle_output_added(o));
-        this.astal_registry.output_removed.connect((o) => this.handle_output_removed(o));
+        for (var i = 0; i < this.astal_registry.output_list_model.get_n_items(); ++i) {
+            this.handle_output_added(this.astal_registry.output_list_model.get_item(i) as AstalWl.Output);
+        }
 
-        this.astal_registry.get_display().roundtrip();
+        this.astal_registry.output_list_model.items_changed.connect((p, r, a) => {
+            for (; a > 0; a--) {
+                this.handle_output_added(this.astal_registry.output_list_model.get_item(p++) as AstalWl.Output);
+            }
+        });
+
+        this.astal_registry.roundtrip();
     }
 }
 }
