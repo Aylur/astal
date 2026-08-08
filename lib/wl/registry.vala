@@ -339,13 +339,25 @@ public class Registry : Object {
         this.seats = new HashTable<uint32, Seat>(direct_hash, direct_equal);
         this.seat_list_model = new ListStore(typeof(Seat));
         
-
-        this.display = get_wl_display();
-
-        if (this.display == null) {
-            debug("Could not find Gdk Wayland Display, falling back to creating a new Wayland Display");
-            this.source = new Source();
-            this.display = this.source.display;
+        switch(GLib.Environment.get_variable("ASTAL_WL_DISPLAY")) {
+            case "gdk":
+            case "gtk":
+                debug("forcing the use of gdk display");
+                this.display = get_wl_display();
+                break;
+            case null:
+                this.display = get_wl_display();
+                if(this.display == null) {
+                    debug("could not connect to gdk display, falling back to astal");
+                    this.source = new Source();
+                    this.display = this.source.display;
+                }
+                break;
+            case "astal":
+            default:
+                debug("forcing the use of astal display");
+                this.source = new Source();
+                this.display = this.source.display;
         }
 
         if (this.display == null) {
