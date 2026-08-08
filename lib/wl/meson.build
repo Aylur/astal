@@ -11,6 +11,8 @@ project(
   ],
 )
 
+add_project_arguments('-DG_LOG_DOMAIN="AstalWl"', language: 'c')
+
 version = meson.project_version()
 name = meson.project_name()
 version_split = version.split('.')
