@@ -199,8 +199,8 @@ public class Registry : Object {
         } else if (@interface == "wl_output") {
             var output = new Output(global, this.registry, this.display, this.output_manager);
             ulong id = 0;
-            id = output.changed.connect(() => {
-               (this.output_list_model as ListStore).append(output);
+            id = output.changed.connect((o) => {
+               (this.output_list_model as ListStore).append(o);
                 output.disconnect(id);
             });
             this.outputs.insert(name, output);
@@ -223,6 +223,7 @@ public class Registry : Object {
             uint pos;
             (this.output_list_model as ListStore).find(output, out pos);
             (this.output_list_model as ListStore).remove(pos);
+            output.invalidate();
             output_removed(output);
         } else if (global.interface == "wl_seat") {
             var seat = this.seats.lookup(name);
