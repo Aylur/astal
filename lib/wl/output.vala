@@ -64,53 +64,53 @@ public class Output : Object {
      * The physical width of the output in millimeters.
      */
     public int physical_width { get; private set; }
-    public int? pending_physical_width;
+    private int? pending_physical_width;
     /**
      * The physical height of the output in millimeters.
      */
     public int physical_height { get; private set; }
-    public int? pending_physical_height;
+    private int? pending_physical_height;
     /**
      * The refresh rate of the current output mode in Hz.
      */
     public double refresh_rate { get; private set; }
-    public double? pending_refresh_rate;
+    private double? pending_refresh_rate;
     /**
      * The rotation or flip transform of the output surface.
      */
     public Transform transform { get; private set; }
-    public Transform? pending_transform;
+    private Transform? pending_transform;
     /**
      * The subpixel layout of the physical monitor.
      */
     public Subpixel subpixel { get; private set; }
-    public Subpixel? pending_subpixel;
+    private Subpixel? pending_subpixel;
     /**
      * The manufacturer name of the display device.
      */
     public string? make { get; private set; }
-    public string? pending_make;
+    private string? pending_make;
     /**
      * The product or model name of the display device.
      */
     public string? model { get; private set; }
-    public string? pending_model;
+    private string? pending_model;
     /**
      * The scaling factor of the output.
      */
     public double scale { get; private set; }
-    public double? pending_scale;
+    private double? pending_scale;
     /**
      * The compositor-assigned name of this output.
      * Usually corresponds to an identifier like "HDMI-A-1".
      */
     public string? name { get; private set; }
-    public string? pending_name;
+    private string? pending_name;
     /**
      * A description of the output.
      */
     public string? description { get; private set; }
-    public string? pending_description;
+    private string? pending_description;
 
     /**
      * emitted whenever there were changes on any property
