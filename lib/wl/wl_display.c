@@ -14,5 +14,7 @@ struct wl_display* astal_wl_get_wl_display() {
     if (!get_wl_display_func)
         return NULL;
 
-    return get_wl_display_func(get_gdk_display_func());
+    void* display = get_gdk_display_func();
+    if(!display) return NULL;
+    return get_wl_display_func(display);
 }
