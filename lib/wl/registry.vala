@@ -169,8 +169,9 @@ public class Registry : Object {
     }
 
     private static void handle_async_roundtrip(owned SourceFuncWrapper func, Wl.Callback cb, uint32 data) {
-        SourceFunc callback = func.fun;
-        callback();
+        if(func != null && func.fun != null) {
+            func.fun();
+        }
     }
 
     /**
