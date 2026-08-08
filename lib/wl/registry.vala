@@ -340,9 +340,9 @@ public class Registry : Object {
         this.seats = new HashTable<uint32, Seat>(direct_hash, direct_equal);
         this.seat_list_model = new ListStore(typeof(Seat));
         
-        switch(GLib.Environment.get_variable("ASTAL_WL_DISPLAY")) {
-            case "gdk":
-            case "gtk":
+        switch(GLib.Environment.get_variable("ASTAL_WL_DISPLAY")?.up()) {
+            case "GDK":
+            case "GTK":
                 debug("forcing the use of gdk display");
                 this.display = get_wl_display();
                 break;
@@ -354,7 +354,7 @@ public class Registry : Object {
                     this.display = this.source.display;
                 }
                 break;
-            case "astal":
+            case "ASTAL":
             default:
                 debug("forcing the use of astal display");
                 this.source = new Source();
