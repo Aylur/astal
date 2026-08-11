@@ -177,15 +177,10 @@ public class WorkspaceManager : Object, ListModel {
         manager = registry.get_registry().bind(manager_global.name, ref ExtWorkspaceManagerV1.iface, uint.min(manager_global.version, 1));
         manager.add_listener(manager_listener, this);
 
-        registry.output_added.connect((output) => {
-                if (output.name != null) {
-                    add_named_output(output);
-                } else {
-                    ulong id = 0;
-                    id = output.notify["name"].connect(() => {
-                        add_named_output(output);
-                        output.disconnect(id);
-                    });
+        registry.output_list_model.items_changed.connect((pos, rem, add) => {
+                // These are guaranteed to be complete.
+                for (uint i = pos; i < pos + add; i++) {
+                    add_named_output((AstalWl.Output)registry.output_list_model.get_item(i));
                 }
             });
         registry.output_removed.connect((output) => remove_output(output));
