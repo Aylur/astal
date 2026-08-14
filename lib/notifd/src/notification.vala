@@ -295,15 +295,27 @@ public class AstalNotifd.Notification : Object {
     }
 
     private string get_str_hint(string name) {
-        return get_hint(name) ? .get_string(null) ?? "";
+        var hint = get_hint(name);
+        // the spec types these hints, but senders get them wrong in
+        // practice: an unchecked accessor logs a GLib critical on every
+        // read, and every state flush re-reads transient
+        if (hint == null || !hint.is_of_type(VariantType.STRING)) return "";
+        return hint.get_string(null) ?? "";
     }
 
     private int32 get_int_hint(string name) {
-        return get_hint(name) ? .get_int32() ?? 0;
+        var hint = get_hint(name);
+        if (hint == null || !hint.is_of_type(VariantType.INT32)) return 0;
+        return hint.get_int32();
     }
 
     private bool get_bool_hint(string name) {
-        return get_hint(name) ? .get_boolean() ?? false;
+        var hint = get_hint(name);
+        if (hint == null) return false;
+        if (hint.is_of_type(VariantType.BOOLEAN)) return hint.get_boolean();
+        // observed in the wild: transient sent as an int32
+        if (hint.is_of_type(VariantType.INT32)) return hint.get_int32() != 0;
+        return false;
     }
 
     internal Notification.deserialize(Variant variant) {
