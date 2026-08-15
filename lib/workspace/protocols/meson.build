@@ -1,4 +1,3 @@
-
 fs = import('fs')
 
 wl_vapi_gen_prog = find_program('wl-vapi-gen', required: false)
@@ -14,9 +13,7 @@ wayland_client_dep = dependency('wayland-client')
 
 wl_protocol_dir = wayland_protos.get_variable(pkgconfig: 'pkgdatadir')
 
-protocols = [
-  'ext-workspace-v1.xml'
-]
+protocols = ['ext-workspace-v1.xml']
 
 protocol_deps = []
 protocol_vapis = []
