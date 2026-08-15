@@ -2,9 +2,9 @@ namespace AstalBrightness {
 /**
  * Get the singleton Brightness instance.
  */
-public Brightness get_default() {
-    return Brightness.get_default();
-}
+    public Brightness get_default() {
+        return Brightness.get_default();
+    }
 }
 
 /**
@@ -19,7 +19,7 @@ public class AstalBrightness.Brightness : Object {
      * Get the singleton Brightness instance.
      */
     public static Brightness get_default() {
-        if (instance == null) instance = new Brightness();
+        if (instance == null)instance = new Brightness();
         return instance;
     }
 
@@ -76,8 +76,8 @@ public class AstalBrightness.Brightness : Object {
         });
     }
 
-    int score_screen (Device device) {
-        if (device is DummyDevice) return 0;
+    int score_screen(Device device) {
+        if (device is DummyDevice)return 0;
 
         var score = 0;
         var type = device.read("type");
@@ -102,13 +102,13 @@ public class AstalBrightness.Brightness : Object {
         return score;
     }
 
-    int score_keyboard (Device device) {
-        if (device is DummyDevice) return 0;
+    int score_keyboard(Device device) {
+        if (device is DummyDevice)return 0;
 
         var score = 0;
         var name = device.name;
 
-        if (name.has_suffix("::kbd_backlight")) {
+        if (name == "kbd_backlight" || name.has_suffix("::kbd_backlight")) {
             score += 100;
         }
 
@@ -131,12 +131,19 @@ public class AstalBrightness.Brightness : Object {
         }
 
         _backlights.device_appeared.connect((device) => {
-            var score = score_screen(device);
-
-            if (score > score_screen(_screen.proxied)) {
+            if (score_screen(device) > score_screen(_screen.proxied)) {
                 _screen.proxied = device;
-            } else if (score == 0) {
-                _screen.proxied = new DummyDevice();
+            }
+        });
+
+        _backlights.device_removed.connect((device) => {
+            if (_screen.proxied != device)return;
+
+            _screen.proxied = new DummyDevice();
+            foreach (var d in _backlights.devices) {
+                if (d != device && score_screen(d) > score_screen(_screen.proxied)) {
+                    _screen.proxied = d;
+                }
             }
         });
     }
@@ -149,12 +156,19 @@ public class AstalBrightness.Brightness : Object {
         }
 
         _leds.device_appeared.connect((device) => {
-            var score = score_keyboard(device);
-
-            if (score > score_keyboard(_keyboard.proxied)) {
+            if (score_keyboard(device) > score_keyboard(_keyboard.proxied)) {
                 _keyboard.proxied = device;
-            } else if (score == 0) {
-                _keyboard.proxied = new DummyDevice();
+            }
+        });
+
+        _leds.device_removed.connect((device) => {
+            if (_keyboard.proxied != device)return;
+
+            _keyboard.proxied = new DummyDevice();
+            foreach (var d in _leds.devices) {
+                if (d != device && score_keyboard(d) > score_keyboard(_keyboard.proxied)) {
+                    _keyboard.proxied = d;
+                }
             }
         });
     }

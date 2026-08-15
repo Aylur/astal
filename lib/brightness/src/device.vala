@@ -31,7 +31,7 @@ public interface AstalBrightness.Device : Object {
         try {
             string contents;
             FileUtils.get_contents(@"/sys/class/$subsystem/$name/$file", out contents, null);
-            return contents;
+            return contents.strip();
         } catch (FileError error) {
             critical(error.message);
             return null;
