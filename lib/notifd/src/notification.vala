@@ -199,12 +199,11 @@ public class AstalNotifd.Notification : Object {
      */
     public Urgency urgency {
         get {
-            var v = get_hint("urgency");
-            if (v != null) {
-                if (v.get_type_string() == "y") return (Urgency)v.get_byte();
-                if (v.get_type_string() == "x") return (Urgency)v.get_int64();
-            }
-            return Urgency.NORMAL;
+            if (get_hint("urgency") == null) return Urgency.NORMAL;
+            var v = get_int_hint("urgency");
+            if (v < Urgency.LOW) return Urgency.LOW;
+            if (v > Urgency.CRITICAL) return Urgency.CRITICAL;
+            return (Urgency)v;
         }
         set { set_hint("urgency", new Variant.byte(value)); }
     }
@@ -291,19 +290,49 @@ public class AstalNotifd.Notification : Object {
     }
 
     public Variant? get_hint(string name) {
-        return new VariantDict(_hints).lookup_value(name, VariantType.ANY);
+        var hint = new VariantDict(_hints).lookup_value(name, VariantType.ANY);
+        // lookup_value only unwraps the outer variant, but D-Bus allows nesting them
+        while (hint != null && hint.is_of_type(VariantType.VARIANT)) {
+            hint = hint.get_variant();
+        }
+        return hint;
     }
 
     private string get_str_hint(string name) {
-        return get_hint(name) ? .get_string(null) ?? "";
+        var hint = get_hint(name);
+        if (hint == null) return "";
+        if (
+            hint.is_of_type(VariantType.STRING)
+            || hint.is_of_type(VariantType.OBJECT_PATH)
+            || hint.is_of_type(VariantType.SIGNATURE)
+        ) {
+            return hint.get_string(null) ?? "";
+        }
+        if (hint.is_of_type(VariantType.BYTESTRING)) return hint.get_bytestring() ?? "";
+        return "";
     }
 
     private int32 get_int_hint(string name) {
-        return get_hint(name) ? .get_int32() ?? 0;
+        var hint = get_hint(name);
+        if (hint == null) return 0;
+        if (hint.is_of_type(VariantType.INT32)) return hint.get_int32();
+        if (hint.is_of_type(VariantType.UINT32)) return (int32)hint.get_uint32();
+        if (hint.is_of_type(VariantType.BYTE)) return hint.get_byte();
+        if (hint.is_of_type(VariantType.INT16)) return hint.get_int16();
+        if (hint.is_of_type(VariantType.UINT16)) return hint.get_uint16();
+        if (hint.is_of_type(VariantType.INT64)) return (int32)hint.get_int64();
+        if (hint.is_of_type(VariantType.UINT64)) return (int32)hint.get_uint64();
+        if (hint.is_of_type(VariantType.HANDLE)) return hint.get_handle();
+        if (hint.is_of_type(VariantType.DOUBLE)) return (int32)hint.get_double();
+        if (hint.is_of_type(VariantType.BOOLEAN)) return hint.get_boolean() ? 1 : 0;
+        return 0;
     }
 
     private bool get_bool_hint(string name) {
-        return get_hint(name) ? .get_boolean() ?? false;
+        var hint = get_hint(name);
+        if (hint == null) return false;
+        if (hint.is_of_type(VariantType.BOOLEAN)) return hint.get_boolean();
+        return get_int_hint(name) != 0;
     }
 
     internal Notification.deserialize(Variant variant) {
