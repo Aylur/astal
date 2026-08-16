@@ -68,7 +68,7 @@ public class WorkspaceMonitorView : Object, ListModel {
     }
 
     internal void finish_init() {
-        manager.remove_output.connect(handle_output_remove);
+        AstalWl.get_default().output_removed.connect(handle_output_remove);
 
         manager.group_enter_output.connect(handle_group_enter_output);
         manager.group_leave_output.connect(handle_group_leave_output);

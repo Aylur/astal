@@ -60,16 +60,6 @@ public class WorkspaceManager : Object, ListModel {
     internal signal void group_leave_output(WorkspaceGroup group, AstalWl.Output output);
 
     /**
-     * Emitted when a new output appears on AstalWl with a name attached. Used by monitorviews to pair themselves with GDK monitors
-     */
-    internal signal void add_named_output(AstalWl.Output output);
-
-    /**
-     * Emitted when an output disappears from AstalWl. Used by monitorviews to know when to invalidate
-     */
-    internal signal void remove_output(AstalWl.Output output);
-
-    /**
      * Get the workspace at a specific position in the list, or null if out-of-bounds.
      */
     public Object? get_item(uint position) {
@@ -161,14 +151,6 @@ public class WorkspaceManager : Object, ListModel {
         }
         manager = registry.get_registry().bind(manager_global.name, ref ExtWorkspaceManagerV1.iface, uint.min(manager_global.version, 1));
         manager.add_listener(manager_listener, this);
-
-        registry.output_list_model.items_changed.connect((pos, rem, add) => {
-                // These are guaranteed to be complete.
-                for (uint i = pos; i < pos + add; i++) {
-                    add_named_output((AstalWl.Output)registry.output_list_model.get_item(i));
-                }
-            });
-        registry.output_removed.connect((output) => remove_output(output));
 
         workspaces = new GenericArray<Workspace>();
         pending_created_workspaces = new GenericArray<Workspace>();
