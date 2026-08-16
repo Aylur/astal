@@ -46,9 +46,6 @@ deps = [
   dependency('wayland-client'),
 ]
 
-# Separated so it can be excluded out of the CLI build.
-gtk_deps = [dependency('gtk4-wayland')]
-
 sources = [config] + files(
   'src/group.vala',
   'src/manager.vala',
@@ -60,7 +57,7 @@ if get_option('lib')
   lib = library(
     name,
     sources,
-    dependencies: deps + gtk_deps + protocol_deps,
+    dependencies: deps + protocol_deps,
     vala_args: ['--vapi-comments'],
     vala_header: name + '.h',
     vala_vapi: name + '-' + api_version + '.vapi',
@@ -77,7 +74,6 @@ if get_option('lib')
       '--name', name,
       '--gir', gir_name,
       '--pkgs', ':'.join(
-        'gtk4-wayland',
         'wayland-client',
         'astal-wl-0.1',
       ),

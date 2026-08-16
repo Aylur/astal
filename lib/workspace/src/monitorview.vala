@@ -16,36 +16,11 @@ public class WorkspaceMonitorView : Object, ListModel {
     public signal void invalidate();
 
     private void _invalidate() {
-#if !NO_GTK
-        if (monitor != null) {
-            if (monitor_connect_invalidate != 0) {
-                monitor.disconnect(monitor_connect_invalidate);
-                monitor_connect_invalidate = 0;
-            }
-            if (monitor_connect_connector != 0) {
-                monitor.disconnect(monitor_connect_connector);
-                monitor_connect_connector = 0;
-            }
-            monitor = null;
-        }
-        if (manager_connect_add_output != 0) {
-            manager.disconnect(manager_connect_add_output);
-            manager_connect_add_output = 0;
-        }
-#endif
-
         if (valid) {
             valid = false;
             invalidate();
         }
     }
-
-#if !NO_GTK
-    private Gdk.Monitor? monitor;
-    private ulong monitor_connect_invalidate;
-    private ulong monitor_connect_connector;
-    private ulong manager_connect_add_output;
-#endif
 
     private GenericArray<ulong> group_connections;
     /**
@@ -113,53 +88,6 @@ public class WorkspaceMonitorView : Object, ListModel {
         this.output = output;
         finish_init();
     }
-
-#if !NO_GTK
-    internal WorkspaceMonitorView.with_gdkmonitor(WorkspaceManager manager, Gdk.Monitor monitor) {
-        groups = new GenericArray<WorkspaceGroup>(1);
-        group_connections = new GenericArray<ulong>(1);
-        // Due to how Wayland works, everything here is very asynchronous, so this function is essentially split
-        this.manager = manager;
-        this.monitor = monitor;
-        if (monitor.valid) {
-            monitor_connect_invalidate = monitor.invalidate.connect(() => _invalidate());
-            if (monitor.connector != null) {
-                debug("with_gdkmonitor: immediate continue for monitor %p", monitor);
-                _with_gdkmonitor2();
-            } else {
-                monitor_connect_connector = monitor.notify["connector"].connect(() => _with_gdkmonitor2());
-            }
-        } else {
-            _invalidate();
-        }
-    }
-
-    private void _with_gdkmonitor2() {
-        if (monitor_connect_connector != 0) {
-            monitor.disconnect(monitor_connect_connector);
-        }
-
-        var registry = AstalWl.get_default();
-        var output = registry.get_output_by_name(monitor.connector);
-        if (output != null) {
-            debug("with_gdkmonitor2: immediate finish for monitor %p", monitor);
-            this.output = output;
-            finish_init();
-        } else {
-            manager_connect_add_output = manager.add_named_output.connect(_with_gdkmonitor3);
-        }
-    }
-
-    private void _with_gdkmonitor3(AstalWl.Output output) {
-        if (output.name == monitor.connector) {
-            manager.disconnect(manager_connect_add_output);
-            manager_connect_add_output = 0;
-            this.output = output;
-            finish_init();
-        }
-    }
-
-#endif
 
     public override void dispose() {
         // Explicitly disconnect the lambdas here, so that their capture structs are freed

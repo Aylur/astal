@@ -107,21 +107,6 @@ public class WorkspaceManager : Object, ListModel {
         return new WorkspaceMonitorView(this, output);
     }
 
-    // Having GDK linked in makes AstalWl use it (and print a critical if there is no display).
-    // Pretty much everyone will have it linked in anyway, EXCEPT the astal-workspace CLI.
-    // So add an escape hatch to stop depending on it.
-#if !NO_GTK
-
-    /**
-     * Get a proxy object which filters workspaces to those that belong to a group on the specified GDK monitor.
-     * Note that the workspaces may not appear in the proxy object immediately if the monitor is very new.
-     */
-    public WorkspaceMonitorView for_monitor(Gdk.Monitor monitor) {
-        return new WorkspaceMonitorView.with_gdkmonitor(this, monitor);
-    }
-
-#endif
-
     /**
      * Commit any pending workspace method calls.
      * By default, this is done automatically; you can use freeze_autocommit()
