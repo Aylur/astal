@@ -76,6 +76,7 @@ private class GetWlOutputStateMachine {
                 debug("found output");
                 this.output = output;
                 finish();
+                break;
             }
         }
     }
