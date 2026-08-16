@@ -116,7 +116,7 @@ abstract class WorkspaceCommand : Command {
 
         public override int execute() {
             var manager = AstalWorkspace.get_default();
-            AstalWl.get_default().get_display().roundtrip();
+            AstalWl.get_default().roundtrip();
             list_workspaces(manager);
 
             if (watch.enabled) {
@@ -150,7 +150,7 @@ abstract class WorkspaceCommand : Command {
 
         public override int execute() {
             var manager = AstalWorkspace.get_default();
-            AstalWl.get_default().get_display().roundtrip();
+            AstalWl.get_default().roundtrip();
             list_groups(manager);
 
             if (watch.enabled) {
