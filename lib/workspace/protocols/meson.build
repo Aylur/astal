@@ -6,7 +6,6 @@ if not wl_vapi_gen_prog.found()
   wl_vapi_gen_prog = find_program('wl-vapi-gen', required: false)
 endif
 
-# subproject('wl-vapi-gen')
 wayland_protos = dependency('wayland-protocols')
 wayland_scanner = find_program('wayland-scanner')
 wayland_client_dep = dependency('wayland-client')
