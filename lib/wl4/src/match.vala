@@ -93,9 +93,9 @@ private class GetWlOutputStateMachine {
  * This function can return null in edge cases, for example when the monitor
  * disappears during the matching process.
  */
-public async AstalWl.Output ? get_wl_output(Gdk.Monitor monitor) {
+public async AstalWl.Output? find_output_by_gdk_monitor(Gdk.Monitor monitor) {
         if (monitor.valid) {
-            var match = new GetWlOutputStateMachine(monitor, get_wl_output.callback);
+            var match = new GetWlOutputStateMachine(monitor, find_output_by_gdk_monitor.callback);
             yield;
             return match.result();
         } else {
