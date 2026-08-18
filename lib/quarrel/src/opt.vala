@@ -30,7 +30,7 @@ public sealed class Flag : Opt {
     public bool enabled { get; set; }
 
     construct {
-        parse.connect(() => { _enabled = true; });
+        parse.connect(() => { _enabled = true; return null; });
     }
 
     /** Create a flag option. */
@@ -48,7 +48,7 @@ public sealed class SpecialFlag : Opt {
     public bool enabled { get; set; }
 
     construct {
-        parse.connect(() => { _enabled = true; });
+        parse.connect(() => { _enabled = true; return null; });
     }
 
     /** Create a flag option. */
@@ -65,7 +65,7 @@ public sealed class StringOpt : Opt {
     public string? value { get; set; }
 
     construct {
-        parse.connect((value) => { _value = value; });
+        parse.connect((value) => { _value = value; return null; });
     }
 
     /** Create a string-valued option. */
@@ -130,7 +130,7 @@ public sealed class FileOpt : Opt {
     public File? value { get; set; }
 
     construct {
-        parse.connect((value) => { _value = File.new_for_commandline_arg(value); });
+        parse.connect((value) => { _value = File.new_for_commandline_arg(value); return null; });
     }
 
     /** Create a file-valued option. */
@@ -149,7 +149,7 @@ public sealed class FileArrayOpt : Opt {
     public List<File> value { get { return _list; } }
 
     construct {
-        parse.connect((value) => { _list.append(File.new_for_commandline_arg(value)); });
+        parse.connect((value) => { _list.append(File.new_for_commandline_arg(value)); return null; });
     }
 
     /** Create a repeated file-valued option. */
@@ -166,7 +166,7 @@ public sealed class StringArrayOpt : Opt {
     public string[] value { get; default = {}; }
 
     construct {
-        parse.connect((value) => { _value += value; });
+        parse.connect((value) => { _value += value; return null; });
     }
 
     /** Create a repeated string-valued option. */
