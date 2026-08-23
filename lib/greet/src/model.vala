@@ -6,10 +6,11 @@ public abstract class Request : Object {
     protected abstract Json.Node payload();
 
     private int bytes_to_int(Bytes bytes) {
+        // native endian length
         uint8[] data = (uint8[])bytes.get_data();
         int value = 0;
 
-        for (int i = 0; i < data.length; i++) {
+        for (int i = data.length - 1; i >= 0; i--) {
             value = (value << 8) | data[i];
         }
 
@@ -43,11 +44,12 @@ public abstract class Request : Object {
         var response_length = bytes_to_int(response_head);
         var response_body = yield istream.read_bytes_async(response_length, Priority.DEFAULT, null);
 
+        // get_data() has no NUL terminator
         var response = (string)response_body.get_data();
         conn.close(null);
 
         var parser = new Json.Parser();
-        parser.load_from_data(response);
+        parser.load_from_data(response, response_length);
         var obj = parser.get_root().get_object();
         var type = obj.get_string_member("type");
 
