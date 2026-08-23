@@ -48,6 +48,7 @@ wl_protocol_dir = wayland_protos.get_variable(pkgconfig: 'pkgdatadir')
 
 protocols = [
   join_paths(wl_protocol_dir, 'unstable/xdg-output/xdg-output-unstable-v1.xml'),
+  join_paths(wl_protocol_dir, 'staging/ext-idle-notify/ext-idle-notify-v1.xml'),
 ]
 
 protocol_deps = []
@@ -110,6 +111,7 @@ sources = [config] + files(
   'wl-source.vala',
   'output.vala',
   'seat.vala',
+  'idle.vala',
   'utils.vala'
 )
 
