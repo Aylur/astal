@@ -27,6 +27,7 @@
       cava = mkPkg ./lib/cava;
       greet = mkPkg ./lib/greet;
       hyprland = mkPkg ./lib/hyprland;
+      idle-notify = mkPkg ./lib/idle-notify;
       mpris = mkPkg ./lib/mpris;
       network = mkPkg ./lib/network;
       notifd = mkPkg ./lib/notifd;
