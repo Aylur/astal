@@ -63,6 +63,7 @@ public class Registry : Object {
     private Wl.Registry registry;
     private unowned Wl.Display display;
     private ZxdgOutputManagerV1 output_manager;
+    private ExtIdleNotifierV1 idle_notifier;
 
     private const Wl.RegistryListener registry_listener = {
         registry_handle_global_added,
@@ -206,8 +207,17 @@ public class Registry : Object {
             });
             this.outputs.insert(name, output);
             output_added(output);
+        } else if (@interface == "ext_idle_notifier_v1") {
+            this.idle_notifier = this.registry.bind<ExtIdleNotifierV1>(name, ref ExtIdleNotifierV1.iface, uint.min(version, 2));
+            HashTableIter<uint32, Seat> iter = HashTableIter<uint32, Seat>(this.seats);
+            unowned Seat seat;
+            uint32 id;
+
+            while (iter.next(out id, out seat)) {
+                seat.init_idle(this.idle_notifier);
+            }
         } else if (@interface == "wl_seat") {
-            var seat = new Seat(global, this.registry, this.display);
+            var seat = new Seat(global, this.registry, this.display, this.idle_notifier);
             this.seats.insert(name, seat);
             (this.seat_list_model as ListStore).append(seat);
             seat_added(seat);
@@ -218,7 +228,16 @@ public class Registry : Object {
     private void registry_handle_global_removed(Wl.Registry wl_registry, uint32 name) {
         var global = this.globals.lookup(name);
         this.globals.remove(name);
-        if (global.interface == "wl_output") {
+        if (global.interface == "ext_idle_notifier_v1") {
+            this.idle_notifier = null;
+            HashTableIter<uint32, Seat> iter = HashTableIter<uint32, Seat>(this.seats);
+            unowned Seat seat;
+            uint32 id;
+
+            while (iter.next(out id, out seat)) {
+                seat.init_idle(null);
+            }
+        } else if (global.interface == "wl_output") {
             var output = this.outputs.lookup(name);
             this.outputs.remove(name);
             uint pos;

@@ -21,6 +21,7 @@ public class Seat : Object {
     }
 
     private Wl.Seat seat;
+    private unowned ExtIdleNotifierV1? idle_notifier;
 
     /**
      * Returns the underlying `wl_seat` object.
@@ -57,10 +58,24 @@ public class Seat : Object {
         handle_name,
     };
 
-    internal Seat(Global global, Wl.Registry registry, Wl.Display display) {
+    internal void init_idle(ExtIdleNotifierV1? idle_notifier) {
+        this.idle_notifier = idle_notifier;
+    }
+
+    /**
+     * Creates an [class@AstalWl.IdleNotification] for this seat.
+     */
+    public IdleNotification? get_idle_notification(uint timeout) {
+        if (this.idle_notifier == null) return null;
+        return new IdleNotification(
+            this.idle_notifier.get_idle_notification(timeout, this.seat), timeout);
+    }
+
+    internal Seat(Global global, Wl.Registry registry, Wl.Display display, ExtIdleNotifierV1? idle_notifier) {
         Object(id: global.name);
         this.seat = registry.bind<Wl.Seat>(global.name, ref wl_seat_interface, uint.min(global.version, 10));
         this.seat.add_listener(seat_listener, this);
+        if (idle_notifier != null) init_idle(idle_notifier);
     }
 }
 }
