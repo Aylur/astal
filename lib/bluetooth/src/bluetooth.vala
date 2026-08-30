@@ -15,6 +15,7 @@ public class AstalBluetooth.Bluetooth : Object {
     internal const string ICON_ACTIVE = "bluetooth-active-symbolic";
     internal const string ICON_DISCONNECTED = "bluetooth-disconnected-symbolic";
     internal const string ICON_DISABLED = "bluetooth-disabled-symbolic";
+    internal const string ICON_ACQUIRING = "bluetooth-acquiring-symbolic";
 
     private static Bluetooth _instance;
 
@@ -79,6 +80,12 @@ public class AstalBluetooth.Bluetooth : Object {
      * `bluetooth-disconnected-symbolic` when powered with nothing connected.
      */
     public string icon_name { get; private set; default = ICON_DISABLED; }
+
+    /**
+     * State of the [property@AstalBluetooth.Bluetooth:adapter],
+     * or `ABSENT` when there is no adapter.
+     */
+    public AdapterState adapter_state { get; private set; default = AdapterState.ABSENT; }
 
     /**
      * The first registered adapter which is usually the only adapter.
@@ -244,7 +251,12 @@ public class AstalBluetooth.Bluetooth : Object {
             }
         }
 
-        if (!powered) {
+        adapter_state = adapter == null ? AdapterState.ABSENT : adapter.state;
+
+        if ((adapter_state == AdapterState.TURNING_ON)
+            || (adapter_state == AdapterState.TURNING_OFF)) {
+            icon_name = ICON_ACQUIRING;
+        } else if (!powered) {
             icon_name = ICON_DISABLED;
         } else if (connected) {
             icon_name = ICON_ACTIVE;
