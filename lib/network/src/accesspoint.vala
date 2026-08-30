@@ -1,9 +1,21 @@
+/**
+ * A wifi network, as one or more NM.AccessPoint that share
+ * an ssid, a mode and a security type.
+ *
+ * A router with a 2.4GHz and a 5GHz radio, or a mesh with several nodes,
+ * advertises one NM.AccessPoint for each radio. They are one network to
+ * the user, so this groups them and reads through to the strongest one.
+ */
 public class AstalNetwork.AccessPoint : Object {
     private Wifi wifi;
-    public NM.AccessPoint ap;
+    private NM.AccessPoint[] aps = {};
+    private ulong[] handlers = {};
+
+    /** The strongest NM.AccessPoint of this network. */
+    public NM.AccessPoint ap { get; private set; }
 
     public uint bandwidth { get { return ap.bandwidth; } }
-    public string bssid { owned get { return ap.bssid; } }
+    public string? bssid { owned get { return ap.bssid; } }
     public uint frequency { get { return ap.frequency; } }
     public int last_seen { get { return ap.last_seen; } }
     public uint max_bitrate { get { return ap.max_bitrate; } }
@@ -14,13 +26,14 @@ public class AstalNetwork.AccessPoint : Object {
     public NM.80211ApSecurityFlags rsn_flags { get { return ap.rsn_flags; } }
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
 
+    /** How many NM.AccessPoint advertise this network. */
+    public uint access_point_count { get { return aps.length; } }
+
     /**
-     * Security type of this AccessPoint, as negotiated between its
-     * advertised capabilities and those of the wifi device.
+     * Security type of this network, as negotiated between the capabilities
+     * the access points advertise and those of the wifi device.
      */
-    public NM.Utils.SecurityType security {
-        get { return security_type(wifi.device, ap); }
-    }
+    public NM.Utils.SecurityType security { get; private set; }
 
     public GenericArray<NM.RemoteConnection> get_connections() {
         return (GenericArray<NM.RemoteConnection>)ap.filter_connections(
@@ -33,7 +46,7 @@ public class AstalNetwork.AccessPoint : Object {
     }
 
     /**
-     * Whether {@link activate} needs a password for this AccessPoint.
+     * Whether {@link activate} needs a password for this network.
      *
      * Note that enterprise networks need more than a password,
      * so this is `false` for them. See {@link security}.
@@ -63,17 +76,101 @@ public class AstalNetwork.AccessPoint : Object {
     internal AccessPoint(Wifi wifi, NM.AccessPoint ap) {
         this.wifi = wifi;
         this.ap = ap;
+        this.security = security_type(wifi.device, ap);
 
-        ap.notify.connect((pspec) => {
+        add(ap);
+    }
+
+    /**
+     * Whether the given NM.AccessPoint advertises this same network.
+     */
+    internal bool matches(NM.AccessPoint other) {
+        if ((other.ssid == null) || (ap.ssid == null)) return false;
+
+        return ap.ssid.compare(other.ssid) == 0
+            && ap.mode == other.mode
+            && security == security_type(wifi.device, other);
+    }
+
+    internal bool contains(NM.AccessPoint other) {
+        return index_of(other) >= 0;
+    }
+
+    internal bool is_empty {
+        get { return aps.length == 0; }
+    }
+
+    internal void add(NM.AccessPoint member) {
+        if (contains(member)) return;
+
+        aps += member;
+        handlers += member.notify.connect((pspec) => {
+            if (pspec.name == "strength") update_best();
+            if (member != ap) return;
+
             if (get_class().find_property(pspec.name) != null) notify_property(pspec.name);
             if (pspec.name == "strength") icon_name = _icon();
         });
 
+        notify_property("access-point-count");
+        update_best();
+    }
+
+    internal bool remove(NM.AccessPoint member) {
+        var i = index_of(member);
+        if (i < 0) return false;
+
+        aps[i].disconnect(handlers[i]);
+        for (var j = i; j < aps.length - 1; ++j) {
+            aps[j] = aps[j + 1];
+            handlers[j] = handlers[j + 1];
+        }
+        aps.resize(aps.length - 1);
+        handlers.resize(handlers.length - 1);
+
+        notify_property("access-point-count");
+        update_best();
+        return true;
+    }
+
+    private int index_of(NM.AccessPoint member) {
+        for (var i = 0; i < aps.length; ++i) {
+            if (aps[i] == member) return i;
+        }
+        return -1;
+    }
+
+    private void update_best() {
+        NM.AccessPoint? best = null;
+        foreach (var member in aps) {
+            if ((best == null) || (member.strength > best.strength)) best = member;
+        }
+
+        // keep the last known ap when the group is emptied, so that a
+        // consumer holding this object after removal still reads its ssid
+        if ((best == null) || (best == ap)) {
+            icon_name = _icon();
+            return;
+        }
+
+        ap = best;
+
+        // the whole read-through surface now comes from a different ap
+        notify_property("bandwidth");
+        notify_property("bssid");
+        notify_property("frequency");
+        notify_property("last-seen");
+        notify_property("max-bitrate");
+        notify_property("strength");
+        notify_property("mode");
+        notify_property("flags");
+        notify_property("rsn-flags");
+        notify_property("wpa-flags");
         icon_name = _icon();
     }
 
     /**
-     * Activates the first connection associated with this AccessPoint
+     * Activates the first connection associated with this network
      * or creates a new SimpleConnection matching its security type
      * and activates it.
      */
@@ -104,7 +201,7 @@ public class AstalNetwork.AccessPoint : Object {
             var connection = NM.SimpleConnection.new();
 
             // no bssid: pinning the connection to a single bssid stops
-            // NetworkManager from roaming between APs of the same network
+            // NetworkManager from roaming between the aps of this network
             connection.add_setting(new NM.SettingWireless() {
                 ssid = this.ap.ssid,
             });
