@@ -43,7 +43,7 @@ public class AstalNetwork.Wifi : Object {
     public uint8 strength { get; private set; }
     public uint frequency { get; private set; }
     public DeviceState state { get; private set; }
-    public string icon_name { get; private set; }
+    public string? ssid { get; private set; }
     public bool is_hotspot { get; private set; }
     public bool scanning { get; private set; }
 
@@ -183,7 +183,7 @@ public class AstalNetwork.Wifi : Object {
         bandwidth = active_nm_ap.bandwidth;
         frequency = active_nm_ap.frequency;
         strength = active_nm_ap.strength;
-        ssid = active_nm_ap.ssid == null
+        ssid = (active_nm_ap.ssid == null)
             ? null
             : (string)NM.Utils.ssid_to_utf8(active_nm_ap.ssid.get_data());
     }
