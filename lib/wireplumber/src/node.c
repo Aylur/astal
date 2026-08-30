@@ -77,7 +77,9 @@ void astal_wp_node_update_volume(AstalWpNode *self) {
     g_return_if_fail(ASTAL_WP_IS_NODE(self));
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
-    if (priv->mixer == NULL) return;
+    if (priv->mixer == NULL || priv->node == NULL) {
+        return;
+    }
 
     gdouble volume = 0;
     gboolean mute;
@@ -86,7 +88,11 @@ void astal_wp_node_update_volume(AstalWpNode *self) {
 
     g_signal_emit_by_name(priv->mixer, "get-volume", priv->id, &variant);
 
-    if (variant == NULL) return;
+    if (variant == NULL) {
+        g_debug("astal_wp_node_update_volume: mixer returned no volume info for node %u",
+                priv->id);
+        return;
+    }
 
     g_object_freeze_notify(G_OBJECT(self));
 
@@ -131,6 +137,8 @@ void astal_wp_node_update_volume(AstalWpNode *self) {
 
     g_object_notify(G_OBJECT(self), "volume-icon");
 
+    g_debug("Node %u volume updated: volume=%f mute=%d", priv->id, priv->volume, priv->mute);
+
     g_object_thaw_notify(G_OBJECT(self));
     g_variant_iter_free(channels);
     g_variant_unref(variant);
@@ -163,7 +171,13 @@ void astal_wp_node_set_channel_volume(AstalWpNode *self, const gchar *name, gdou
     g_auto(GVariantBuilder) vol_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
     g_signal_emit_by_name(priv->mixer, "get-volume", priv->id, &variant);
 
-    if (variant == NULL) return;
+    if (variant == NULL) {
+        g_warning("astal_wp_node_set_channel_volume: could not get current volume for node %u",
+                  priv->id);
+        return;
+    }
+
+    g_debug("Setting channel '%s' volume to %f for node %u", name, volume, priv->id);
 
     g_variant_lookup(variant, "mute", "b", &mute);
     g_variant_lookup(variant, "channelVolumes", "a{sv}", &channels);
@@ -191,6 +205,8 @@ void astal_wp_node_set_channel_volume(AstalWpNode *self, const gchar *name, gdou
 
         g_variant_builder_add(&vol_b, "{sv}", "channelVolumes",
                               g_variant_builder_end(&channel_volumes_b));
+    } else {
+        g_debug("astal_wp_node_set_channel_volume: node %u reported no channels", priv->id);
     }
 
     g_signal_emit_by_name(priv->mixer, "set-volume", priv->id, g_variant_builder_end(&vol_b), &ret);
@@ -221,7 +237,12 @@ void astal_wp_node_set_volume(AstalWpNode *self, gdouble volume) {
     g_auto(GVariantBuilder) vol_b = G_VARIANT_BUILDER_INIT(G_VARIANT_TYPE_VARDICT);
     g_signal_emit_by_name(priv->mixer, "get-volume", priv->id, &variant);
 
-    if (variant == NULL) return;
+    if (variant == NULL) {
+        g_warning("astal_wp_node_set_volume: could not get current volume for node %u", priv->id);
+        return;
+    }
+
+    g_debug("Setting volume to %f for node %u", volume, priv->id);
 
     g_variant_lookup(variant, "mute", "b", &mute);
     g_variant_lookup(variant, "channelVolumes", "a{sv}", &channels);
@@ -269,6 +290,8 @@ void astal_wp_node_set_volume(AstalWpNode *self, gdouble volume) {
 void astal_wp_node_set_mute(AstalWpNode *self, gboolean mute) {
     g_return_if_fail(ASTAL_WP_IS_NODE(self));
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+
+    g_debug("Setting mute=%d for node %u", mute, priv->id);
 
     gboolean ret;
     GVariant *variant = NULL;
@@ -470,6 +493,7 @@ GList *astal_wp_node_get_channels(AstalWpNode *self) {
 static void astal_wp_node_state_changed(AstalWpNode *self, WpNodeState old_state,
                                         WpNodeState new_state) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    g_debug("Node %u state changed: %d -> %d", priv->id, old_state, new_state);
     priv->state = (AstalWpNodeState)new_state;
     g_object_notify(G_OBJECT(self), "state");
 }
@@ -492,9 +516,10 @@ void astal_wp_node_set_node(AstalWpNode *self, WpNode *node) {
                                      G_CALLBACK(astal_wp_node_pw_properties_changed), self);
         priv->state_change_handler_id = g_signal_connect_swapped(
             priv->node, "state-changed", G_CALLBACK(astal_wp_node_state_changed), self);
+
+        astal_wp_node_params_changed(self, "Props");
+        astal_wp_node_update_volume(self);
     }
-    astal_wp_node_params_changed(self, "Props");
-    astal_wp_node_update_volume(self);
 }
 
 void astal_wp_node_set_mixer(AstalWpNode *self, WpPlugin *mixer) {
@@ -528,7 +553,10 @@ void astal_wp_node_set_type(AstalWpNode *self, AstalWpMediaClass type) {
 gchar *astal_wp_node_get_pw_property(AstalWpNode *self, const gchar *key) {
     g_return_val_if_fail(ASTAL_WP_IS_NODE(self), NULL);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
-    if(priv->node == NULL) return NULL;
+    if(priv->node == NULL) {
+        g_debug("astal_wp_node_get_pw_property: node not set, cannot read '%s'", key);
+        return NULL;
+    }
     const gchar *value = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(priv->node), key);
     return g_strdup(value);
 }
@@ -646,7 +674,10 @@ void astal_wp_node_metadata_changed(AstalWpNode *self, const gchar *key, const g
 void astal_wp_node_properties_changed(AstalWpNode *self) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
-    if (priv->node == NULL) return;
+    if (priv->node == NULL) {
+        g_debug("astal_wp_node_properties_changed: node not set, skipping");
+        return;
+    }
 
     WpPipewireObject *pwo = WP_PIPEWIRE_OBJECT(priv->node);
 
@@ -710,6 +741,7 @@ void astal_wp_node_properties_changed(AstalWpNode *self) {
 }
 
 static void astal_wp_node_real_params_changed(AstalWpNode *self, const gchar *id) {
+    g_debug("Node params changed: %s", id);
     g_object_freeze_notify(G_OBJECT(self));
 
     if (!g_strcmp0(id, "Props")) astal_wp_node_properties_changed(self);
@@ -745,7 +777,10 @@ static void astal_wp_node_init(AstalWpNode *self) {
 
 static void astal_wp_node_constructed(GObject *obj) {
     AstalWpNode *self = ASTAL_WP_NODE(obj);
-    astal_wp_node_params_changed(self, "Props");
+    AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    if(priv->node != NULL) {
+        astal_wp_node_params_changed(self, "Props");
+    }
 }
 
 static void astal_wp_node_dispose(GObject *object) {

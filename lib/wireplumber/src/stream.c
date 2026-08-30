@@ -1,5 +1,6 @@
 #include "stream.h"
 
+#include <stdlib.h>
 #include <wp/wp.h>
 
 #include "astal-wp-enum-types.h"
@@ -44,6 +45,7 @@ void astal_wp_stream_set_target_serial(AstalWpStream *self, gint serial) {
     guint id;
     gchar *serial_str = g_strdup_printf("%d", serial);
     g_object_get(self, "wp", &wp, "id", &id, NULL);
+    g_debug("Setting target serial %d for stream node %u", serial, id);
     astal_wp_wp_set_matadata(wp, id, "target.object", "Spa:Id", serial_str);
     g_free(serial_str);
 }
@@ -144,6 +146,7 @@ void astal_wp_stream_real_metadata_changed(AstalWpNode *node, const gchar *key, 
             serial = g_ascii_strtoll(value, NULL, 10);
         }
         if (serial != self->target_serial) {
+            g_debug("Stream target serial changed from %d to %d", self->target_serial, serial);
             self->target_serial = serial;
             g_object_notify(G_OBJECT(self), "target-serial");
             g_object_notify(G_OBJECT(self), "target-endpoint");
@@ -169,6 +172,9 @@ static void astal_wp_stream_properties_changed(AstalWpStream *self) {
     AstalWpMediaRole role = astal_wp_media_role_from_string(value);
     if (role != self->media_role) {
         self->media_role = role;
+        char* role_str = astal_wp_media_role_to_string(role);
+        g_debug("Stream media-role changed to %s", role_str);
+        free(role_str);
         g_object_notify(G_OBJECT(self), "media-role");
     }
 
@@ -176,21 +182,23 @@ static void astal_wp_stream_properties_changed(AstalWpStream *self) {
     AstalWpMediaCategory category = astal_wp_media_category_from_string(value);
     if (category != self->media_category) {
         self->media_category = category;
+        char* category_str = astal_wp_media_category_to_string(category);
+        g_debug("Stream media-category changed to %s", category_str);
+        free(category_str);
         g_object_notify(G_OBJECT(self), "media-category");
     }
 
     value = wp_pipewire_object_get_property(pwo, "node.target");
-    gint id;
-    if (value == NULL) {
-        id = -1;
-    } else {
+    gint id = -1;
+    if (value != NULL) {
         id = g_ascii_strtoll(value, NULL, 10);
-    }
-    AstalWpNode *target_node = astal_wp_wp_get_node(wp, id);
-    if (target_node != NULL && astal_wp_node_get_serial(target_node) != self->target_serial) {
-        self->target_serial = astal_wp_node_get_serial(target_node);
-        g_object_notify(G_OBJECT(self), "target-serial");
-        g_object_notify(G_OBJECT(self), "target-endpoint");
+        AstalWpNode *target_node = astal_wp_wp_get_node(wp, id);
+        if (target_node != NULL && astal_wp_node_get_serial(target_node) != self->target_serial) {
+            self->target_serial = astal_wp_node_get_serial(target_node);
+            g_debug("Stream target resolved via node.target to serial %d", self->target_serial);
+            g_object_notify(G_OBJECT(self), "target-serial");
+            g_object_notify(G_OBJECT(self), "target-endpoint");
+        }
     }
 }
 

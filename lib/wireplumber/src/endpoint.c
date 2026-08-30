@@ -95,6 +95,9 @@ void astal_wp_endpoint_set_is_default(AstalWpEndpoint *self, gboolean is_default
     const gchar *name = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "node.name");
     const gchar *media_class =
         wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
+
+    g_info("Setting default %s node to '%s'", media_class, name);
+
     g_signal_emit_by_name(priv->default_plugin, "set-default-configured-node-name", media_class,
                           name, &ret);
 }
@@ -139,12 +142,18 @@ AstalWpRoute *astal_wp_endpoint_get_route(AstalWpEndpoint *self) {
 void astal_wp_endpoint_set_route(AstalWpEndpoint *self, AstalWpRoute *route) {
     g_return_if_fail(ASTAL_WP_IS_ENDPOINT(self));
     AstalWpDevice *dev = astal_wp_endpoint_get_device(self);
-    if (dev == NULL) return;
+    if (dev == NULL) {
+        g_warning("astal_wp_endpoint_set_route: endpoint has no associated device, ignoring");
+        return;
+    }
     WpNode *node;
     g_object_get(self, "node", &node, NULL);
     const gchar *value =
         wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "card.profile.device");
-    if (value == NULL) return;
+    if (value == NULL) {
+        g_warning("astal_wp_endpoint_set_route: node has no card.profile.device property");
+        return;
+    }
     gint card_device = g_ascii_strtoll(value, NULL, 10);
 
     astal_wp_device_set_route(dev, route, card_device);
@@ -324,9 +333,13 @@ static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) 
     if (defaultId != id) {
         AstalWpNode *default_node = astal_wp_wp_get_node(wp, defaultId);
         if (default_node != NULL && astal_wp_node_get_media_class(default_node) == media_class) {
+            g_debug("Default node changed to id %u for media class %d", defaultId, media_class);
             WpNode *default_wp_node;
             g_object_get(default_node, "node", &default_wp_node, NULL);
             astal_wp_node_set_node(ASTAL_WP_NODE(self), default_wp_node);
+        } else {
+            g_debug("Default node id %u not resolvable for media class %d", defaultId,
+                    media_class);
         }
     }
 }
@@ -350,9 +363,11 @@ static void astal_wp_endpoint_default_changed(AstalWpEndpoint *self) {
 
     if (self->is_default && defaultId != id) {
         self->is_default = FALSE;
+        g_debug("Node %u is no longer the default %s node", id, media_class);
         g_object_notify(G_OBJECT(self), "is-default");
     } else if (!self->is_default && defaultId == id) {
         self->is_default = TRUE;
+        g_debug("Node %u is now the default %s node", id, media_class);
         g_object_notify(G_OBJECT(self), "is-default");
     }
 }
@@ -362,8 +377,12 @@ void astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer, W
     g_return_if_fail(ASTAL_WP_IS_ENDPOINT(self));
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
-    astal_wp_node_set_mixer(ASTAL_WP_NODE(self), mixer);
+    char* media_class = astal_wp_media_class_to_string(type);
+    g_debug("Initializing endpoint as default node for media class %s", media_class);
+    free(media_class);
+
     astal_wp_node_set_type(ASTAL_WP_NODE(self), type);
+    astal_wp_node_set_mixer(ASTAL_WP_NODE(self), mixer);
 
     if (priv->default_plugin != NULL) {
         g_signal_handler_disconnect(priv->default_plugin, priv->default_node_handler_signal_id);
@@ -408,6 +427,7 @@ static void astal_wp_endpoint_dispose(GObject *object) {
     AstalWpEndpoint *self = ASTAL_WP_ENDPOINT(object);
     AstalWpEndpointPrivate *priv = astal_wp_endpoint_get_instance_private(self);
 
+    g_debug("Disposing AstalWpEndpoint");
     g_signal_handler_disconnect(priv->default_plugin, priv->default_node_handler_signal_id);
     g_clear_object(&priv->default_plugin);
     g_clear_object(&priv->device_signal_group);

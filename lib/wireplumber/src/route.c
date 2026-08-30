@@ -127,6 +127,7 @@ static void astal_wp_route_set_property(GObject *object, guint property_id, cons
 static void astal_wp_route_init(AstalWpRoute *self) {
     g_return_if_fail(ASTAL_WP_IS_ROUTE(self));
     self->description = NULL;
+    self->name = NULL;
 }
 
 static void astal_wp_route_finalize(GObject *object) {

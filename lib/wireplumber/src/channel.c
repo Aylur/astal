@@ -33,12 +33,14 @@ static GParamSpec *astal_wp_channel_properties[ASTAL_WP_CHANNEL_N_PROPERTIES] = 
  */
 void astal_wp_channel_set_volume(AstalWpChannel *self, gdouble volume) {
     g_return_if_fail(ASTAL_WP_IS_CHANNEL(self));
+    g_debug("Requesting volume %f for channel '%s'", volume, self->name);
     astal_wp_node_set_channel_volume(self->node, self->name, volume);
 }
 
 void astal_wp_channel_update_volume(AstalWpChannel *self, gdouble volume) {
     g_return_if_fail(ASTAL_WP_IS_CHANNEL(self));
     if (volume == self->volume) return;
+    g_debug("Channel '%s' volume updated to %f", self->name, volume);
     self->volume = volume;
     g_object_notify(G_OBJECT(self), "volume");
     g_object_notify(G_OBJECT(self), "volume-icon");

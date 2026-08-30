@@ -78,6 +78,7 @@ AstalWpEndpoint *astal_wp_audio_get_speaker(AstalWpAudio *self, guint id) {
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER)
         return ASTAL_WP_ENDPOINT(node);
+    g_debug("astal_wp_audio_get_speaker: node %u is not a speaker", id);
     return NULL;
 }
 
@@ -98,6 +99,7 @@ AstalWpEndpoint *astal_wp_audio_get_microphone(AstalWpAudio *self, guint id) {
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE
         || astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_SOURCE_VIRTUAL)
         return ASTAL_WP_ENDPOINT(node);
+    g_debug("astal_wp_audio_get_microphone: node %u is not a microphone", id);
     return NULL;
 }
 
@@ -117,6 +119,7 @@ AstalWpStream *astal_wp_audio_get_recorder(AstalWpAudio *self, guint id) {
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_RECORDER)
         return ASTAL_WP_STREAM(node);
+    g_debug("astal_wp_audio_get_recorder: node %u is not a recorder", id);
     return NULL;
 }
 
@@ -136,6 +139,7 @@ AstalWpStream *astal_wp_audio_get_stream(AstalWpAudio *self, guint id) {
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_AUDIO_STREAM)
         return ASTAL_WP_STREAM(node);
+    g_debug("astal_wp_audio_get_stream: node %u is not a stream", id);
     return NULL;
 }
 

@@ -110,7 +110,10 @@ static void astal_wp_profile_set_property(GObject *object, guint property_id, co
     }
 }
 
-static void astal_wp_profile_init(AstalWpProfile *self) { self->description = NULL; }
+static void astal_wp_profile_init(AstalWpProfile *self) {
+    self->description = NULL;
+    self->name = NULL;
+}
 
 static void astal_wp_profile_finalize(GObject *object) {
     AstalWpProfile *self = ASTAL_WP_PROFILE(object);

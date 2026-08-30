@@ -13,6 +13,7 @@
 #include "wp-private.h"
 #include "wp.h"
 #include "wp/core.h"
+#include "wp/metadata.h"
 
 struct _AstalWpWp {
     GObject parent_instance;
@@ -97,6 +98,9 @@ AstalWpNode *astal_wp_wp_get_node(AstalWpWp *self, guint id) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     AstalWpNode *node = g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id));
+    if (node == NULL) {
+        g_debug("astal_wp_wp_get_node: no node found for id %u", id);
+    }
     return node;
 }
 
@@ -129,6 +133,9 @@ AstalWpDevice *astal_wp_wp_get_device(AstalWpWp *self, guint id) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
     AstalWpDevice *device = g_hash_table_lookup(priv->devices, GUINT_TO_POINTER(id));
+    if (device == NULL) {
+        g_debug("astal_wp_wp_get_device: no device found for id %u", id);
+    }
     return device;
 }
 
@@ -206,6 +213,8 @@ void astal_wp_wp_set_scale(AstalWpWp *self, AstalWpScale scale) {
     self->scale = scale;
 
     if (priv->mixer == NULL) return;
+
+    g_debug("Setting volume scale to %d", scale);
 
     g_object_set(priv->mixer, "scale", self->scale, NULL);
 
@@ -290,19 +299,25 @@ static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     GList *eps = g_hash_table_get_values(priv->delayed_endpoints);
 
+    if(g_list_length(eps) == 0) return;
+
+    g_debug("Checking %u delayed endpoint(s) against device id %u", g_list_length(eps),
+            device_id);
+
     for (GList *l = eps; l != NULL; l = l->next) {
         const gchar *dev =
             wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(l->data), "device.id");
         if (dev != NULL) {
             if (device_id == g_ascii_strtoull(dev, NULL, 10)) {
+                guint bound_id = wp_proxy_get_bound_id(WP_PROXY(l->data));
+                g_debug("Resolving delayed endpoint (bound id %u) now that device %u is known",
+                        bound_id, device_id);
+
                 AstalWpEndpoint *endpoint =
                     astal_wp_endpoint_new(l->data, priv->mixer, priv->defaults, self);
 
-                g_hash_table_insert(priv->nodes,
-                                    GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(l->data))),
-                                    endpoint);
-                g_hash_table_remove(priv->delayed_endpoints,
-                                    GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(l->data))));
+                g_hash_table_insert(priv->nodes, GUINT_TO_POINTER(bound_id), endpoint);
+                g_hash_table_remove(priv->delayed_endpoints, GUINT_TO_POINTER(bound_id));
                 astal_wp_wp_update_metadata(self, astal_wp_node_get_id(ASTAL_WP_NODE(endpoint)));
                 g_signal_emit_by_name(self, "node-added", endpoint);
                 g_object_notify(G_OBJECT(self), "nodes");
@@ -315,24 +330,47 @@ static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id
 void astal_wp_wp_set_matadata(AstalWpWp *self, guint subject, const gchar *key, const gchar *type,
                               const gchar *value) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    if (priv->metadata == NULL) {
+        g_warning("astal_wp_wp_set_matadata: no metadata object available, dropping key '%s'",
+                  key);
+        return;
+    }
+
+    g_debug("Setting metadata subject=%u key='%s' type='%s' value='%s'", subject, key, type,
+            value);
     wp_metadata_set(priv->metadata, subject, key, type, value);
 }
 
 static void astal_wp_wp_metadata_changed(WpMetadata *metadata, guint subject, const gchar *key,
                                          const gchar *type, const gchar *value,
                                          gpointer user_data) {
+    //id 0 is the core, ignore it
+    if( subject == 0) return;
     AstalWpWp *self = ASTAL_WP_WP(user_data);
     AstalWpNode *node = astal_wp_wp_get_node(self, subject);
 
-    if (node == NULL) return;
+    if (node == NULL) {
+        g_debug("Metadata changed for unknown node (subject=%u, key='%s'), ignoring", subject,
+                key);
+        return;
+    }
 
+    g_debug("Metadata changed: subject=%u key='%s' type='%s' value='%s'", subject, key, type,
+            value);
     astal_wp_node_metadata_changed(node, key, type, value);
 }
 
 void astal_wp_wp_update_metadata(AstalWpWp *self, guint subject) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    if (priv->metadata == NULL) return;
+    if (priv->metadata == NULL) {
+        g_debug("astal_wp_wp_update_metadata: metadata not available, skipping subject %u",
+                subject);
+        return;
+    }
+
+    g_debug("Updating metadata for subject %u", subject);
 
     WpIterator *iter = wp_metadata_new_iterator(priv->metadata, subject);
     GValue value = G_VALUE_INIT;
@@ -348,10 +386,13 @@ void astal_wp_wp_update_metadata(AstalWpWp *self, guint subject) {
 }
 
 static void astal_wp_wp_metadata_added(AstalWpWp *self, gpointer object) {
+    g_return_if_fail(WP_IS_METADATA(object));
+    
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
-    if (!WP_IS_METADATA(object)) return;
+    
     WpMetadata *metadata = WP_METADATA(object);
     if (priv->metadata != NULL) {
+        g_debug("Replacing previously known metadata object");
         g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);
         g_clear_object(&priv->metadata);
     }
@@ -359,7 +400,7 @@ static void astal_wp_wp_metadata_added(AstalWpWp *self, gpointer object) {
     priv->metadata_handler_id =
         g_signal_connect(priv->metadata, "changed", G_CALLBACK(astal_wp_wp_metadata_changed), self);
 
-    astal_wp_wp_update_metadata(self, -1);
+    g_info("Metadata object acquired");
 }
 
 static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
@@ -367,12 +408,15 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
 
     if (WP_IS_NODE(object)) {
         WpNode *node = WP_NODE(object);
+        guint bound_id = wp_proxy_get_bound_id(WP_PROXY(node));
         const gchar *dev = wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "device.id");
         if (dev != NULL) {
             guint device_id = g_ascii_strtoull(dev, NULL, 10);
             if (!g_hash_table_contains(priv->devices, GUINT_TO_POINTER(device_id))) {
-                g_hash_table_insert(priv->delayed_endpoints,
-                                    GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))), node);
+                g_debug(
+                    "Delaying node %u: owning device %u has not been seen yet", bound_id,
+                    device_id);
+                g_hash_table_insert(priv->delayed_endpoints, GUINT_TO_POINTER(bound_id), node);
                 return;
             }
         }
@@ -381,34 +425,40 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
         const gchar *media_class =
             wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
         if (g_str_has_prefix(media_class, "Stream")) {
+            g_debug("Node %u added as stream (media.class='%s')", bound_id, media_class);
             astal_node = ASTAL_WP_NODE(astal_wp_stream_new(node, priv->mixer, self));
         } else {
+            g_debug("Node %u added as endpoint (media.class='%s')", bound_id, media_class);
             astal_node =
                 ASTAL_WP_NODE(astal_wp_endpoint_new(node, priv->mixer, priv->defaults, self));
         }
-        g_hash_table_insert(priv->nodes, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
-                            astal_node);
+        g_hash_table_insert(priv->nodes, GUINT_TO_POINTER(bound_id), astal_node);
         astal_wp_wp_update_metadata(self, astal_wp_node_get_id(astal_node));
         g_signal_emit_by_name(self, "node-added", astal_node);
         g_object_notify(G_OBJECT(self), "nodes");
     } else if (WP_IS_DEVICE(object)) {
         WpDevice *node = WP_DEVICE(object);
+        guint bound_id = wp_proxy_get_bound_id(WP_PROXY(node));
         AstalWpDevice *device = g_object_new(ASTAL_WP_TYPE_DEVICE, "device", node, NULL);
-        g_hash_table_insert(priv->devices, GUINT_TO_POINTER(wp_proxy_get_bound_id(WP_PROXY(node))),
-                            device);
+        g_hash_table_insert(priv->devices, GUINT_TO_POINTER(bound_id), device);
+        g_info("Device %u added", bound_id);
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
-        astal_wp_wp_check_delayed_endpoints(self, wp_proxy_get_bound_id(WP_PROXY(node)));
+        astal_wp_wp_check_delayed_endpoints(self, bound_id);
 
         if(astal_wp_endpoint_get_device_id(self->default_speaker) == astal_wp_device_get_id(device)) {
+            g_debug("Device %u matches current default speaker, notifying", bound_id);
             g_object_notify(G_OBJECT(self->default_speaker), "device-id");
             g_object_notify(G_OBJECT(self->default_speaker), "device");
  
         if(astal_wp_endpoint_get_device_id(self->default_microphone) == astal_wp_device_get_id(device)) {
+            g_debug("Device %u matches current default microphone, notifying", bound_id);
             g_object_notify(G_OBJECT(self->default_microphone), "device-id");
             g_object_notify(G_OBJECT(self->default_microphone), "device");
         }
        }
+    } else {
+        g_debug("astal_wp_wp_object_added: ignoring object of unhandled type");
     }
 }
 
@@ -419,6 +469,7 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
         guint id = wp_proxy_get_bound_id(WP_PROXY(object));
         AstalWpNode *node = g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id));
         if(node != NULL) {
+            g_debug("Node %u removed", id);
             g_object_ref(node);
             g_hash_table_remove(priv->nodes, GUINT_TO_POINTER(id));
 
@@ -428,33 +479,48 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
         }
         else {
             node = g_hash_table_lookup(priv->delayed_endpoints, GUINT_TO_POINTER(id));
-            if(node == NULL) return;
+            if(node == NULL) {
+                g_debug("astal_wp_wp_object_removed: unknown node %u, ignoring", id);
+                return;
+            }
+            g_debug("Removed pending delayed node %u before it was fully resolved", id);
             g_hash_table_remove(priv->delayed_endpoints, GUINT_TO_POINTER(id));
         }
     } else if (WP_IS_DEVICE(object)) {
         guint id = wp_proxy_get_bound_id(WP_PROXY(object));
         AstalWpDevice *device = g_hash_table_lookup(priv->devices, GUINT_TO_POINTER(id));
-        if(device == NULL) return;
+        if(device == NULL) {
+            g_debug("astal_wp_wp_object_removed: unknown device %u, ignoring", id);
+            return;
+        }
+        g_info("Device %u removed", id);
         g_object_ref(device);
         g_hash_table_remove(priv->devices, GUINT_TO_POINTER(id));
 
         g_signal_emit_by_name(self, "device-removed", device);
         g_object_notify(G_OBJECT(self), "devices");
         g_object_unref(device);
+    } else {
+        g_debug("astal_wp_wp_object_removed: ignoring object of unhandled type");
     }
 }
 
 static void astal_wp_wp_roundtrip_cb(WpCore *core, GAsyncResult *result, AstalWpWp *self) {
+    g_info("Initial pipewire roundtrip complete");
     g_signal_emit_by_name(self, "ready");
 }
 
 static void astal_wp_wp_objm_installed(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
+    g_debug("Object manager installed, initializing default speaker/microphone");
+
     astal_wp_endpoint_init_as_default(self->default_speaker, priv->mixer, priv->defaults,
                                       ASTAL_WP_MEDIA_CLASS_AUDIO_SPEAKER);
     astal_wp_endpoint_init_as_default(self->default_microphone, priv->mixer, priv->defaults,
                                       ASTAL_WP_MEDIA_CLASS_AUDIO_MICROPHONE);
+
+    astal_wp_wp_set_scale(self, self->scale);
     wp_core_sync(priv->core, NULL, (GAsyncReadyCallback)astal_wp_wp_roundtrip_cb, self);
 }
 
@@ -464,14 +530,22 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
     GError *error = NULL;
     wp_object_activate_finish(obj, result, &error);
     if (error) {
-        g_critical("Failed to activate component: %s\n", error->message);
+        g_critical("Failed to activate component: %s", error->message);
+        g_error_free(error);
         return;
     }
 
+    g_debug("Plugin activated (%d pending)", priv->pending_plugins - 1);
+
     if (--priv->pending_plugins == 0) {
+        g_debug("All plugins activated, installing main object manager");
+
         priv->defaults = wp_plugin_find(priv->core, "default-nodes-api");
         priv->mixer = wp_plugin_find(priv->core, "mixer-api");
-        g_object_set(priv->mixer, "scale", self->scale, NULL);
+        if (priv->defaults == NULL || priv->mixer == NULL) {
+            g_warning("Could not find one or more expected plugins (defaults=%p, mixer=%p)",
+                      (void *)priv->defaults, (void *)priv->mixer);
+        }
 
         g_signal_connect_swapped(priv->obj_manager, "object-added",
                                  G_CALLBACK(astal_wp_wp_object_added), self);
@@ -488,9 +562,12 @@ static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, Astal
     GError *error = NULL;
     wp_core_load_component_finish(priv->core, result, &error);
     if (error) {
-        g_critical("Failed to load component: %s\n", error->message);
+        g_critical("Failed to load component: %s", error->message);
+        g_error_free(error);
         return;
     }
+
+    g_debug("Plugin component loaded, activating");
 
     wp_object_activate(obj, WP_PLUGIN_FEATURE_ENABLED, NULL,
                        (GAsyncReadyCallback)astal_wp_wp_plugin_activated, self);
@@ -524,6 +601,7 @@ static gboolean astal_wp_wp_try_reconnect(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
     g_debug("Trying to connect to pipewire.");
     if (!wp_core_connect(priv->core)) {
+        g_warning("Failed to connect to pipewire, retrying in 1 second.");
         g_timeout_add(1000, (GSourceFunc)astal_wp_wp_try_reconnect, self);
     }
     return G_SOURCE_REMOVE;
@@ -532,7 +610,7 @@ static gboolean astal_wp_wp_try_reconnect(AstalWpWp *self) {
 static void astal_wp_wp_core_connected(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    g_debug("Sucessfully connected to pipewire.");
+    g_info("Successfully connected to pipewire.");
 
     priv->metadata_manager = wp_object_manager_new();
     wp_object_manager_request_object_features(priv->metadata_manager, WP_TYPE_GLOBAL_PROXY,
@@ -570,6 +648,7 @@ static void astal_wp_wp_core_connected(AstalWpWp *self) {
                              self);
 
     priv->pending_plugins = 2;
+    g_debug("Loading default-nodes-api and mixer-api plugin components");
     wp_core_load_component(priv->core, "libwireplumber-module-default-nodes-api", "module", NULL,
                            "default-nodes-api", NULL,
                            (GAsyncReadyCallback)astal_wp_wp_plugin_loaded, self);
@@ -583,7 +662,7 @@ static void astal_wp_wp_core_connected(AstalWpWp *self) {
 static void astal_wp_wp_core_disconnected(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
 
-    g_debug("Connection to pipewire lost.");
+    g_warning("Connection to pipewire lost.");
 
     if (priv->metadata) {
         g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);
@@ -597,10 +676,12 @@ static void astal_wp_wp_core_disconnected(AstalWpWp *self) {
     g_clear_object(&priv->metadata);
 
     if (priv->nodes != NULL) {
+        g_debug("Clearing %u node(s) after disconnect", g_hash_table_size(priv->nodes));
         g_hash_table_remove_all(priv->nodes);
     }
 
     if (priv->devices != NULL) {
+        g_debug("Clearing %u device(s) after disconnect", g_hash_table_size(priv->devices));
         g_hash_table_remove_all(priv->devices);
     }
 
@@ -612,6 +693,8 @@ static void astal_wp_wp_core_disconnected(AstalWpWp *self) {
 
 static void astal_wp_wp_init(AstalWpWp *self) {
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    g_debug("Initializing AstalWp");
 
     wp_init(7);
 
@@ -639,6 +722,8 @@ static void astal_wp_wp_init(AstalWpWp *self) {
 static void astal_wp_wp_dispose(GObject *object) {
     AstalWpWp *self = ASTAL_WP_WP(object);
     AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    g_debug("Disposing AstalWp");
 
     if (priv->metadata) {
         g_signal_handler_disconnect(priv->metadata, priv->metadata_handler_id);

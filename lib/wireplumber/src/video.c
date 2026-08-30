@@ -73,6 +73,7 @@ AstalWpEndpoint *astal_wp_video_get_source(AstalWpVideo *self, guint id) {
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_SOURCE)
         return ASTAL_WP_ENDPOINT(node);
+    g_debug("astal_wp_video_get_source: node %u is not a video source", id);
     return NULL;
 }
 
@@ -92,6 +93,7 @@ AstalWpEndpoint *astal_wp_video_get_sink(AstalWpVideo *self, guint id) {
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_SINK)
         return ASTAL_WP_ENDPOINT(node);
+    g_debug("astal_wp_video_get_sink: node %u is not a video sink", id);
     return NULL;
 }
 
@@ -111,6 +113,7 @@ AstalWpStream *astal_wp_video_get_stream(AstalWpVideo *self, guint id) {
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_STREAM)
         return ASTAL_WP_STREAM(node);
+    g_debug("astal_wp_video_get_stream: node %u is not a video stream", id);
     return NULL;
 }
 
@@ -130,6 +133,7 @@ AstalWpStream *astal_wp_video_get_recorder(AstalWpVideo *self, guint id) {
     AstalWpNode *node = astal_wp_wp_get_node(priv->wp, id);
     if (astal_wp_node_get_media_class(node) == ASTAL_WP_MEDIA_CLASS_VIDEO_RECORDER)
         return ASTAL_WP_STREAM(node);
+    g_debug("astal_wp_video_get_recorder: node %u is not a video recorder", id);
     return NULL;
 }
 
@@ -148,6 +152,7 @@ AstalWpDevice *astal_wp_video_get_device(AstalWpVideo *self, guint id) {
 
     AstalWpDevice *device = astal_wp_wp_get_device(priv->wp, id);
     if (astal_wp_device_get_device_type(device) == ASTAL_WP_DEVICE_TYPE_VIDEO) return device;
+    g_debug("astal_wp_video_get_device: device %u is not a video device", id);
     return NULL;
 }
 

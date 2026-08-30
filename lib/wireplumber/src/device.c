@@ -137,6 +137,8 @@ void astal_wp_device_set_active_profile_id(AstalWpDevice *self, int profile_id) 
     g_return_if_fail(ASTAL_WP_IS_DEVICE(self));
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
+    g_debug("Setting active profile id to %d for device %u", profile_id, self->id);
+
     WpSpaPodBuilder *builder =
         wp_spa_pod_builder_new_object("Spa:Pod:Object:Param:Profile", "Profile");
     wp_spa_pod_builder_add_property(builder, "index");
@@ -227,6 +229,10 @@ AstalWpRoute *astal_wp_device_get_route(AstalWpDevice *self, gint id) {
 void astal_wp_device_set_route(AstalWpDevice *self, AstalWpRoute *route, guint card_device) {
     g_return_if_fail(ASTAL_WP_IS_DEVICE(self));
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
+
+    g_debug("Setting route index %d for device %u, card device %u",
+            route != NULL ? astal_wp_route_get_index(route) : -1, self->id, card_device);
+
     WpSpaPodBuilder *builder = wp_spa_pod_builder_new_object("Spa:Pod:Object:Param:Route", "Route");
     wp_spa_pod_builder_add_property(builder, "index");
     wp_spa_pod_builder_add_int(builder, astal_wp_route_get_index(route));
@@ -400,7 +406,10 @@ static void astal_wp_device_update_profiles(AstalWpDevice *self) {
 
     WpIterator *iter =
         wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "EnumProfile", NULL);
-    if (iter == NULL) return;
+    if (iter == NULL) {
+        g_debug("astal_wp_device_update_profiles: no EnumProfile params for device %u", self->id);
+        return;
+    }
     GValue profile = G_VALUE_INIT;
     while (wp_iterator_next(iter, &profile)) {
         WpSpaPod *pod = g_value_get_boxed(&profile);
@@ -417,6 +426,7 @@ static void astal_wp_device_update_profiles(AstalWpDevice *self) {
     }
     wp_iterator_unref(iter);
 
+    g_debug("Updated %u profile(s) for device %u", g_hash_table_size(priv->profiles), self->id);
     g_object_notify(G_OBJECT(self), "profiles");
 }
 
@@ -425,7 +435,10 @@ static void astal_wp_device_update_active_profile(AstalWpDevice *self) {
 
     WpIterator *iter =
         wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "Profile", NULL);
-    if (iter == NULL) return;
+    if (iter == NULL) {
+        g_debug("astal_wp_device_update_active_profile: no Profile param for device %u", self->id);
+        return;
+    }
     GValue profile = G_VALUE_INIT;
     while (wp_iterator_next(iter, &profile)) {
         WpSpaPod *pod = g_value_get_boxed(&profile);
@@ -438,6 +451,7 @@ static void astal_wp_device_update_active_profile(AstalWpDevice *self) {
     }
     wp_iterator_unref(iter);
 
+    g_debug("Active profile for device %u is now %d", self->id, self->active_profile_id);
     g_object_notify(G_OBJECT(self), "active-profile-id");
 }
 
@@ -447,7 +461,10 @@ static void astal_wp_device_update_routes(AstalWpDevice *self) {
 
     WpIterator *iter =
         wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "EnumRoute", NULL);
-    if (iter == NULL) return;
+    if (iter == NULL) {
+        g_debug("astal_wp_device_update_routes: no EnumRoute params for device %u", self->id);
+        return;
+    }
     GValue route = G_VALUE_INIT;
     while (wp_iterator_next(iter, &route)) {
         WpSpaPod *pod = g_value_get_boxed(&route);
@@ -469,6 +486,7 @@ static void astal_wp_device_update_routes(AstalWpDevice *self) {
     }
     wp_iterator_unref(iter);
 
+    g_debug("Updated %u route(s) for device %u", g_hash_table_size(priv->routes), self->id);
     g_object_notify(G_OBJECT(self), "routes");
 }
 
@@ -477,7 +495,10 @@ static void astal_wp_device_update_active_routes(AstalWpDevice *self) {
 
     WpIterator *iter =
         wp_pipewire_object_enum_params_sync(WP_PIPEWIRE_OBJECT(priv->device), "Route", NULL);
-    if (iter == NULL) return;
+    if (iter == NULL) {
+        g_debug("astal_wp_device_update_active_routes: no Route param for device %u", self->id);
+        return;
+    }
     GValue route = G_VALUE_INIT;
     while (wp_iterator_next(iter, &route)) {
         WpSpaPod *pod = g_value_get_boxed(&route);
@@ -495,13 +516,18 @@ static void astal_wp_device_update_active_routes(AstalWpDevice *self) {
     }
     wp_iterator_unref(iter);
 
+    g_debug("Device %u active routes: input=%d output=%d", self->id, self->input_route_id,
+            self->output_route_id);
     g_object_notify(G_OBJECT(self), "input-route-id");
     g_object_notify(G_OBJECT(self), "output-route-id");
 }
 
 static void astal_wp_device_update_properties(AstalWpDevice *self) {
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
-    if (priv->device == NULL) return;
+    if (priv->device == NULL) {
+        g_debug("astal_wp_device_update_properties: device not set, skipping");
+        return;
+    }
 
     WpPipewireObject *pwo = WP_PIPEWIRE_OBJECT(priv->device);
 
@@ -547,6 +573,7 @@ static void astal_wp_device_update_properties(AstalWpDevice *self) {
 }
 
 static void astal_wp_device_params_changed(AstalWpDevice *self, const gchar *prop) {
+    g_debug("Device %u params changed: %s", self->id, prop);
     g_object_freeze_notify(G_OBJECT(self));
 
     if (!g_strcmp0(prop, "EnumProfile")) {
@@ -577,11 +604,12 @@ void astal_wp_device_constructed(GObject *object) {
 
     g_signal_connect_swapped(priv->device, "notify::properties",
                              G_CALLBACK(astal_wp_device_pw_properties_changed), self);
-    astal_wp_device_params_changed(self, "Props");
-    astal_wp_device_params_changed(self, "EnumProfile");
-    astal_wp_device_params_changed(self, "Profile");
-    astal_wp_device_params_changed(self, "EnumRoute");
-    astal_wp_device_params_changed(self, "Route");
+
+    astal_wp_device_update_properties(self);
+    astal_wp_device_update_profiles(self);
+    astal_wp_device_update_active_profile(self);
+    astal_wp_device_update_routes(self);
+    astal_wp_device_update_active_routes(self);
 
     G_OBJECT_CLASS(astal_wp_device_parent_class)->constructed(object);
 }
