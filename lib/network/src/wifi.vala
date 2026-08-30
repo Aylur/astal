@@ -48,25 +48,15 @@ public class AstalNetwork.Wifi : Object {
         this.device = device;
 
         foreach (var ap in device.access_points) {
-            var new_ap = new AccessPoint(this, ap);
-            _access_points.set(ap.bssid, new_ap);
-            access_point_added(new_ap);
+            add_access_point(ap);
         }
 
         device.access_point_added.connect((access_point) => {
-            var ap = (NM.AccessPoint)access_point;
-            var new_ap = new AccessPoint(this, ap);
-            _access_points.set(ap.bssid, new_ap);
-            access_point_added(new_ap);
-            notify_property("access-points");
+            add_access_point((NM.AccessPoint)access_point);
         });
 
         device.access_point_removed.connect((access_point) => {
-            var ap = (NM.AccessPoint)access_point;
-            var rem_ap = _access_points.get(ap.bssid);
-            _access_points.remove(ap.bssid);
-            access_point_removed(rem_ap);
-            notify_property("access-points");
+            remove_access_point((NM.AccessPoint)access_point);
         });
 
         on_active_connection();
@@ -92,6 +82,36 @@ public class AstalNetwork.Wifi : Object {
         DeviceState old_state,
         NM.DeviceStateReason reaseon
     );
+
+    private void add_access_point(NM.AccessPoint ap) {
+        if (ap.ssid == null) {
+            // NetworkManager creates the AccessPoint before it knows the ssid.
+            // Adding it now would list it as a nameless network, so wait for
+            // the ssid to arrive. A hidden ap never gets one and stays out.
+            ulong id = 0;
+            id = ap.notify["ssid"].connect(() => {
+                if (ap.ssid == null) return;
+                ap.disconnect(id);
+                add_access_point(ap);
+            });
+            return;
+        }
+
+        var new_ap = new AccessPoint(this, ap);
+        _access_points.set(ap.bssid, new_ap);
+        access_point_added(new_ap);
+        notify_property("access-points");
+    }
+
+    private void remove_access_point(NM.AccessPoint ap) {
+        var rem_ap = _access_points.get(ap.bssid);
+        // an ap that never got an ssid was never added
+        if (rem_ap == null) return;
+
+        _access_points.remove(ap.bssid);
+        access_point_removed(rem_ap);
+        notify_property("access-points");
+    }
 
     public void scan() {
         scanning = true;
