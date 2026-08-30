@@ -11,6 +11,11 @@ public Bluetooth get_default() {
  * Manager object for `org.bluez`.
  */
 public class AstalBluetooth.Bluetooth : Object {
+    // one icon per state, each named after the state it represents
+    internal const string ICON_ACTIVE = "bluetooth-active-symbolic";
+    internal const string ICON_DISCONNECTED = "bluetooth-disconnected-symbolic";
+    internal const string ICON_DISABLED = "bluetooth-disabled-symbolic";
+
     private static Bluetooth _instance;
 
     /**
@@ -68,6 +73,14 @@ public class AstalBluetooth.Bluetooth : Object {
     public bool is_connected { get; private set; default = false; }
 
     /**
+     * Symbolic icon name for the current state:
+     * `bluetooth-disabled-symbolic` when no adapter is powered,
+     * `bluetooth-active-symbolic` when a device is connected, and
+     * `bluetooth-disconnected-symbolic` when powered with nothing connected.
+     */
+    public string icon_name { get; private set; default = ICON_DISABLED; }
+
+    /**
      * The first registered adapter which is usually the only adapter.
      */
     public Adapter? adapter { get { return adapters.nth_data(0); } }
@@ -98,19 +111,13 @@ public class AstalBluetooth.Bluetooth : Object {
             );
 
             foreach (var object in manager.get_objects()) {
-                foreach (var iface in object.get_interfaces()) {
-                    on_interface_added(object, iface);
-                }
+                add_object(object);
             }
 
             manager.interface_added.connect(on_interface_added);
             manager.interface_removed.connect(on_interface_removed);
 
-            manager.object_added.connect((object) => {
-                foreach (var iface in object.get_interfaces()) {
-                    on_interface_added(object, iface);
-                }
-            });
+            manager.object_added.connect(add_object);
 
             manager.object_removed.connect((object) => {
                 foreach (var iface in object.get_interfaces()) {
@@ -152,6 +159,25 @@ public class AstalBluetooth.Bluetooth : Object {
             default:
                 return typeof(DBusProxy);
         }
+    }
+
+    /**
+     * Adds every interface of an object, devices and adapters first.
+     * A Battery1 handled before its Device1 would find no device to attach to.
+     */
+    private void add_object(DBusObject object) {
+        var interfaces = object.get_interfaces();
+        interfaces.sort((a, b) => rank(b) - rank(a));
+
+        foreach (var iface in interfaces) {
+            on_interface_added(object, iface);
+        }
+    }
+
+    private static int rank(DBusInterface iface) {
+        if (iface is IAdapter) return 2;
+        if (iface is IDevice) return 2;
+        return 1;
     }
 
     private void on_interface_added(DBusObject object, DBusInterface iface) {
@@ -196,6 +222,11 @@ public class AstalBluetooth.Bluetooth : Object {
             adapter_removed(adapter_obj);
         }
 
+        if (iface is IBattery) {
+            var device = _devices.lookup(iface.g_object_path);
+            if (device != null) device.set_battery(null);
+        }
+
         sync();
     }
 
@@ -211,6 +242,14 @@ public class AstalBluetooth.Bluetooth : Object {
             if (connected != is_connected) {
                 is_connected = connected;
             }
+        }
+
+        if (!powered) {
+            icon_name = ICON_DISABLED;
+        } else if (connected) {
+            icon_name = ICON_ACTIVE;
+        } else {
+            icon_name = ICON_DISCONNECTED;
         }
     }
 

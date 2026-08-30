@@ -113,8 +113,8 @@ public class AstalBluetooth.Adapter : Object {
      *
      * Possible errors: `InvalidArguments`, `Failed`.
      */
-    public void remove_device(Device device) throws Error {
-        proxy.remove_device(device.object_path);
+    public async void remove_device(Device device) throws Error {
+        yield proxy.remove_device(device.object_path);
     }
 
     /**
@@ -122,8 +122,8 @@ public class AstalBluetooth.Adapter : Object {
      *
      * Possible errors: `NotReady`, `Failed`.
      */
-    public void start_discovery() throws Error {
-        proxy.start_discovery();
+    public async void start_discovery() throws Error {
+        yield proxy.start_discovery();
     }
 
     /**
@@ -131,7 +131,7 @@ public class AstalBluetooth.Adapter : Object {
      *
      * Possible errors: `NotReady`, `Failed`, `NotAuthorized`.
      */
-    public void stop_discovery() throws Error {
-        proxy.stop_discovery();
+    public async void stop_discovery() throws Error {
+        yield proxy.stop_discovery();
     }
 }
