@@ -4,7 +4,14 @@ public class Notification : Object {
 
   private ExtIdleNotificationV1 notification;
 
+  /*
+   * Emitted when the seat has been inactive for at least the duration of the timout of this Notification
+   */
   public signal void idled();
+
+  /*
+   * Emitted when the seat stops being inactive
+   */
   public signal void resumed();
 
   private void handle_idled() {

@@ -22,6 +22,7 @@ documentation will vary depending on the language they are used in.
   requests to greetd
 - [Hyprland](https://docs.astal.dev/hyprland): Library and cli tool for Hyprland
   IPC socket
+- [IdleNotify](https://docs.astal.dev/idle-notify): Library implementing the ext-idle-notify-v1 wayland protocol
 - [Mpris](https://docs.astal.dev/mpris): Library and cli tool for controlling
   media players
 - [Network](https://docs.astal.dev/network): NetworkManager wrapper library
@@ -34,6 +35,7 @@ documentation will vary depending on the language they are used in.
 - [River](https://docs.astal.dev/river): Library and cli tool for getting status
   information of the river wayland compositor
 - [Tray](https://docs.astal.dev/tray): A systemtray library and cli tool
+- [Wayland](https://docs.astal.dev/wl): This library provides a framework for other libs implementing wayland protocols
 - [WirePlumber](https://docs.astal.dev/wireplumber): A library for audio control
   using wireplumber
 
