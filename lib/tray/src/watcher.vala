@@ -46,6 +46,10 @@ internal class StatusNotifierWatcher : Object {
         if (service[0] == '/') {
             path = service;
             busName = sender;
+        } else if (service.contains("/")) {
+            var parts = service.split("/", 2);
+            busName = parts[0];
+            path = "/" + parts[1];
         } else {
             busName = service;
             path = "/StatusNotifierItem";
