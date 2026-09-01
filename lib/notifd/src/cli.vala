@@ -18,9 +18,9 @@ abstract class NotifdCommand : Command {
             construct {
                 parse.connect((value) => {
                     switch (value) {
-                        case "low": urgency = Urgency.LOW; break;
-                        case "normal": urgency = Urgency.NORMAL; break;
-                        case "critical": urgency = Urgency.CRITICAL; break;
+                        case "low": urgency = Urgency.LOW; return null;
+                        case "normal": urgency = Urgency.NORMAL; return null;
+                        case "critical": urgency = Urgency.CRITICAL; return null;
                         default: return "Level must be one of: 'low', 'normal', 'critical'";
                     }
                 });
@@ -55,23 +55,23 @@ abstract class NotifdCommand : Command {
                                         break;
                                     default: return "Invalid boolean value. Must be 'true' or 'false'";
                                 }
-                                break;
+                                return null;
                             }
                             case "int": {
                                 hints.set(name, new Variant.int32(int.parse(parts[2])));
-                                break;
+                                return null;
                             }
                             case "double": {
                                 hints.set(name, new Variant.double(double.parse(parts[2])));
-                                break;
+                                return null;
                             }
                             case "string": {
                                 hints.set(name, new Variant.string(parts[2]));
-                                break;
+                                return null;
                             }
                             case "variant": {
                                 hints.set(name, Variant.parse(VariantType.VARIANT, parts[2]));
-                                break;
+                                return null;
                             }
                             default: return @"Invalid hint type '$vtype'. Must be one of: boolean, int, double, string, variant";
                         }
