@@ -5,3 +5,4 @@ result-dev
 .cache/
 test.sh
 tmp/
+.vscode/
