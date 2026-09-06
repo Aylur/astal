@@ -36,6 +36,7 @@
       tray = mkPkg ./lib/tray;
       wireplumber = mkPkg ./lib/wireplumber;
       wl = mkPkg ./lib/wl;
+      workspace = mkPkg ./lib/workspace;
     });
 
     devShells = forAllSystems (system:

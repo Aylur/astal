@@ -74,6 +74,7 @@ export default defineConfig({
           { text: "River", link: "/guide/libraries/river" },
           { text: "Tray", link: "/guide/libraries/tray" },
           { text: "WirePlumber", link: "/guide/libraries/wireplumber" },
+          { text: "Workspace", link: "/guide/libraries/workspace" },
         ],
       },
     ],
