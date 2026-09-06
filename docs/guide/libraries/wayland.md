@@ -1,6 +1,7 @@
 # AstalWl
 
-This library provides a framework for other libs implementing wayland protocols. It is not intended to be used directly.
+This library provides a framework for other libs implementing wayland protocols.
+It is not intended to be used directly.
 
 ## Usage
 
@@ -15,6 +16,15 @@ You can browse the [AstalWl reference](https://docs.astal.dev/wl).
     ```sh [<i class="devicon-archlinux-plain"></i> Arch]
     sudo pacman -Syu meson vala valadoc wayland-client
     ```
+
+    ```sh [<i class="devicon-fedora-plain"></i> Fedora]
+    sudo dnf install meson vala valadoc wayland-devel wayland-protocols-devel gobject-introspection-devel
+    ```
+
+    ```sh [<i class="devicon-ubuntu-plain"></i> Ubuntu]
+    sudo apt install meson valac valadoc libwayland-dev wayland-protocols gobject-introspection
+    ```
+
     :::
 
 2. clone repo
