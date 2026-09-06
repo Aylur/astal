@@ -11,7 +11,6 @@ in
     packages = [
       astal.quarrel
       astal.wl
-      pkgs.gtk4
       pkgs.json-glib
     ];
 

@@ -117,7 +117,6 @@ if get_option('cli')
   executable(
     name,
     ['src/cli.vala', sources],
-    vala_args: ['-D', 'NO_GTK'],
     dependencies: deps + protocol_deps + cli_deps,
     install: true,
   )
