@@ -53,7 +53,7 @@ public class Hyprland : Object {
         return _workspaces.get(id);
     }
     public Client? get_client(string address) {
-        if ((address == "") || (address == null)) return null;
+        if (address == "") return null;
 
         if (address.substring(0, 2) == "0x") return _clients.get(address.substring(2, -1));
 
@@ -253,7 +253,7 @@ public class Hyprland : Object {
                 .get_object().get_member("id").get_int());
 
         focused_client = get_client(Json.from_string(message("j/activewindow"))
-                .get_object().get_member("address").get_string());
+                .get_object().get_member("address")?.get_string() ?? "");
     }
 
     ~Hyprland() {
