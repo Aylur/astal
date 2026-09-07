@@ -144,8 +144,8 @@ public class Hyprland : Object {
                         } catch (Error err) {
                             critical(err.message);
                         }
+                        watch_socket(stream);
                     });
-                    watch_socket(stream);
                 } catch (Error err) {
                     critical(err.message);
                 }
@@ -332,8 +332,10 @@ public class Hyprland : Object {
                 break;
             }
             case "monitorremoved": {
-                var id = get_monitor_by_name(args[1]).id;
-                _monitors.get(id).removed();
+                var monitor = get_monitor_by_name(args[1]);
+                if (monitor == null) break;
+                var id = monitor.id;
+                monitor.removed();
                 _monitors.remove(id);
                 monitor_removed(id);
                 notify_property("monitors");
