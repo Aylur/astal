@@ -32,7 +32,7 @@ public class Notifier : Object {
     public Notification get_idle_notification_for_seat(uint timeout, AstalWl.Seat seat) {
         assert(this.notifier != null);
         assert(seat != null);
-        return new Notification(this.notifier.get_idle_notification(timeout, seat.get_wl_seat())); 
+        return new Notification(this.notifier.get_idle_notification(timeout, seat.get_wl_seat()), timeout);
     }
     
     /**
@@ -51,7 +51,7 @@ public class Notifier : Object {
         assert(this.notifier != null);
         assert(seat != null);
         assert(this.notifier.get_version() >= 2);
-        return new Notification(this.notifier.get_input_idle_notification(timeout, seat.get_wl_seat())); 
+        return new Notification(this.notifier.get_input_idle_notification(timeout, seat.get_wl_seat()), timeout);
     }
     
     /**
