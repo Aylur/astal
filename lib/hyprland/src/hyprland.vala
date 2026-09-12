@@ -138,6 +138,9 @@ public class Hyprland : Object {
         stream.read_line_async.begin(Priority.DEFAULT, null, (_, res) => {
                 try {
                     var line = stream.read_line_async.end(res);
+                    if (line == null) {
+                        return;
+                    }
                     handle_event.begin(line, (_, res) => {
                         try {
                             handle_event.end(res);
