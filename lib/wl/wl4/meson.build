@@ -17,7 +17,7 @@ api_version = '0.1'
 gir_name = 'AstalWl4-0.1.gir'
 typelib_name = 'AstalWl4-0.1.typelib'
 
-add_project_arguments('-DG_LOG_DOMAIN="astal-wl4"', language: 'c')
+add_project_arguments('-DG_LOG_DOMAIN="AstalWl4"', language: 'c')
 
 config = configure_file(
   input: 'src/config.vala.in',
@@ -37,12 +37,10 @@ deps = [
   dependency('gio-2.0'),
   dependency('astal-wl-0.1'),
   dependency('wayland-client'),
-  dependency('gtk4-wayland')
+  dependency('gtk4-wayland'),
 ]
 
-sources = [config] + files(
-  'src/match.vala'
-)
+sources = [config] + files('src/match.vala')
 
 lib = library(
   name,
