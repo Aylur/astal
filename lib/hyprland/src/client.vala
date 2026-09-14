@@ -22,6 +22,7 @@ public class Client : Object {
     public bool pinned { get; private set; }
     public Fullscreen fullscreen { get; private set; }
     public Fullscreen fullscreen_client { get; private set; }
+    public bool inhibiting_idle { get; private set; }
 
     // TODO: public Group[] grouped { get; private set; }
     // TODO: public Tag[] tags { get; private set; }
@@ -50,6 +51,7 @@ public class Client : Object {
         height = (int)obj.get_array_member("size").get_int_element(1);
         fullscreen = (Fullscreen)obj.get_int_member("fullscreen");
         fullscreen_client = (Fullscreen)obj.get_int_member("fullscreenClient");
+        inhibiting_idle = obj.get_boolean_member("inhibitingIdle");
 
         workspace = hyprland.get_workspace((int)obj.get_object_member("workspace").get_int_member("id"));
         monitor = hyprland.get_monitor((int)obj.get_int_member("monitor"));
