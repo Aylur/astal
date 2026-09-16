@@ -47,6 +47,9 @@ private class GetWlOutputStateMachine {
             with_connector();
         } else {
             debug("delayed with_connector");
+            // This assumes that the next set of this property will have the name and it will not change.
+            // On a conforming Wayland compositor either this is true or invalidate will come first (which we also handle)
+            // though theoretically this could lead to the state machine never finishing.
             monitor_connect_connector = monitor.notify["connector"].connect(this.with_connector);
         }
     }
@@ -65,6 +68,9 @@ private class GetWlOutputStateMachine {
             finish();
         } else {
             debug("delayed finish");
+            // Similarly to the above, this assumes AstalWl's registry will receive the corresponding output and its name.
+            // A conforming Wayland compositor will keep all registries in sync, so either this is true or the Gdk.Monitor will invalidate (which we also handle)
+            // though theoretically a desync could lead to the state machine never finishing here as well.
             registry_connect_add_output = registry.output_list_model.items_changed.connect(this.handle_new_output);
         }
     }
