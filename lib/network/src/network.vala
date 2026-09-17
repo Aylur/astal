@@ -15,6 +15,7 @@ public class AstalNetwork.Network : Object {
 
     public Wifi? wifi { get; private set; }
     public Wired? wired { get; private set; }
+    public Vpn vpn { get; private set; }
     public Primary primary { get; private set; }
 
     public Connectivity connectivity {
@@ -33,6 +34,8 @@ public class AstalNetwork.Network : Object {
 
             var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
             if (ethernet != null) wired = new Wired(ethernet);
+
+            vpn = new Vpn(client);
 
             sync();
             client.notify["primary-connection"].connect(sync);
@@ -76,12 +79,14 @@ public class AstalNetwork.Network : Object {
 public enum AstalNetwork.Primary {
     UNKNOWN,
     WIRED,
-    WIFI;
+    WIFI,
+    VPN;
 
     public string to_string() {
         switch (this) {
             case WIFI: return "wifi";
             case WIRED: return "wired";
+            case VPN: return "vpn";
             default: return "unknown";
         }
     }
@@ -90,6 +95,8 @@ public enum AstalNetwork.Primary {
         switch (type) {
             case "802-11-wireless": return Primary.WIFI;
             case "802-3-ethernet": return Primary.WIRED;
+            case "vpn":
+            case "wireguard": return Primary.VPN;
             default: return Primary.UNKNOWN;
         }
     }
