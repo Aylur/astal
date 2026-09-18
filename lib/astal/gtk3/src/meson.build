@@ -136,6 +136,13 @@ custom_target(
   install_dir: libdir / 'girepository-1.0',
 )
 
+install_data(
+  meson.project_name() + '.deps',
+  install_dir: get_option('datadir') / 'vala' / 'vapi',
+  rename: meson.project_name() + '-' + api_version + '.deps',
+)
+
+
 import('pkgconfig').generate(
   lib,
   name: meson.project_name(),
