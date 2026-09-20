@@ -17,5 +17,5 @@ in
     authors = "kotontrion";
     description = "Astal Wayland Idle Notifiction Library";
     dependencies = ["AstalWl-0.1"];
-    repo-path = "astal/idle-notify";
+    repo-path = "idle-notify";
   }

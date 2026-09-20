@@ -37,6 +37,7 @@
       tray = mkPkg ./lib/tray;
       wireplumber = mkPkg ./lib/wireplumber;
       wl = mkPkg ./lib/wl/wl;
+      wl4 = mkPkg ./lib/wl/wl4;
       workspace = mkPkg ./lib/workspace;
     });
 
