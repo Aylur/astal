@@ -92,6 +92,7 @@ public class WorkspaceManager : Object, ListModel {
 
     /**
      * Get a proxy object which filters workspaces to those that belong to a group on the specified Wayland output.
+     * You can get an AstalWl.Output for use with this function by using the AstalWl4 helper library, if you're using GTK 4.
      */
     public WorkspaceMonitorView for_output(AstalWl.Output output) {
         return new WorkspaceMonitorView(this, output);
