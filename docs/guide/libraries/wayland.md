@@ -6,9 +6,9 @@ however there also exists a helper library to map GTK 4 objects to AstalWl named
 
 ## Usage
 
-You can browse the [AstalWl reference](https://docs.astal.dev/wl/wl).
+You can browse the [AstalWl reference](https://docs.astal.dev/wl).
 
-For GTK 4 support, you can browse the [AstalWl4 reference](https://docs.astal.dev/wl/wl4).
+For GTK 4 support, you can browse the [AstalWl4 reference](https://docs.astal.dev/wl4).
 
 ## Installation
 

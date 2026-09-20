@@ -19,5 +19,5 @@ in
     authors = "Mabi";
     description = "Astal Wayland Workspace";
     dependencies = ["AstalWl-0.1"];
-    repo-path = "astal/workspace";
+    repo-path = "workspace";
   }

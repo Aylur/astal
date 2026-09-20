@@ -33,4 +33,5 @@ in
     authors = "kotontrion";
     name = "AstalWl";
     description = "A central wayland connection manager for the other libs.";
+    repo-path = "wl/wl";
   }
