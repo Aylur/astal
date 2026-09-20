@@ -68,6 +68,7 @@ foreach (var workspace in ws.workspaces) {
 1. install dependencies
 
     Note that the library depends on AstalWl, which must be installed before this one.
+    In addition, the AstalWl4 helper library is useful if you want to filter workspaces per GDK monitor.
 
     :::code-group
 
