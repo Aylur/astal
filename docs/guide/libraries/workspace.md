@@ -1,7 +1,7 @@
 # Workspace
 
-Library for monitoring and manipulating the compositor's workspaces,
-based on the [ext-workspace-v1](https://wayland.app/protocols/ext-workspace-v1) protocol.
+Library for monitoring and manipulating the compositor's workspaces, based on
+the [ext-workspace-v1](https://wayland.app/protocols/ext-workspace-v1) protocol.
 
 ## Usage
 
@@ -16,11 +16,11 @@ astal-workspace --help
 ### Library
 
 The AstalWorkspace library is initialized asynchronously; therefore, all lists
-(e.g. `workspaces`) are initially empty.
-This is usually not an issue. When you bind to these values, your widget will
-receive updates as soon as the compositor finishes sending the data.
-However, this means that you won't get the correct data when accessing the library's properties at
-the top level. You can listen for the "updated" signal to accomodate this.
+(e.g. `workspaces`) are initially empty. This is usually not an issue. When you
+bind to these values, your widget will receive updates as soon as the compositor
+finishes sending the data. However, this means that you won't get the correct
+data when accessing the library's properties at the top level. You can listen
+for the "updated" signal to accomodate this.
 
 :::code-group
 
@@ -30,7 +30,7 @@ import Workspace from "gi://AstalWorkspace"
 const ws = Workspace.get_default()
 
 for (const workspace of ws.workspaces) {
-    print(workspace.name);
+    print(workspace.name)
 }
 ```
 
@@ -67,8 +67,9 @@ foreach (var workspace in ws.workspaces) {
 
 1. install dependencies
 
-    Note that the library depends on AstalWl, which must be installed before this one.
-    In addition, the AstalWl4 helper library is useful if you want to filter workspaces per GDK monitor.
+    Note that the library depends on AstalWl, which must be installed before
+    this one. In addition, the AstalWl4 helper library is useful if you want to
+    filter workspaces per GDK monitor.
 
     :::code-group
 

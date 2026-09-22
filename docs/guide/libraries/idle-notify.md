@@ -1,6 +1,8 @@
 # IdleNotify
 
-Library implementing the `ext-idle-notify-v1` wayland protocol.
+Library implementing the
+[ext-idle-notify-v1](https://wayland.app/protocols/ext-idle-notify-v1) wayland
+protocol.
 
 ## Usage
 

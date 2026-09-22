@@ -96,9 +96,9 @@ brightness.screen.brightness = 0.5f;
 
     ::: info
 
-    The CLI target also depends on
-    [libquarrel](https://docs.astal.dev/quarrel). Install Quarrel first, or
-    configure with `-Dcli=false` if you only need the library.
+    The CLI target also depends on [libquarrel](https://docs.astal.dev/quarrel).
+    Install Quarrel first, or configure with `-Dcli=false` if you only need the
+    library.
 
     The default backend uses `systemd-logind` to write brightness values. To
     install udev rules instead, configure with `-Dbrightness-backend=UDEV`.

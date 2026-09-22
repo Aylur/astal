@@ -1,14 +1,15 @@
 # AstalWl
 
 This library provides a framework for other libs implementing wayland protocols.
-The core (AstalWl itself) is not intended to be used directly,
-however there also exists a helper library to map GTK 4 objects to AstalWl named AstalWl4.
+The core (AstalWl itself) is not intended to be used directly, however there
+also exists a helper library to map GTK4 objects to AstalWl named AstalWl4.
 
 ## Usage
 
 You can browse the [AstalWl reference](https://docs.astal.dev/wl).
 
-For GTK 4 support, you can browse the [AstalWl4 reference](https://docs.astal.dev/wl4).
+For GTK 4 support, you can browse the
+[AstalWl4 reference](https://docs.astal.dev/wl4).
 
 ## Installation
 
@@ -62,4 +63,5 @@ For GTK 4 support, you can browse the [AstalWl4 reference](https://docs.astal.de
     meson install -C build
     ```
 
-    For AstalWl4, make sure the base AstalWl is installed first and then do the install step in the directory `lib/wl/wl4`.
+    For AstalWl4, make sure the base AstalWl is installed first and then do the
+    install step in the directory `lib/wl/wl4`.

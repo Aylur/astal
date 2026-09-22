@@ -93,9 +93,9 @@ notifd.notified.connect((_, id) => {
 
     ::: info
 
-    The CLI target also depends on
-    [libquarrel](https://docs.astal.dev/quarrel). Install Quarrel first, or
-    configure with `-Dcli=false` if you only need the library.
+    The CLI target also depends on [libquarrel](https://docs.astal.dev/quarrel).
+    Install Quarrel first, or configure with `-Dcli=false` if you only need the
+    library.
 
     :::
 
