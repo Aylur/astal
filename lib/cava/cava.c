@@ -440,7 +440,6 @@ static void astal_cava_cava_set_property(GObject* object, guint property_id, con
             astal_cava_cava_set_input(self, g_value_get_enum(value));
             break;
         case ASTAL_CAVA_CAVA_PROP_SOURCE:
-            g_free(self->audio_source);
             astal_cava_cava_set_source(self, g_value_get_string(value));
             break;
         case ASTAL_CAVA_CAVA_PROP_CHANNELS:
