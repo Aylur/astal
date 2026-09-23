@@ -13,9 +13,12 @@ public class AstalNetwork.Network : Object {
 
     public NM.Client client { get; private set; }
 
-    public Wifi? wifi { get; private set; }
-    public Wired? wired { get; private set; }
+    public Wifi wifi { get; private set; }
+    public Wired wired { get; private set; }
     public Primary primary { get; private set; }
+    private bool sync_queued = false;
+    private bool sync_wifi_queued = false;
+    private bool sync_wired_queued = false;
 
     public Connectivity connectivity {
         get { return (Connectivity)client.connectivity; }
@@ -28,15 +31,17 @@ public class AstalNetwork.Network : Object {
     construct {
         try {
             client = new NM.Client();
-            var wifi_device = (NM.DeviceWifi)get_device(NM.DeviceType.WIFI);
-            if (wifi_device != null) wifi = new Wifi(wifi_device);
-
-            var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
-            if (ethernet != null) wired = new Wired(ethernet);
+            wifi = new Wifi();
+            wired = new Wired();
+            sync_devices();
 
             sync();
-            client.notify["primary-connection"].connect(sync);
-            client.notify["activating-connection"].connect(sync);
+            client.notify["primary-connection"].connect(queue_sync_all);
+            client.notify["activating-connection"].connect(queue_sync_all);
+            client.device_added.connect((device) => {
+                queue_sync_device_type(device.device_type);
+            });
+            client.device_removed.connect(on_device_removed);
 
             client.notify["state"].connect(() => notify_property("state"));
             client.notify["connectivity"].connect(() => notify_property("connectivity"));
@@ -58,6 +63,76 @@ public class AstalNetwork.Network : Object {
         if (valid.length > 0) return valid.get(0);
 
         return null;
+    }
+
+    private void queue_sync_all() {
+        sync_wifi_queued = true;
+        sync_wired_queued = true;
+        queue_sync();
+    }
+
+    private void queue_sync() {
+        if (sync_queued) return;
+
+        sync_queued = true;
+        Idle.add(() => {
+            sync_queued = false;
+            if (sync_wifi_queued) sync_wifi();
+            if (sync_wired_queued) sync_wired();
+            sync_wifi_queued = false;
+            sync_wired_queued = false;
+            sync();
+
+            return Source.REMOVE;
+        });
+    }
+
+    private void queue_sync_device_type(NM.DeviceType device_type) {
+        switch (device_type) {
+            case NM.DeviceType.WIFI:
+                sync_wifi_queued = true;
+                break;
+            case NM.DeviceType.ETHERNET:
+                sync_wired_queued = true;
+                break;
+            default:
+                return;
+        }
+
+        queue_sync();
+    }
+
+    private void on_device_removed(NM.Device device) {
+        if (wifi.device == device) {
+            wifi.sync_device(null);
+            notify_property("wifi");
+        }
+
+        if (wired.device == device) {
+            wired.sync_device(null);
+            notify_property("wired");
+        }
+
+        queue_sync_device_type(device.device_type);
+    }
+
+    private void sync_devices() {
+        sync_wifi();
+        sync_wired();
+    }
+
+    private void sync_wifi() {
+        var old_device = wifi.device;
+        var wifi_device = (NM.DeviceWifi)get_device(NM.DeviceType.WIFI);
+        wifi.sync_device(wifi_device);
+        if (old_device != wifi.device) notify_property("wifi");
+    }
+
+    private void sync_wired() {
+        var old_device = wired.device;
+        var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
+        wired.sync_device(ethernet);
+        if (old_device != wired.device) notify_property("wired");
     }
 
     private void sync() {

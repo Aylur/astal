@@ -1,6 +1,7 @@
 public class AstalNetwork.AccessPoint : Object {
     private Wifi wifi;
     public NM.AccessPoint ap;
+    private ulong notify_handler = 0;
 
     public uint bandwidth { get { return ap.bandwidth; } }
     public string bssid { owned get { return ap.bssid; } }
@@ -15,6 +16,8 @@ public class AstalNetwork.AccessPoint : Object {
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
 
     public GenericArray<NM.RemoteConnection> get_connections() {
+        if (wifi.device == null) return new GenericArray<NM.RemoteConnection>();
+
         return (GenericArray<NM.RemoteConnection>)ap.filter_connections(
             wifi.device.client.connections
         );
@@ -43,12 +46,19 @@ public class AstalNetwork.AccessPoint : Object {
         this.wifi = wifi;
         this.ap = ap;
 
-        ap.notify.connect((pspec) => {
+        notify_handler = ap.notify.connect((pspec) => {
             if (get_class().find_property(pspec.name) != null) notify_property(pspec.name);
             if (pspec.name == "strength") icon_name = _icon();
         });
 
         icon_name = _icon();
+    }
+
+    internal void disconnect_signals() {
+        if (notify_handler > 0) {
+            SignalHandler.disconnect(ap, notify_handler);
+            notify_handler = 0;
+        }
     }
 
     /**
@@ -57,6 +67,9 @@ public class AstalNetwork.AccessPoint : Object {
      * Returns whether the connection is the new active connection.
      */
     public async void activate(string? password = null) throws Error {
+        var wifi_device = wifi.device;
+        if (wifi_device == null) return;
+
         var conns = get_connections();
 
         if (conns.length > 0) {
@@ -70,7 +83,7 @@ public class AstalNetwork.AccessPoint : Object {
 
             yield ap.client.activate_connection_async(
                 first_conn,
-                wifi.device,
+                wifi_device,
                 get_path(),
                 null
             );
@@ -89,7 +102,7 @@ public class AstalNetwork.AccessPoint : Object {
 
             yield ap.client.add_and_activate_connection_async(
                 connection,
-                wifi.device,
+                wifi_device,
                 get_path(),
                 null
             );
