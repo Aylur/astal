@@ -1,0 +1,11 @@
+option(
+  'lib',
+  type: 'boolean',
+  value: true,
+)
+
+option(
+  'cli',
+  type: 'boolean',
+  value: true,
+)
