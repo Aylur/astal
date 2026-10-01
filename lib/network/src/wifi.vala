@@ -48,6 +48,7 @@ public class AstalNetwork.Wifi : Object {
         this.device = device;
 
         foreach (var ap in device.access_points) {
+            if (ap.bssid == null) continue;
             var new_ap = new AccessPoint(this, ap);
             _access_points.set(ap.bssid, new_ap);
             access_point_added(new_ap);
@@ -55,6 +56,7 @@ public class AstalNetwork.Wifi : Object {
 
         device.access_point_added.connect((access_point) => {
             var ap = (NM.AccessPoint)access_point;
+            if (ap.bssid == null) return;
             var new_ap = new AccessPoint(this, ap);
             _access_points.set(ap.bssid, new_ap);
             access_point_added(new_ap);
@@ -63,6 +65,7 @@ public class AstalNetwork.Wifi : Object {
 
         device.access_point_removed.connect((access_point) => {
             var ap = (NM.AccessPoint)access_point;
+            if (ap.bssid == null) return;
             var rem_ap = _access_points.get(ap.bssid);
             _access_points.remove(ap.bssid);
             access_point_removed(rem_ap);
@@ -150,7 +153,7 @@ public class AstalNetwork.Wifi : Object {
         }
 
         var ap = device.active_access_point;
-        if (ap != null) {
+        if (ap != null && ap.bssid != null) {
             active_access_point = _access_points.get(ap.bssid);
             on_active_access_point_notify();
             ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
