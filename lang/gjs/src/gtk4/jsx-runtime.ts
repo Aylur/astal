@@ -30,6 +30,7 @@ const ctors = {
     levelbar: Widget.LevelBar,
     overlay: Widget.Overlay,
     revealer: Widget.Revealer,
+    scroller: Widget.Scroller,
     slider: Widget.Slider,
     stack: Widget.Stack,
     switch: Widget.Switch,
@@ -55,6 +56,7 @@ declare global {
             levelbar: Widget.LevelBarProps
             overlay: Widget.OverlayProps
             revealer: Widget.RevealerProps
+            scroller: Widget.ScrollerProps
             slider: Widget.SliderProps
             stack: Widget.StackProps
             switch: Widget.SwitchProps
