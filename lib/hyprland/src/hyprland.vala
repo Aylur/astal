@@ -46,10 +46,10 @@ public class Hyprland : Object {
     public List<weak Workspace> workspaces { owned get { return _workspaces.get_values(); } }
     public List<weak Client> clients { owned get { return _clients.get_values(); } }
 
-    public Monitor get_monitor(int id) {
+    public Monitor? get_monitor(int id) {
         return _monitors.get(id);
     }
-    public Workspace get_workspace(int id) {
+    public Workspace? get_workspace(int id) {
         return _workspaces.get(id);
     }
     public Client? get_client(string address) {
