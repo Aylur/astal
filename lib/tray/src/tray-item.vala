@@ -594,6 +594,11 @@ public class TrayItem : Object {
             if (pixmap.width < pixmaps[i].width) pixmap = pixmaps[i];
         }
 
+        // Some StatusNotifierItem implementations send a zero-sized pixmap.
+        // GdkPixbuf.from_bytes() asserts width/height > 0, so skip them and
+        // let the icon_name fallback (or the missing-image glyph) take over.
+        if (pixmap.width <= 0 || pixmap.height <= 0) return null;
+
         uint8[] image_data = pixmap.bytes.copy();
 
         for (int i = 0; i < pixmap.width * pixmap.height * 4; i += 4) {
