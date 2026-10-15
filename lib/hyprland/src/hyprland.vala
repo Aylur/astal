@@ -21,11 +21,17 @@ public class Hyprland : Object {
         _instance = h;
 
         h.socket2 = h.connection("socket2");
+        if (h.socket2 == null) {
+            critical("could not connect to the Hyprland event socket");
+            _instance = null;
+            return null;
+        }
         h.watch_socket(new DataInputStream(h.socket2.input_stream));
         try {
             h.init();
         } catch (Error err) {
             critical("could not initialize: %s", err.message);
+            _instance = null;
             return null;
         }
 
