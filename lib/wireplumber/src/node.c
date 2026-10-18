@@ -10,6 +10,7 @@
 #include "glib.h"
 #include "node-private.h"
 #include "wp.h"
+#include <spa/utils/defs.h>
 
 typedef struct {
     WpNode *node;
@@ -155,6 +156,8 @@ void astal_wp_node_set_channel_volume(AstalWpNode *self, const gchar *name, gdou
     g_return_if_fail(ASTAL_WP_IS_NODE(self));
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
+    if(priv->node == NULL) return;
+
     if (priv->lock_channels) {
         astal_wp_node_set_volume(self, volume);
         return;
@@ -226,6 +229,8 @@ void astal_wp_node_set_volume(AstalWpNode *self, gdouble volume) {
     g_return_if_fail(ASTAL_WP_IS_NODE(self));
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
+    if(priv->node == NULL) return;
+
     gboolean ret;
     if (volume >= 1.5) volume = 1.5;
     if (volume <= 0) volume = 0;
@@ -290,6 +295,7 @@ void astal_wp_node_set_volume(AstalWpNode *self, gdouble volume) {
 void astal_wp_node_set_mute(AstalWpNode *self, gboolean mute) {
     g_return_if_fail(ASTAL_WP_IS_NODE(self));
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    if(priv->node == NULL) return;
 
     g_debug("Setting mute=%d for node %u", mute, priv->id);
 
@@ -500,14 +506,15 @@ static void astal_wp_node_state_changed(AstalWpNode *self, WpNodeState old_state
 
 void astal_wp_node_set_node(AstalWpNode *self, WpNode *node) {
     g_return_if_fail(ASTAL_WP_IS_NODE(self));
+    g_return_if_fail(WP_IS_NODE(node) || node == NULL);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
-    if (node != NULL && WP_IS_NODE(node)) {
-        if (priv->node != NULL) {
-            g_signal_handler_disconnect(priv->node, priv->params_signal_handler_id);
-            g_signal_handler_disconnect(priv->node, priv->properties_signal_handler_id);
-            g_signal_handler_disconnect(priv->node, priv->state_change_handler_id);
-        }
-        g_clear_object(&priv->node);
+    if (priv->node != NULL) {
+        g_signal_handler_disconnect(priv->node, priv->params_signal_handler_id);
+        g_signal_handler_disconnect(priv->node, priv->properties_signal_handler_id);
+        g_signal_handler_disconnect(priv->node, priv->state_change_handler_id);
+    }
+    g_clear_object(&priv->node);
+    if (node != NULL) {
         priv->node = g_object_ref(node);
         priv->params_signal_handler_id = g_signal_connect_swapped(
             priv->node, "params-changed", G_CALLBACK(astal_wp_node_params_changed), self);
@@ -517,9 +524,9 @@ void astal_wp_node_set_node(AstalWpNode *self, WpNode *node) {
         priv->state_change_handler_id = g_signal_connect_swapped(
             priv->node, "state-changed", G_CALLBACK(astal_wp_node_state_changed), self);
 
-        astal_wp_node_params_changed(self, "Props");
         astal_wp_node_update_volume(self);
     }
+    astal_wp_node_params_changed(self, "Props");
 }
 
 void astal_wp_node_set_mixer(AstalWpNode *self, WpPlugin *mixer) {
@@ -675,7 +682,24 @@ void astal_wp_node_properties_changed(AstalWpNode *self) {
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
 
     if (priv->node == NULL) {
-        g_debug("astal_wp_node_properties_changed: node not set, skipping");
+        g_debug("astal_wp_node_properties_changed: node not set, resetting node");
+
+        g_free(priv->description);
+        g_free(priv->nick);
+        g_free(priv->node_name);
+        g_free(priv->name);
+        g_free(priv->path);
+
+        priv->id = SPA_ID_INVALID;
+        priv->description = NULL;
+        priv->nick = NULL;
+        priv->node_name = NULL;
+
+        priv->name = NULL;
+        priv->serial = -1;
+        priv->path = NULL;
+
+
         return;
     }
 
