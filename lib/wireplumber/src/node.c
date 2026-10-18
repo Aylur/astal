@@ -524,9 +524,9 @@ void astal_wp_node_set_node(AstalWpNode *self, WpNode *node) {
         priv->state_change_handler_id = g_signal_connect_swapped(
             priv->node, "state-changed", G_CALLBACK(astal_wp_node_state_changed), self);
 
-        astal_wp_node_update_volume(self);
     }
     astal_wp_node_params_changed(self, "Props");
+    astal_wp_node_update_volume(self);
 }
 
 void astal_wp_node_set_mixer(AstalWpNode *self, WpPlugin *mixer) {
