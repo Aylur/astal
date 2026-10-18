@@ -16,6 +16,7 @@ deps = [
   dependency('gobject-2.0'),
   dependency('gio-2.0'),
   dependency('wireplumber-0.5'),
+  dependency('libpipewire-0.3')
 ]
 
 enums = gnome.mkenums_simple(
