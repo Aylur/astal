@@ -10,6 +10,7 @@
 #include "node.h"
 #include "route.h"
 #include "wp.h"
+#include <spa/utils/defs.h>
 
 struct _AstalWpEndpoint {
     AstalWpNode parent_instance;
@@ -328,7 +329,15 @@ static void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self) 
     gchar *media_class_nick = astal_wp_media_class_to_string(media_class);
     guint defaultId;
     g_signal_emit_by_name(priv->default_plugin, "get-default-node", media_class_nick, &defaultId);
+
+    g_debug("default changed for %s: %d -> %d", media_class_nick, id, defaultId);
     g_free(media_class_nick);
+
+    if (defaultId == SPA_ID_INVALID) {
+        g_debug("there is no default node");
+        astal_wp_node_set_node(ASTAL_WP_NODE(self), NULL);
+        return;
+    }
 
     if (defaultId != id) {
         AstalWpNode *default_node = astal_wp_wp_get_node(wp, defaultId);
