@@ -19,6 +19,7 @@ AstalWpEndpoint *astal_wp_endpoint_new_default(AstalWpWp *wp);
 
 void astal_wp_endpoint_init_as_default(AstalWpEndpoint *self, WpPlugin *mixer, WpPlugin *defaults,
                                        AstalWpMediaClass type);
+void astal_wp_endpoint_default_changed_as_default(AstalWpEndpoint *self);
 
 void astal_wp_node_update_default(AstalWpNode *self, gboolean is_default);
 void astal_wp_node_update_volume(AstalWpNode *self);
