@@ -28,17 +28,31 @@ struct _AstalCavaCava {
 };
 
 typedef struct {
+    gatomicrefcount ref_count;
+    GWeakRef self;
     struct cava_plan* plan;
     struct config_params cfg;
     struct audio_data audio_data;
     struct audio_raw audio_raw;
     ptr input_src;
+} AstalCavaWorker;
 
+typedef enum {
+    ASTAL_CAVA_STATE_STOPPED,
+    ASTAL_CAVA_STATE_RUNNING,
+    ASTAL_CAVA_STATE_STOPPING,
+    ASTAL_CAVA_STATE_RESTART_PENDING,
+} AstalCavaState;
+
+typedef struct {
     gboolean constructed;
-    GThread* input_thread;
+    AstalCavaWorker* worker;
+    AstalCavaState state;
+    guint shutdown_timeout_id;
     guint timer_id;
-
 } AstalCavaCavaPrivate;
+
+#define CAVA_SHUTDOWN_TIMEOUT_MS 2000
 
 G_DEFINE_ENUM_TYPE(AstalCavaInput, astal_cava_input,
                    G_DEFINE_ENUM_VALUE(ASTAL_CAVA_INPUT_FIFO, "fifo"),
@@ -85,6 +99,117 @@ static enum input_method astal_input_to_cava(AstalCavaInput input) {
 
 G_DEFINE_TYPE_WITH_PRIVATE(AstalCavaCava, astal_cava_cava, G_TYPE_OBJECT)
 
+static const char* astal_cava_state_name(AstalCavaState state) {
+    switch (state) {
+        case ASTAL_CAVA_STATE_STOPPED:
+            return "stopped";
+        case ASTAL_CAVA_STATE_RUNNING:
+            return "running";
+        case ASTAL_CAVA_STATE_STOPPING:
+            return "stopping";
+        case ASTAL_CAVA_STATE_RESTART_PENDING:
+            return "restart-pending";
+        default:
+            return "unknown";
+    }
+}
+
+static void astal_cava_worker_unref(AstalCavaWorker* worker) {
+    if (!g_atomic_ref_count_dec(&worker->ref_count)) return;
+
+    g_debug("worker %p: releasing resources", worker);
+    g_weak_ref_clear(&worker->self);
+    cava_destroy(worker->plan);
+    audio_raw_clean(&worker->audio_raw);
+    free(worker->audio_data.cava_in);
+    g_free(worker->audio_data.source);
+    free_config(&worker->cfg);
+    g_free(worker);
+}
+
+static void astal_cava_cava_start(AstalCavaCava* self);
+static void astal_cava_cava_stop(AstalCavaCava* self, AstalCavaState state);
+
+static gboolean astal_cava_worker_finished(gpointer data) {
+    AstalCavaWorker* worker = data;
+    AstalCavaCava* self = g_weak_ref_get(&worker->self);
+
+    g_debug("worker %p: completion dispatched on main context", worker);
+    if (self) {
+        AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+        if (priv->worker == worker &&
+            (priv->state == ASTAL_CAVA_STATE_STOPPING ||
+             priv->state == ASTAL_CAVA_STATE_RESTART_PENDING)) {
+            g_debug("worker %p: shutdown completed in state %s", worker,
+                    astal_cava_state_name(priv->state));
+            if (priv->shutdown_timeout_id) {
+                g_source_remove(priv->shutdown_timeout_id);
+                priv->shutdown_timeout_id = 0;
+            }
+
+            gboolean restart = priv->state == ASTAL_CAVA_STATE_RESTART_PENDING && self->active;
+            priv->worker = NULL;
+            priv->state = ASTAL_CAVA_STATE_STOPPED;
+            if (restart)
+                g_debug("worker %p: starting replacement after clean shutdown", worker);
+            astal_cava_worker_unref(worker);
+
+            astal_cava_worker_unref(worker);
+            if (restart) astal_cava_cava_start(self);
+            g_object_unref(self);
+            return G_SOURCE_REMOVE;
+        }
+        g_debug("worker %p: completion is stale (current worker %p, state %s)", worker,
+                priv->worker, astal_cava_state_name(priv->state));
+        g_object_unref(self);
+    } else {
+        g_debug("worker %p: owner no longer exists", worker);
+    }
+
+    astal_cava_worker_unref(worker);
+    return G_SOURCE_REMOVE;
+}
+
+static gpointer astal_cava_worker_run(gpointer data) {
+    AstalCavaWorker* worker = data;
+    g_debug("worker %p: input thread started", worker);
+    worker->input_src(&worker->audio_data);
+    g_debug("worker %p: input function returned; scheduling completion", worker);
+    g_idle_add(astal_cava_worker_finished, worker);
+    return NULL;
+}
+
+static gboolean astal_cava_cava_shutdown_timeout(gpointer data) {
+    AstalCavaCava* self = ASTAL_CAVA_CAVA(data);
+    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    AstalCavaWorker* worker = priv->worker;
+    priv->shutdown_timeout_id = 0;
+
+    if (!worker || (priv->state != ASTAL_CAVA_STATE_STOPPING &&
+                    priv->state != ASTAL_CAVA_STATE_RESTART_PENDING)) {
+        g_debug("shutdown timeout ignored (worker %p, state %s)", worker,
+                astal_cava_state_name(priv->state));
+        return G_SOURCE_REMOVE;
+    }
+
+    g_debug("worker %p: timeout expired in state %s", worker,
+            astal_cava_state_name(priv->state));
+    priv->worker = NULL;
+    gboolean restart = priv->state == ASTAL_CAVA_STATE_RESTART_PENDING && self->active;
+    priv->state = ASTAL_CAVA_STATE_STOPPED;
+    astal_cava_worker_unref(worker);
+
+    if (restart) {
+        g_warning("input thread did not stop within %u ms; proceeding with restart",
+                  CAVA_SHUTDOWN_TIMEOUT_MS);
+        astal_cava_cava_start(self);
+    } else {
+        g_warning("input thread did not stop within %u ms; leaving it detached",
+                  CAVA_SHUTDOWN_TIMEOUT_MS);
+    }
+    return G_SOURCE_REMOVE;
+}
+
 typedef enum {
     ASTAL_CAVA_CAVA_PROP_VALUES = 1,
     ASTAL_CAVA_CAVA_PROP_ACTIVE,
@@ -108,40 +233,61 @@ static GParamSpec* astal_cava_cava_properties[ASTAL_CAVA_CAVA_N_PROPERTIES] = {
 
 static gboolean exec_cava(AstalCavaCava* self) {
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    AstalCavaWorker* worker = priv->worker;
 
-    pthread_mutex_lock(&priv->audio_data.lock);
-    cava_execute(priv->audio_data.cava_in, priv->audio_data.samples_counter,
-                 priv->audio_raw.cava_out, priv->plan);
-    if (priv->audio_data.samples_counter > 0) priv->audio_data.samples_counter = 0;
-    pthread_mutex_unlock(&priv->audio_data.lock);
+    pthread_mutex_lock(&worker->audio_data.lock);
+    cava_execute(worker->audio_data.cava_in, worker->audio_data.samples_counter,
+                 worker->audio_raw.cava_out, worker->plan);
+    if (worker->audio_data.samples_counter > 0) worker->audio_data.samples_counter = 0;
+    pthread_mutex_unlock(&worker->audio_data.lock);
 
     g_array_remove_range(self->values, 0, self->values->len);
-    g_array_insert_vals(self->values, 0, priv->audio_raw.cava_out, priv->audio_raw.number_of_bars);
+    g_array_insert_vals(self->values, 0, worker->audio_raw.cava_out, worker->audio_raw.number_of_bars);
 
     g_object_notify(G_OBJECT(self), "values");
 
     return G_SOURCE_CONTINUE;
 }
 
-static void astal_cava_cava_cleanup(AstalCavaCava* self) {
+static void astal_cava_cava_stop(AstalCavaCava* self, AstalCavaState state) {
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
 
-    g_source_remove(priv->timer_id);
-    pthread_mutex_lock(&priv->audio_data.lock);
-    priv->audio_data.terminate = 1;
-    pthread_mutex_unlock(&priv->audio_data.lock);
-    g_thread_join(priv->input_thread);
+    if (priv->timer_id) {
+        g_source_remove(priv->timer_id);
+        priv->timer_id = 0;
+    }
+    if (!priv->worker) {
+        priv->state = ASTAL_CAVA_STATE_STOPPED;
+        g_debug("stop requested with no worker; state is stopped");
+        return;
+    }
 
-    cava_destroy(priv->plan);
-    audio_raw_clean(&priv->audio_raw);
-    free(priv->audio_data.cava_in);
-    g_free(priv->audio_data.source);
+    AstalCavaWorker* worker = priv->worker;
+    if (priv->state == ASTAL_CAVA_STATE_STOPPING ||
+        priv->state == ASTAL_CAVA_STATE_RESTART_PENDING) {
+        g_debug("worker %p: shutdown state %s -> %s", worker,
+                astal_cava_state_name(priv->state), astal_cava_state_name(state));
+        priv->state = state;
+        return;
+    }
 
-    free_config(&priv->cfg);
+    g_debug("worker %p: shutdown requested; state %s -> %s", worker,
+            astal_cava_state_name(priv->state), astal_cava_state_name(state));
+    priv->state = state;
+    pthread_mutex_lock(&worker->audio_data.lock);
+    worker->audio_data.terminate = 1;
+    pthread_mutex_unlock(&worker->audio_data.lock);
+    priv->shutdown_timeout_id =
+        g_timeout_add(CAVA_SHUTDOWN_TIMEOUT_MS, astal_cava_cava_shutdown_timeout, self);
 }
 
 static void astal_cava_cava_start(AstalCavaCava* self) {
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    g_return_if_fail(priv->worker == NULL);
+    g_return_if_fail(priv->state == ASTAL_CAVA_STATE_STOPPED);
+    AstalCavaWorker* worker = g_new0(AstalCavaWorker, 1);
+    g_atomic_ref_count_init(&worker->ref_count);
+    g_weak_ref_init(&worker->self, self);
 
     if (self->framerate < 1) {
         self->framerate = 1;
@@ -167,7 +313,7 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
         self->channels = 2;
     }
 
-    priv->cfg = (struct config_params){
+    worker->cfg = (struct config_params){
         .inAtty = 0,
         .output = OUTPUT_RAW,
         .raw_target = strdup("/dev/stdout"),
@@ -232,51 +378,51 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
     };
 
     if (g_strcmp0(self->audio_source, "auto") == 0) {
-        switch (priv->cfg.input) {
+        switch (worker->cfg.input) {
             case INPUT_ALSA:
-                priv->cfg.audio_source = g_strdup("hw:Loopback,1");
+                worker->cfg.audio_source = g_strdup("hw:Loopback,1");
                 break;
             case INPUT_FIFO:
-                priv->cfg.audio_source = g_strdup("/tmp/mpd.fifo");
+                worker->cfg.audio_source = g_strdup("/tmp/mpd.fifo");
                 break;
             case INPUT_PULSE:
-                priv->cfg.audio_source = g_strdup("auto");
+                worker->cfg.audio_source = g_strdup("auto");
                 break;
             case INPUT_PIPEWIRE:
-                priv->cfg.audio_source = g_strdup("auto");
+                worker->cfg.audio_source = g_strdup("auto");
                 break;
             case INPUT_SNDIO:
-                priv->cfg.audio_source = g_strdup("default");
+                worker->cfg.audio_source = g_strdup("default");
                 break;
             case INPUT_OSS:
-                priv->cfg.audio_source = g_strdup("/dev/dsp");
+                worker->cfg.audio_source = g_strdup("/dev/dsp");
                 break;
             case INPUT_JACK:
-                priv->cfg.audio_source = g_strdup("default");
+                worker->cfg.audio_source = g_strdup("default");
                 break;
             case INPUT_SHMEM:
-                priv->cfg.audio_source = g_strdup("/squeezelite-00:00:00:00:00:00");
+                worker->cfg.audio_source = g_strdup("/squeezelite-00:00:00:00:00:00");
                 break;
             case INPUT_PORTAUDIO:
-                priv->cfg.audio_source = g_strdup("auto");
+                worker->cfg.audio_source = g_strdup("auto");
                 break;
             case INPUT_COREAUDIO:
-                priv->cfg.audio_source = g_strdup("auto");
+                worker->cfg.audio_source = g_strdup("auto");
                 break;
             default:
                 g_critical("unsupported audio source");
         }
     } else {
-        priv->cfg.audio_source = g_strdup(self->audio_source);
+        worker->cfg.audio_source = g_strdup(self->audio_source);
     }
 
-    priv->audio_data = (struct audio_data){
+    worker->audio_data = (struct audio_data){
         .cava_in = NULL,
-        .input_buffer_size = BUFFER_SIZE * priv->cfg.channels,
-        .cava_buffer_size = BUFFER_SIZE * priv->cfg.channels * 8,
+        .input_buffer_size = BUFFER_SIZE * worker->cfg.channels,
+        .cava_buffer_size = BUFFER_SIZE * worker->cfg.channels * 8,
         .format = -1,
         .rate = 0,
-        .channels = priv->cfg.channels,
+        .channels = worker->cfg.channels,
         .source = NULL,
         .terminate = 0,
         .samples_counter = 0,
@@ -284,17 +430,27 @@ static void astal_cava_cava_start(AstalCavaCava* self) {
         .suspendFlag = false,
     };
 
-    priv->input_src = get_input(&priv->audio_data, &priv->cfg);
-    audio_raw_init(&priv->audio_data, &priv->audio_raw, &priv->cfg, &priv->plan);
-    priv->input_thread = g_thread_new("cava_input", priv->input_src, &priv->audio_data);
+    worker->input_src = get_input(&worker->audio_data, &worker->cfg);
+    audio_raw_init(&worker->audio_data, &worker->audio_raw, &worker->cfg, &worker->plan);
 
-    priv->timer_id = g_timeout_add(1000 / priv->cfg.framerate, G_SOURCE_FUNC(exec_cava), self);
+    priv->worker = worker;
+    priv->state = ASTAL_CAVA_STATE_RUNNING;
+    g_debug("worker %p: starting input=%d framerate=%d", worker, worker->cfg.input,
+            worker->cfg.framerate);
+    g_atomic_ref_count_inc(&worker->ref_count);
+    g_thread_unref(g_thread_new("cava_input", astal_cava_worker_run, worker));
+    priv->timer_id = g_timeout_add(1000 / worker->cfg.framerate, G_SOURCE_FUNC(exec_cava), self);
 }
 
 static void astal_cava_cava_restart(AstalCavaCava* self) {
     if (!self->active) return;
-    astal_cava_cava_cleanup(self);
-    astal_cava_cava_start(self);
+    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
+    g_debug("restart requested (state=%s, worker=%p)", astal_cava_state_name(priv->state),
+            priv->worker);
+    astal_cava_cava_stop(self, ASTAL_CAVA_STATE_RESTART_PENDING);
+    if (!priv->worker) {
+        astal_cava_cava_start(self);
+    }
 }
 
 gboolean astal_cava_cava_get_active(AstalCavaCava* self) { return self->active; }
@@ -306,10 +462,13 @@ void astal_cava_cava_set_active(AstalCavaCava* self, gboolean active) {
     self->active = active;
 
     if (!priv->constructed) return;
-    if (!active)
-        astal_cava_cava_cleanup(self);
-    else
+    if (!active) {
+        astal_cava_cava_stop(self, ASTAL_CAVA_STATE_STOPPING);
+    } else if (priv->worker) {
+        astal_cava_cava_stop(self, ASTAL_CAVA_STATE_RESTART_PENDING);
+    } else {
         astal_cava_cava_start(self);
+    }
 }
 
 /**
@@ -324,6 +483,7 @@ GArray* astal_cava_cava_get_values(AstalCavaCava* self) { return self->values; }
 gint astal_cava_cava_get_bars(AstalCavaCava* self) { return self->bars; }
 
 void astal_cava_cava_set_bars(AstalCavaCava* self, gint bars) {
+    if (self->bars == bars) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->bars = bars;
     if (priv->constructed) {
@@ -335,6 +495,7 @@ void astal_cava_cava_set_bars(AstalCavaCava* self, gint bars) {
 gboolean astal_cava_cava_get_autosens(AstalCavaCava* self) { return self->autosens; }
 
 void astal_cava_cava_set_autosens(AstalCavaCava* self, gboolean autosens) {
+    if (self->autosens == autosens) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->autosens = autosens;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -343,6 +504,7 @@ void astal_cava_cava_set_autosens(AstalCavaCava* self, gboolean autosens) {
 gboolean astal_cava_cava_get_stereo(AstalCavaCava* self) { return self->stereo; }
 
 void astal_cava_cava_set_stereo(AstalCavaCava* self, gboolean stereo) {
+    if (self->stereo == stereo) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->stereo = stereo;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -351,6 +513,7 @@ void astal_cava_cava_set_stereo(AstalCavaCava* self, gboolean stereo) {
 gdouble astal_cava_cava_get_noise_reduction(AstalCavaCava* self) { return self->noise_reduction; }
 
 void astal_cava_cava_set_noise_reduction(AstalCavaCava* self, gdouble noise) {
+    if (self->noise_reduction == noise) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->noise_reduction = noise;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -359,6 +522,7 @@ void astal_cava_cava_set_noise_reduction(AstalCavaCava* self, gdouble noise) {
 gint astal_cava_cava_get_framerate(AstalCavaCava* self) { return self->framerate; }
 
 void astal_cava_cava_set_framerate(AstalCavaCava* self, gint framerate) {
+    if (self->framerate == framerate) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->framerate = framerate;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -367,6 +531,7 @@ void astal_cava_cava_set_framerate(AstalCavaCava* self, gint framerate) {
 AstalCavaInput astal_cava_cava_get_input(AstalCavaCava* self) { return self->input; }
 
 void astal_cava_cava_set_input(AstalCavaCava* self, AstalCavaInput input) {
+    if (self->input == input) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->input = input;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -375,6 +540,7 @@ void astal_cava_cava_set_input(AstalCavaCava* self, AstalCavaInput input) {
 gchar* astal_cava_cava_get_source(AstalCavaCava* self) { return self->audio_source; }
 
 void astal_cava_cava_set_source(AstalCavaCava* self, const gchar* source) {
+    if (g_strcmp0(self->audio_source, source) == 0) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     g_free(self->audio_source);
     self->audio_source = g_strdup(source);
@@ -384,6 +550,7 @@ void astal_cava_cava_set_source(AstalCavaCava* self, const gchar* source) {
 gint astal_cava_cava_get_channels(AstalCavaCava* self) { return self->channels; }
 
 void astal_cava_cava_set_channels(AstalCavaCava* self, gint channels) {
+    if (self->channels == channels) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->channels = channels;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -392,6 +559,7 @@ void astal_cava_cava_set_channels(AstalCavaCava* self, gint channels) {
 gint astal_cava_cava_get_low_cutoff(AstalCavaCava* self) { return self->low_cutoff; }
 
 void astal_cava_cava_set_low_cutoff(AstalCavaCava* self, gint low_cutoff) {
+    if (self->low_cutoff == low_cutoff) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->low_cutoff = low_cutoff;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -400,6 +568,7 @@ void astal_cava_cava_set_low_cutoff(AstalCavaCava* self, gint low_cutoff) {
 gint astal_cava_cava_get_high_cutoff(AstalCavaCava* self) { return self->high_cutoff; }
 
 void astal_cava_cava_set_high_cutoff(AstalCavaCava* self, gint high_cutoff) {
+    if (self->high_cutoff == high_cutoff) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->high_cutoff = high_cutoff;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -408,6 +577,7 @@ void astal_cava_cava_set_high_cutoff(AstalCavaCava* self, gint high_cutoff) {
 gint astal_cava_cava_get_samplerate(AstalCavaCava* self) { return self->samplerate; }
 
 void astal_cava_cava_set_samplerate(AstalCavaCava* self, gint samplerate) {
+    if (self->samplerate == samplerate) return;
     AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
     self->samplerate = samplerate;
     if (priv->constructed) astal_cava_cava_restart(self);
@@ -557,8 +727,20 @@ AstalCavaCava* astal_cava_cava_get_default() {
 
 static void astal_cava_cava_dispose(GObject* object) {
     AstalCavaCava* self = ASTAL_CAVA_CAVA(object);
+    AstalCavaCavaPrivate* priv = astal_cava_cava_get_instance_private(self);
 
-    if (self->active) astal_cava_cava_cleanup(self);
+    self->active = FALSE;
+    astal_cava_cava_stop(self, ASTAL_CAVA_STATE_STOPPING);
+    if (priv->shutdown_timeout_id) {
+        g_source_remove(priv->shutdown_timeout_id);
+        priv->shutdown_timeout_id = 0;
+    }
+    if (priv->worker) {
+        AstalCavaWorker* worker = priv->worker;
+        priv->worker = NULL;
+        priv->state = ASTAL_CAVA_STATE_STOPPED;
+        astal_cava_worker_unref(worker);
+    }
     G_OBJECT_CLASS(astal_cava_cava_parent_class)->dispose(object);
 }
 
