@@ -318,6 +318,8 @@ static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id
 
                 g_hash_table_insert(priv->nodes, GUINT_TO_POINTER(bound_id), endpoint);
                 g_hash_table_remove(priv->delayed_endpoints, GUINT_TO_POINTER(bound_id));
+                astal_wp_endpoint_default_changed_as_default(self->default_speaker);
+                astal_wp_endpoint_default_changed_as_default(self->default_microphone);
                 astal_wp_wp_update_metadata(self, astal_wp_node_get_id(ASTAL_WP_NODE(endpoint)));
                 g_signal_emit_by_name(self, "node-added", endpoint);
                 g_object_notify(G_OBJECT(self), "nodes");
@@ -433,6 +435,10 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
                 ASTAL_WP_NODE(astal_wp_endpoint_new(node, priv->mixer, priv->defaults, self));
         }
         g_hash_table_insert(priv->nodes, GUINT_TO_POINTER(bound_id), astal_node);
+        if (ASTAL_WP_IS_ENDPOINT(astal_node)) {
+            astal_wp_endpoint_default_changed_as_default(self->default_speaker);
+            astal_wp_endpoint_default_changed_as_default(self->default_microphone);
+        }
         astal_wp_wp_update_metadata(self, astal_wp_node_get_id(astal_node));
         g_signal_emit_by_name(self, "node-added", astal_node);
         g_object_notify(G_OBJECT(self), "nodes");
