@@ -765,7 +765,9 @@ void astal_wp_node_properties_changed(AstalWpNode *self) {
 }
 
 static void astal_wp_node_real_params_changed(AstalWpNode *self, const gchar *id) {
-    g_debug("Node params changed: %s", id);
+    AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
+    g_debug("Node %u ('%s') params changed: %s", priv->id,
+            priv->name != NULL ? priv->name : "(unnamed)", id);
     g_object_freeze_notify(G_OBJECT(self));
 
     if (!g_strcmp0(id, "Props")) astal_wp_node_properties_changed(self);
@@ -803,7 +805,7 @@ static void astal_wp_node_constructed(GObject *obj) {
     AstalWpNode *self = ASTAL_WP_NODE(obj);
     AstalWpNodePrivate *priv = astal_wp_node_get_instance_private(self);
     if(priv->node != NULL) {
-        astal_wp_node_params_changed(self, "Props");
+        astal_wp_node_properties_changed(self);
     }
 }
 
@@ -873,7 +875,7 @@ static void astal_wp_node_class_init(AstalWpNodeClass *class) {
      * The pipewire id of this node.
      */
     astal_wp_node_properties[ASTAL_WP_NODE_PROP_ID] =
-        g_param_spec_uint("id", "id", "id", 0, UINT_MAX, 0, G_PARAM_READABLE);
+        g_param_spec_uint("id", "id", "id", 0, UINT_MAX, SPA_ID_INVALID, G_PARAM_READABLE);
     /**
      * AstalWpNode:volume:
      *

@@ -310,9 +310,10 @@ static void astal_wp_wp_check_delayed_endpoints(AstalWpWp *self, guint device_id
         if (dev != NULL) {
             if (device_id == g_ascii_strtoull(dev, NULL, 10)) {
                 guint bound_id = wp_proxy_get_bound_id(WP_PROXY(l->data));
-                g_debug("Resolving delayed endpoint (bound id %u) now that device %u is known",
-                        bound_id, device_id);
-
+                const gchar *node_name =
+                            wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(l->data), "node.name");
+                g_debug("Resolving delayed endpoint %u (node.name='%s'), for device %u",
+                        bound_id, node_name != NULL ? node_name : "(unnamed)", device_id);
                 AstalWpEndpoint *endpoint =
                     astal_wp_endpoint_new(l->data, priv->mixer, priv->defaults, self);
 
@@ -426,11 +427,15 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
         AstalWpNode *astal_node;
         const gchar *media_class =
             wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "media.class");
+        const gchar *node_name =
+            wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "node.name");
         if (g_str_has_prefix(media_class, "Stream")) {
-            g_debug("Node %u added as stream (media.class='%s')", bound_id, media_class);
+            g_debug("Node %u added as stream (media.class='%s', node.name='%s')", bound_id,
+                    media_class, node_name != NULL ? node_name : "(unnamed)");
             astal_node = ASTAL_WP_NODE(astal_wp_stream_new(node, priv->mixer, self));
         } else {
-            g_debug("Node %u added as endpoint (media.class='%s')", bound_id, media_class);
+            g_debug("Node %u added as endpoint (media.class='%s', node.name='%s')", bound_id,
+                    media_class, node_name != NULL ? node_name : "(unnamed)");
             astal_node =
                 ASTAL_WP_NODE(astal_wp_endpoint_new(node, priv->mixer, priv->defaults, self));
         }
@@ -445,9 +450,12 @@ static void astal_wp_wp_object_added(AstalWpWp *self, gpointer object) {
     } else if (WP_IS_DEVICE(object)) {
         WpDevice *node = WP_DEVICE(object);
         guint bound_id = wp_proxy_get_bound_id(WP_PROXY(node));
+        const gchar *device_name =
+            wp_pipewire_object_get_property(WP_PIPEWIRE_OBJECT(node), "device.name");
         AstalWpDevice *device = g_object_new(ASTAL_WP_TYPE_DEVICE, "device", node, NULL);
         g_hash_table_insert(priv->devices, GUINT_TO_POINTER(bound_id), device);
-        g_info("Device %u added", bound_id);
+        g_info("Device %u added (device.name='%s')", bound_id,
+               device_name != NULL ? device_name : "(unnamed)");
         g_signal_emit_by_name(self, "device-added", device);
         g_object_notify(G_OBJECT(self), "devices");
         astal_wp_wp_check_delayed_endpoints(self, bound_id);
@@ -475,7 +483,8 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
         guint id = wp_proxy_get_bound_id(WP_PROXY(object));
         AstalWpNode *node = g_hash_table_lookup(priv->nodes, GUINT_TO_POINTER(id));
         if(node != NULL) {
-            g_debug("Node %u removed", id);
+            const gchar *name = astal_wp_node_get_name(node);
+            g_debug("Node %u ('%s') removed", id, name != NULL ? name : "(unnamed)");
             g_object_ref(node);
             g_hash_table_remove(priv->nodes, GUINT_TO_POINTER(id));
 
@@ -499,7 +508,9 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
             g_debug("astal_wp_wp_object_removed: unknown device %u, ignoring", id);
             return;
         }
-        g_info("Device %u removed", id);
+        const gchar *description = astal_wp_device_get_description(device);
+        g_info("Device %u ('%s') removed", id,
+               description != NULL ? description : "(unnamed)");
         g_object_ref(device);
         g_hash_table_remove(priv->devices, GUINT_TO_POINTER(id));
 
@@ -512,7 +523,12 @@ static void astal_wp_wp_object_removed(AstalWpWp *self, gpointer object) {
 }
 
 static void astal_wp_wp_roundtrip_cb(WpCore *core, GAsyncResult *result, AstalWpWp *self) {
-    g_info("Initial pipewire roundtrip complete");
+    AstalWpWpPrivate *priv = astal_wp_wp_get_instance_private(self);
+
+    g_info("Initial PipeWire roundtrip complete (%u nodes, %u devices, %u nodes waiting for a "
+           "device)",
+           g_hash_table_size(priv->nodes), g_hash_table_size(priv->devices),
+           g_hash_table_size(priv->delayed_endpoints));
     g_signal_emit_by_name(self, "ready");
 }
 
@@ -536,7 +552,7 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
     GError *error = NULL;
     wp_object_activate_finish(obj, result, &error);
     if (error) {
-        g_critical("Failed to activate component: %s", error->message);
+        g_critical("Failed to activate a required PipeWire plugin: %s", error->message);
         g_error_free(error);
         return;
     }
@@ -549,8 +565,10 @@ static void astal_wp_wp_plugin_activated(WpObject *obj, GAsyncResult *result, As
         priv->defaults = wp_plugin_find(priv->core, "default-nodes-api");
         priv->mixer = wp_plugin_find(priv->core, "mixer-api");
         if (priv->defaults == NULL || priv->mixer == NULL) {
-            g_warning("Could not find one or more expected plugins (defaults=%p, mixer=%p)",
-                      (void *)priv->defaults, (void *)priv->mixer);
+            g_warning("Could not find one or more expected plugins (default-nodes-api=%s, "
+                      "mixer-api=%s)",
+                      priv->defaults != NULL ? "available" : "missing",
+                      priv->mixer != NULL ? "available" : "missing");
         }
 
         g_signal_connect_swapped(priv->obj_manager, "object-added",
@@ -568,12 +586,12 @@ static void astal_wp_wp_plugin_loaded(WpObject *obj, GAsyncResult *result, Astal
     GError *error = NULL;
     wp_core_load_component_finish(priv->core, result, &error);
     if (error) {
-        g_critical("Failed to load component: %s", error->message);
+        g_critical("Failed to load a required PipeWire plugin: %s", error->message);
         g_error_free(error);
         return;
     }
 
-    g_debug("Plugin component loaded, activating");
+    g_debug("Plugin component loaded; requesting activation");
 
     wp_object_activate(obj, WP_PLUGIN_FEATURE_ENABLED, NULL,
                        (GAsyncReadyCallback)astal_wp_wp_plugin_activated, self);
@@ -654,7 +672,7 @@ static void astal_wp_wp_core_connected(AstalWpWp *self) {
                              self);
 
     priv->pending_plugins = 2;
-    g_debug("Loading default-nodes-api and mixer-api plugin components");
+    g_debug("Loading required PipeWire plugins: default-nodes-api and mixer-api");
     wp_core_load_component(priv->core, "libwireplumber-module-default-nodes-api", "module", NULL,
                            "default-nodes-api", NULL,
                            (GAsyncReadyCallback)astal_wp_wp_plugin_loaded, self);
@@ -684,6 +702,10 @@ static void astal_wp_wp_core_disconnected(AstalWpWp *self) {
     if (priv->nodes != NULL) {
         g_debug("Clearing %u node(s) after disconnect", g_hash_table_size(priv->nodes));
         g_hash_table_remove_all(priv->nodes);
+    }
+    if (priv->delayed_endpoints != NULL) {
+        g_debug("%u node(s) were waiting for a device at disconnect",
+                g_hash_table_size(priv->delayed_endpoints));
     }
 
     if (priv->devices != NULL) {
