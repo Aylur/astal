@@ -137,7 +137,7 @@ void astal_wp_device_set_active_profile_id(AstalWpDevice *self, int profile_id) 
     g_return_if_fail(ASTAL_WP_IS_DEVICE(self));
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
-    g_debug("Setting active profile id to %d for device %u", profile_id, self->id);
+    g_debug("Requesting profile %d for device %u", profile_id, self->id);
 
     WpSpaPodBuilder *builder =
         wp_spa_pod_builder_new_object("Spa:Pod:Object:Param:Profile", "Profile");
@@ -230,7 +230,7 @@ void astal_wp_device_set_route(AstalWpDevice *self, AstalWpRoute *route, guint c
     g_return_if_fail(ASTAL_WP_IS_DEVICE(self));
     AstalWpDevicePrivate *priv = astal_wp_device_get_instance_private(self);
 
-    g_debug("Setting route index %d for device %u, card device %u",
+    g_debug("Requesting route index %d for device %u, card device %u",
             route != NULL ? astal_wp_route_get_index(route) : -1, self->id, card_device);
 
     WpSpaPodBuilder *builder = wp_spa_pod_builder_new_object("Spa:Pod:Object:Param:Route", "Route");
