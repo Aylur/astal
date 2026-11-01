@@ -1,4 +1,8 @@
 {
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+  };
+
   outputs = {
     self,
     nixpkgs,
@@ -13,7 +17,6 @@
           mkAstalPkg = import ./nix/mkAstalPkg.nix pkgs;
         };
     in {
-      default = self.packages.${system}.io;
       docs = import ./docs {inherit self pkgs;};
 
       io = mkPkg ./lib/astal/io;
@@ -46,9 +49,5 @@
         inherit self;
         pkgs = nixpkgs.legacyPackages.${system};
       });
-  };
-
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   };
 }
