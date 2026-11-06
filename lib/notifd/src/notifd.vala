@@ -1,10 +1,10 @@
 namespace AstalNotifd {
-/**
- * Get the singleton instance of [class@AstalNotifd.Notifd].
- */
-public Notifd get_default() {
-    return Notifd.get_default();
-}
+    /**
+     * Get the singleton instance of [class@AstalNotifd.Notifd].
+     */
+    public Notifd get_default() {
+        return Notifd.get_default();
+    }
 }
 
 /**
@@ -128,11 +128,7 @@ public class AstalNotifd.Notifd : Object, ListModel {
         notification_list = (owned)next;
 
         if ((position < previous_end) || (position < next_end)) {
-            items_changed(
-                position,
-                previous_end - position,
-                next_end - position
-            );
+            items_changed(position, previous_end - position, next_end - position);
         }
 
         notify_property("notifications");

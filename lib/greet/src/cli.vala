@@ -16,13 +16,14 @@ async int main(string[] argv) {
         .opt(help = new SpecialFlag("help", 'h', "Print help and exit"))
         .opt(version = new SpecialFlag("version", 'v', "Print version and exit"))
         .opt(interactive = new SpecialFlag("interactive", 'i', "Interactive login flow"))
-        .opt(env = new StringArrayOpt("env", 'e', "Additional environment variables to set for the session") {
-        name = "NAME=VALUE"
-    })
+        .opt(env = new StringArrayOpt(
+            "env",
+            'e',
+            "Additional environment variables to set for the session"
+        ) { name = "NAME=VALUE" })
         .required_arg("USERNAME", "User to log in as")
         .required_arg("PASSWORD", "Password of the user")
-        .required_arg("CMD", "Command used to start the session")
-    ;
+        .required_arg("CMD", "Command used to start the session");
 
     try {
         cmd.parse(argv);

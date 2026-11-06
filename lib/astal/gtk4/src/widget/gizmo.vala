@@ -5,29 +5,21 @@
  */
 internal class Astal.Gizmo : Gtk.Widget {
     public delegate void MeasureFunc(
-        Gtk.Orientation orientation, int for_size,
-        out int minimum, out int natural,
-        out int minimum_baseline, out int natural_baseline
+        Gtk.Orientation orientation,
+        int for_size,
+        out int minimum,
+        out int natural,
+        out int minimum_baseline,
+        out int natural_baseline
     );
 
-    public delegate void AllocateFunc(
-        int width,
-        int height,
-        int baseline
-    );
+    public delegate void AllocateFunc(int width, int height, int baseline);
 
-    public delegate void SnapshotFunc(
-        Gtk.Snapshot snapshot
-    );
+    public delegate void SnapshotFunc(Gtk.Snapshot snapshot);
 
-    public delegate bool ContainsFunc(
-        double x,
-        double y
-    );
+    public delegate bool ContainsFunc(double x, double y);
 
-    public delegate bool FocusFunc(
-        Gtk.DirectionType direction
-    );
+    public delegate bool FocusFunc(Gtk.DirectionType direction);
 
     public delegate bool GrabFocusFunc();
 
@@ -107,9 +99,14 @@ internal class Astal.Gizmo : Gtk.Widget {
         out int natural_baseline
     ) {
         if (measure_func != null) {
-            measure_func(orientation, for_size,
-                         out minimum, out natural,
-                         out minimum_baseline, out natural_baseline);
+            measure_func(
+                orientation,
+                for_size,
+                out minimum,
+                out natural,
+                out minimum_baseline,
+                out natural_baseline
+            );
         } else {
             minimum = natural = minimum_baseline = natural_baseline = 0;
         }

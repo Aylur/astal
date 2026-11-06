@@ -4,9 +4,12 @@ public enum AstalBrightness.Subsystem {
 
     internal string to_string() {
         switch (this) {
-            case LEDS: return "leds";
-            case BACKLIGHT: return "backlight";
-            default: assert_not_reached();
+            case LEDS:
+                return "leds";
+            case BACKLIGHT:
+                return "backlight";
+            default:
+                assert_not_reached();
         }
     }
 }

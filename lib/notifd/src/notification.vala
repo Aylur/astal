@@ -21,37 +21,61 @@ public class AstalNotifd.Notification : Object {
     /** ID of the notification. */
     public uint32 id {
         get { return _id; }
-        set { set_field("id", () => { _id = value; }); }
+        set {
+            set_field("id", () => {
+                _id = value;
+            });
+        }
     }
 
     /** Name of the sending application. */
     public string? app_name {
         get { return _app_name; }
-        set { set_field("app-name", () => { _app_name = value; }); }
+        set {
+            set_field("app-name", () => {
+                _app_name = value;
+            });
+        }
     }
 
     /** Icon name of the sending application. */
     public string? app_icon {
         get { return _app_icon; }
-        set { set_field("app-icon", () => { _app_icon = value; }); }
+        set {
+            set_field("app-icon", () => {
+                _app_icon = value;
+            });
+        }
     }
 
     /** Single line overview of the notification. */
     public string summary {
         get { return _summary; }
-        set { set_field("summary", () => { _summary = value; }); }
+        set {
+            set_field("summary", () => {
+                _summary = value;
+            });
+        }
     }
 
     /** Multi-line body of text, where each line is a paragraph. May contain markup. */
     public string body {
         get { return _body; }
-        set { set_field("body", () => { _body = value; }); }
+        set {
+            set_field("body", () => {
+                _body = value;
+            });
+        }
     }
 
     /** Time in milliseconds after which the notification expires. */
     public int32 expire_timeout {
         get { return _expire_timeout; }
-        set { set_field("expire-timeout", () => { _expire_timeout = value; }); }
+        set {
+            set_field("expire-timeout", () => {
+                _expire_timeout = value;
+            });
+        }
     }
 
     /**
@@ -302,9 +326,9 @@ public class AstalNotifd.Notification : Object {
         var hint = get_hint(name);
         if (hint == null) return "";
         if (
-            hint.is_of_type(VariantType.STRING)
-            || hint.is_of_type(VariantType.OBJECT_PATH)
-            || hint.is_of_type(VariantType.SIGNATURE)
+            hint.is_of_type(VariantType.STRING) ||
+            hint.is_of_type(VariantType.OBJECT_PATH) ||
+            hint.is_of_type(VariantType.SIGNATURE)
         ) {
             return hint.get_string(null) ?? "";
         }

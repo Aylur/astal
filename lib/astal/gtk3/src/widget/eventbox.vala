@@ -5,12 +5,12 @@
  * Its css selector is `eventbox`.
  */
 public class Astal.EventBox : Gtk.EventBox {
-    public signal void hover (HoverEvent event);
-    public signal void hover_lost (HoverEvent event);
-    public signal void click (ClickEvent event);
-    public signal void click_release (ClickEvent event);
-    public signal void scroll (ScrollEvent event);
-    public signal void motion (MotionEvent event);
+    public signal void hover(HoverEvent event);
+    public signal void hover_lost(HoverEvent event);
+    public signal void click(ClickEvent event);
+    public signal void click_release(ClickEvent event);
+    public signal void scroll(ScrollEvent event);
+    public signal void motion(MotionEvent event);
 
     static construct {
         set_css_name("eventbox");
@@ -22,16 +22,14 @@ public class Astal.EventBox : Gtk.EventBox {
         add_events(Gdk.EventMask.POINTER_MOTION_MASK);
 
         enter_notify_event.connect((self, event) => {
-            if (event.window == self.get_window() &&
-                event.detail != Gdk.NotifyType.INFERIOR) {
+            if (event.window == self.get_window() && event.detail != Gdk.NotifyType.INFERIOR) {
                 this.set_state_flags(Gtk.StateFlags.PRELIGHT, false);
                 hover(HoverEvent(event) { lost = false });
             }
         });
 
         leave_notify_event.connect((self, event) => {
-            if (event.window == self.get_window() &&
-                event.detail != Gdk.NotifyType.INFERIOR) {
+            if (event.window == self.get_window() && event.detail != Gdk.NotifyType.INFERIOR) {
                 this.unset_state_flags(Gtk.StateFlags.PRELIGHT);
                 hover_lost(HoverEvent(event) { lost = true });
             }

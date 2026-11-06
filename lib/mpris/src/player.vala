@@ -272,15 +272,13 @@ public class AstalMpris.Player : Object {
             return;
         }
 
-        shuffle_status = (shuffle_status == Shuffle.ON)
-            ? Shuffle.OFF
-            : Shuffle.ON;
+        shuffle_status = (shuffle_status == Shuffle.ON) ? Shuffle.OFF : Shuffle.ON;
     }
 
     /**
      * The current loop/repeat status.
      */
-    [CCode(notify = false)]
+    [CCode (notify=false)]
     public Loop loop_status {
         get { return _loop_status; }
         set { _set_loop_status(value); }
@@ -302,7 +300,7 @@ public class AstalMpris.Player : Object {
     /**
      * The current shuffle status.
      */
-    [CCode(notify = false)]
+    [CCode (notify=false)]
     public Shuffle shuffle_status {
         get { return _shuffle_status; }
         set { _set_shuffle_status(value); }
@@ -322,7 +320,7 @@ public class AstalMpris.Player : Object {
     /**
      * The current playback rate.
      */
-    [CCode(notify = false)]
+    [CCode (notify=false)]
     public double rate {
         get { return _rate; }
         set { _set_rate(value); }
@@ -331,18 +329,13 @@ public class AstalMpris.Player : Object {
     private double _rate = 0;
     private void _set_rate(double rate) {
         if (check_available()) return;
-        proxy.set.begin(
-            PlayerProxy.NAME,
-            "Rate",
-            new Variant.double(rate),
-            proxy_set_end
-        );
+        proxy.set.begin(PlayerProxy.NAME, "Rate", new Variant.double(rate), proxy_set_end);
     }
 
     /**
      * The current volume level between 0 and 1 or -1 when it is unsupported.
      */
-    [CCode(notify = false)]
+    [CCode (notify=false)]
     public double volume {
         get { return _volume; }
         set { _set_volume(value); }
@@ -351,19 +344,14 @@ public class AstalMpris.Player : Object {
     private double _volume = -1;
     private void _set_volume(double volume) {
         if (check_available()) return;
-        proxy.set.begin(
-            PlayerProxy.NAME,
-            "Volume",
-            new Variant.double(volume),
-            proxy_set_end
-        );
+        proxy.set.begin(PlayerProxy.NAME, "Volume", new Variant.double(volume), proxy_set_end);
     }
 
     /**
      * The current position of the track in seconds or -1 when it is unsupported.
      * To get a progress percentage simply divide this with [property@AstalMpris.Player:length].
      */
-    [CCode(notify = false)]
+    [CCode (notify=false)]
     public double position {
         get { return _position; }
         set { _set_position(value); }
@@ -437,7 +425,8 @@ public class AstalMpris.Player : Object {
      * Metadata of this player.
      */
     public Variant metadata {
-        get; private set;
+        get;
+        private set;
         default = new Variant.array(new VariantType("{sv}"), {});
     }
 
@@ -524,9 +513,10 @@ public class AstalMpris.Player : Object {
      */
     public Player(string name) {
         var bus_name = name.has_prefix(MediaPlayerProxy.PREFIX)
-            ? name : MediaPlayerProxy.PREFIX + name;
+            ? name
+            : MediaPlayerProxy.PREFIX + name;
 
-        Object(bus_name : bus_name);
+        Object(bus_name: bus_name);
         init_proxy.begin((_, res) => {
             try {
                 init_proxy.end(res);
@@ -548,9 +538,10 @@ public class AstalMpris.Player : Object {
 
     private async Player.internal_new_async(string name) throws Error {
         var bus_name = name.has_prefix(MediaPlayerProxy.PREFIX)
-            ? name : MediaPlayerProxy.PREFIX + name;
+            ? name
+            : MediaPlayerProxy.PREFIX + name;
 
-        Object(bus_name : bus_name);
+        Object(bus_name: bus_name);
         yield init_proxy();
     }
 
@@ -689,15 +680,11 @@ public class AstalMpris.Player : Object {
         return builder.str;
     }
 
-    private async void copy_http_image(File target) throws Error  {
+    private async void copy_http_image(File target) throws Error {
         var session = new Soup.Session();
         var message = new Soup.Message("GET", art_url);
 
-        var bytes = yield session.send_and_read_async(
-            message,
-            Priority.DEFAULT,
-            null
-        );
+        var bytes = yield session.send_and_read_async(message, Priority.DEFAULT, null);
 
         yield target.replace_contents_async(
             bytes.get_data(),
@@ -814,18 +801,22 @@ public class AstalMpris.Player : Object {
     }
 
     private void init_position_poll() {
-        pollid = Timeout.add_seconds(1, () => {
-            if (!available) {
-                pollid = 0;
-                return Source.REMOVE;
-            }
+        pollid = Timeout.add_seconds(
+            1,
+            () => {
+                if (!available) {
+                    pollid = 0;
+                    return Source.REMOVE;
+                }
 
-            if (playback_status == PlaybackStatus.PLAYING) {
-                check_position.begin(null);
-            }
+                if (playback_status == PlaybackStatus.PLAYING) {
+                    check_position.begin(null);
+                }
 
-            return Source.CONTINUE;
-        }, Priority.DEFAULT);
+                return Source.CONTINUE;
+            },
+            Priority.DEFAULT
+        );
     }
 
     private async void on_appeared() {

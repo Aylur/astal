@@ -1,7 +1,7 @@
 /**
  * `Time` provides shortcuts for GLib timeout functions.
  */
-[Version (deprecated = true)]
+[Version (deprecated=true)]
 public class AstalIO.Time : Object {
     private Cancellable cancellable;
     private uint timeout_id;
@@ -10,12 +10,12 @@ public class AstalIO.Time : Object {
     /**
      * Emitted when the timer ticks.
      */
-    public signal void now ();
+    public signal void now();
 
     /**
      * Emitted when the timere is cancelled.
      */
-    public signal void cancelled ();
+    public signal void cancelled();
 
     construct {
         cancellable = new Cancellable();
@@ -29,8 +29,7 @@ public class AstalIO.Time : Object {
     }
 
     private void connect_closure(Closure? closure) {
-        if (closure == null)
-            return;
+        if (closure == null) return;
 
         now.connect(() => {
             Value ret = Value(Type.POINTER); // void
@@ -44,10 +43,14 @@ public class AstalIO.Time : Object {
     public Time.interval_prio(uint interval, int prio = Priority.DEFAULT, Closure? fn) {
         connect_closure(fn);
         Idle.add_once(() => now());
-        timeout_id = Timeout.add(interval, () => {
-            now();
-            return Source.CONTINUE;
-        }, prio);
+        timeout_id = Timeout.add(
+            interval,
+            () => {
+                now();
+                return Source.CONTINUE;
+            },
+            prio
+        );
     }
 
     /**
@@ -55,11 +58,15 @@ public class AstalIO.Time : Object {
      */
     public Time.timeout_prio(uint timeout, int prio = Priority.DEFAULT, Closure? fn) {
         connect_closure(fn);
-        timeout_id = Timeout.add(timeout, () => {
-            now();
-            fulfilled = true;
-            return Source.REMOVE;
-        }, prio);
+        timeout_id = Timeout.add(
+            timeout,
+            () => {
+                now();
+                fulfilled = true;
+                return Source.REMOVE;
+            },
+            prio
+        );
     }
 
     /**
@@ -67,11 +74,14 @@ public class AstalIO.Time : Object {
      */
     public Time.idle_prio(int prio = Priority.DEFAULT_IDLE, Closure? fn) {
         connect_closure(fn);
-        timeout_id = Idle.add(() => {
-            now();
-            fulfilled = true;
-            return Source.REMOVE;
-        }, prio);
+        timeout_id = Idle.add(
+            () => {
+                now();
+                fulfilled = true;
+                return Source.REMOVE;
+            },
+            prio
+        );
     }
 
     /**

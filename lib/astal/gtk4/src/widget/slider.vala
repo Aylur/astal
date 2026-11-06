@@ -1,7 +1,6 @@
 public class Astal.Slider : Gtk.Scale {
     construct {
-        if (adjustment == null)
-            adjustment = new Gtk.Adjustment(0,0,0,0,0,0);
+        if (adjustment == null) adjustment = new Gtk.Adjustment(0, 0, 0, 0, 0, 0);
 
         if (max == 0 && min == 0) {
             max = 1;
@@ -26,7 +25,7 @@ public class Astal.Slider : Gtk.Scale {
     /**
      * Value of this slider. Defaults to `0`.
      */
-    [CCode (notify = false)]
+    [CCode (notify=false)]
     public double value {
         get { return adjustment.value; }
         set { adjustment.value = value; }

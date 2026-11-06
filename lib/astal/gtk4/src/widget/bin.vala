@@ -3,7 +3,9 @@
  * It is useful for deriving subclasses, since it provides common code needed for handling a single child widget.
  */
 public class Astal.Bin : Gtk.Widget, Gtk.Buildable {
-    construct { set_layout_manager(new Gtk.BinLayout()); }
+    construct {
+        set_layout_manager(new Gtk.BinLayout());
+    }
 
     Gtk.Widget _child;
     public Gtk.Widget? child {

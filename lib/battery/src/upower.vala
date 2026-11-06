@@ -3,8 +3,7 @@
  */
 public class AstalBattery.UPower : Object {
     private IUPower proxy;
-    private HashTable<string, Device> _devices =
-        new HashTable<string, Device>(str_hash, str_equal);
+    private HashTable<string, Device> _devices = new HashTable<string, Device>(str_hash, str_equal);
 
     /** List of UPower devices. */
     public List<weak Device> devices {

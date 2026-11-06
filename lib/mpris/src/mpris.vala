@@ -1,10 +1,10 @@
 namespace AstalMpris {
-/**
- * Gets the default singleton Mpris instance.
- */
-public Mpris get_default() {
-    return Mpris.get_default();
-}
+    /**
+     * Gets the default singleton Mpris instance.
+     */
+    public Mpris get_default() {
+        return Mpris.get_default();
+    }
 }
 
 /**
@@ -23,8 +23,10 @@ public class AstalMpris.Mpris : Object, ListModel {
         return instance;
     }
 
-    private HashTable<string, Player> player_table =
-        new HashTable<string, Player>(str_hash, str_equal);
+    private HashTable<string, Player> player_table = new HashTable<string, Player>(
+        str_hash,
+        str_equal
+    );
 
     private List<weak Player> player_list = new List<weak Player>();
 

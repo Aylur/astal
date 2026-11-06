@@ -9,17 +9,17 @@ public class Astal.Icon : Gtk.Image {
     private double size { get; set; default = 14; }
 
     public new Gdk.Pixbuf pixbuf { get; set; }
-    
+
     private static bool gicon_warned = false;
-    [Version (deprecated = true, deprecated_since = "0.1.0", replacement = "gicon")]
-    public GLib.Icon g_icon { 
+    [Version (deprecated=true, deprecated_since="0.1.0", replacement="gicon")]
+    public GLib.Icon g_icon {
         owned get {
             return this.gicon;
-        } 
+        }
         set {
-            if( !gicon_warned ) {
-              GLib.warning("g-icon is deprecated. Use gicon instead.");
-              gicon_warned = true;
+            if (!gicon_warned) {
+                GLib.warning("g-icon is deprecated. Use gicon instead.");
+                gicon_warned = true;
             }
             this.gicon = value;
         }
@@ -36,43 +36,42 @@ public class Astal.Icon : Gtk.Image {
     }
 
     private async void display_icon() {
-        switch(type) {
-        case IconType.NAMED:
-            icon_name = icon;
-            pixel_size = (int)size;
-            break;
-        case IconType.FILE:
-            try {
-                var file = File.new_for_path(icon);
-                var stream = yield file.read_async();
-                var pb = yield new Gdk.Pixbuf.from_stream_at_scale_async(
-                    stream,
+        switch (type) {
+            case IconType.NAMED:
+                icon_name = icon;
+                pixel_size = (int)size;
+                break;
+            case IconType.FILE:
+                try {
+                    var file = File.new_for_path(icon);
+                    var stream = yield file.read_async();
+                    var pb = yield new Gdk.Pixbuf.from_stream_at_scale_async(
+                        stream,
+                        (int)size * scale_factor,
+                        (int)size * scale_factor,
+                        true,
+                        null
+                    );
+                    var cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
+                    set_from_surface(cs);
+                } catch (Error err) {
+                    printerr(err.message);
+                }
+                break;
+            case IconType.PIXBUF:
+                var pb_scaled = pixbuf.scale_simple(
                     (int)size * scale_factor,
                     (int)size * scale_factor,
-                    true,
-                    null
+                    Gdk.InterpType.BILINEAR
                 );
-                var cs = Gdk.cairo_surface_create_from_pixbuf(pb, 0, this.get_window());
-                set_from_surface(cs);
-            } catch (Error err) {
-                printerr(err.message);
-            }
-            break;
-        case IconType.PIXBUF:
-            var pb_scaled = pixbuf.scale_simple(
-                (int)size * scale_factor,
-                (int)size * scale_factor,
-                Gdk.InterpType.BILINEAR
-            );
-            if (pb_scaled != null) {
-                var cs = Gdk.cairo_surface_create_from_pixbuf(pb_scaled, 0, this.get_window());
-                set_from_surface(cs);
-            }
-            break;
-        case IconType.GICON:
-            pixel_size = (int)size;
-            break;
-
+                if (pb_scaled != null) {
+                    var cs = Gdk.cairo_surface_create_from_pixbuf(pb_scaled, 0, this.get_window());
+                    set_from_surface(cs);
+                }
+                break;
+            case IconType.GICON:
+                pixel_size = (int)size;
+                break;
         }
     }
 
@@ -82,14 +81,11 @@ public class Astal.Icon : Gtk.Image {
 
     construct {
         notify["icon"].connect(() => {
-            if(FileUtils.test(icon, GLib.FileTest.EXISTS))
-                type = IconType.FILE;
-            else if (lookup_icon(icon) != null)
-                type = IconType.NAMED;
+            if (FileUtils.test(icon, GLib.FileTest.EXISTS)) type = IconType.FILE;
+            else if (lookup_icon(icon) != null) type = IconType.NAMED;
             else {
                 type = IconType.NAMED;
-                warning("cannot assign %s as icon, "+
-                    "it is not a file nor a named icon", icon);
+                warning("cannot assign %s as icon, " + "it is not a file nor a named icon", icon);
             }
             display_icon.begin();
         });
@@ -105,15 +101,19 @@ public class Astal.Icon : Gtk.Image {
         });
 
         size_allocate.connect(() => {
-            size = get_style_context()
-                .get_property("font-size", Gtk.StateFlags.NORMAL).get_double();
+            size = get_style_context().get_property(
+                "font-size",
+                Gtk.StateFlags.NORMAL
+            ).get_double();
 
             display_icon.begin();
         });
 
         get_style_context().changed.connect(() => {
-            size = get_style_context()
-                .get_property("font-size", Gtk.StateFlags.NORMAL).get_double();
+            size = get_style_context().get_property(
+                "font-size",
+                Gtk.StateFlags.NORMAL
+            ).get_double();
 
             display_icon.begin();
         });

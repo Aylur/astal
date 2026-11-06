@@ -32,7 +32,8 @@ abstract class MprisCommand : Command {
         if (player_names.value.length > 0) {
             foreach (var name in player_names.value) {
                 var busname = name.has_prefix(MediaPlayerProxy.PREFIX)
-                    ? name : MediaPlayerProxy.PREFIX + name;
+                    ? name
+                    : MediaPlayerProxy.PREFIX + name;
 
                 players.append(yield Player.new_async(busname));
             }
@@ -58,32 +59,58 @@ abstract class MprisCommand : Command {
         }
         mimes.end_array();
 
-        return new Json.Builder().begin_object()
-            .set_member_name("bus_name").add_string_value(p.bus_name)
-            .set_member_name("identity").add_string_value(p.identity)
-            .set_member_name("entry").add_string_value(p.entry)
-            .set_member_name("can_quit").add_boolean_value(p.can_quit)
-            .set_member_name("fullscreen").add_boolean_value(p.fullscreen)
-            .set_member_name("can_set_fullscreen").add_boolean_value(p.can_set_fullscreen)
-            .set_member_name("can_raise").add_boolean_value(p.can_raise)
-            .set_member_name("supported_uri_schemes").add_value(uris.get_root())
-            .set_member_name("supported_mime_types").add_value(mimes.get_root())
-            .set_member_name("loop_status").add_string_value(p.loop_status.to_string())
-            .set_member_name("shuffle_status").add_string_value(p.shuffle_status.to_string())
-            .set_member_name("rate").add_double_value(p.rate)
-            .set_member_name("volume").add_double_value(p.volume)
-            .set_member_name("position").add_double_value(p.position)
-            .set_member_name("playback_status").add_string_value(p.playback_status.to_string())
-            .set_member_name("minimum_rate").add_double_value(p.minimum_rate)
-            .set_member_name("maximum_rate").add_double_value(p.maximum_rate)
-            .set_member_name("can_go_next").add_boolean_value(p.can_go_next)
-            .set_member_name("can_go_previous").add_boolean_value(p.can_go_previous)
-            .set_member_name("can_play").add_boolean_value(p.can_play)
-            .set_member_name("can_pause").add_boolean_value(p.can_pause)
-            .set_member_name("can_seek").add_boolean_value(p.can_seek)
-            .set_member_name("can_control").add_boolean_value(p.can_control)
-            .set_member_name("cover_art").add_string_value(p.cover_art)
-            .set_member_name("metadata").add_value(Json.gvariant_serialize(p.metadata))
+        return new Json.Builder()
+            .begin_object()
+            .set_member_name("bus_name")
+            .add_string_value(p.bus_name)
+            .set_member_name("identity")
+            .add_string_value(p.identity)
+            .set_member_name("entry")
+            .add_string_value(p.entry)
+            .set_member_name("can_quit")
+            .add_boolean_value(p.can_quit)
+            .set_member_name("fullscreen")
+            .add_boolean_value(p.fullscreen)
+            .set_member_name("can_set_fullscreen")
+            .add_boolean_value(p.can_set_fullscreen)
+            .set_member_name("can_raise")
+            .add_boolean_value(p.can_raise)
+            .set_member_name("supported_uri_schemes")
+            .add_value(uris.get_root())
+            .set_member_name("supported_mime_types")
+            .add_value(mimes.get_root())
+            .set_member_name("loop_status")
+            .add_string_value(p.loop_status.to_string())
+            .set_member_name("shuffle_status")
+            .add_string_value(p.shuffle_status.to_string())
+            .set_member_name("rate")
+            .add_double_value(p.rate)
+            .set_member_name("volume")
+            .add_double_value(p.volume)
+            .set_member_name("position")
+            .add_double_value(p.position)
+            .set_member_name("playback_status")
+            .add_string_value(p.playback_status.to_string())
+            .set_member_name("minimum_rate")
+            .add_double_value(p.minimum_rate)
+            .set_member_name("maximum_rate")
+            .add_double_value(p.maximum_rate)
+            .set_member_name("can_go_next")
+            .add_boolean_value(p.can_go_next)
+            .set_member_name("can_go_previous")
+            .add_boolean_value(p.can_go_previous)
+            .set_member_name("can_play")
+            .add_boolean_value(p.can_play)
+            .set_member_name("can_pause")
+            .add_boolean_value(p.can_pause)
+            .set_member_name("can_seek")
+            .add_boolean_value(p.can_seek)
+            .set_member_name("can_control")
+            .add_boolean_value(p.can_control)
+            .set_member_name("cover_art")
+            .add_string_value(p.cover_art)
+            .set_member_name("metadata")
+            .add_value(Json.gvariant_serialize(p.metadata))
             .end_object()
             .get_root();
     }
@@ -144,7 +171,8 @@ abstract class MprisCommand : Command {
 
             foreach (var name in player_names.value) {
                 var busname = name.has_prefix(MediaPlayerProxy.PREFIX)
-                    ? name : MediaPlayerProxy.PREFIX + name;
+                    ? name
+                    : MediaPlayerProxy.PREFIX + name;
 
                 if (player.bus_name == busname) return true;
             }
@@ -423,20 +451,32 @@ abstract class MprisCommand : Command {
             opt(help = new SpecialFlag("help", 'h', "Print help"));
             opt(version = new SpecialFlag("version", 'v', "Print version"));
             opt(player_names = new StringArrayOpt("name", 'n', "Operate on given players") {
-                name = "NAME"
+                name = "NAME",
             });
 
             cmd(new ListPlayers());
             cmd(new Watch());
-            cmd(new PlayerAction("play", "Play track", (player) => { player.play(); }));
-            cmd(new PlayerAction("pause", "Pause track", (player) => { player.pause(); }));
+            cmd(new PlayerAction("play", "Play track", (player) => {
+                player.play();
+            }));
+            cmd(new PlayerAction("pause", "Pause track", (player) => {
+                player.pause();
+            }));
             cmd(new PlayerAction("play-pause", "Play if paused, pause if playing", (player) => {
                 player.play_pause();
             }));
-            cmd(new PlayerAction("stop", "Stop player", (player) => { player.stop(); }));
-            cmd(new PlayerAction("next", "Play next track", (player) => { player.next(); }));
-            cmd(new PlayerAction("previous", "Play previous track", (player) => { player.previous(); }));
-            cmd(new PlayerAction("quit", "Quit player", (player) => { player.quit(); }));
+            cmd(new PlayerAction("stop", "Stop player", (player) => {
+                player.stop();
+            }));
+            cmd(new PlayerAction("next", "Play next track", (player) => {
+                player.next();
+            }));
+            cmd(new PlayerAction("previous", "Play previous track", (player) => {
+                player.previous();
+            }));
+            cmd(new PlayerAction("quit", "Quit player", (player) => {
+                player.quit();
+            }));
             cmd(new PlayerAction("raise", "Ask compositor to raise the player", (player) => {
                 player.raise();
             }));

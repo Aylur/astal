@@ -193,10 +193,7 @@ public class AstalApps.Apps : Object {
         foreach (var app in arr) {
             if (!show_hidden && !app.should_show()) continue;
 
-            var a = new Application(
-                app.get_id(),
-                frequents.get(app.get_id())
-            );
+            var a = new Application(app.get_id(), frequents.get(app.get_id()));
             a.notify.connect((pspec) => {
                 if (pspec.name != "frequency") return;
 
@@ -222,7 +219,8 @@ public class AstalApps.Apps : Object {
         }
 
         try {
-            if (!FileUtils.test(cache_directory, FileTest.EXISTS)) File.new_for_path(cache_directory).make_directory_with_parents(null);
+            if (!FileUtils.test(cache_directory, FileTest.EXISTS))
+                File.new_for_path(cache_directory).make_directory_with_parents(null);
 
             var generator = new Json.Generator();
             generator.set_root(json.end_object().get_root());

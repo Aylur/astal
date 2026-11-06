@@ -1,4 +1,4 @@
-[DBus(name = "org.freedesktop.UPower")]
+[DBus (name="org.freedesktop.UPower")]
 private interface AstalBattery.IUPower : DBusProxy {
     public abstract ObjectPath[] enumerate_devices() throws Error;
     public abstract ObjectPath get_display_device() throws Error;
@@ -13,7 +13,7 @@ private interface AstalBattery.IUPower : DBusProxy {
     public abstract bool lid_is_present { get; }
 }
 
-[DBus(name = "org.freedesktop.UPower.Device")]
+[DBus (name="org.freedesktop.UPower.Device")]
 private interface AstalBattery.IUPowerDevice : DBusProxy {
     public abstract uint Type { get; }
     public abstract string native_path { owned get; }

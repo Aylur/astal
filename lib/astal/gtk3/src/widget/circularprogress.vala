@@ -45,18 +45,18 @@ public class Astal.CircularProgress : Gtk.Bin {
     }
 
     public override Gtk.SizeRequestMode get_request_mode() {
-        if(get_child() != null) return get_child().get_request_mode();
+        if (get_child() != null) return get_child().get_request_mode();
         return Gtk.SizeRequestMode.HEIGHT_FOR_WIDTH;
     }
 
     public override void get_preferred_height(out int minh, out int nath) {
-        if(get_child() != null)  {
-          int minw, natw;
-          get_child().get_preferred_height(out minh, out nath);
-          get_child().get_preferred_width(out minw, out natw);
+        if (get_child() != null) {
+            int minw, natw;
+            get_child().get_preferred_height(out minh, out nath);
+            get_child().get_preferred_width(out minw, out natw);
 
-          minh = int.max(minw, minh);
-          nath = int.max(natw, nath);
+            minh = int.max(minw, minh);
+            nath = int.max(natw, nath);
         }
         var w_val = get_style_context().get_property("min-width", Gtk.StateFlags.NORMAL);
         var h_val = get_style_context().get_property("min-height", Gtk.StateFlags.NORMAL);
@@ -72,13 +72,13 @@ public class Astal.CircularProgress : Gtk.Bin {
     }
 
     public override void get_preferred_width(out int minw, out int natw) {
-        if(get_child() != null)  {
-          int minh, nath;
-          get_child().get_preferred_height(out minh, out nath);
-          get_child().get_preferred_width(out minw, out natw);
+        if (get_child() != null) {
+            int minh, nath;
+            get_child().get_preferred_height(out minh, out nath);
+            get_child().get_preferred_width(out minw, out natw);
 
-          minw = int.max(minw, minh);
-          natw = int.max(natw, nath);
+            minw = int.max(minw, minh);
+            natw = int.max(natw, nath);
         }
         var w_val = get_style_context().get_property("min-width", Gtk.StateFlags.NORMAL);
         var h_val = get_style_context().get_property("min-height", Gtk.StateFlags.NORMAL);
@@ -126,15 +126,13 @@ public class Astal.CircularProgress : Gtk.Bin {
 
     private double min(double[] arr) {
         double min = arr[0];
-        foreach(var i in arr)
-            if (min > i) min = i;
+        foreach (var i in arr) if (min > i) min = i;
         return min;
     }
 
     private double max(double[] arr) {
         double max = arr[0];
-        foreach(var i in arr)
-            if (max < i) max = i;
+        foreach (var i in arr) if (max < i) max = i;
         return max;
     }
 
@@ -147,7 +145,6 @@ public class Astal.CircularProgress : Gtk.Bin {
             propagate_draw(get_child(), cr);
         }
 
-
         var styles = get_style_context();
         var width = allocation.width;
         var height = allocation.height;
@@ -156,9 +153,9 @@ public class Astal.CircularProgress : Gtk.Bin {
         var fg = styles.get_color(Gtk.StateFlags.NORMAL);
         var bg = styles.get_background_color(Gtk.StateFlags.NORMAL);
 
-        var bg_stroke = thickness + min({margin.bottom, margin.top, margin.left, margin.right});
+        var bg_stroke = thickness + min({ margin.bottom, margin.top, margin.left, margin.right });
         var fg_stroke = thickness;
-        var radius = min({width, height}) / 2.0 - max({bg_stroke, fg_stroke}) / 2.0;
+        var radius = min({ width, height }) / 2.0 - max({ bg_stroke, fg_stroke }) / 2.0;
         var center_x = width / 2;
         var center_y = height / 2;
 
@@ -174,11 +171,7 @@ public class Astal.CircularProgress : Gtk.Bin {
             ranged_value = to_radian(value);
         } else {
             // Range the value for the arc shape
-            ranged_value = to_radian(scale_arc_value(
-                start_at,
-                end_at,
-                value
-            ));
+            ranged_value = to_radian(scale_arc_value(start_at, end_at, value));
         }
 
         double start_progress, end_progress;

@@ -43,9 +43,10 @@ class AstalBrightness.BrightnessDevice : Object, Device {
         this._subsystem = subsystem;
         this._name = name;
 
-        monitor = File
-            .new_for_path(@"/sys/class/$subsystem/$name/brightness")
-            .monitor_file(FileMonitorFlags.NONE, null);
+        monitor = File.new_for_path(@"/sys/class/$subsystem/$name/brightness").monitor_file(
+            FileMonitorFlags.NONE,
+            null
+        );
 
         prev_real_brightness = real_brightness;
 
@@ -67,10 +68,7 @@ class AstalBrightness.BrightnessDevice : Object, Device {
 #if UDEV
     private void write_brightness(uint value) {
         try {
-            FileUtils.set_contents(
-                @"/sys/class/$subsystem/$name/brightness",
-                @"$value"
-            );
+            FileUtils.set_contents(@"/sys/class/$subsystem/$name/brightness", @"$value");
         } catch (FileError error) {
             critical(error.message);
         }

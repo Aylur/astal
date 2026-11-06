@@ -27,7 +27,7 @@ public class AstalNetwork.AccessPoint : Object {
     public bool requires_password {
         get {
             return wpa_flags != NM.80211ApSecurityFlags.NONE ||
-                rsn_flags != NM.80211ApSecurityFlags.NONE;
+            rsn_flags != NM.80211ApSecurityFlags.NONE;
         }
     }
 
@@ -68,12 +68,7 @@ public class AstalNetwork.AccessPoint : Object {
                 yield first_conn.commit_changes_async(true, null);
             }
 
-            yield ap.client.activate_connection_async(
-                first_conn,
-                wifi.device,
-                get_path(),
-                null
-            );
+            yield ap.client.activate_connection_async(first_conn, wifi.device, get_path(), null);
         } else {
             var connection = NM.SimpleConnection.new();
 

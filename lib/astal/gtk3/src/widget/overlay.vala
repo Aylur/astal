@@ -10,12 +10,10 @@ public class Astal.Overlay : Gtk.Overlay {
         get { return overlays.nth_data(0); }
         set {
             foreach (var ch in get_children()) {
-                if (ch != child)
-                    remove(ch);
+                if (ch != child) remove(ch);
             }
 
-            if (value != null)
-                add_overlay(value);
+            if (value != null) add_overlay(value);
         }
     }
 
@@ -26,12 +24,10 @@ public class Astal.Overlay : Gtk.Overlay {
         owned get { return get_children(); }
         set {
             foreach (var ch in get_children()) {
-                if (ch != child)
-                    remove(ch);
+                if (ch != child) remove(ch);
             }
 
-            foreach (var ch in value)
-                add_overlay(ch);
+            foreach (var ch in value) add_overlay(ch);
         }
     }
 
@@ -39,11 +35,9 @@ public class Astal.Overlay : Gtk.Overlay {
         get { return get_child(); }
         set {
             var ch = get_child();
-            if (ch != null)
-                remove(ch);
+            if (ch != null) remove(ch);
 
-            if (value != null)
-                add(value);
+            if (value != null) add(value);
         }
     }
 
@@ -54,8 +48,7 @@ public class Astal.Overlay : Gtk.Overlay {
     }
 
     private void update_pass_through() {
-        foreach (var child in get_children())
-            set_overlay_pass_through(child, pass_through);
+        foreach (var child in get_children()) set_overlay_pass_through(child, pass_through);
     }
 
     public new void add_overlay(Gtk.Widget widget) {

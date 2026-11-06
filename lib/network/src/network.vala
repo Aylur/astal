@@ -1,7 +1,7 @@
 namespace AstalNetwork {
-public Network get_default() {
-    return Network.get_default();
-}
+    public Network get_default() {
+        return Network.get_default();
+    }
 }
 
 public class AstalNetwork.Network : Object {
@@ -80,17 +80,23 @@ public enum AstalNetwork.Primary {
 
     public string to_string() {
         switch (this) {
-            case WIFI: return "wifi";
-            case WIRED: return "wired";
-            default: return "unknown";
+            case WIFI:
+                return "wifi";
+            case WIRED:
+                return "wired";
+            default:
+                return "unknown";
         }
     }
 
     public static Primary from_connection_type(string type) {
         switch (type) {
-            case "802-11-wireless": return Primary.WIFI;
-            case "802-3-ethernet": return Primary.WIRED;
-            default: return Primary.UNKNOWN;
+            case "802-11-wireless":
+                return Primary.WIFI;
+            case "802-3-ethernet":
+                return Primary.WIRED;
+            default:
+                return Primary.UNKNOWN;
         }
     }
 }
@@ -108,14 +114,22 @@ public enum AstalNetwork.State {
 
     public string to_string() {
         switch (this) {
-            case ASLEEP: return "asleep";
-            case DISCONNECTED: return "disconnected";
-            case DISCONNECTING: return "disconnecting";
-            case CONNECTING: return "connecting";
-            case CONNECTED_LOCAL: return "connected_local";
-            case CONNECTED_SITE: return "connected_site";
-            case CONNECTED_GLOBAL: return "connected_global";
-            default: return "unknown";
+            case ASLEEP:
+                return "asleep";
+            case DISCONNECTED:
+                return "disconnected";
+            case DISCONNECTING:
+                return "disconnecting";
+            case CONNECTING:
+                return "connecting";
+            case CONNECTED_LOCAL:
+                return "connected_local";
+            case CONNECTED_SITE:
+                return "connected_site";
+            case CONNECTED_GLOBAL:
+                return "connected_global";
+            default:
+                return "unknown";
         }
     }
 }
@@ -130,11 +144,16 @@ public enum AstalNetwork.Connectivity {
 
     public string to_string() {
         switch (this) {
-            case NONE: return "none";
-            case PORTAL: return "portal";
-            case LIMITED: return "limited";
-            case FULL: return "full";
-            default: return "unknown";
+            case NONE:
+                return "none";
+            case PORTAL:
+                return "portal";
+            case LIMITED:
+                return "limited";
+            case FULL:
+                return "full";
+            default:
+                return "unknown";
         }
     }
 }
@@ -157,19 +176,32 @@ public enum AstalNetwork.DeviceState {
 
     public string to_string() {
         switch (this) {
-            case UNMANAGED: return "unmanaged";
-            case UNAVAILABLE: return "unavailable";
-            case DISCONNECTED: return "disconnected";
-            case PREPARE: return "prepare";
-            case CONFIG: return "config";
-            case NEED_AUTH: return "need_auth";
-            case IP_CONFIG: return "ip_config";
-            case IP_CHECK: return "ip_check";
-            case SECONDARIES: return "secondaries";
-            case ACTIVATED: return "activated";
-            case DEACTIVATING: return "deactivating";
-            case FAILED: return "failed";
-            default: return "unknown";
+            case UNMANAGED:
+                return "unmanaged";
+            case UNAVAILABLE:
+                return "unavailable";
+            case DISCONNECTED:
+                return "disconnected";
+            case PREPARE:
+                return "prepare";
+            case CONFIG:
+                return "config";
+            case NEED_AUTH:
+                return "need_auth";
+            case IP_CONFIG:
+                return "ip_config";
+            case IP_CHECK:
+                return "ip_check";
+            case SECONDARIES:
+                return "secondaries";
+            case ACTIVATED:
+                return "activated";
+            case DEACTIVATING:
+                return "deactivating";
+            case FAILED:
+                return "failed";
+            default:
+                return "unknown";
         }
     }
 }
@@ -185,17 +217,23 @@ public enum AstalNetwork.Internet {
         }
 
         switch (device.active_connection.state) {
-            case NM.ActiveConnectionState.ACTIVATED: return CONNECTED;
-            case NM.ActiveConnectionState.ACTIVATING: return CONNECTING;
-            default: return DISCONNECTED;
+            case NM.ActiveConnectionState.ACTIVATED:
+                return CONNECTED;
+            case NM.ActiveConnectionState.ACTIVATING:
+                return CONNECTING;
+            default:
+                return DISCONNECTED;
         }
     }
 
     public string to_string() {
         switch (this) {
-            case CONNECTED: return "connected";
-            case CONNECTING: return "connecting";
-            default: return "disconnected";
+            case CONNECTED:
+                return "connected";
+            case CONNECTING:
+                return "connecting";
+            default:
+                return "disconnected";
         }
     }
 }

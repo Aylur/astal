@@ -29,7 +29,9 @@ public class AstalNetwork.Wired : Object {
             icon_name = _icon();
         });
 
-        device.client.notify.connect(() => { icon_name = _icon(); });
+        device.client.notify.connect(() => {
+            icon_name = _icon();
+        });
 
         on_active_connection();
         icon_name = _icon();

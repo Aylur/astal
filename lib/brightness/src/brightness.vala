@@ -1,10 +1,10 @@
 namespace AstalBrightness {
-/**
- * Get the singleton Brightness instance.
- */
-public Brightness get_default() {
-    return Brightness.get_default();
-}
+    /**
+     * Get the singleton Brightness instance.
+     */
+    public Brightness get_default() {
+        return Brightness.get_default();
+    }
 }
 
 /**
@@ -112,11 +112,23 @@ public class AstalBrightness.Brightness : Object {
             score += 100;
         }
 
-        if (Regex.match_simple("platform|asus|dell|thinkpad|apple|smc|tpacpi", name, RegexCompileFlags.CASELESS)) {
+        if (
+            Regex.match_simple(
+                "platform|asus|dell|thinkpad|apple|smc|tpacpi",
+                name,
+                RegexCompileFlags.CASELESS
+            )
+        ) {
             score += 10;
         }
 
-        if (Regex.match_simple("input|scrolllock|capslock|numlock", name, RegexCompileFlags.CASELESS)) {
+        if (
+            Regex.match_simple(
+                "input|scrolllock|capslock|numlock",
+                name,
+                RegexCompileFlags.CASELESS
+            )
+        ) {
             score -= 100;
         }
 
