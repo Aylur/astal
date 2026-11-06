@@ -1,5 +1,6 @@
 class AstalBrightness.BrightnessDevice : Object, Device {
     FileMonitor monitor;
+    FileMonitor? hw_monitor;
     uint prev_real_brightness;
 
     public Subsystem subsystem { get; }
@@ -43,25 +44,29 @@ class AstalBrightness.BrightnessDevice : Object, Device {
         this._subsystem = subsystem;
         this._name = name;
 
-        monitor = File.new_for_path(@"/sys/class/$subsystem/$name/brightness").monitor_file(
-            FileMonitorFlags.NONE,
-            null
-        );
+        var brightness = File.new_for_path(@"/sys/class/$subsystem/$name/brightness");
+        monitor = brightness.monitor_file(FileMonitorFlags.NONE, null);
+        monitor.changed.connect(on_changed);
+
+        var hw_changed = File.new_for_path(@"/sys/class/$subsystem/$name/brightness_hw_changed");
+        if (subsystem == Subsystem.LEDS && hw_changed.query_exists()) {
+            hw_monitor = hw_changed.monitor_file(FileMonitorFlags.NONE, null);
+            hw_monitor.changed.connect(on_changed);
+        }
 
         prev_real_brightness = real_brightness;
-
-        monitor.changed.connect(() => {
-            if (prev_real_brightness != real_brightness) {
-                prev_real_brightness = real_brightness;
-                notify_property("real-brightness");
-                notify_property("brightness");
-            }
-        });
     }
 
     ~BrightnessDevice() {
-        if (monitor != null) {
-            monitor.cancel();
+        if (monitor != null) monitor.cancel();
+        if (hw_monitor != null) hw_monitor.cancel();
+    }
+
+    private void on_changed() {
+        if (prev_real_brightness != real_brightness) {
+            prev_real_brightness = real_brightness;
+            notify_property("real-brightness");
+            notify_property("brightness");
         }
     }
 
