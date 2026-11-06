@@ -9,3 +9,5 @@ option(
   type: 'boolean',
   value: true,
 )
+
+option('tests', type: 'boolean', value: false, description: 'Run isolated workspace IPC tests (requires python-gobject and gjs)')

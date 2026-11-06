@@ -51,7 +51,7 @@ public class Client : Object {
         fullscreen = (Fullscreen)obj.get_int_member("fullscreen");
         fullscreen_client = (Fullscreen)obj.get_int_member("fullscreenClient");
 
-        workspace = hyprland.get_workspace((int)obj.get_object_member("workspace").get_int_member("id"));
+        workspace = hyprland.workspace_from_json(WorkspaceIdentity.object_member(obj, "workspace"));
         monitor = hyprland.get_monitor((int)obj.get_int_member("monitor"));
     }
 
@@ -64,8 +64,8 @@ public class Client : Object {
     }
 
     public void move_to(Workspace ws) {
-        var id = ws.id;
-        Hyprland.get_default().dispatch("movetoworkspacesilent", @"$id,address:0x$address");
+        var selector = ws.selector;
+        Hyprland.get_default().dispatch("movetoworkspacesilent", @"$selector,address:0x$address");
     }
 
     public void toggle_floating() {
