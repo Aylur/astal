@@ -1,3 +1,15 @@
+/**
+ * Errors thrown when an activation fails after NetworkManager accepted it.
+ */
+public errordomain AstalNetwork.ActivationError {
+    /** The password is missing or wrong. */
+    AUTH_FAILED,
+    /** The connection attempt timed out. */
+    TIMEOUT,
+    /** Any other reason, the message contains the NetworkManager reason. */
+    FAILED,
+}
+
 public class AstalNetwork.AccessPoint : Object {
     private Wifi wifi;
     public NM.AccessPoint ap;
@@ -92,10 +104,11 @@ public class AstalNetwork.AccessPoint : Object {
     /**
      * Activates the first saved connection of this access point,
      * or creates and activates a new one if there is none.
-     *
      * When a password is given it is saved to the connection,
      * it is ignored for open networks.
      * Enterprise (802.1X) networks need an already configured connection.
+     * Resolves once the connection is activated and throws an
+     * [error@AstalNetwork.ActivationError] if the activation fails.
      */
     public async void activate(string? password = null) throws Error {
         var device = wifi.device;
@@ -113,7 +126,8 @@ public class AstalNetwork.AccessPoint : Object {
                 yield conn.commit_changes_async(true, null);
             }
 
-            yield ap.client.activate_connection_async(conn, device, get_path(), null);
+            var ac = yield ap.client.activate_connection_async(conn, device, get_path(), null);
+            yield wait_for_activation(ac);
         } else {
             var connection = NM.SimpleConnection.new();
 
@@ -129,8 +143,50 @@ public class AstalNetwork.AccessPoint : Object {
                 connection.add_setting(security);
             }
 
-            yield ap.client.add_and_activate_connection_async(connection, device, get_path(), null);
+            var ac = yield ap.client.add_and_activate_connection_async(
+                connection,
+                device,
+                get_path(),
+                null
+            );
+            yield wait_for_activation(ac);
         }
+    }
+
+    private async void wait_for_activation(NM.ActiveConnection ac) throws Error {
+        if (!is_final(ac.state)) {
+            ulong state_handler = 0;
+            state_handler = ac.state_changed.connect((state) => {
+                if (is_final((NM.ActiveConnectionState)state)) {
+                    SignalHandler.disconnect(ac, state_handler);
+                    Idle.add(wait_for_activation.callback);
+                }
+            });
+            yield;
+        }
+
+        if (ac.state == NM.ActiveConnectionState.ACTIVATED) return;
+
+        var reason = ac.get_state_reason();
+        var reasons = (EnumClass)typeof(NM.ActiveConnectionStateReason).class_ref();
+        var nick = reasons.get_value(reason).value_nick;
+
+        switch (reason) {
+            case NM.ActiveConnectionStateReason.NO_SECRETS:
+            case NM.ActiveConnectionStateReason.LOGIN_FAILED:
+                throw new ActivationError.AUTH_FAILED(nick);
+            case NM.ActiveConnectionStateReason.CONNECT_TIMEOUT:
+            case NM.ActiveConnectionStateReason.SERVICE_START_TIMEOUT:
+                throw new ActivationError.TIMEOUT(nick);
+            default:
+                throw new ActivationError.FAILED(nick);
+        }
+    }
+
+    private static bool is_final(NM.ActiveConnectionState state) {
+        return (state == NM.ActiveConnectionState.ACTIVATED) ||
+        (state == NM.ActiveConnectionState.DEACTIVATING) ||
+        (state == NM.ActiveConnectionState.DEACTIVATED);
     }
 
     private string? get_key_mgmt() throws Error {
