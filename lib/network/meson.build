@@ -65,6 +65,7 @@ gir = custom_target(
     '--gir', gir_name,
     '--pkgs', 'libnm',
     '--property', ':'.join(
+      'AccessPoint.bssid',
       'AccessPoint.ssid',
       'AccessPoint.connections',
       'Wifi.device',

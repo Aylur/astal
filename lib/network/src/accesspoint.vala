@@ -29,7 +29,7 @@ public class AstalNetwork.AccessPoint : Object {
     /**
      * The hardware address of the access point.
      */
-    public string bssid { owned get { return ap.bssid; } }
+    public string? bssid { owned get { return ap.bssid; } }
 
     /**
      * The frequency in MHz.
