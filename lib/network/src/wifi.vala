@@ -16,6 +16,11 @@ public class AstalNetwork.Wifi : Object {
         direct_equal
     );
 
+    private GenericSet<NM.AccessPoint> pending_access_points = new GenericSet<NM.AccessPoint>(
+        direct_hash,
+        direct_equal
+    );
+
     private NM.Client client;
 
     private NM.DeviceWifi? _device;
@@ -51,8 +56,13 @@ public class AstalNetwork.Wifi : Object {
     public bool is_hotspot { get; private set; }
     public bool scanning { get; private set; }
 
-    public signal void access_point_added(AccessPoint ap);
-    public signal void access_point_removed(AccessPoint ap);
+    public signal void access_point_added(AccessPoint ap) {
+        notify_property("access-points");
+    }
+
+    public signal void access_point_removed(AccessPoint ap) {
+        notify_property("access-points");
+    }
 
     internal Wifi(NM.Client client) {
         this.client = client;
@@ -78,24 +88,24 @@ public class AstalNetwork.Wifi : Object {
             return;
         }
 
+        freeze_notify();
         foreach (var ap in device.access_points) {
             add_access_point(ap);
         }
-        notify_property("access-points");
+        thaw_notify();
 
         device_handlers += device.access_point_added.connect((access_point) => {
-            if (add_access_point((NM.AccessPoint)access_point) != null) {
-                notify_property("access-points");
-            }
+            add_access_point((NM.AccessPoint)access_point);
         });
 
         device_handlers += device.access_point_removed.connect((access_point) => {
             var ap = (NM.AccessPoint)access_point;
+            if (ap in pending_access_points) stop_pending_access_point(ap);
+
             var rem_ap = _access_points.get(ap);
             if (rem_ap != null) {
                 _access_points.remove(ap);
                 access_point_removed(rem_ap);
-                notify_property("access-points");
             }
         });
 
@@ -136,11 +146,16 @@ public class AstalNetwork.Wifi : Object {
         active_access_point = null;
 
         finish_scan();
-        foreach (var ap in _access_points.get_values()) {
+        pending_access_points.foreach((ap) => {
+            ap.notify["ssid"].disconnect(on_pending_ssid);
+        });
+        pending_access_points.remove_all();
+
+        freeze_notify();
+        foreach (var ap in _access_points.steal_all_values()) {
             access_point_removed(ap);
         }
-        _access_points.remove_all();
-        notify_property("access-points");
+        thaw_notify();
 
         internet = Internet.DISCONNECTED;
         state = DeviceState.UNKNOWN;
@@ -213,10 +228,33 @@ public class AstalNetwork.Wifi : Object {
     private AccessPoint? add_access_point(NM.AccessPoint ap) {
         if (_access_points.contains(ap)) return null;
 
+        if (ap.ssid == null) {
+            if (!(ap in pending_access_points)) {
+                pending_access_points.add(ap);
+                ap.notify["ssid"].connect(on_pending_ssid);
+            }
+            return null;
+        }
+
         var new_ap = new AccessPoint(this, ap);
         _access_points.set(ap, new_ap);
         access_point_added(new_ap);
         return new_ap;
+    }
+
+    private void on_pending_ssid(Object obj, ParamSpec pspec) {
+        var ap = (NM.AccessPoint)obj;
+        if (ap.ssid == null) return;
+
+        stop_pending_access_point(ap);
+        if ((add_access_point(ap) != null) && (ap == _device.active_access_point)) {
+            on_active_access_point();
+        }
+    }
+
+    private void stop_pending_access_point(NM.AccessPoint ap) {
+        ap.notify["ssid"].disconnect(on_pending_ssid);
+        pending_access_points.remove(ap);
     }
 
     private void on_active_access_point_notify() {
@@ -235,13 +273,13 @@ public class AstalNetwork.Wifi : Object {
 
         var ap = device.active_access_point;
         if (ap != null) {
-            if (add_access_point(ap) != null) {
-                notify_property("access-points");
-            }
+            add_access_point(ap);
 
             active_access_point = _access_points.get(ap);
-            on_active_access_point_notify();
-            ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
+            if (active_access_point != null) {
+                on_active_access_point_notify();
+                ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
+            }
         }
     }
 
