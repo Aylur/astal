@@ -23,8 +23,15 @@ public class AstalNetwork.AccessPoint : Object {
     }
 
     /**
+     * Whether this is the access point the wifi device is connected to.
+     */
+    public bool active {
+        get { return wifi.active_access_point == this; }
+    }
+    private bool was_active = false;
+
+    /**
      * Whether connecting needs a password: WPA/WPA2/WPA3 personal, WEP and enterprise networks.
-     * Open and enhanced open (OWE) networks do not.
      */
     public bool requires_password {
         get {
@@ -57,21 +64,29 @@ public class AstalNetwork.AccessPoint : Object {
         this.wifi = wifi;
         this.ap = ap;
 
-        ap.notify.connect((pspec) => {
-            if (get_class().find_property(pspec.name) != null) {
-                notify_property(pspec.name);
-            }
-            if (pspec.name == "strength") icon_name = _icon();
-            if (
-                (pspec.name == "flags") ||
-                (pspec.name == "wpa-flags") ||
-                (pspec.name == "rsn-flags")
-            ) {
-                notify_property("requires-password");
-            }
-        });
+        ap.notify.connect(on_ap_notify);
+
+        was_active = active;
+        wifi.notify["active-access-point"].connect(on_active_access_point);
 
         icon_name = _icon();
+    }
+
+    private void on_ap_notify(Object obj, ParamSpec pspec) {
+        if (get_class().find_property(pspec.name) != null) {
+            notify_property(pspec.name);
+        }
+        if (pspec.name == "strength") icon_name = _icon();
+        if ((pspec.name == "flags") || (pspec.name == "wpa-flags") || (pspec.name == "rsn-flags")) {
+            notify_property("requires-password");
+        }
+    }
+
+    private void on_active_access_point() {
+        if (was_active != active) {
+            was_active = active;
+            notify_property("active");
+        }
     }
 
     /**
