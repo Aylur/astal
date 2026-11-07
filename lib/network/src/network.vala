@@ -13,8 +13,8 @@ public class AstalNetwork.Network : Object {
 
     public NM.Client client { get; private set; }
 
-    public Wifi? wifi { get; private set; }
-    public Wired? wired { get; private set; }
+    public Wifi wifi { get; private set; }
+    public Wired wired { get; private set; }
     public Primary primary { get; private set; }
 
     public Connectivity connectivity {
@@ -25,14 +25,16 @@ public class AstalNetwork.Network : Object {
         get { return (State)client.state; }
     }
 
+    private Network() {}
     construct {
         try {
             client = new NM.Client();
-            var wifi_device = (NM.DeviceWifi)get_device(NM.DeviceType.WIFI);
-            if (wifi_device != null) wifi = new Wifi(wifi_device);
+            wifi = new Wifi(client);
+            wired = new Wired(client);
 
-            var ethernet = (NM.DeviceEthernet)get_device(NM.DeviceType.ETHERNET);
-            if (ethernet != null) wired = new Wired(ethernet);
+            sync_devices();
+            client.device_added.connect(() => sync_devices());
+            client.device_removed.connect((device) => sync_devices((NM.Device)device));
 
             sync();
             client.notify["primary-connection"].connect(sync);
@@ -45,14 +47,23 @@ public class AstalNetwork.Network : Object {
         }
     }
 
-    private NM.Device? get_device(NM.DeviceType t) {
+    private void sync_devices(NM.Device? removed = null) {
+        wifi.set_device((NM.DeviceWifi?)get_device(NM.DeviceType.WIFI, removed));
+        wired.set_device((NM.DeviceEthernet?)get_device(NM.DeviceType.ETHERNET, removed));
+    }
+
+    private NM.Device? get_device(NM.DeviceType t, NM.Device? exclude = null) {
         var valid = new GenericArray<NM.Device>();
         foreach (var device in client.get_devices()) {
-            if (device.device_type == t) valid.add(device);
+            if ((device.device_type == t) && (device != exclude)) {
+                valid.add(device);
+            }
         }
 
         foreach (var device in valid) {
-            if (device.active_connection != null) return device;
+            if (device.active_connection != null) {
+                return device;
+            }
         }
 
         if (valid.length > 0) return valid.get(0);
@@ -211,7 +222,7 @@ public enum AstalNetwork.Internet {
     CONNECTING,
     DISCONNECTED;
 
-    public static Internet from_device(NM.Device device) {
+    public static Internet from_device(NM.Device? device) {
         if ((device == null) || (device.active_connection == null)) {
             return DISCONNECTED;
         }

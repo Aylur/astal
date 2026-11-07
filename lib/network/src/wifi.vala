@@ -16,7 +16,12 @@ public class AstalNetwork.Wifi : Object {
         direct_equal
     );
 
-    public NM.DeviceWifi device { get; construct set; }
+    private NM.Client client;
+
+    private NM.DeviceWifi? _device;
+    public NM.DeviceWifi? device {
+        get { return _device; }
+    }
 
     public NM.ActiveConnection? active_connection { get; private set; }
     private ulong connection_handler = 0;
@@ -24,18 +29,21 @@ public class AstalNetwork.Wifi : Object {
     public AccessPoint? active_access_point { get; private set; }
     private ulong ap_handler = 0;
 
+    private ulong scan_handler = 0;
+    private ulong[] device_handlers = {};
+
     public List<weak AccessPoint> access_points {
         owned get { return _access_points.get_values(); }
     }
 
     public bool enabled {
-        get { return device.client.wireless_enabled; }
-        set { device.client.wireless_enabled = value; }
+        get { return client.wireless_enabled; }
+        set { client.wireless_enabled = value; }
     }
 
     public Internet internet { get; private set; }
     public uint bandwidth { get; private set; }
-    public string ssid { get; private set; }
+    public string? ssid { get; private set; }
     public uint8 strength { get; private set; }
     public uint frequency { get; private set; }
     public DeviceState state { get; private set; }
@@ -46,20 +54,42 @@ public class AstalNetwork.Wifi : Object {
     public signal void access_point_added(AccessPoint ap);
     public signal void access_point_removed(AccessPoint ap);
 
-    internal Wifi(NM.DeviceWifi device) {
-        this.device = device;
+    internal Wifi(NM.Client client) {
+        this.client = client;
+
+        client.notify["wireless-enabled"].connect(() => {
+            notify_property("enabled");
+        });
+        client.notify.connect(() => {
+            icon_name = _icon();
+        });
+        icon_name = _icon();
+    }
+
+    internal void set_device(NM.DeviceWifi? device) {
+        if (_device == device) return;
+        if (_device != null) unset_device();
+
+        _device = device;
+        notify_property("device");
+
+        if (device == null) {
+            icon_name = _icon();
+            return;
+        }
 
         foreach (var ap in device.access_points) {
             add_access_point(ap);
         }
+        notify_property("access-points");
 
-        device.access_point_added.connect((access_point) => {
+        device_handlers += device.access_point_added.connect((access_point) => {
             if (add_access_point((NM.AccessPoint)access_point) != null) {
                 notify_property("access-points");
             }
         });
 
-        device.access_point_removed.connect((access_point) => {
+        device_handlers += device.access_point_removed.connect((access_point) => {
             var ap = (NM.AccessPoint)access_point;
             var rem_ap = _access_points.get(ap);
             if (rem_ap != null) {
@@ -70,61 +100,94 @@ public class AstalNetwork.Wifi : Object {
         });
 
         on_active_connection();
-        device.notify["active-connection"].connect(on_active_connection);
+        device_handlers += device.notify["active-connection"].connect(on_active_connection);
 
         on_active_access_point();
-        device.notify["active-access-point"].connect(on_active_access_point);
+        device_handlers += device.notify["active-access-point"].connect(on_active_access_point);
 
         state = (DeviceState)device.state;
-        device.client.notify["wireless-enabled"].connect(() => notify_property("enabled"));
-        device.state_changed.connect((n, o, r) => {
+        device_handlers += device.state_changed.connect((n, o, r) => {
             state_changed(n, o, r);
             state = (DeviceState)n;
         });
 
-        device.notify.connect(() => {
-            icon_name = _icon();
-        });
-        device.client.notify.connect(() => {
+        device_handlers += device.notify.connect(() => {
             icon_name = _icon();
         });
         icon_name = _icon();
     }
 
+    private void unset_device() {
+        foreach (var id in device_handlers) {
+            SignalHandler.disconnect(_device, id);
+        }
+        device_handlers = {};
+
+        if (connection_handler > 0) {
+            active_connection.disconnect(connection_handler);
+            connection_handler = 0;
+        }
+        active_connection = null;
+
+        if (ap_handler > 0) {
+            active_access_point.disconnect(ap_handler);
+            ap_handler = 0;
+        }
+        active_access_point = null;
+
+        finish_scan();
+        foreach (var ap in _access_points.get_values()) {
+            access_point_removed(ap);
+        }
+        _access_points.remove_all();
+        notify_property("access-points");
+
+        internet = Internet.DISCONNECTED;
+        state = DeviceState.UNKNOWN;
+        is_hotspot = false;
+        bandwidth = 0;
+        frequency = 0;
+        strength = 0;
+        ssid = null;
+    }
+
     public signal void state_changed(
         DeviceState new_state,
         DeviceState old_state,
-        NM.DeviceStateReason reaseon
+        NM.DeviceStateReason reason
     );
 
     public void scan() {
+        if (scanning || (_device == null)) return;
+
+        var device = _device;
         scanning = true;
-        var last_scan = device.last_scan;
+        scan_handler = device.notify["last-scan"].connect(finish_scan);
+
         device.request_scan_async.begin(null, (_, res) => {
             try {
                 device.request_scan_async.end(res);
-                Timeout.add(
-                    1000,
-                    () => {
-                        if (device.last_scan == last_scan) return Source.CONTINUE;
-
-                        scanning = false;
-                        return Source.REMOVE;
-                    },
-                    Priority.DEFAULT
-                );
             } catch (Error err) {
+                finish_scan();
                 critical(err.message);
             }
         });
     }
 
+    private void finish_scan() {
+        if (scan_handler > 0) {
+            SignalHandler.disconnect(_device, scan_handler);
+            scan_handler = 0;
+        }
+        scanning = false;
+    }
+
     public async void deactivate_connection() throws Error {
-        if (device.active_connection == null) {
+        if ((_device == null) || (_device.active_connection == null)) {
             return;
         }
 
-        yield device.client.deactivate_connection_async(device.active_connection, null);
+        yield client.deactivate_connection_async(_device.active_connection, null);
     }
 
     private void on_active_connection() {
@@ -139,8 +202,12 @@ public class AstalNetwork.Wifi : Object {
         if (active_connection != null) {
             connection_handler = active_connection.notify["state"].connect(() => {
                 internet = Internet.from_device(device);
+                icon_name = _icon();
             });
         }
+
+        internet = Internet.from_device(device);
+        icon_name = _icon();
     }
 
     private AccessPoint? add_access_point(NM.AccessPoint ap) {
@@ -181,7 +248,7 @@ public class AstalNetwork.Wifi : Object {
     private string _icon() {
         if (!enabled) return ICON_DISABLED;
 
-        var full = device.client.connectivity == NM.ConnectivityState.FULL;
+        var full = client.connectivity == NM.ConnectivityState.FULL;
 
         if (internet == Internet.CONNECTED) {
             if (is_hotspot) return ICON_HOTSPOT;
