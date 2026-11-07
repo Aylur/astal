@@ -5,12 +5,12 @@ for valadoc and not gi-docgen so we need to fix it.
 """
 
 import argparse
-import xml.etree.ElementTree as ET
 import html
-import sys
-import subprocess
-import re
 import os
+import re
+import subprocess
+import sys
+import xml.etree.ElementTree as ET
 
 
 # valac fails on gi-docgen compliant markdown
@@ -43,16 +43,17 @@ def _fix_gir(name: str, gir: str, out: str, properties: str | None):
         inc.set("name", f"{name}.h")
     else:
         print("no c:include tag found", file=sys.stderr)
-        exit(1)
+        sys.exit(1)
 
     # Fix "Can't convert untyped array to JS value"
     # https://gitlab.gnome.org/GNOME/vala/-/issues/1212
     if properties is not None:
         for part in properties.split(":"):
             klass, prop = part.split(".")
-            query = f'.//class[@name="{klass}"]/property[@name="{prop}"]'
-            if elem := root.find(query, namespaces):
-                elem.set("getter", f"get_{prop}")
+            name = prop.replace("_", "-")
+            query = f'.//class[@name="{klass}"]/property[@name="{name}"]'
+            if (elem := root.find(query, namespaces)) is not None:
+                elem.set("getter", f"get_{prop.replace('-', '_')}")
 
     tree.write(out, encoding="utf-8", xml_declaration=True)
 
@@ -77,7 +78,7 @@ def _valadoc(name: str, gir: str, pkgs: str, sources: list[str]):
             stdout=sys.stdout,
         )
     except subprocess.CalledProcessError:
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
