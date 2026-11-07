@@ -2,7 +2,7 @@ public class Astal.CenterBox : Gtk.Box, Gtk.Buildable {
     /**
      * Corresponds to [property@Gtk.Orientable :orientation].
      */
-    [CCode (notify = false)]
+    [CCode (notify=false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
@@ -22,11 +22,9 @@ public class Astal.CenterBox : Gtk.Box, Gtk.Buildable {
     public Gtk.Widget start_widget {
         get { return _start_widget; }
         set {
-            if (_start_widget != null)
-                remove(_start_widget);
+            if (_start_widget != null) remove(_start_widget);
 
-            if (value != null)
-                pack_start(value, true, true, 0);
+            if (value != null) pack_start(value, true, true, 0);
         }
     }
 
@@ -34,22 +32,18 @@ public class Astal.CenterBox : Gtk.Box, Gtk.Buildable {
     public Gtk.Widget end_widget {
         get { return _end_widget; }
         set {
-            if (_end_widget != null)
-                remove(_end_widget);
+            if (_end_widget != null) remove(_end_widget);
 
-            if (value != null)
-                pack_end(value, true, true, 0);
+            if (value != null) pack_end(value, true, true, 0);
         }
     }
 
     public Gtk.Widget center_widget {
         get { return get_center_widget(); }
         set {
-            if (center_widget != null)
-                remove(center_widget);
+            if (center_widget != null) remove(center_widget);
 
-            if (value != null)
-                set_center_widget(value);
+            if (value != null) set_center_widget(value);
         }
     }
 

@@ -55,12 +55,10 @@ int main(string[] argv) {
         return 0;
     }
 
-    if (instance_name == null)
-        instance_name = "astal";
+    if (instance_name == null) instance_name = "astal";
 
     if (list) {
-        foreach (var name in AstalIO.get_instances())
-            print(@"$name\n");
+        foreach (var name in AstalIO.get_instances()) print(@"$name\n");
 
         return 0;
     }

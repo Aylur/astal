@@ -87,12 +87,15 @@ string to_json_string(AstalPowerProfiles.PowerProfiles profiles) {
     foreach (var action in profiles.active_profile_holds) {
         active_holds.add_value(
             new Json.Builder()
-            .begin_object()
-            .set_member_name("application_id").add_string_value(action.application_id)
-            .set_member_name("profile").add_string_value(action.profile)
-            .set_member_name("reason").add_string_value(action.reason)
-            .end_object()
-            .get_root()
+                .begin_object()
+                .set_member_name("application_id")
+                .add_string_value(action.application_id)
+                .set_member_name("profile")
+                .add_string_value(action.profile)
+                .set_member_name("reason")
+                .add_string_value(action.reason)
+                .end_object()
+                .get_root()
         );
     }
 
@@ -100,27 +103,37 @@ string to_json_string(AstalPowerProfiles.PowerProfiles profiles) {
     foreach (var prof in profiles.profiles) {
         profs.add_value(
             new Json.Builder()
-            .begin_object()
-            .set_member_name("profile").add_string_value(prof.profile)
-            .set_member_name("driver").add_string_value(prof.driver)
-            .set_member_name("cpu_driver").add_string_value(prof.cpu_driver)
-            .set_member_name("platform_driver").add_string_value(prof.platform_driver)
-            .end_object()
-            .get_root()
+                .begin_object()
+                .set_member_name("profile")
+                .add_string_value(prof.profile)
+                .set_member_name("driver")
+                .add_string_value(prof.driver)
+                .set_member_name("cpu_driver")
+                .add_string_value(prof.cpu_driver)
+                .set_member_name("platform_driver")
+                .add_string_value(prof.platform_driver)
+                .end_object()
+                .get_root()
         );
     }
 
     return Json.to_string(
         new Json.Builder()
-        .begin_object()
-        .set_member_name("active_profile").add_string_value(profiles.active_profile)
-        .set_member_name("icon_name").add_string_value(profiles.icon_name)
-        .set_member_name("performance_degraded").add_string_value(profiles.performance_degraded)
-        .set_member_name("actions").add_value(acts.end_array().get_root())
-        .set_member_name("active_profile_holds").add_value(active_holds.end_array().get_root())
-        .set_member_name("profiles").add_value(profs.end_array().get_root())
-        .end_object()
-        .get_root(),
+            .begin_object()
+            .set_member_name("active_profile")
+            .add_string_value(profiles.active_profile)
+            .set_member_name("icon_name")
+            .add_string_value(profiles.icon_name)
+            .set_member_name("performance_degraded")
+            .add_string_value(profiles.performance_degraded)
+            .set_member_name("actions")
+            .add_value(acts.end_array().get_root())
+            .set_member_name("active_profile_holds")
+            .add_value(active_holds.end_array().get_root())
+            .set_member_name("profiles")
+            .add_value(profs.end_array().get_root())
+            .end_object()
+            .get_root(),
         false
     );
 }

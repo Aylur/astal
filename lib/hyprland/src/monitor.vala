@@ -62,8 +62,12 @@ public class AstalHyprland.Monitor : Object {
             modes.append_val(mode.get_string());
         }
 
-        active_workspace = hyprland.workspace_from_json(WorkspaceIdentity.object_member(obj, "activeWorkspace"));
-        special_workspace = hyprland.workspace_from_json(WorkspaceIdentity.object_member(obj, "specialWorkspace"));
+        active_workspace = hyprland.workspace_from_json(
+            WorkspaceIdentity.object_member(obj, "activeWorkspace")
+        );
+        special_workspace = hyprland.workspace_from_json(
+            WorkspaceIdentity.object_member(obj, "specialWorkspace")
+        );
     }
 
     public void focus() {

@@ -2,23 +2,29 @@
  * Base class for [class@AstalIO.Variable] mainly meant to be used
  * in higher level language bindings such as Lua and Gjs.
  */
-[Version (deprecated = true, deprecated_since="", replacement="")]
+[Version (deprecated=true, deprecated_since="", replacement="")]
 public class AstalIO.VariableBase : Object {
-    public signal void changed ();
-    public signal void dropped ();
-    public signal void error (string err);
+    public signal void changed();
+    public signal void dropped();
+    public signal void error(string err);
 
     // lua-lgi crashes when using its emitting mechanism
-    public void emit_changed() { changed(); }
-    public void emit_dropped() { dropped(); }
-    public void emit_error(string err) { this.error(err); }
+    public void emit_changed() {
+        changed();
+    }
+    public void emit_dropped() {
+        dropped();
+    }
+    public void emit_error(string err) {
+        this.error(err);
+    }
 
     ~VariableBase() {
         dropped();
     }
 }
 
-[Version (deprecated = true, deprecated_since="", replacement="")]
+[Version (deprecated=true, deprecated_since="", replacement="")]
 public class AstalIO.Variable : VariableBase {
     public Value value { owned get; set; }
 
@@ -37,23 +43,14 @@ public class AstalIO.Variable : VariableBase {
         Object(value: init);
     }
 
-    public Variable poll(
-        uint interval,
-        string exec,
-        Closure? transform
-    ) throws Error {
+    public Variable poll(uint interval, string exec, Closure? transform) throws Error {
         string[] argv;
         Shell.parse_argv(exec, out argv);
         return pollv(interval, argv, transform);
     }
 
-    public Variable pollv(
-        uint interval,
-        string[] execv,
-        Closure? transform
-    ) throws Error {
-        if (is_polling())
-            stop_poll();
+    public Variable pollv(uint interval, string[] execv, Closure? transform) throws Error {
+        if (is_polling()) stop_poll();
 
         poll_interval = interval;
         poll_exec = execv;
@@ -63,12 +60,8 @@ public class AstalIO.Variable : VariableBase {
         return this;
     }
 
-    public Variable pollfn(
-        uint interval,
-        Closure fn
-    ) throws Error {
-        if (is_polling())
-            stop_poll();
+    public Variable pollfn(uint interval, Closure fn) throws Error {
+        if (is_polling()) stop_poll();
 
         poll_interval = interval;
         poll_fn = fn;
@@ -77,21 +70,14 @@ public class AstalIO.Variable : VariableBase {
         return this;
     }
 
-    public Variable watch(
-        string exec,
-        Closure? transform
-    ) throws Error {
+    public Variable watch(string exec, Closure? transform) throws Error {
         string[] argv;
         Shell.parse_argv(exec, out argv);
         return watchv(argv, transform);
     }
 
-    public Variable watchv(
-        string[] execv,
-        Closure? transform
-    ) throws Error {
-        if (is_watching())
-            stop_watch();
+    public Variable watchv(string[] execv, Closure? transform) throws Error {
+        if (is_watching()) stop_watch();
 
         watch_exec = execv;
         watch_transform = transform;
@@ -102,11 +88,9 @@ public class AstalIO.Variable : VariableBase {
     construct {
         notify["value"].connect(() => changed());
         dropped.connect(() => {
-            if (is_polling())
-                stop_poll();
+            if (is_polling()) stop_poll();
 
-            if (is_watching())
-                stop_watch();
+            if (is_watching()) stop_watch();
         });
     }
 
@@ -118,10 +102,8 @@ public class AstalIO.Variable : VariableBase {
             var ret_val = Value(this.value.type());
             transform.invoke(ref ret_val, { str, this.value });
             this.value = ret_val;
-        }
-        else {
-            if (this.value.type() == Type.STRING && this.value.get_string() == val)
-                return;
+        } else {
+            if (this.value.type() == Type.STRING && this.value.get_string() == val) return;
 
             var str = Value(typeof(string));
             str.set_string(val);
@@ -140,10 +122,14 @@ public class AstalIO.Variable : VariableBase {
 
         if (poll_fn != null) {
             set_fn();
-            poll_id = Timeout.add(poll_interval, () => {
-                set_fn();
-                return Source.CONTINUE;
-            }, Priority.DEFAULT);
+            poll_id = Timeout.add(
+                poll_interval,
+                () => {
+                    set_fn();
+                    return Source.CONTINUE;
+                },
+                Priority.DEFAULT
+            );
         }
         if (poll_exec != null) {
             Process.exec_asyncv.begin(poll_exec, (_, res) => {
@@ -154,19 +140,23 @@ public class AstalIO.Variable : VariableBase {
                     this.error(err.message);
                 }
             });
-            poll_id = Timeout.add(poll_interval, () => {
-                Process.exec_asyncv.begin(poll_exec, (_, res) => {
-                    try {
-                        var str = Process.exec_asyncv.end(res);
-                        set_closure(str, poll_transform);
-                    } catch (Error err) {
-                        this.error(err.message);
-                        Source.remove(poll_id);
-                        poll_id = 0;
-                    }
-                });
-                return Source.CONTINUE;
-            }, Priority.DEFAULT);
+            poll_id = Timeout.add(
+                poll_interval,
+                () => {
+                    Process.exec_asyncv.begin(poll_exec, (_, res) => {
+                        try {
+                            var str = Process.exec_asyncv.end(res);
+                            set_closure(str, poll_transform);
+                        } catch (Error err) {
+                            this.error(err.message);
+                            Source.remove(poll_id);
+                            poll_id = 0;
+                        }
+                    });
+                    return Source.CONTINUE;
+                },
+                Priority.DEFAULT
+            );
         }
     }
 
@@ -191,8 +181,12 @@ public class AstalIO.Variable : VariableBase {
         watch_proc = null;
     }
 
-    public bool is_polling() { return poll_id > 0; }
-    public bool is_watching() { return watch_proc != null; }
+    public bool is_polling() {
+        return poll_id > 0;
+    }
+    public bool is_watching() {
+        return watch_proc != null;
+    }
 
     ~Variable() {
         dropped();

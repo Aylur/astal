@@ -5,7 +5,7 @@ public class Astal.Slider : Gtk.Scale {
     /**
      * Corresponds to [property@Gtk.Orientable :orientation].
      */
-    [CCode (notify = false)]
+    [CCode (notify=false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
@@ -19,8 +19,7 @@ public class Astal.Slider : Gtk.Scale {
     construct {
         draw_value = false;
 
-        if (adjustment == null)
-            adjustment = new Gtk.Adjustment(0,0,0,0,0,0);
+        if (adjustment == null) adjustment = new Gtk.Adjustment(0, 0, 0, 0, 0, 0);
 
         if (max == 0 && min == 0) {
             max = 1;
@@ -38,22 +37,27 @@ public class Astal.Slider : Gtk.Scale {
             notify_property("vertical");
         });
 
-        button_press_event.connect(() => { dragging = true; });
-        key_press_event.connect(() => { dragging = true; });
-        button_release_event.connect(() => { dragging = false; });
-        key_release_event.connect(() => { dragging = false; });
+        button_press_event.connect(() => {
+            dragging = true;
+        });
+        key_press_event.connect(() => {
+            dragging = true;
+        });
+        button_release_event.connect(() => {
+            dragging = false;
+        });
+        key_release_event.connect(() => {
+            dragging = false;
+        });
         scroll_event.connect((event) => {
             dragging = true;
-            if (event.delta_y > 0)
-                value -= step;
-            else
-                value += step;
+            if (event.delta_y > 0) value -= step;
+            else value += step;
             dragging = false;
         });
 
         value_changed.connect(() => {
-            if (dragging)
-                dragged();
+            if (dragging) dragged();
         });
     }
 
@@ -101,6 +105,5 @@ public class Astal.Slider : Gtk.Scale {
         get { return adjustment.page_increment; }
         set { adjustment.page_increment = value; }
     }
-
     // TODO: marks
 }

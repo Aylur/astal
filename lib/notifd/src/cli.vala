@@ -18,10 +18,17 @@ abstract class NotifdCommand : Command {
             construct {
                 parse.connect((value) => {
                     switch (value) {
-                        case "low": urgency = Urgency.LOW; return null;
-                        case "normal": urgency = Urgency.NORMAL; return null;
-                        case "critical": urgency = Urgency.CRITICAL; return null;
-                        default: return "Level must be one of: 'low', 'normal', 'critical'";
+                        case "low":
+                            urgency = Urgency.LOW;
+                            return null;
+                        case "normal":
+                            urgency = Urgency.NORMAL;
+                            return null;
+                        case "critical":
+                            urgency = Urgency.CRITICAL;
+                            return null;
+                        default:
+                            return "Level must be one of: 'low', 'normal', 'critical'";
                     }
                 });
             }
@@ -33,7 +40,10 @@ abstract class NotifdCommand : Command {
         }
 
         class Hints : Opt {
-            public HashTable<string, Variant> hints = new HashTable<string, Variant>(str_hash, str_equal);
+            public HashTable<string, Variant> hints = new HashTable<string, Variant>(
+                str_hash,
+                str_equal
+            );
 
             construct {
                 parse.connect((value) => {
@@ -53,7 +63,8 @@ abstract class NotifdCommand : Command {
                                     case "false":
                                         hints.set(name, new Variant.boolean(false));
                                         break;
-                                    default: return "Invalid boolean value. Must be 'true' or 'false'";
+                                    default:
+                                        return "Invalid boolean value. Must be 'true' or 'false'";
                                 }
                                 return null;
                             }
@@ -73,7 +84,8 @@ abstract class NotifdCommand : Command {
                                 hints.set(name, Variant.parse(VariantType.VARIANT, parts[2]));
                                 return null;
                             }
-                            default: return @"Invalid hint type '$vtype'. Must be one of: boolean, int, double, string, variant";
+                            default:
+                                return @"Invalid hint type '$vtype'. Must be one of: boolean, int, double, string, variant";
                         }
                     } catch (Error error) {
                         return error.message;
@@ -105,7 +117,7 @@ abstract class NotifdCommand : Command {
             }
         }
 
-        [DBus(name = "org.freedesktop.Notifications")]
+        [DBus (name="org.freedesktop.Notifications")]
         interface OrgFreedesktopNotifications : Object {
             public abstract void close_notification(uint id) throws DBusError, IOError;
 
@@ -148,35 +160,87 @@ abstract class NotifdCommand : Command {
             about("Send a notification");
             required_arg("SUMMARY", "The summary of the notification.");
             arg("BODY", "The body of the notification.");
-            opt(wait = new Flag("wait", 'w', "Wait for the notification to be closed before exiting."));
+            opt(wait = new Flag(
+                "wait",
+                'w',
+                "Wait for the notification to be closed before exiting."
+            ));
             opt(print_id = new Flag("print-id", 'p', "Print the notification ID."));
             opt(replace_id = new IntOpt("replace-id", 'r', "ID of the notification to replace.") {
-                value = -1
+                value = -1,
             });
             opt(app_name = new StringOpt("app-name", 'n', "App name for the notification.") {
-                value = "astal-notifd"
+                value = "astal-notifd",
             });
-            opt(app_icon = new StringOpt("app-icon", 'i', "Named icon or filename for the notification."));
-            opt(urgency = new UrgencyLevel("urgency", 'u', "The urgency level (low, normal, critical)."));
-            opt(expire_time = new IntOpt("expire-time", 'e', "Timeout in milliseconds at which to expire the notification.") {
-                value = -1
-            });
-            opt(actions = new Actions("action", 'a', "Action to append to the notification. Implies --wait."));
+            opt(app_icon = new StringOpt(
+                "app-icon",
+                'i',
+                "Named icon or filename for the notification."
+            ));
+            opt(urgency = new UrgencyLevel(
+                "urgency",
+                'u',
+                "The urgency level (low, normal, critical)."
+            ));
+            opt(expire_time = new IntOpt(
+                "expire-time",
+                'e',
+                "Timeout in milliseconds at which to expire the notification."
+            ) { value = -1 });
+            opt(actions = new Actions(
+                "action",
+                'a',
+                "Action to append to the notification. Implies --wait."
+            ));
             opt(image = new FileOpt("image", 'I', "Image to be displayed for the notification."));
-            opt(action_icons = new Flag("action-icons", 'A', "Indicate that action IDs should be interpreted as named icons."));
+            opt(action_icons = new Flag(
+                "action-icons",
+                'A',
+                "Indicate that action IDs should be interpreted as named icons."
+            ));
             opt(category = new StringOpt("category", 'c', "The category of the notification."));
-            opt(desktop_entry = new StringOpt("desktop-entry", 'd', "Name of the desktop filename representing the notification."));
-            opt(resident = new Flag("resident", 'R', "Indicate that the notification is kept alive after action invocation."));
-            opt(sound_file = new FileOpt("sound", 's', "Sound file to play when the notification pops up."));
-            opt(sound_name = new StringOpt("sound-name", 'S', "Named sound to play when the notification pops up."));
+            opt(desktop_entry = new StringOpt(
+                "desktop-entry",
+                'd',
+                "Name of the desktop filename representing the notification."
+            ));
+            opt(resident = new Flag(
+                "resident",
+                'R',
+                "Indicate that the notification is kept alive after action invocation."
+            ));
+            opt(sound_file = new FileOpt(
+                "sound",
+                's',
+                "Sound file to play when the notification pops up."
+            ));
+            opt(sound_name = new StringOpt(
+                "sound-name",
+                'S',
+                "Named sound to play when the notification pops up."
+            ));
             opt(suppress_sound = new Flag("suppress-sound", '\0', "Suppress playing any sound."));
-            opt(transient = new Flag("transient", 't', "Indicate that the notification should be excluded from persistence."));
-            opt(hints = new Hints("hint", 'H', "Valid types are boolean, int, double, string, and variant."));
+            opt(transient = new Flag(
+                "transient",
+                't',
+                "Indicate that the notification should be excluded from persistence."
+            ));
+            opt(hints = new Hints(
+                "hint",
+                'H',
+                "Valid types are boolean, int, double, string, and variant."
+            ));
 
-            example("astal-notifd notify \"Hello World\" \"Lorem ipsum dolor sit amet, consectetur adipiscing elit.\"");
-            example("astal-notifd notify \"Extra hints\" -H \"string:custom-hint:<{'hello':'there'}>\"");
+            example(
+                "astal-notifd notify \"Hello World\" \"Lorem ipsum dolor sit amet, consectetur adipiscing elit.\""
+            );
+            example(
+                "astal-notifd notify \"Extra hints\" -H \"string:custom-hint:<{'hello':'there'}>\""
+            );
             example("astal-notifd notify \"With Actions\" -a \"id1=My custom Action\"");
-            example("astal-notifd notify \"Custom Variant hints\" -H \"variant:custom-hint:<{'hello':'there'}>\"");
+            example(
+                "astal-notifd notify \"Custom Variant hints\" -H \"variant:custom-hint:<{'hello':'there'}>\""
+            );
         }
 
         public override async int execute() {
@@ -462,7 +526,8 @@ abstract class NotifdCommand : Command {
             }
 
             if (enable.enabled) {
-                Notifd.settings.set_boolean("dont-disturb", true); return 0;
+                Notifd.settings.set_boolean("dont-disturb", true);
+                return 0;
             }
 
             if (disable.enabled) {

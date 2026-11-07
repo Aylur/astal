@@ -1,4 +1,4 @@
-[DBus(name = "org.freedesktop.Notifications")]
+[DBus (name="org.freedesktop.Notifications")]
 internal class AstalNotifd.Daemon : Object {
     public static string name = "notifd";
     public static string vendor = "astal";
@@ -8,11 +8,12 @@ internal class AstalNotifd.Daemon : Object {
 
     private uint n_id = 1;
 
-    private List<weak Notification> notification_list =
-        new List<weak Notification>();
+    private List<weak Notification> notification_list = new List<weak Notification>();
 
-    private HashTable<uint, Notification> notifs =
-        new HashTable<uint, Notification>((i) => i, (a, b) => a == b);
+    private HashTable<uint, Notification> notifs = new HashTable<uint, Notification>(
+        (i) => i,
+        (a, b) => a == b
+    );
 
     public signal void notified(uint id, bool replaced);
 
@@ -70,7 +71,7 @@ internal class AstalNotifd.Daemon : Object {
     }
 
     // spec
-    [DBus(name = "Notify")]
+    [DBus (name="Notify")]
     public async uint Notify(
         string app_name,
         uint replaces_id,
@@ -124,12 +125,16 @@ internal class AstalNotifd.Daemon : Object {
         var ignore_timeout = Notifd.settings.get_boolean("ignore-timeout");
 
         if (!ignore_timeout && (n.expire_timeout > 0)) {
-            Timeout.add(n.expire_timeout, () => {
-                if (!ignore_timeout) {
-                    resolve(n.id, ClosedReason.EXPIRED);
-                }
-                return Source.REMOVE;
-            }, Priority.DEFAULT);
+            Timeout.add(
+                n.expire_timeout,
+                () => {
+                    if (!ignore_timeout) {
+                        resolve(n.id, ClosedReason.EXPIRED);
+                    }
+                    return Source.REMOVE;
+                },
+                Priority.DEFAULT
+            );
         }
 
         return id;
@@ -172,13 +177,15 @@ internal class AstalNotifd.Daemon : Object {
         Bytes data = image.get_child_value(6).get_data_as_bytes();
 
         if (bps != 8) {
-            warning("Cannot cache image from %s. %s", app_name,
-                "Currently only RGB images with 8 bits per sample are supported.");
+            warning(
+                "Cannot cache image from %s. %s",
+                app_name,
+                "Currently only RGB images with 8 bits per sample are supported."
+            );
             return null;
         }
 
-        var pixbuf = new Gdk.Pixbuf.from_bytes(
-            data, Gdk.Colorspace.RGB, alpha, bps, w, h, rs);
+        var pixbuf = new Gdk.Pixbuf.from_bytes(data, Gdk.Colorspace.RGB, alpha, bps, w, h, rs);
 
         if (pixbuf == null) return null;
 

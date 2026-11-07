@@ -1,9 +1,9 @@
-[Version (deprecated = true, deprecated_since="", replacement="")]
+[Version (deprecated=true, deprecated_since="", replacement="")]
 public class Astal.Box : Gtk.Box {
     /**
      * Corresponds to [property@Gtk.Orientable :orientation].
      */
-    [CCode (notify = false)]
+    [CCode (notify=false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }

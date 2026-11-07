@@ -88,8 +88,7 @@ public class Astal.Window : Gtk.Window {
             }
             if (value && inhibitor == null) {
                 inhibitor = inhibit_manager.inhibit(this);
-            }
-            else if (!value && inhibitor != null) {
+            } else if (!value && inhibitor != null) {
                 inhibitor = null;
             }
         }
@@ -100,7 +99,7 @@ public class Astal.Window : Gtk.Window {
 
     public override void show() {
         base.show();
-        if(inhibit) {
+        if (inhibit) {
             inhibitor = inhibit_manager.inhibit(this);
         }
     }
@@ -121,8 +120,7 @@ public class Astal.Window : Gtk.Window {
      */
     public WindowAnchor anchor {
         set {
-            if (check("set anchor"))
-                return;
+            if (check("set anchor")) return;
 
             set_anchor(this, Edge.TOP, WindowAnchor.TOP in value);
             set_anchor(this, Edge.BOTTOM, WindowAnchor.BOTTOM in value);
@@ -131,20 +129,15 @@ public class Astal.Window : Gtk.Window {
         }
         get {
             var a = 0;
-            if (get_anchor(this, Edge.TOP))
-                a = a | WindowAnchor.TOP;
+            if (get_anchor(this, Edge.TOP)) a = a | WindowAnchor.TOP;
 
-            if (get_anchor(this, Edge.RIGHT))
-                a = a | WindowAnchor.RIGHT;
+            if (get_anchor(this, Edge.RIGHT)) a = a | WindowAnchor.RIGHT;
 
-            if (get_anchor(this, Edge.LEFT))
-                a = a | WindowAnchor.LEFT;
+            if (get_anchor(this, Edge.LEFT)) a = a | WindowAnchor.LEFT;
 
-            if (get_anchor(this, Edge.BOTTOM))
-                a = a | WindowAnchor.BOTTOM;
+            if (get_anchor(this, Edge.BOTTOM)) a = a | WindowAnchor.BOTTOM;
 
-            if (a == 0)
-                return WindowAnchor.NONE;
+            if (a == 0) return WindowAnchor.NONE;
 
             return a;
         }
@@ -155,8 +148,7 @@ public class Astal.Window : Gtk.Window {
      */
     public Exclusivity exclusivity {
         set {
-            if (check("set exclusivity"))
-                return;
+            if (check("set exclusivity")) return;
 
             switch (value) {
                 case Exclusivity.NORMAL:
@@ -171,11 +163,9 @@ public class Astal.Window : Gtk.Window {
             }
         }
         get {
-            if (auto_exclusive_zone_is_enabled(this))
-                return Exclusivity.EXCLUSIVE;
+            if (auto_exclusive_zone_is_enabled(this)) return Exclusivity.EXCLUSIVE;
 
-            if (get_exclusive_zone(this) == -1)
-                return Exclusivity.IGNORE;
+            if (get_exclusive_zone(this) == -1) return Exclusivity.IGNORE;
 
             return Exclusivity.NORMAL;
         }
@@ -187,8 +177,7 @@ public class Astal.Window : Gtk.Window {
     public Layer layer {
         get { return (Layer)get_layer(this); }
         set {
-            if (check("set layer"))
-                return;
+            if (check("set layer")) return;
 
             set_layer(this, (GtkLayerShell.Layer)value);
         }
@@ -200,8 +189,7 @@ public class Astal.Window : Gtk.Window {
     public Keymode keymode {
         get { return (Keymode)get_keyboard_mode(this); }
         set {
-            if (check("set keymode"))
-                return;
+            if (check("set keymode")) return;
 
             set_keyboard_mode(this, (GtkLayerShell.KeyboardMode)value);
         }
@@ -213,18 +201,16 @@ public class Astal.Window : Gtk.Window {
     public Gdk.Monitor gdkmonitor {
         get { return get_monitor(this); }
         set {
-            if (check("set gdkmonitor"))
-                return;
+            if (check("set gdkmonitor")) return;
 
-            set_monitor (this, value);
+            set_monitor(this, value);
         }
     }
 
     public new int margin_top {
         get { return GtkLayerShell.get_margin(this, Edge.TOP); }
         set {
-            if (check("set margin_top"))
-                return;
+            if (check("set margin_top")) return;
 
             GtkLayerShell.set_margin(this, Edge.TOP, value);
         }
@@ -233,8 +219,7 @@ public class Astal.Window : Gtk.Window {
     public new int margin_bottom {
         get { return GtkLayerShell.get_margin(this, Edge.BOTTOM); }
         set {
-            if (check("set margin_bottom"))
-                return;
+            if (check("set margin_bottom")) return;
 
             GtkLayerShell.set_margin(this, Edge.BOTTOM, value);
         }
@@ -243,8 +228,7 @@ public class Astal.Window : Gtk.Window {
     public new int margin_left {
         get { return GtkLayerShell.get_margin(this, Edge.LEFT); }
         set {
-            if (check("set margin_left"))
-                return;
+            if (check("set margin_left")) return;
 
             GtkLayerShell.set_margin(this, Edge.LEFT, value);
         }
@@ -253,8 +237,7 @@ public class Astal.Window : Gtk.Window {
     public new int margin_right {
         get { return GtkLayerShell.get_margin(this, Edge.RIGHT); }
         set {
-            if (check("set margin_right"))
-                return;
+            if (check("set margin_right")) return;
 
             GtkLayerShell.set_margin(this, Edge.RIGHT, value);
         }
@@ -262,8 +245,7 @@ public class Astal.Window : Gtk.Window {
 
     public new int margin {
         set {
-            if (check("set margin"))
-                return;
+            if (check("set margin")) return;
 
             margin_top = value;
             margin_right = value;
@@ -279,11 +261,9 @@ public class Astal.Window : Gtk.Window {
      */
     public int monitor {
         set {
-            if (check("set monitor"))
-                return;
+            if (check("set monitor")) return;
 
-            if (value < 0)
-                set_monitor(this, (Gdk.Monitor)null);
+            if (value < 0) set_monitor(this, (Gdk.Monitor)null);
 
             var m = Gdk.Display.get_default().get_monitor(value);
             set_monitor(this, m);
@@ -292,8 +272,7 @@ public class Astal.Window : Gtk.Window {
             var m = get_monitor(this);
             var d = Gdk.Display.get_default();
             for (var i = 0; i < d.get_n_monitors(); ++i) {
-                if (m == d.get_monitor(i))
-                    return i;
+                if (m == d.get_monitor(i)) return i;
             }
 
             return -1;

@@ -14,10 +14,14 @@ abstract class BrightnessCommand : Command {
     static Json.Node device_to_json(Device device) {
         return new Json.Builder()
             .begin_object()
-            .set_member_name("name").add_string_value(device.name)
-            .set_member_name("subsystem").add_string_value(device.subsystem.to_string())
-            .set_member_name("brightness").add_int_value(device.real_brightness)
-            .set_member_name("max_brightness").add_int_value(device.max_brightness)
+            .set_member_name("name")
+            .add_string_value(device.name)
+            .set_member_name("subsystem")
+            .add_string_value(device.subsystem.to_string())
+            .set_member_name("brightness")
+            .add_int_value(device.real_brightness)
+            .set_member_name("max_brightness")
+            .add_int_value(device.max_brightness)
             .end_object()
             .get_root();
     }
@@ -59,9 +63,14 @@ abstract class BrightnessCommand : Command {
 
             parse.connect((str) => {
                 switch (str) {
-                    case "leds": value = Subsystem.LEDS; break;
-                    case "backlight": value = Subsystem.BACKLIGHT; break;
-                    default: return "Subsystem must be one of: 'leds' or 'backlight'";
+                    case "leds":
+                        value = Subsystem.LEDS;
+                        break;
+                    case "backlight":
+                        value = Subsystem.BACKLIGHT;
+                        break;
+                    default:
+                        return "Subsystem must be one of: 'leds' or 'backlight'";
                 }
             });
         }
@@ -205,7 +214,7 @@ abstract class BrightnessCommand : Command {
             name = "monitor";
             about("Monitor for brightness changes");
             opt(filter = new StringArrayOpt("filter", 'f', "Device filter") {
-                name = "SUBSYSTEM/NAME"
+                name = "SUBSYSTEM/NAME",
             });
             example("astal-brightness monitor -f backlight/amdgpu_bl0 -f leds/dell::kbd_backlight");
         }

@@ -23,7 +23,7 @@ public class AstalBrightness.DeviceList : Object, ListModel {
     }
 
     public Type get_item_type() {
-        return typeof (Device);
+        return typeof(Device);
     }
 
     public uint get_n_items() {
@@ -45,7 +45,7 @@ public class AstalBrightness.DeviceList : Object, ListModel {
     public signal void device_removed(Device device);
 
     internal DeviceList(Subsystem subsystem) {
-        Object(subsystem : subsystem);
+        Object(subsystem: subsystem);
 
         var dir = File.new_for_path(@"/sys/class/$subsystem");
 
@@ -64,13 +64,15 @@ public class AstalBrightness.DeviceList : Object, ListModel {
         }
 
         try {
-            monitor = File
-                .new_for_path(@"/sys/class/$subsystem")
-                .monitor_directory(FileMonitorFlags.WATCH_MOVES, null);
+            monitor = File.new_for_path(@"/sys/class/$subsystem").monitor_directory(
+                FileMonitorFlags.WATCH_MOVES,
+                null
+            );
 
             monitor.changed.connect((file, other_file, event) => {
                 switch (event) {
-                    /* *INDENT-OFF* */ // FIXME: uncrustify switch formatting
+                    /* *INDENT-OFF* */
+                    // FIXME: uncrustify switch formatting
                     case FileMonitorEvent.CREATED:
                     case FileMonitorEvent.MOVED_IN:
                         set_device(file.get_basename());
@@ -138,11 +140,7 @@ public class AstalBrightness.DeviceList : Object, ListModel {
         device_list = (owned)next;
 
         if ((position < previous_end) || (position < next_end)) {
-            items_changed(
-                position,
-                previous_end - position,
-                next_end - position
-            );
+            items_changed(position, previous_end - position, next_end - position);
         }
 
         notify_property("devices");

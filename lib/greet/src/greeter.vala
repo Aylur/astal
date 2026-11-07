@@ -49,14 +49,16 @@ public class AstalGreet.Greeter : Object {
     /**
      * Create a session and start the authentication flow.
      */
-    public void create_session(string username) requires(step == CREATE) {
+    public void create_session(string username)
+        requires (step == CREATE) {
         new CreateSession(username).send.begin(end_send);
     }
 
     /**
      * Respond to [signal@AstalGreet.Greeter::visible_request] or [signal@AstalGreet.Greeter::secret_request].
      */
-    public void post_auth(string? response) requires(step == POST) {
+    public void post_auth(string? response)
+        requires (step == POST) {
         new PostAuthMessage(response).send.begin(end_send);
     }
 
@@ -64,7 +66,8 @@ public class AstalGreet.Greeter : Object {
      * Start the session after [signal@AstalGreet.Greeter::authenticated] is emitted.
      * The greeter process must terminate after this method yields in order for the session to start.
      */
-    public async void start_session(string[] cmd, string[] env) requires(step == START) {
+    public async void start_session(string[] cmd, string[] env)
+        requires (step == START) {
         try {
             yield new StartSession(cmd, env).send();
         } catch (GLib.Error e) {
@@ -94,8 +97,8 @@ public class AstalGreet.Greeter : Object {
         if (res is AuthMessage) {
             step = POST;
             switch (res.message_type) {
-                case VISIBLE :
-                        visible_request(res.message);
+                case VISIBLE:
+                    visible_request(res.message);
                     break;
                 case SECRET:
                     secret_request(res.message);

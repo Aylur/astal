@@ -1,5 +1,5 @@
 [DBus (name="io.Astal.Application")]
-[Version (deprecated = true)]
+[Version (deprecated=true)]
 public class AstalIO.Daemon : GLib.Application, AstalIO.Application {
     private SocketService service;
     private DBusConnection conn;
@@ -81,9 +81,37 @@ public class AstalIO.Daemon : GLib.Application, AstalIO.Application {
     construct {
         hold();
 
-        shutdown.connect(() => { try { quit(); } catch(Error err) {} });
-        Unix.signal_add(1, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
-        Unix.signal_add(2, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
-        Unix.signal_add(15, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
+        shutdown.connect(() => {
+            try {
+                quit();
+            } catch (Error err) {}
+        });
+        Unix.signal_add(
+            1,
+            () => {
+                try {
+                    quit();
+                } catch (Error err) {}
+            },
+            Priority.HIGH
+        );
+        Unix.signal_add(
+            2,
+            () => {
+                try {
+                    quit();
+                } catch (Error err) {}
+            },
+            Priority.HIGH
+        );
+        Unix.signal_add(
+            15,
+            () => {
+                try {
+                    quit();
+                } catch (Error err) {}
+            },
+            Priority.HIGH
+        );
     }
 }

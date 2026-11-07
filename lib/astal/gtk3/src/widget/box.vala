@@ -2,7 +2,7 @@ public class Astal.Box : Gtk.Box {
     /**
      * Corresponds to [property@Gtk.Orientable :orientation].
      */
-    [CCode (notify = false)]
+    [CCode (notify=false)]
     public bool vertical {
         get { return orientation == Gtk.Orientation.VERTICAL; }
         set { orientation = value ? Gtk.Orientation.VERTICAL : Gtk.Orientation.HORIZONTAL; }
@@ -31,19 +31,17 @@ public class Astal.Box : Gtk.Box {
     }
 
     private Gtk.Widget? _get_child() {
-        foreach(var child in get_children())
-            return child;
+        foreach (var child in get_children()) return child;
 
         return null;
     }
 
     private void _set_children(List<weak Gtk.Widget> arr) {
-        foreach(var child in get_children()) {
+        foreach (var child in get_children()) {
             remove(child);
         }
 
-        foreach(var child in arr)
-            add(child);
+        foreach (var child in arr) add(child);
     }
 
     public Box(bool vertical, List<weak Gtk.Widget> children) {

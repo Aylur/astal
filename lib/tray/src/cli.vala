@@ -3,7 +3,15 @@ static bool daemonize;
 
 const OptionEntry[] options = {
     { "version", 'v', OptionFlags.NONE, OptionArg.NONE, ref version, "Print version number", null },
-    { "daemonize", 'd', OptionFlags.NONE, OptionArg.NONE, ref daemonize, "Monitor the systemtray", null },
+    {
+        "daemonize",
+        'd',
+        OptionFlags.NONE,
+        OptionArg.NONE,
+        ref daemonize,
+        "Monitor the systemtray",
+        null,
+    },
     { null },
 };
 
@@ -31,13 +39,19 @@ int main(string[] argv) {
         tray.item_added.connect((id) => {
             AstalTray.TrayItem item = tray.get_item(id);
 
-            stdout.printf("{\"event\":\"item_added\",\"id\":\"%s\",\"item\":%s}\n",
-            id, item.to_json_string());
+            stdout.printf(
+                "{\"event\":\"item_added\",\"id\":\"%s\",\"item\":%s}\n",
+                id,
+                item.to_json_string()
+            );
             stdout.flush();
 
             item.changed.connect((item) => {
-                stdout.printf("{\"event\":\"item_changed\",\"id\":\"%s\",\"item\":%s}\n",
-                id, item.to_json_string());
+                stdout.printf(
+                    "{\"event\":\"item_changed\",\"id\":\"%s\",\"item\":%s}\n",
+                    id,
+                    item.to_json_string()
+                );
                 stdout.flush();
             });
         });

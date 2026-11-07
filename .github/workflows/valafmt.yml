@@ -1,0 +1,41 @@
+name: Check Vala formatting
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/**.vala"
+      - ".editorconfig"
+      - ".github/workflows/valafmt.yml"
+  pull_request:
+    paths:
+      - "lib/**.vala"
+      - ".editorconfig"
+      - ".github/workflows/valafmt.yml"
+
+permissions:
+  contents: read
+
+env:
+  VALAFMT_VERSION: 0.3.0
+
+jobs:
+  valafmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache valafmt
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/valafmt
+          key: valafmt-${{ runner.os }}-${{ env.VALAFMT_VERSION }}
+
+      - name: Install valafmt
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: cargo install valafmt --version "$VALAFMT_VERSION" --locked
+
+      - name: Check formatting
+        run: valafmt --check lib

@@ -1,8 +1,14 @@
 class AstalBrightness.DummyDevice : Object, Device {
     public Subsystem subsystem { get { return Subsystem.BACKLIGHT; } }
     public string name { get { return "dummy"; } }
-    public float brightness { get { return -1; } set {} }
-    public uint real_brightness { get { return uint.MAX; } set {} }
+    public float brightness {
+        get { return -1; }
+        set {}
+    }
+    public uint real_brightness {
+        get { return uint.MAX; }
+        set {}
+    }
     public uint max_brightness { get { return 0; } }
 }
 

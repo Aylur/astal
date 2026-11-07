@@ -11,8 +11,10 @@ public class AstalNetwork.Wifi : Object {
     internal const string ICON_NO_ROUTE = "network-wireless-no-route-symbolic";
     internal const string ICON_HOTSPOT = "network-wireless-hotspot-symbolic";
 
-    private HashTable<string, AccessPoint> _access_points =
-        new HashTable<string, AccessPoint>(str_hash, str_equal);
+    private HashTable<string, AccessPoint> _access_points = new HashTable<string, AccessPoint>(
+        str_hash,
+        str_equal
+    );
 
     public NM.DeviceWifi device { get; construct set; }
 
@@ -41,8 +43,8 @@ public class AstalNetwork.Wifi : Object {
     public bool is_hotspot { get; private set; }
     public bool scanning { get; private set; }
 
-    public signal void access_point_added(AccessPoint ap) ;
-    public signal void access_point_removed(AccessPoint ap) ;
+    public signal void access_point_added(AccessPoint ap);
+    public signal void access_point_removed(AccessPoint ap);
 
     internal Wifi(NM.DeviceWifi device) {
         this.device = device;
@@ -82,8 +84,12 @@ public class AstalNetwork.Wifi : Object {
             state = (DeviceState)n;
         });
 
-        device.notify.connect(() => { icon_name = _icon(); });
-        device.client.notify.connect(() => { icon_name = _icon(); });
+        device.notify.connect(() => {
+            icon_name = _icon();
+        });
+        device.client.notify.connect(() => {
+            icon_name = _icon();
+        });
         icon_name = _icon();
     }
 
@@ -99,12 +105,16 @@ public class AstalNetwork.Wifi : Object {
         device.request_scan_async.begin(null, (_, res) => {
             try {
                 device.request_scan_async.end(res);
-                Timeout.add(1000, () => {
-                    if (device.last_scan == last_scan) return Source.CONTINUE;
+                Timeout.add(
+                    1000,
+                    () => {
+                        if (device.last_scan == last_scan) return Source.CONTINUE;
 
-                    scanning = false;
-                    return Source.REMOVE;
-                }, Priority.DEFAULT);
+                        scanning = false;
+                        return Source.REMOVE;
+                    },
+                    Priority.DEFAULT
+                );
             } catch (Error err) {
                 critical(err.message);
             }

@@ -1,4 +1,4 @@
-[DBus(name = "org.freedesktop.DBus")]
+[DBus (name="org.freedesktop.DBus")]
 interface AstalMpris.BusProxy : DBusProxy {
     public abstract async string[] list_names() throws GLib.Error;
     public signal void name_owner_changed(string name, string old_owner, string new_owner);
@@ -13,16 +13,20 @@ interface AstalMpris.BusProxy : DBusProxy {
     }
 }
 
-[DBus(name = "org.freedesktop.DBus.Properties")]
+[DBus (name="org.freedesktop.DBus.Properties")]
 interface AstalMpris.PropertiesProxy : DBusProxy {
-    public signal void properties_changed(string iface, HashTable<string, Variant> changed, string[] invalidated);
+    public signal void properties_changed(
+        string iface,
+        HashTable<string, Variant> changed,
+        string[] invalidated
+    );
 
     public abstract async HashTable<string, Variant> get_all(string iface) throws Error;
     public abstract async Variant get(string iface, string property) throws Error;
     public abstract async void set(string iface, string property, Variant value) throws Error;
 }
 
-[DBus(name = "org.mpris.MediaPlayer2")]
+[DBus (name="org.mpris.MediaPlayer2")]
 interface AstalMpris.MediaPlayerProxy : PropertiesProxy {
     public const string PREFIX = "org.mpris.MediaPlayer2.";
     public const string NAME = "org.mpris.MediaPlayer2";
@@ -31,7 +35,7 @@ interface AstalMpris.MediaPlayerProxy : PropertiesProxy {
     public abstract async void quit() throws GLib.Error;
 }
 
-[DBus(name = "org.mpris.MediaPlayer2.Player")]
+[DBus (name="org.mpris.MediaPlayer2.Player")]
 interface AstalMpris.PlayerProxy : MediaPlayerProxy {
     public const string NAME = "org.mpris.MediaPlayer2.Player";
     public signal void seeked(int64 position);

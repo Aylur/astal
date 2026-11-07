@@ -1,4 +1,4 @@
-[DBus(name = "org.freedesktop.Notifications")]
+[DBus (name="org.freedesktop.Notifications")]
 internal interface AstalNotifd.DaemonProxy : DBusProxy {
     public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
@@ -9,11 +9,12 @@ internal interface AstalNotifd.DaemonProxy : DBusProxy {
 }
 
 internal class AstalNotifd.Proxy : Object {
-    private List<weak Notification> notification_list =
-        new List<weak Notification>();
+    private List<weak Notification> notification_list = new List<weak Notification>();
 
-    private HashTable<uint, Notification> notifs =
-        new HashTable<uint, Notification>((i) => i, (a, b) => a == b);
+    private HashTable<uint, Notification> notifs = new HashTable<uint, Notification>(
+        (i) => i,
+        (a, b) => a == b
+    );
 
     public signal void notified(uint id, bool replaced);
     public signal void resolved(uint id, ClosedReason reason);
@@ -54,9 +55,8 @@ internal class AstalNotifd.Proxy : Object {
             var vendor = variant.get_child_value(1).get_string();
             var version = variant.get_child_value(2).get_string();
 
-            var running = (name == Daemon.name)
-                && (vendor == Daemon.vendor)
-                && (version == Daemon.version);
+            var running =
+                (name == Daemon.name) && (vendor == Daemon.vendor) && (version == Daemon.version);
 
             if (running) {
                 setup_proxy();

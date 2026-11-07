@@ -1,7 +1,7 @@
 /**
  * `Process` provides shortcuts for [class@Gio.Subprocess] with sane defaults.
  */
-[Version (deprecated = true)]
+[Version (deprecated=true)]
 public class AstalIO.Process : Object {
     public string[] argv { construct; get; }
 
@@ -92,9 +92,7 @@ public class AstalIO.Process : Object {
         Object(argv: cmd);
         process = new Subprocess.newv(
             cmd,
-            SubprocessFlags.STDIN_PIPE |
-            SubprocessFlags.STDERR_PIPE |
-            SubprocessFlags.STDOUT_PIPE
+            SubprocessFlags.STDIN_PIPE | SubprocessFlags.STDERR_PIPE | SubprocessFlags.STDOUT_PIPE
         );
 
         out_stream = new DataInputStream(process.get_stdout_pipe());
@@ -149,8 +147,7 @@ public class AstalIO.Process : Object {
     public static string execv(string[] cmd) throws Error {
         var process = new Subprocess.newv(
             cmd,
-            SubprocessFlags.STDERR_PIPE |
-            SubprocessFlags.STDOUT_PIPE
+            SubprocessFlags.STDERR_PIPE | SubprocessFlags.STDOUT_PIPE
         );
 
         string err_str, out_str;
@@ -184,8 +181,7 @@ public class AstalIO.Process : Object {
     public static async string exec_asyncv(string[] cmd) throws Error {
         var process = new Subprocess.newv(
             cmd,
-            SubprocessFlags.STDERR_PIPE |
-            SubprocessFlags.STDOUT_PIPE
+            SubprocessFlags.STDERR_PIPE | SubprocessFlags.STDOUT_PIPE
         );
 
         string err_str, out_str;

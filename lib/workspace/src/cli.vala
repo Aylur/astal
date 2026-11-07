@@ -10,7 +10,10 @@ abstract class WorkspaceCommand : Command {
         return 1;
     }
 
-    private List<AstalWl.Output> get_workspace_monitors(AstalWorkspace.WorkspaceManager manager, AstalWorkspace.Workspace workspace) {
+    private List<AstalWl.Output> get_workspace_monitors(
+        AstalWorkspace.WorkspaceManager manager,
+        AstalWorkspace.Workspace workspace
+    ) {
         var result = new List<AstalWl.Output>();
         foreach (var group in manager.groups) {
             if (group.workspaces.find(workspace)) {
@@ -24,20 +27,40 @@ abstract class WorkspaceCommand : Command {
         return result;
     }
 
-    private Json.Node workspace_to_json(AstalWorkspace.Workspace workspace, List<AstalWl.Output>? monitors = null) {
+    private Json.Node workspace_to_json(
+        AstalWorkspace.Workspace workspace,
+        List<AstalWl.Output>? monitors = null
+    ) {
         var builder = new Json.Builder()
             .begin_object()
-            .set_member_name("id").add_string_value(workspace.id)
-            .set_member_name("name").add_string_value(workspace.name)
-            .set_member_name("active").add_boolean_value((workspace.state & AstalWorkspace.WorkspaceState.ACTIVE) != 0)
-            .set_member_name("urgent").add_boolean_value((workspace.state & AstalWorkspace.WorkspaceState.URGENT) != 0)
-            .set_member_name("hidden").add_boolean_value((workspace.state & AstalWorkspace.WorkspaceState.HIDDEN) != 0)
+            .set_member_name("id")
+            .add_string_value(workspace.id)
+            .set_member_name("name")
+            .add_string_value(workspace.name)
+            .set_member_name("active")
+            .add_boolean_value((workspace.state & AstalWorkspace.WorkspaceState.ACTIVE) != 0)
+            .set_member_name("urgent")
+            .add_boolean_value((workspace.state & AstalWorkspace.WorkspaceState.URGENT) != 0)
+            .set_member_name("hidden")
+            .add_boolean_value((workspace.state & AstalWorkspace.WorkspaceState.HIDDEN) != 0)
             .set_member_name("capabilities")
             .begin_object()
-            .set_member_name("activate").add_boolean_value((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.ACTIVATE) != 0)
-            .set_member_name("deactivate").add_boolean_value((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.DEACTIVATE) != 0)
-            .set_member_name("remove").add_boolean_value((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.REMOVE) != 0)
-            .set_member_name("assign").add_boolean_value((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.ASSIGN) != 0)
+            .set_member_name("activate")
+            .add_boolean_value(
+                (workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.ACTIVATE) != 0
+            )
+            .set_member_name("deactivate")
+            .add_boolean_value(
+                (workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.DEACTIVATE) != 0
+            )
+            .set_member_name("remove")
+            .add_boolean_value(
+                (workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.REMOVE) != 0
+            )
+            .set_member_name("assign")
+            .add_boolean_value(
+                (workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.ASSIGN) != 0
+            )
             .end_object()
             .set_member_name("coordinates");
         if (workspace.coordinates == null) {
@@ -66,9 +89,13 @@ abstract class WorkspaceCommand : Command {
             .begin_object()
             .set_member_name("capabilities")
             .begin_object()
-            .set_member_name("create_workspace").add_boolean_value((group.capabilities & AstalWorkspace.GroupCapabilities.CREATE_WORKSPACE) != 0)
+            .set_member_name("create_workspace")
+            .add_boolean_value(
+                (group.capabilities & AstalWorkspace.GroupCapabilities.CREATE_WORKSPACE) != 0
+            )
             .end_object()
-            .set_member_name("outputs").begin_array();
+            .set_member_name("outputs")
+            .begin_array();
         foreach (var output in group.outputs) {
             builder.add_string_value(output.name);
         }
@@ -92,12 +119,15 @@ abstract class WorkspaceCommand : Command {
             about("List workspaces");
             opt(watch = new Flag("watch", 'w', "Watch for changes"));
             opt(pretty = new Flag("pretty", 'p', "Pretty print JSON"));
-            opt(monitor = new StringOpt("monitor", 'm', "Filter for workspaces on a specific monitor"));
+            opt(monitor = new StringOpt(
+                "monitor",
+                'm',
+                "Filter for workspaces on a specific monitor"
+            ));
         }
 
         private void list_workspaces(AstalWorkspace.WorkspaceManager manager) {
-            var builder = new Json.Builder()
-                .begin_array();
+            var builder = new Json.Builder().begin_array();
             foreach (var workspace in manager.workspaces) {
                 var monitors = get_workspace_monitors(manager, workspace);
                 if (monitor.value != null) {
@@ -140,8 +170,7 @@ abstract class WorkspaceCommand : Command {
         }
 
         private void list_groups(AstalWorkspace.WorkspaceManager manager) {
-            var builder = new Json.Builder()
-                .begin_array();
+            var builder = new Json.Builder().begin_array();
             foreach (var group in manager.groups) {
                 builder.add_value(group_to_json(group));
             }
@@ -233,7 +262,9 @@ abstract class WorkspaceCommand : Command {
                 if ((w_name.value != null) && (workspace.name != w_name.value)) {
                     continue;
                 }
-                if ((workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.DEACTIVATE) == 0) {
+                if (
+                    (workspace.capabilities & AstalWorkspace.WorkspaceCapabilities.DEACTIVATE) == 0
+                ) {
                     found_ineligible = true;
                     continue;
                 }
@@ -371,7 +402,11 @@ abstract class WorkspaceCommand : Command {
             foreach (var group in manager.groups) {
                 foreach (var output in group.outputs) {
                     if (output.name == monitor.value) {
-                        if ((group.capabilities & AstalWorkspace.GroupCapabilities.CREATE_WORKSPACE) == 0) {
+                        if (
+                            (group.capabilities &
+                            AstalWorkspace.GroupCapabilities.CREATE_WORKSPACE) ==
+                            0
+                        ) {
                             found_ineligible = true;
                             break;
                         }

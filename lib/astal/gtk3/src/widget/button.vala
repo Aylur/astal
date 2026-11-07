@@ -5,11 +5,11 @@
  * struct as the argument in GJS event handlers.
  */
 public class Astal.Button : Gtk.Button {
-    public signal void hover (HoverEvent event);
-    public signal void hover_lost (HoverEvent event);
-    public signal void click (ClickEvent event);
-    public signal void click_release (ClickEvent event);
-    public signal void scroll (ScrollEvent event);
+    public signal void hover(HoverEvent event);
+    public signal void hover_lost(HoverEvent event);
+    public signal void click(ClickEvent event);
+    public signal void click_release(ClickEvent event);
+    public signal void scroll(ScrollEvent event);
 
     construct {
         add_events(Gdk.EventMask.SCROLL_MASK);

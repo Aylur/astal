@@ -1,5 +1,5 @@
 [DBus (name="io.Astal.Application")]
-[Version (deprecated = true)]
+[Version (deprecated=true)]
 public class Astal.Application : Gtk.Application, AstalIO.Application {
     private List<Gtk.CssProvider> css_providers = new List<Gtk.CssProvider>();
     private SocketService service;
@@ -106,7 +106,7 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
      */
     [DBus (visible=false)]
     public void reset_css() {
-        foreach(var provider in css_providers) {
+        foreach (var provider in css_providers) {
             Gtk.StyleContext.remove_provider_for_screen(screen, provider);
         }
         css_providers = new List<Gtk.CssProvider>();
@@ -125,9 +125,8 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
      */
     [DBus (visible=false)]
     public Gtk.Window? get_window(string name) {
-        foreach(var win in windows) {
-            if (win.name == name)
-                return win;
+        foreach (var win in windows) {
+            if (win.name == name) return win;
         }
 
         critical("no window with name \"%s\"".printf(name));
@@ -156,8 +155,7 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
     public void apply_css(string style, bool reset = false) {
         var provider = new Gtk.CssProvider();
 
-        if (reset)
-            reset_css();
+        if (reset) reset_css();
 
         try {
             if (FileUtils.test(style, FileTest.EXISTS)) {
@@ -172,7 +170,10 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
         }
 
         Gtk.StyleContext.add_provider_for_screen(
-            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER);
+            screen,
+            provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER
+        );
 
         css_providers.append(provider);
     }
@@ -261,9 +262,37 @@ public class Astal.Application : Gtk.Application, AstalIO.Application {
             });
         });
 
-        shutdown.connect(() => { try { quit(); } catch(Error err) {} });
-        Unix.signal_add(1, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
-        Unix.signal_add(2, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
-        Unix.signal_add(15, () => { try { quit(); } catch(Error err) {} }, Priority.HIGH);
+        shutdown.connect(() => {
+            try {
+                quit();
+            } catch (Error err) {}
+        });
+        Unix.signal_add(
+            1,
+            () => {
+                try {
+                    quit();
+                } catch (Error err) {}
+            },
+            Priority.HIGH
+        );
+        Unix.signal_add(
+            2,
+            () => {
+                try {
+                    quit();
+                } catch (Error err) {}
+            },
+            Priority.HIGH
+        );
+        Unix.signal_add(
+            15,
+            () => {
+                try {
+                    quit();
+                } catch (Error err) {}
+            },
+            Priority.HIGH
+        );
     }
 }

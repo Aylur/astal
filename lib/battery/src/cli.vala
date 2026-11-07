@@ -43,7 +43,9 @@ int main(string[] argv) {
     print_state(battery);
 
     if (monitor) {
-        battery.notify.connect(() => { print_state(battery); });
+        battery.notify.connect(() => {
+            print_state(battery);
+        });
         new GLib.MainLoop(null, false).run();
     }
 

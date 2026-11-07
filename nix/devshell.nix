@@ -2,18 +2,7 @@
   self,
   pkgs,
 }: let
-  lua = pkgs.lua.withPackages (ps: [
-    ps.lgi
-    (ps.luaPackages.toLuaModule (pkgs.stdenv.mkDerivation {
-      name = "astal";
-      src = "${self}/lang/lua/astal";
-      dontBuild = true;
-      installPhase = ''
-        mkdir -p $out/share/lua/${ps.lua.luaversion}/astal
-        cp -r * $out/share/lua/${ps.lua.luaversion}/astal
-      '';
-    }))
-  ]);
+  lua = pkgs.lua.withPackages (ps: [ps.lgi]);
 
   python = pkgs.python3.withPackages (ps: [
     ps.pygobject3
@@ -49,19 +38,6 @@
     gjs
   ];
 
-  dev = with pkgs; [
-    nodejs
-    mesonlsp
-    vala-language-server
-    vtsls
-    vscode-langservers-extracted
-    markdownlint-cli2
-    pyright
-    ruff
-    uncrustify
-    codespell
-  ];
-
   gsettings =
     pkgs.writers.writeNu "gsettings"
     # nu
@@ -86,12 +62,11 @@
     '';
 in {
   default = pkgs.mkShell {
-    packages = buildInputs ++ dev;
+    packages = buildInputs;
   };
   astal = pkgs.mkShell {
     packages =
       buildInputs
-      ++ dev
       ++ builtins.attrValues (
         builtins.removeAttrs self.packages.${pkgs.stdenv.hostPlatform.system} ["docs"]
       );

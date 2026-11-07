@@ -12,10 +12,14 @@ public enum AstalNotifd.ClosedReason {
 
     internal string to_string() {
         switch (this) {
-            case EXPIRED: return "expired";
-            case DISMISSED_BY_USER: return "dismissed-by-user";
-            case CLOSED: return "closed";
-            case UNDEFINED: return "undefined";
+            case EXPIRED:
+                return "expired";
+            case DISMISSED_BY_USER:
+                return "dismissed-by-user";
+            case CLOSED:
+                return "closed";
+            case UNDEFINED:
+                return "undefined";
         }
 
         return_val_if_reached(null);

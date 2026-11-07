@@ -31,11 +31,9 @@ public class Astal.Scrollable : Gtk.ScrolledWindow {
     }
 
     construct {
-        if (hadjustment != null)
-            hadjustment = new Gtk.Adjustment(0,0,0,0,0,0);
+        if (hadjustment != null) hadjustment = new Gtk.Adjustment(0, 0, 0, 0, 0, 0);
 
-        if (vadjustment != null)
-            vadjustment = new Gtk.Adjustment(0,0,0,0,0,0);
+        if (vadjustment != null) vadjustment = new Gtk.Adjustment(0, 0, 0, 0, 0, 0);
     }
 
     public new Gtk.Widget get_child() {

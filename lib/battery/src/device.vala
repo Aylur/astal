@@ -1,8 +1,8 @@
 namespace AstalBattery {
-/** Get the DisplayDevice. */
-public Device get_default() {
-    return Device.get_default();
-}
+    /** Get the DisplayDevice. */
+    public Device get_default() {
+        return Device.get_default();
+    }
 }
 
 /**
@@ -18,7 +18,9 @@ public class AstalBattery.Device : Object {
         }
 
         try {
-            display_device = new Device((ObjectPath)"/org/freedesktop/UPower/devices/DisplayDevice");
+            display_device = new Device(
+                (ObjectPath)"/org/freedesktop/UPower/devices/DisplayDevice"
+            );
             return display_device;
         } catch (Error error) {
             critical(error.message);
@@ -294,7 +296,7 @@ public class AstalBattery.Device : Object {
     }
 }
 
-[CCode(type_signature = "u")]
+[CCode (type_signature="u")]
 public enum AstalBattery.State {
     UNKNOWN,
     CHARGING,
@@ -305,7 +307,7 @@ public enum AstalBattery.State {
     PENDING_DISCHARGE,
 }
 
-[CCode(type_signature = "u")]
+[CCode (type_signature="u")]
 public enum AstalBattery.Technology {
     UNKNOWN,
     LITHIUM_ION,
@@ -316,7 +318,7 @@ public enum AstalBattery.Technology {
     NICKEL_METAL_HYDRIDE,
 }
 
-[CCode(type_signature = "u")]
+[CCode (type_signature="u")]
 public enum AstalBattery.WarningLevel {
     UNKNOWN,
     NONE,
@@ -326,7 +328,7 @@ public enum AstalBattery.WarningLevel {
     ACTION,
 }
 
-[CCode(type_signature = "u")]
+[CCode (type_signature="u")]
 public enum AstalBattery.BatteryLevel {
     UNKNOWN,
     NONE,
@@ -337,7 +339,7 @@ public enum AstalBattery.BatteryLevel {
     FULL,
 }
 
-[CCode(type_signature = "u")]
+[CCode (type_signature="u")]
 public enum AstalBattery.Type {
     UNKNOWN,
     LINE_POWER,
@@ -372,8 +374,8 @@ public enum AstalBattery.Type {
     // TODO: add more icon names
     internal string? get_icon_name() {
         switch (this) {
-            case UPS :
-                    return "uninterruptible-power-supply";
+            case UPS:
+                return "uninterruptible-power-supply";
             case MOUSE:
                 return "input-mouse";
             case KEYBOARD:
