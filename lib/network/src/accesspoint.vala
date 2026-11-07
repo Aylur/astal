@@ -22,10 +22,26 @@ public class AstalNetwork.AccessPoint : Object {
         return ap.get_path();
     }
 
+    /**
+     * Whether connecting needs a password: WPA/WPA2/WPA3 personal, WEP and enterprise networks.
+     * Open and enhanced open (OWE) networks do not.
+     */
     public bool requires_password {
         get {
-            return wpa_flags != NM.80211ApSecurityFlags.NONE ||
-            rsn_flags != NM.80211ApSecurityFlags.NONE;
+            var security = wpa_flags | rsn_flags;
+
+            // privacy without wpa/rsn means wep
+            if (security == NM.80211ApSecurityFlags.NONE) {
+                return NM.80211ApFlags.PRIVACY in flags;
+            }
+
+            var with_password =
+                NM.80211ApSecurityFlags.KEY_MGMT_PSK |
+                NM.80211ApSecurityFlags.KEY_MGMT_SAE |
+                NM.80211ApSecurityFlags.KEY_MGMT_802_1X |
+                NM.80211ApSecurityFlags.KEY_MGMT_EAP_SUITE_B_192;
+
+            return (security & with_password) != 0;
         }
     }
 
@@ -42,17 +58,29 @@ public class AstalNetwork.AccessPoint : Object {
         this.ap = ap;
 
         ap.notify.connect((pspec) => {
-            if (get_class().find_property(pspec.name) != null) notify_property(pspec.name);
+            if (get_class().find_property(pspec.name) != null) {
+                notify_property(pspec.name);
+            }
             if (pspec.name == "strength") icon_name = _icon();
+            if (
+                (pspec.name == "flags") ||
+                (pspec.name == "wpa-flags") ||
+                (pspec.name == "rsn-flags")
+            ) {
+                notify_property("requires-password");
+            }
         });
 
         icon_name = _icon();
     }
 
     /**
-     * Activates the first connection associated with this AccessPoint
-     * or creates a new SimpleConnection using "wpa-psk" and activates it.
-     * Returns whether the connection is the new active connection.
+     * Activates the first saved connection of this access point,
+     * or creates and activates a new one if there is none.
+     *
+     * When a password is given it is saved to the connection,
+     * it is ignored for open networks.
+     * Enterprise (802.1X) networks need an already configured connection.
      */
     public async void activate(string? password = null) throws Error {
         var device = wifi.device;
@@ -63,29 +91,69 @@ public class AstalNetwork.AccessPoint : Object {
         var conns = get_connections();
 
         if (conns.length > 0) {
-            var first_conn = conns.get(0);
+            var conn = conns.get(0);
+            var security = conn.get_setting_wireless_security();
 
-            if (password != null) {
-                var security = first_conn.get_setting_wireless_security();
-                security.psk = password;
-                yield first_conn.commit_changes_async(true, null);
+            if ((password != null) && (security != null) && set_secret(security, password)) {
+                yield conn.commit_changes_async(true, null);
             }
 
-            yield ap.client.activate_connection_async(first_conn, device, get_path(), null);
+            yield ap.client.activate_connection_async(conn, device, get_path(), null);
         } else {
             var connection = NM.SimpleConnection.new();
 
-            connection.add_setting(new NM.SettingWireless() {
-                ssid = this.ap.ssid,
-                bssid = this.bssid,
-            });
+            connection.add_setting(new NM.SettingWireless() { ssid = ap.ssid });
 
-            connection.add_setting(new NM.SettingWirelessSecurity() {
-                key_mgmt = "wpa-psk",
-                psk = password,
-            });
+            var key_mgmt = get_key_mgmt();
+            if (key_mgmt != null) {
+                var security = new NM.SettingWirelessSecurity() {
+                    key_mgmt = key_mgmt,
+                };
+
+                if (password != null) set_secret(security, password);
+                connection.add_setting(security);
+            }
 
             yield ap.client.add_and_activate_connection_async(connection, device, get_path(), null);
+        }
+    }
+
+    private string? get_key_mgmt() throws Error {
+        var security = wpa_flags | rsn_flags;
+
+        if (
+            (NM.80211ApSecurityFlags.KEY_MGMT_802_1X in security) ||
+            (NM.80211ApSecurityFlags.KEY_MGMT_EAP_SUITE_B_192 in security)
+        ) {
+            throw new IOError.NOT_SUPPORTED("enterprise networks need a configured connection");
+        }
+
+        if (NM.80211ApSecurityFlags.KEY_MGMT_PSK in security) return "wpa-psk";
+        if (NM.80211ApSecurityFlags.KEY_MGMT_SAE in security) return "sae";
+        if (NM.80211ApSecurityFlags.KEY_MGMT_OWE in security) return "owe";
+
+        if ((security == NM.80211ApSecurityFlags.NONE) && (NM.80211ApFlags.PRIVACY in flags)) {
+            return "none";
+        }
+
+        return null;
+    }
+
+    // returns whether the key-mgmt takes a password
+    private bool set_secret(NM.SettingWirelessSecurity security, string password) {
+        switch (security.key_mgmt) {
+            case "wpa-psk":
+            case "sae":
+                security.psk = password;
+                return true;
+            case "none":
+                security.wep_key_type = NM.Utils.wep_key_valid(password, NM.WepKeyType.KEY)
+                    ? NM.WepKeyType.KEY
+                    : NM.WepKeyType.PASSPHRASE;
+                security.set_wep_key(0, password);
+                return true;
+            default:
+                return false;
         }
     }
 
