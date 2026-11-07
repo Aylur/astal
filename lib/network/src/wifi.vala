@@ -11,9 +11,9 @@ public class AstalNetwork.Wifi : Object {
     internal const string ICON_NO_ROUTE = "network-wireless-no-route-symbolic";
     internal const string ICON_HOTSPOT = "network-wireless-hotspot-symbolic";
 
-    private HashTable<string, AccessPoint> _access_points = new HashTable<string, AccessPoint>(
-        str_hash,
-        str_equal
+    private HashTable<NM.AccessPoint, AccessPoint> _access_points = new HashTable<NM.AccessPoint, AccessPoint>(
+        direct_hash,
+        direct_equal
     );
 
     public NM.DeviceWifi device { get; construct set; }
@@ -50,25 +50,23 @@ public class AstalNetwork.Wifi : Object {
         this.device = device;
 
         foreach (var ap in device.access_points) {
-            var new_ap = new AccessPoint(this, ap);
-            _access_points.set(ap.bssid, new_ap);
-            access_point_added(new_ap);
+            add_access_point(ap);
         }
 
         device.access_point_added.connect((access_point) => {
-            var ap = (NM.AccessPoint)access_point;
-            var new_ap = new AccessPoint(this, ap);
-            _access_points.set(ap.bssid, new_ap);
-            access_point_added(new_ap);
-            notify_property("access-points");
+            if (add_access_point((NM.AccessPoint)access_point) != null) {
+                notify_property("access-points");
+            }
         });
 
         device.access_point_removed.connect((access_point) => {
             var ap = (NM.AccessPoint)access_point;
-            var rem_ap = _access_points.get(ap.bssid);
-            _access_points.remove(ap.bssid);
-            access_point_removed(rem_ap);
-            notify_property("access-points");
+            var rem_ap = _access_points.get(ap);
+            if (rem_ap != null) {
+                _access_points.remove(ap);
+                access_point_removed(rem_ap);
+                notify_property("access-points");
+            }
         });
 
         on_active_connection();
@@ -145,6 +143,15 @@ public class AstalNetwork.Wifi : Object {
         }
     }
 
+    private AccessPoint? add_access_point(NM.AccessPoint ap) {
+        if (_access_points.contains(ap)) return null;
+
+        var new_ap = new AccessPoint(this, ap);
+        _access_points.set(ap, new_ap);
+        access_point_added(new_ap);
+        return new_ap;
+    }
+
     private void on_active_access_point_notify() {
         bandwidth = active_access_point.bandwidth;
         frequency = active_access_point.frequency;
@@ -161,7 +168,11 @@ public class AstalNetwork.Wifi : Object {
 
         var ap = device.active_access_point;
         if (ap != null) {
-            active_access_point = _access_points.get(ap.bssid);
+            if (add_access_point(ap) != null) {
+                notify_property("access-points");
+            }
+
+            active_access_point = _access_points.get(ap);
             on_active_access_point_notify();
             ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
         }
