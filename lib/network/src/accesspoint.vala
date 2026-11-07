@@ -78,10 +78,19 @@ public class AstalNetwork.AccessPoint : Object {
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
 
     /**
-     * Get the saved connections that can be used with this access point.
+     * The saved connections that can be used with this access point.
      */
-    public GenericArray<NM.RemoteConnection> get_connections() {
-        return (GenericArray<NM.RemoteConnection>)ap.filter_connections(ap.client.connections);
+    public GenericArray<weak NM.RemoteConnection> connections {
+        // filter_connections returns an array that unrefs its elements when freed
+        // which bindings treat as transfer full, unreffing them a second time,
+        // so return a new array with unowned elements, the client keeps them alive
+        owned get {
+            var conns = new GenericArray<weak NM.RemoteConnection>();
+            foreach (var conn in ap.filter_connections(ap.client.connections)) {
+                conns.add((NM.RemoteConnection)conn);
+            }
+            return conns;
+        }
     }
 
     /**
@@ -141,6 +150,9 @@ public class AstalNetwork.AccessPoint : Object {
         was_active = active;
         wifi.notify["active-access-point"].connect(on_active_access_point);
 
+        ap.client.connection_added.connect(on_connections_changed);
+        ap.client.connection_removed.connect(on_connections_changed);
+
         icon_name = _icon();
     }
 
@@ -152,6 +164,18 @@ public class AstalNetwork.AccessPoint : Object {
         if ((pspec.name == "flags") || (pspec.name == "wpa-flags") || (pspec.name == "rsn-flags")) {
             notify_property("requires-password");
         }
+        if (
+            (pspec.name == "ssid") ||
+            (pspec.name == "flags") ||
+            (pspec.name == "wpa-flags") ||
+            (pspec.name == "rsn-flags")
+        ) {
+            notify_property("connections");
+        }
+    }
+
+    private void on_connections_changed() {
+        notify_property("connections");
     }
 
     private void on_active_access_point() {
@@ -176,7 +200,7 @@ public class AstalNetwork.AccessPoint : Object {
             throw new IOError.NOT_FOUND("no wifi device");
         }
 
-        var conns = get_connections();
+        var conns = connections;
 
         if (conns.length > 0) {
             var conn = conns.get(0);
