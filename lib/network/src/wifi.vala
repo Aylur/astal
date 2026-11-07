@@ -160,10 +160,7 @@ public class AstalNetwork.Wifi : Object {
         internet = Internet.DISCONNECTED;
         state = DeviceState.UNKNOWN;
         is_hotspot = false;
-        bandwidth = 0;
-        frequency = 0;
-        strength = 0;
-        ssid = null;
+        on_active_access_point_notify();
     }
 
     public signal void state_changed(
@@ -257,11 +254,12 @@ public class AstalNetwork.Wifi : Object {
         pending_access_points.remove(ap);
     }
 
+    // falls back to defaults when there is no active access point
     private void on_active_access_point_notify() {
-        bandwidth = active_access_point.bandwidth;
-        frequency = active_access_point.frequency;
-        strength = active_access_point.strength;
-        ssid = active_access_point.ssid;
+        bandwidth = active_access_point?.bandwidth ?? 0;
+        frequency = active_access_point?.frequency ?? 0;
+        strength = active_access_point?.strength ?? 0;
+        ssid = active_access_point?.ssid;
     }
 
     private void on_active_access_point() {
@@ -277,10 +275,11 @@ public class AstalNetwork.Wifi : Object {
 
             active_access_point = _access_points.get(ap);
             if (active_access_point != null) {
-                on_active_access_point_notify();
                 ap_handler = active_access_point.notify.connect(on_active_access_point_notify);
             }
         }
+
+        on_active_access_point_notify();
     }
 
     private string _icon() {
