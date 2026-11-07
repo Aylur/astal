@@ -1,3 +1,6 @@
+/**
+ * Proxy for the main wireless device.
+ */
 public class AstalNetwork.Wifi : Object {
     internal const string ICON_EXCELLENT = "network-wireless-signal-excellent-symbolic";
     internal const string ICON_OK = "network-wireless-signal-ok-symbolic";
@@ -24,42 +27,100 @@ public class AstalNetwork.Wifi : Object {
     private NM.Client client;
 
     private NM.DeviceWifi? _device;
+
+    /**
+     * The underlying wireless device, `null` when there is none.
+     */
     public NM.DeviceWifi? device {
         get { return _device; }
     }
 
+    /**
+     * The active connection of the device.
+     */
     public NM.ActiveConnection? active_connection { get; private set; }
     private ulong connection_handler = 0;
 
+    /**
+     * The access point the device is connected to.
+     */
     public AccessPoint? active_access_point { get; private set; }
     private ulong ap_handler = 0;
 
     private ulong scan_handler = 0;
     private ulong[] device_handlers = {};
 
+    /**
+     * The access points the device can see.
+     * Access points without an ssid, such as hidden networks, are not listed.
+     */
     public List<weak AccessPoint> access_points {
         owned get { return _access_points.get_values(); }
     }
 
+    /**
+     * Whether wireless is enabled.
+     */
     public bool enabled {
         get { return client.wireless_enabled; }
         set { client.wireless_enabled = value; }
     }
 
+    /**
+     * The state of the active connection.
+     */
     public Internet internet { get; private set; }
+
+    /**
+     * The channel bandwidth of the active access point in MHz.
+     */
     public uint bandwidth { get; private set; }
+
+    /**
+     * The ssid of the active access point.
+     */
     public string? ssid { get; private set; }
+
+    /**
+     * The signal strength of the active access point in percent.
+     */
     public uint8 strength { get; private set; }
+
+    /**
+     * The frequency of the active access point in MHz.
+     */
     public uint frequency { get; private set; }
+
+    /**
+     * The state of the device.
+     */
     public DeviceState state { get; private set; }
+
+    /**
+     * Icon name representing the state and signal strength of the connection.
+     */
     public string icon_name { get; private set; }
+
+    /**
+     * Whether the device is sharing its connection as a hotspot.
+     */
     public bool is_hotspot { get; private set; }
+
+    /**
+     * Whether a scan requested with [method@AstalNetwork.Wifi.scan] is in progress.
+     */
     public bool scanning { get; private set; }
 
+    /**
+     * Emitted when an access point becomes visible.
+     */
     public signal void access_point_added(AccessPoint ap) {
         notify_property("access-points");
     }
 
+    /**
+     * Emitted when an access point is no longer visible.
+     */
     public signal void access_point_removed(AccessPoint ap) {
         notify_property("access-points");
     }
@@ -163,12 +224,19 @@ public class AstalNetwork.Wifi : Object {
         on_active_access_point_notify();
     }
 
+    /**
+     * Emitted when the state of the device changes.
+     */
     public signal void state_changed(
         DeviceState new_state,
         DeviceState old_state,
         NM.DeviceStateReason reason
     );
 
+    /**
+     * Request a scan for access points.
+     * Does nothing while a scan is already in progress or when there is no device.
+     */
     public void scan() {
         if (scanning || (_device == null)) return;
 
@@ -194,6 +262,9 @@ public class AstalNetwork.Wifi : Object {
         scanning = false;
     }
 
+    /**
+     * Disconnect the active connection of the device.
+     */
     public async void deactivate_connection() throws Error {
         if ((_device == null) || (_device.active_connection == null)) {
             return;

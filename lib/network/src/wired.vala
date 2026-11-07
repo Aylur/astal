@@ -1,3 +1,6 @@
+/**
+ * Proxy for the main ethernet device.
+ */
 public class AstalNetwork.Wired : Object {
     private const string ICON_CONNECTED = "network-wired-symbolic";
     private const string ICON_DISCONNECTED = "network-wired-disconnected-symbolic";
@@ -7,10 +10,17 @@ public class AstalNetwork.Wired : Object {
     private NM.Client client;
 
     private NM.DeviceEthernet? _device;
+
+    /**
+     * The underlying ethernet device, `null` when there is none.
+     */
     public NM.DeviceEthernet? device {
         get { return _device; }
     }
 
+    /**
+     * The active connection of the device.
+     */
     public NM.ActiveConnection? active_connection { get; private set; }
     private ulong connection_handler = 0;
 
@@ -93,9 +103,24 @@ public class AstalNetwork.Wired : Object {
         internet = Internet.from_device(device);
     }
 
+    /**
+     * The speed of the link in Mb/s.
+     */
     public uint speed { get; private set; }
+
+    /**
+     * The state of the active connection.
+     */
     public Internet internet { get; private set; }
+
+    /**
+     * The state of the device.
+     */
     public DeviceState state { get; private set; }
+
+    /**
+     * Icon name representing the state of the connection.
+     */
     public string icon_name { get; private set; }
 
     private string _icon() {

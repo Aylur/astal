@@ -10,26 +10,83 @@ public errordomain AstalNetwork.ActivationError {
     FAILED,
 }
 
+/**
+ * A wifi access point visible to the [class@AstalNetwork.Wifi] device.
+ */
 public class AstalNetwork.AccessPoint : Object {
     private Wifi wifi;
+
+    /**
+     * The underlying NetworkManager access point.
+     */
     public NM.AccessPoint ap;
 
+    /**
+     * The channel bandwidth in MHz.
+     */
     public uint bandwidth { get { return ap.bandwidth; } }
+
+    /**
+     * The hardware address of the access point.
+     */
     public string bssid { owned get { return ap.bssid; } }
+
+    /**
+     * The frequency in MHz.
+     */
     public uint frequency { get { return ap.frequency; } }
+
+    /**
+     * When the access point was last seen in a scan,
+     * in seconds of `CLOCK_BOOTTIME`, or -1 if it was never seen.
+     */
     public int last_seen { get { return ap.last_seen; } }
+
+    /**
+     * The maximum bitrate in kb/s.
+     */
     public uint max_bitrate { get { return ap.max_bitrate; } }
+
+    /**
+     * The signal strength in percent.
+     */
     public uint8 strength { get { return ap.strength; } }
+
+    /**
+     * Icon name representing the signal strength.
+     */
     public string icon_name { get; private set; }
+
+    /**
+     * The mode of the access point, such as infrastructure or ad-hoc.
+     */
     public NM.80211Mode mode { get { return ap.mode; } }
+
+    /**
+     * The capabilities of the access point.
+     */
     public NM.80211ApFlags flags { get { return ap.flags; } }
+
+    /**
+     * The WPA2/WPA3 (RSN) security capabilities.
+     */
     public NM.80211ApSecurityFlags rsn_flags { get { return ap.rsn_flags; } }
+
+    /**
+     * The WPA security capabilities.
+     */
     public NM.80211ApSecurityFlags wpa_flags { get { return ap.wpa_flags; } }
 
+    /**
+     * Get the saved connections that can be used with this access point.
+     */
     public GenericArray<NM.RemoteConnection> get_connections() {
         return (GenericArray<NM.RemoteConnection>)ap.filter_connections(ap.client.connections);
     }
 
+    /**
+     * Get the DBus object path of the access point.
+     */
     public string get_path() {
         return ap.get_path();
     }
@@ -64,6 +121,9 @@ public class AstalNetwork.AccessPoint : Object {
         }
     }
 
+    /**
+     * The name of the network.
+     */
     public string? ssid {
         owned get {
             if (ap.ssid == null) return null;
