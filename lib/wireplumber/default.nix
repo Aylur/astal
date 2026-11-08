@@ -6,7 +6,10 @@
 mkAstalPkg {
   pname = "astal-wireplumber";
   src = ./.;
-  packages = [pkgs.wireplumber];
+  packages = [
+    pkgs.wireplumber
+    pkgs.pipewire
+  ];
 
   libname = "wireplumber";
   authors = "kotontrion";
