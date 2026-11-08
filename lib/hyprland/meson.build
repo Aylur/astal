@@ -44,6 +44,7 @@ deps = [
 ]
 
 sources = [config] + files(
+  'src/identity.vala',
   'src/client.vala',
   'src/hyprland.vala',
   'src/monitor.vala',
@@ -123,4 +124,26 @@ if get_option('cli')
     dependencies: deps,
     install: true,
   )
+endif
+
+if get_option('tests')
+  handles = executable('workspace-handles-test', ['src/identity.vala', 'tests/handles.vala'], dependencies: deps)
+  test('workspace-handle-boundaries', handles)
+  assert(get_option('lib'), 'Tests require the library')
+  python = find_program('python3')
+  foreach mode : ['modern', 'legacy', 'gjs', 'empty', 'recovery']
+    test(
+      'workspace-identity-' + mode,
+      python,
+      args: [
+        files('tests/workspaces.py'),
+        lib.full_path(),
+        meson.current_build_dir() / gir_name,
+        meson.project_build_root(),
+        mode,
+      ],
+      env: ['G_DEBUG=fatal-warnings', 'PYTHONDONTWRITEBYTECODE=1'],
+      timeout: 30,
+    )
+  endforeach
 endif

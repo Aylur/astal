@@ -21,7 +21,7 @@ namespace AstalHyprland {
             _instance = h;
 
             h.socket2 = h.connection("socket2");
-            h.watch_socket(new DataInputStream(h.socket2.input_stream));
+            h.watch_socket.begin(new DataInputStream(h.socket2.input_stream));
             try {
                 h.init();
             } catch (Error err) {
@@ -43,6 +43,13 @@ namespace AstalHyprland {
             ((a, b) => a == b)
         );
 
+        private HashTable<string, Workspace> _workspace_addresses = new HashTable<string, Workspace>(
+            str_hash,
+            str_equal
+        );
+        private int next_workspace_handle = int.MIN;
+        private uint workspace_generation = 0;
+
         private HashTable<string, Client> _clients = new HashTable<string, Client>(
             str_hash,
             str_equal
@@ -58,6 +65,88 @@ namespace AstalHyprland {
         public Workspace get_workspace(int id) {
             return _workspaces.get(id);
         }
+        /**
+         * Resolve the canonical identity returned in workspace JSON.
+         */
+        public Workspace? get_workspace_by_address(string address) {
+            return _workspace_addresses.get(address);
+        }
+
+        internal Workspace? workspace_from_json(Json.Object? obj) {
+            var identity = WorkspaceIdentity.from_json(obj);
+            if (identity == null) return null;
+            var ws = get_workspace_by_address(identity.address);
+            if (ws != null && identity.number != null && ws.id != (int)identity.number) return null;
+            return ws;
+        }
+
+        private Workspace? ensure_workspace(Json.Object? obj) {
+            var identity = WorkspaceIdentity.from_json(obj);
+            if (identity == null) return null;
+            var existing = get_workspace_by_address(identity.address);
+            if (existing != null) {
+                if (identity.number != null && existing.id != (int)identity.number) return null;
+                return existing;
+            }
+
+            int id;
+            if (identity.number != null) {
+                id = (int)identity.number;
+                // Never alias an unrelated object onto an occupied compatibility ID.
+                if (_workspaces.contains(id))
+                    return null;
+            } else {
+                int? handle = null;
+                do {
+                    handle = WorkspaceIdentity.take_handle(ref next_workspace_handle);
+                    if (handle == null) return null;
+                } while (_workspaces.contains((int)handle));
+                id = (int)handle;
+            }
+            var ws = new Workspace();
+            ws.identify(id, identity.address);
+            _workspaces.insert(id, ws);
+            _workspace_addresses.insert(identity.address, ws);
+            return ws;
+        }
+
+        private void update_workspaces(Json.Array arr, bool announce) {
+            var present = new List<weak Workspace>();
+            var added = new List<Workspace>();
+            foreach (var node in arr.get_elements()) {
+                if (node.get_node_type() != Json.NodeType.OBJECT) continue;
+                var obj = node.get_object();
+                var before = workspace_from_json(obj);
+                var ws = ensure_workspace(obj);
+                if (ws == null) continue;
+                present.append(ws);
+                if (before == null) added.append(ws);
+            }
+            // Every object exists before resolving cross-references.
+            foreach (var node in arr.get_elements()) {
+                if (node.get_node_type() != Json.NodeType.OBJECT) continue;
+                var ws = workspace_from_json(node.get_object());
+                if (ws != null) ws.sync(node.get_object());
+            }
+            foreach (var ws in workspaces) {
+                if (present.find(ws) != null) continue;
+                Workspace removed = ws;
+                removed.removed();
+                _workspace_addresses.remove(removed.address);
+                _workspaces.remove(removed.id);
+                if (announce) workspace_removed(removed.id);
+            }
+            if (announce) {
+                foreach (var ws in added) workspace_added(ws);
+                notify_property("workspaces");
+            }
+        }
+
+        private async void sync_focused_workspace() throws Error {
+            var value = yield message_async("j/activeworkspace");
+            focused_workspace = workspace_from_json(Json.from_string(value).get_object());
+        }
+
         public Client? get_client(string address) {
             if ((address == "") || (address == null)) return null;
 
@@ -140,22 +229,22 @@ namespace AstalHyprland {
             }
         }
 
-        private void watch_socket(DataInputStream stream) {
-            stream.read_line_async.begin(Priority.DEFAULT, null, (_, res) => {
-                try {
-                    var line = stream.read_line_async.end(res);
-                    handle_event.begin(line, (_, res) => {
-                        try {
-                            handle_event.end(res);
-                        } catch (Error err) {
-                            critical(err.message);
-                        }
-                    });
-                    watch_socket(stream);
-                } catch (Error err) {
-                    critical(err.message);
+        // Preserve event ordering across asynchronous snapshot requests.
+        private async void watch_socket(DataInputStream stream) {
+            try {
+                while (true) {
+                    var line = yield stream.read_line_async(Priority.DEFAULT, null);
+                    if (line == null) break;
+                    try {
+                        yield handle_event(line);
+                    } catch (Error err) {
+                        // A failed snapshot must not terminate the event reader.
+                        critical(err.message);
+                    }
                 }
-            });
+            } catch (Error err) {
+                critical(err.message);
+            }
         }
 
         private void write_socket(
@@ -237,9 +326,8 @@ namespace AstalHyprland {
 
                 if (mon.get_object().get_member("focused").get_boolean()) focused_monitor = m;
             }
-            foreach (var wrkpsc in wrkspcs.get_elements()) {
-                var id = (int)wrkpsc.get_object().get_member("id").get_int();
-                _workspaces.set(id, new Workspace());
+            foreach (var ws in wrkspcs.get_elements()) {
+                if (ws.get_node_type() == Json.NodeType.OBJECT) ensure_workspace(ws.get_object());
             }
             foreach (var clnt in clnts.get_elements()) {
                 var addr = clnt.get_object().get_member("address").get_string();
@@ -251,30 +339,20 @@ namespace AstalHyprland {
                 var addr = c.get_object().get_member("address").get_string();
                 get_client(addr).sync(c.get_object());
             }
-            foreach (var ws in wrkspcs.get_elements()) {
-                var id = (int)ws.get_object().get_member("id").get_int();
-                get_workspace(id).sync(ws.get_object());
-            }
+            update_workspaces(wrkspcs, false);
             foreach (var mon in mons.get_elements()) {
                 var id = (int)mon.get_object().get_member("id").get_int();
                 get_monitor(id).sync(mon.get_object());
             }
 
             // focused
-            focused_workspace = get_workspace(
-                (int)Json
-                    .from_string(message("j/activeworkspace"))
-                    .get_object()
-                    .get_member("id")
-                    .get_int()
+            focused_workspace = workspace_from_json(
+                Json.from_string(message("j/activeworkspace")).get_object()
             );
 
+            var active_window = Json.from_string(message("j/activewindow")).get_object();
             focused_client = get_client(
-                Json
-                    .from_string(message("j/activewindow"))
-                    .get_object()
-                    .get_member("address")
-                    .get_string()
+                WorkspaceIdentity.string_member(active_window, "address") ?? ""
             );
         }
 
@@ -299,13 +377,11 @@ namespace AstalHyprland {
         }
 
         public async void sync_workspaces() throws Error {
+            var generation = workspace_generation;
             var str = yield message_async("j/workspaces");
+            if (generation != workspace_generation) return;
             var arr = Json.from_string(str).get_array();
-            foreach (var obj in arr.get_elements()) {
-                var id = (int)obj.get_object().get_int_member("id");
-                var ws = get_workspace(id);
-                if (ws != null) ws.sync(obj.get_object());
-            }
+            update_workspaces(arr, true);
         }
 
         public async void sync_clients() throws Error {
@@ -316,6 +392,7 @@ namespace AstalHyprland {
                 var c = get_client(addr);
                 if (c != null) c.sync(obj.get_object());
             }
+            foreach (var ws in workspaces) ws.refresh_clients();
         }
 
         private async bool try_add_client(string addr) throws Error {
@@ -325,28 +402,29 @@ namespace AstalHyprland {
 
             var client = new Client();
             _clients.insert(addr, client);
-            yield sync_clients();
             yield sync_workspaces();
+            yield sync_clients();
             client_added(client);
             notify_property("clients");
             return false;
         }
 
         private async void handle_event(string line) throws Error {
-            var args = line.split(">>");
+            var args = line.split(">>", 2);
+            if (args.length != 2) return;
 
             switch (args[0]) {
                 case "workspacev2": {
                     yield sync_workspaces();
                     yield sync_monitors();
-                    focused_workspace = get_workspace(int.parse(args[1]));
+                    yield sync_focused_workspace();
                     break;
                 }
                 case "focusedmon": {
                     var argv = args[1].split(",", 2);
                     yield sync_monitors();
                     focused_monitor = get_monitor_by_name(argv[0]);
-                    focused_workspace = get_workspace_by_name(argv[1]);
+                    yield sync_focused_workspace();
                     break;
                 }
                 case "fullscreen": {
@@ -370,37 +448,37 @@ namespace AstalHyprland {
                     notify_property("monitors");
                     break;
                 }
-                case "createworkspacev2": {
-                    var id = int.parse(args[1].split(",", 2)[0]);
-                    var ws = new Workspace();
-                    _workspaces.insert(id, ws);
-                    yield sync_workspaces();
-                    workspace_added(ws);
-                    notify_property("workspaces");
+                // Both supported protocols emit v2; v1 may contain only a display
+                // name and is not an independent lifetime transition.
+                case "createworkspace":
+                case "destroyworkspace":
                     break;
-                }
                 case "destroyworkspacev2": {
-                    var id = int.parse(args[1].split(",", 2)[0]);
-                    _workspaces.get(id).removed();
-                    _workspaces.remove(id);
-                    workspace_removed(id);
-                    notify_property("workspaces");
-                    break;
-                }
-                case "moveworkspacev2": {
+                    workspace_generation++;
+                    var address = args[1].split(",", 2)[0];
+                    var ws = get_workspace_by_address(address);
+                    if (ws != null) {
+                        ws.removed();
+                        _workspace_addresses.remove(address);
+                        _workspaces.remove(ws.id);
+                        workspace_removed(ws.id);
+                        notify_property("workspaces");
+                    }
+                    // A current snapshot may already contain the next lifetime.
                     yield sync_workspaces();
+                    yield sync_clients();
                     yield sync_monitors();
-                    focused_workspace = get_workspace(int.parse(args[1]));
-                    notify_property("workspaces");
+                    yield sync_focused_workspace();
                     break;
                 }
-                case "renameworkspace": {
-                    yield sync_workspaces();
-                    break;
-                }
+                case "createworkspacev2":
+                case "moveworkspacev2":
+                case "renameworkspace":
                 case "activespecial": {
-                    yield sync_monitors();
                     yield sync_workspaces();
+                    yield sync_clients();
+                    yield sync_monitors();
+                    yield sync_focused_workspace();
                     break;
                 }
                 case "activelayout": {
@@ -417,8 +495,8 @@ namespace AstalHyprland {
                 case "openwindow": {
                     var addr = args[1].split(",")[0];
                     if (yield try_add_client(addr)) {
-                        yield sync_clients();
                         yield sync_workspaces();
+                        yield sync_clients();
                     }
                     break;
                 }
@@ -431,11 +509,14 @@ namespace AstalHyprland {
                     break;
                 }
                 case "movewindowv2": {
-                    yield sync_clients();
                     yield sync_workspaces();
+                    yield sync_clients();
                     var argv = args[1].split(",");
-                    client_moved(get_client(argv[0]), get_workspace(int.parse(argv[1])));
-                    get_client(argv[0]).moved_to(get_workspace(int.parse(argv[1])));
+                    var client = get_client(argv[0]);
+                    if (client != null && client.workspace != null) {
+                        client_moved(client, client.workspace);
+                        client.moved_to(client.workspace);
+                    }
                     break;
                 }
                 case "submap": {
